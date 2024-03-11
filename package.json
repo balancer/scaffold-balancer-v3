@@ -1,0 +1,41 @@
+{
+  "name": "se-2",
+  "version": "0.0.1",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "scripts": {
+    "account": "yarn workspace @se-2/hardhat account",
+    "chain": "yarn workspace @se-2/hardhat chain",
+    "compile": "yarn workspace @se-2/hardhat compile",
+    "deploy": "yarn workspace @se-2/hardhat deploy",
+    "fork": "yarn workspace @se-2/hardhat fork",
+    "generate": "yarn workspace @se-2/hardhat generate",
+    "hardhat-verify": "yarn workspace @se-2/hardhat hardhat-verify",
+    "hardhat:lint": "yarn workspace @se-2/hardhat lint",
+    "hardhat:lint-staged": "yarn workspace @se-2/hardhat lint-staged",
+    "hardhat:test": "yarn workspace @se-2/hardhat test",
+    "postinstall": "husky install",
+    "next:check-types": "yarn workspace @se-2/nextjs check-types",
+    "next:format": "yarn workspace @se-2/nextjs format",
+    "next:lint": "yarn workspace @se-2/nextjs lint",
+    "precommit": "lint-staged",
+    "prepare": "install-self-peers -- --ignore-scripts",
+    "start": "yarn workspace @se-2/nextjs dev",
+    "test": "yarn hardhat:test",
+    "vercel": "yarn workspace @se-2/nextjs vercel",
+    "vercel:yolo": "yarn workspace @se-2/nextjs vercel:yolo",
+    "verify": "yarn workspace @se-2/hardhat verify"
+  },
+  "resolutions": {
+    "usehooks-ts@^2.7.2": "patch:usehooks-ts@npm:^2.7.2#./.yarn/patches/usehooks-ts-npm-2.7.2-fceffe0e43.patch"
+  },
+  "devDependencies": {
+    "husky": "~8.0.3",
+    "lint-staged": "~13.2.2"
+  },
+  "packageManager": "yarn@3.2.3"
+}
