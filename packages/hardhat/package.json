@@ -15,7 +15,7 @@
     "verify": "hardhat etherscan-verify"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "~4.8.1",
+    "@openzeppelin/contracts": "^5.0.0",
     "@typechain/ethers-v6": "~0.5.1",
     "dotenv": "~16.0.3",
     "envfile": "~6.18.0",
