@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   11155111: {
     ConstantPricePool: {
-      address: "0xF00DAB4a32A62E83b02B312A8b195d4314350363",
+      address: "0x5f02C5Ae3C118Dd380BEE11e9b1E10f99ca0a9FC",
       abi: [
         {
           inputs: [

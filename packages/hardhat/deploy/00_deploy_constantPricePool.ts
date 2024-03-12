@@ -24,7 +24,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
 
   const vaultAddress = "0xDaa273AeEc06e9CCb7428a77E2abb1E4659B16D2";
   const tokenName = "Constant Price Pool";
-  const tokenSymbol = "CPP";
+  const tokenSymbol = "CON";
   const args = [vaultAddress, tokenName, tokenSymbol];
 
   await deploy("ConstantPricePool", {
