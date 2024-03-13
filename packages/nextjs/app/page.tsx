@@ -1,41 +1,51 @@
 import Link from "next/link";
 import type { NextPage } from "next";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+
+const TOOLS = [
+  {
+    emoji: "🌊",
+    title: "Pools",
+    href: "/pools",
+    description: "Create and explore custom pools",
+  },
+  {
+    emoji: "🧭",
+    title: "Router",
+    href: "/router",
+    description: "Integrate pools with the smart order router",
+  },
+  {
+    emoji: "📡",
+    title: "Subgraph",
+    href: "/subgraph",
+    description: "Integrate pools with the Balancer subgraph",
+  },
+];
 
 const Home: NextPage = () => {
   return (
     <>
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center text-5xl font-bold mb-10">Scaffold-Balancer</h1>
-          <p className="my-2 text-xl">
+      <div className="flex items-center flex-col flex-grow py-10 bg-base-300 px-5 lg:px-10">
+        <div className="px-5 mb-14">
+          <h1 className="text-center text-6xl font-bold mb-14 mt-5">Scaffold-Balancer</h1>
+          <p className="text-2xl">
             A series of guides and a prototyping tools for creating custom pools that integrate with Balancer v3
           </p>
         </div>
 
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-10">
+          {TOOLS.map(item => (
+            <Link
+              className="bg-base-100 hover:scale-105 hover:bg-base-200 text-2xl text-center p-8 rounded-3xl"
+              key={item.href}
+              href={item.href}
+              passHref
+            >
+              <h3 className="text-4xl mb-10">{item.title}</h3>
+              <div className="text-8xl mb-10">{item.emoji}</div>
+              <p className="text-xl">{item.description}</p>
+            </Link>
+          ))}
         </div>
       </div>
     </>
