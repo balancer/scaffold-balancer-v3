@@ -36,9 +36,11 @@ yarn install
 yarn start
 ```
 
-### Deploying Contracts
+## Deploying Contracts
 
-Whenever you deploy new contract the frontend will automatically be updated to point at the newly deployed contract
+1. Set a `DEPLOYER_PRIVATE_KEY` in a `.env` at path `packagages/hardhat/.env`. Only do this with a develpment specific wallet that has only testnet funds. **NEVER PUT REAL FUNDS AT RISK WITH A PLAIN TEXT PRIVATE KEY**
+
+2. Run the deploy script. Note that whenever you deploy new contract the frontend will automatically be updated to point at the newly deployed contract
 
 ```
 yarn deploy --network sepolia
