@@ -5,7 +5,7 @@ import { PoolDetails } from "~~/components/balancer/PoolDetails";
 
 const Pools: NextPage = () => {
   return (
-    <>
+    <div className="bg-base-300 flex-grow">
       <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
         <div className="pb-10 border-b border-white">
           <h1 className="text-3xl md:text-5xl font-bold my-10">🌊 Pools</h1>
@@ -21,7 +21,7 @@ const Pools: NextPage = () => {
           <PoolDetails />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
