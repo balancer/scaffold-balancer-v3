@@ -1,3 +1,5 @@
+"use client";
+
 import { formatUnits } from "viem";
 import { Address } from "~~/components/scaffold-eth";
 import { usePoolContract } from "~~/hooks/balancer";
@@ -5,8 +7,8 @@ import { usePoolContract } from "~~/hooks/balancer";
 /**
  * Display a pool's contract details
  */
-export const PoolDetails = () => {
-  const pool = usePoolContract("ConstantPricePool");
+export const PoolDetails = ({ contractName }: any) => {
+  const pool = usePoolContract(contractName);
 
   const detailsRows = [
     { attribute: "Name", detail: pool.name },
@@ -16,8 +18,8 @@ export const PoolDetails = () => {
     { attribute: "Total Supply", detail: formatUnits(pool.totalSupply || 0n, pool.decimals || 18) },
   ];
   return (
-    <div>
-      <h5 className="text-2xl font-bold mb-3">Pool Details</h5>
+    <div className="w-full">
+      <h5 className="text-2xl font-bold mb-3">Details</h5>
       <div className="overflow-x-auto rounded-lg">
         <table className="table text-lg">
           <thead>

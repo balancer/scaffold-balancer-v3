@@ -22,18 +22,32 @@ const deployConstantPricePool: DeployFunction = async function (hre: HardhatRunt
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  const vaultAddress = "0xDaa273AeEc06e9CCb7428a77E2abb1E4659B16D2";
-  const tokenName = "Balancer Constant Price Pool";
-  const tokenSymbol = "B-50DAI-50USDe";
-  const args = [vaultAddress, tokenName, tokenSymbol];
+  // Vault address is the same for all pools
+  const VAULT_ADDRESS = "0x1FC7F1F84CFE61a04224AC8D3F87f56214FeC08c";
+
+  // Deploy ConstantPricePool
+  const constantPoolName = "Balancer Constant Price Pool";
+  const constantPoolSymbol = "B-50DAI-50USDe";
+  const constantPoolArgs = [VAULT_ADDRESS, constantPoolName, constantPoolSymbol];
 
   await deploy("ConstantPricePool", {
     from: deployer,
-    args, // contract constructor arguments
+    args: constantPoolArgs, // contract constructor arguments
     log: true,
   });
 
-  // Get the deployed contract to interact with it after deploying.
+  // Deploy DynamicPricePool
+  const dynamicPoolName = "Balancer Dynamic Price Pool";
+  const dynamicPoolSymbol = "weETH/ezETH/rswETH";
+  const dynamicPoolArgs = [VAULT_ADDRESS, dynamicPoolName, dynamicPoolSymbol];
+
+  await deploy("DynamicPricePool", {
+    from: deployer,
+    args: dynamicPoolArgs, // contract constructor arguments
+    log: true,
+  });
+
+  // Get a deployed contract to interact with it after deploying.
   // const yourContract = await hre.ethers.getContract<Contract>("ConstantPricePool", deployer);
   // const poolTokens =  await ConstantPricePool.getPoolTokens());
 };
@@ -42,4 +56,4 @@ export default deployConstantPricePool;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags YourContract
-deployConstantPricePool.tags = ["constant", "all"];
+deployConstantPricePool.tags = ["all"];

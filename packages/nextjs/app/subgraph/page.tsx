@@ -1,6 +1,8 @@
 import type { NextPage } from "next";
 
-const Pools: NextPage = () => {
+// https://api.studio.thegraph.com/proxy/31386/balancer-v3-sepolia/version/latest/graphql?q[…]+%7B%0A++++++++id%0A++++++%7D%0A++++%7D%0A%09%7D%0A%7D%0A
+
+const Subgraph: NextPage = () => {
   return (
     <>
       <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
@@ -17,4 +19,4 @@ const Pools: NextPage = () => {
   );
 };
 
-export default Pools;
+export default Subgraph;

@@ -9,7 +9,7 @@ export interface PoolDetails {
   vaultAddress: string | undefined;
 }
 
-type DeployedPoolNames = "ConstantPricePool";
+type DeployedPoolNames = "ConstantPricePool" | "DynamicPricePool";
 
 export const usePoolContract = (contractName: DeployedPoolNames): PoolDetails => {
   const { data: deployedContractData } = useDeployedContractInfo(contractName);
