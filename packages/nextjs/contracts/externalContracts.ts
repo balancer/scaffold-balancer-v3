@@ -1,5 +1,7 @@
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
+// import { vaultInfo, vaultExtensionInfo, routerInfo, BacthRouterInfo } from "./helper";
+
 /**
  * @example
  * const externalContracts = {

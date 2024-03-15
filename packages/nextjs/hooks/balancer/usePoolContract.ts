@@ -1,50 +1,58 @@
-import { useDeployedContractInfo, useScaffoldContractRead } from "~~/hooks/scaffold-eth";
+import { PoolAbi } from "./PoolAbi";
+import type { Pool } from "./types";
+// import { formatUnits } from "viem";
+import {
+  // erc20ABI,
+  usePublicClient,
+  useQuery,
+} from "wagmi";
 
-export interface PoolDetails {
-  name: string | undefined;
-  address: string | undefined;
-  symbol: string | undefined;
-  decimals: number | undefined;
-  totalSupply: bigint | undefined;
-  vaultAddress: string | undefined;
-}
+/**
+ * Read a pool contract's details
+ */
+export const usePoolContract = (poolAddress: string) => {
+  const client = usePublicClient();
 
-type DeployedPoolNames = "ConstantPricePool" | "DynamicPricePool";
+  return useQuery<Pool>(
+    ["PoolContract", poolAddress],
+    async () => {
+      const [name, symbol, totalSupply, decimals, vaultAddress] = await Promise.all([
+        client.readContract({
+          abi: PoolAbi,
+          address: poolAddress,
+          functionName: "name",
+        }),
+        client.readContract({
+          abi: PoolAbi,
+          address: poolAddress,
+          functionName: "symbol",
+        }),
+        client.readContract({
+          abi: PoolAbi,
+          address: poolAddress,
+          functionName: "totalSupply",
+        }),
+        client.readContract({
+          abi: PoolAbi,
+          address: poolAddress,
+          functionName: "decimals",
+        }),
+        client.readContract({
+          abi: PoolAbi,
+          address: poolAddress,
+          functionName: "getVault",
+        }),
+      ]);
 
-export const usePoolContract = (contractName: DeployedPoolNames): PoolDetails => {
-  const { data: deployedContractData } = useDeployedContractInfo(contractName);
-
-  const { data: name } = useScaffoldContractRead({
-    contractName,
-    functionName: "name",
-  });
-
-  const { data: symbol } = useScaffoldContractRead({
-    contractName,
-    functionName: "symbol",
-  });
-
-  const { data: totalSupply } = useScaffoldContractRead({
-    contractName,
-    functionName: "totalSupply",
-  });
-
-  const { data: decimals } = useScaffoldContractRead({
-    contractName,
-    functionName: "decimals",
-  });
-
-  const { data: vaultAddress } = useScaffoldContractRead({
-    contractName,
-    functionName: "getVault",
-  });
-
-  return {
-    name,
-    address: deployedContractData?.address,
-    symbol,
-    totalSupply: totalSupply,
-    decimals,
-    vaultAddress,
-  };
+      return {
+        name,
+        address: poolAddress,
+        symbol,
+        totalSupply: totalSupply,
+        decimals,
+        vaultAddress,
+      } as Pool;
+    },
+    { enabled: poolAddress !== undefined },
+  );
 };

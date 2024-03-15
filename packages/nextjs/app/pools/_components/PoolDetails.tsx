@@ -7,15 +7,15 @@ import { usePoolContract } from "~~/hooks/balancer";
 /**
  * Display a pool's contract details
  */
-export const PoolDetails = ({ contractName }: any) => {
-  const pool = usePoolContract(contractName);
+export const PoolDetails = ({ poolAddress }: { poolAddress: string }) => {
+  const { data: pool } = usePoolContract(poolAddress);
 
   const detailsRows = [
-    { attribute: "Name", detail: pool.name },
-    { attribute: "Symbol", detail: pool.symbol },
-    { attribute: "Contract Address", detail: <Address address={pool.address} size="lg" /> },
-    { attribute: "Vault Address", detail: <Address address={pool.vaultAddress} size="lg" /> },
-    { attribute: "Total Supply", detail: formatUnits(pool.totalSupply || 0n, pool.decimals || 18) },
+    { attribute: "Name", detail: pool?.name },
+    { attribute: "Symbol", detail: pool?.symbol },
+    { attribute: "Contract Address", detail: <Address address={pool?.address} size="lg" /> },
+    { attribute: "Vault Address", detail: <Address address={pool?.vaultAddress} size="lg" /> },
+    { attribute: "Total Supply", detail: formatUnits(pool?.totalSupply || 0n, pool?.decimals || 18) },
   ];
   return (
     <div className="w-full">
