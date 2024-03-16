@@ -1,17 +1,15 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { PoolActions, PoolComposition, PoolDetails } from "./_components/";
 import type { NextPage } from "next";
 import { type Address, isAddress } from "viem";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { AddressInput } from "~~/components/scaffold-eth";
 import deployedContractsData from "~~/contracts/deployedContracts";
 import scaffoldConfig from "~~/scaffold.config";
 
 const Pools: NextPage = () => {
   const [poolAddress, setPoolAddress] = useState<Address>("");
-  const [selectedPool, setSelectedPool] = useState<Address>("");
 
   const isValidAddress = isAddress(poolAddress);
 
@@ -20,6 +18,9 @@ const Pools: NextPage = () => {
     name,
     ...details,
   }));
+
+  const [selectedPool, setSelectedPool] = useState<Address>(scaffoldPools[0].address);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
     <div className="bg-base-300 flex-grow">
@@ -34,22 +35,35 @@ const Pools: NextPage = () => {
           </p>
         </div>
 
-        <section className="flex justify-between flex-wrap gap-5 w-full mb-5 items-center text-xl border-b border-white py-7">
-          <div className="flex items-center gap-5">
-            <select
-              className="select select-base-100 w-72"
-              value={selectedPool}
-              onChange={e => setSelectedPool(e.target.value)}
+        <section className="flex justify-center flex-wrap gap-5 w-full mb-5 items-center text-xl border-b border-white py-5">
+          <div className={`dropdown dropdown-end ${isDropdownOpen ? "dropdown-open" : ""}`}>
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn text-lg btn-accent w-96"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-              <option disabled value={""}>
-                Select your custom pool
-              </option>
+              Choose Custom Pool
+            </div>
+            <ul
+              tabIndex={0}
+              className={`dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-3 ${
+                !isDropdownOpen ? "hidden" : ""
+              }`}
+            >
               {scaffoldPools.map(pool => (
-                <option key={pool.name} value={pool.address}>
-                  {pool.name}
-                </option>
+                <li key={pool.name}>
+                  <button
+                    onClick={() => {
+                      setSelectedPool(pool.address);
+                      setIsDropdownOpen(false); // Close the dropdown
+                    }}
+                  >
+                    {pool.name}
+                  </button>
+                </li>
               ))}
-            </select>
+            </ul>
           </div>
           <div>OR</div>
           <form
@@ -60,10 +74,21 @@ const Pools: NextPage = () => {
               setPoolAddress("");
             }}
           >
-            <AddressInput value={poolAddress} onChange={setPoolAddress} placeholder={"Search by contract address"} />
-            <button className="btn btn-sm btn-accent" type="submit" disabled={!isValidAddress}>
-              <MagnifyingGlassIcon className="h-5 w-5" />
-            </button>
+            <div className="relative">
+              <input
+                value={poolAddress}
+                onChange={e => setPoolAddress(e.target.value)}
+                className="input input-bordered bg-base-200 w-96 text-center pr-16"
+                placeholder="Search by contract addresss"
+              />
+              <button
+                className="btn btn-sm btn-accent absolute top-2 right-3 "
+                type="submit"
+                disabled={!isValidAddress}
+              >
+                <MagnifyingGlassIcon className="h-5 w-5" />
+              </button>
+            </div>
           </form>
         </section>
 
@@ -73,15 +98,15 @@ const Pools: NextPage = () => {
           </h3>
         </div>
         {selectedPool && (
-          <Fragment>
-            <div className="grid grid-cols-1 lg:grid-cols-2 w-full gap-10 mb-5">
+          <div className="w-full">
+            <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-10 mb-5">
               <PoolDetails poolAddress={selectedPool} />
               <PoolActions />
             </div>
             <div className="w-full">
               <PoolComposition />
             </div>
-          </Fragment>
+          </div>
         )}
       </div>
     </div>
