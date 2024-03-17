@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import { useTheme } from "next-themes";
 import { Toaster } from "react-hot-toast";
@@ -45,16 +46,24 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
     setMounted(true);
   }, []);
 
+  const subgraphUri = "https://api.studio.thegraph.com/query/31386/balancer-v3-sepolia/version/latest";
+  const apolloClient = new ApolloClient({
+    uri: subgraphUri,
+    cache: new InMemoryCache(),
+  });
+
   return (
-    <WagmiConfig config={wagmiConfig}>
-      <ProgressBar />
-      <RainbowKitProvider
-        chains={appChains.chains}
-        avatar={BlockieAvatar}
-        theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
-      >
-        <ScaffoldEthApp>{children}</ScaffoldEthApp>
-      </RainbowKitProvider>
-    </WagmiConfig>
+    <ApolloProvider client={apolloClient}>
+      <WagmiConfig config={wagmiConfig}>
+        <ProgressBar />
+        <RainbowKitProvider
+          chains={appChains.chains}
+          avatar={BlockieAvatar}
+          theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
+        >
+          <ScaffoldEthApp>{children}</ScaffoldEthApp>
+        </RainbowKitProvider>
+      </WagmiConfig>
+    </ApolloProvider>
   );
 };

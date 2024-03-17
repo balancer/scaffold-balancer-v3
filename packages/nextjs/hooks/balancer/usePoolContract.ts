@@ -48,7 +48,7 @@ export const usePoolContract = (poolAddress: string) => {
         name,
         address: poolAddress,
         symbol,
-        totalSupply: totalSupply,
+        totalSupply,
         decimals,
         vaultAddress,
       } as Pool;
