@@ -7,7 +7,7 @@ import { IVaultExtension, TokenConfig, TokenType, IERC20, IRateProvider } from "
 
 /**
  * Register an already deployed pool on sepolia
- * @dev need to figure out TokenConfig's IRateProvider. Is it a contract that we need to deploy first?
+ * @dev need to figure out TokenConfig's IRateProvider. Is it a seperate contract that we need to deploy first?
  *
  * https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool
  * https://github.com/balancer/balancer-v3-monorepo/blob/ad6e2f7ad2fc0b54ff7eb5d704d6635a1ccc093b/pkg/interfaces/contracts/vault/IVaultExtension.sol#L58-L90

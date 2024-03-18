@@ -9,6 +9,9 @@ import deployedContractsData from "~~/contracts/deployedContracts";
 import { usePoolContract } from "~~/hooks/balancer";
 import scaffoldConfig from "~~/scaffold.config";
 
+/**
+ *
+ */
 const Pools: NextPage = () => {
   const [poolAddress, setPoolAddress] = useState<Address>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

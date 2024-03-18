@@ -6,6 +6,20 @@ import { usePoolContract } from "~~/hooks/balancer";
 
 /**
  * Display a pool's contract details
+ * @dev do we want to display any of the pool config details? -> https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpoolconfig
+ * 
+ * struct PoolConfig {
+    bool isPoolRegistered;
+    bool isPoolInitialized;
+    bool isPoolPaused;
+    bool isPoolInRecoveryMode;
+    bool hasDynamicSwapFee;
+    uint64 staticSwapFeePercentage; // stores an 18-decimal FP value (max FixedPoint.ONE)
+    uint24 tokenDecimalDiffs; // stores 18-(token decimals), for each token
+    uint32 pauseWindowEndTime;
+    PoolHooks hooks;
+    LiquidityManagement liquidityManagement;
+    }
  */
 export const PoolDetails = ({ poolAddress }: { poolAddress: string }) => {
   const { data: pool } = usePoolContract(poolAddress);
