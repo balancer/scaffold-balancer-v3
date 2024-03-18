@@ -22,15 +22,13 @@ export const PoolActions = () => {
       <h5 className="text-2xl font-bold mb-3">Actions</h5>
 
       <div className="w-full bg-base-200 rounded-xl">
-        <div className="flex border-b border-accent">
+        <div className="flex border-b-2 border-base-300">
           {Object.keys(tabs).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as Action)}
-              className={`py-3 flex-1 ${
-                activeTab === tab
-                  ? "bg-base-100 rounded-tl-lg rounded-tr-lg font-bold"
-                  : "border-b-4 border-transparent"
+              className={`py-3 flex-1 hover:font-bold ${
+                activeTab === tab ? "bg-base-100 rounded-tl-lg rounded-tr-lg" : ""
               } focus:outline-none`}
             >
               {tab}
