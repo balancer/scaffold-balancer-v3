@@ -46,7 +46,10 @@ yarn deploy --network sepolia
 
 1. Deploy a contract that inherits from `IBasePool` and `BalancerPoolToken` and impliments the three required functions: `onSwap`, `computeInvariant`, and `computeBalance`
    - [See docs on creating custom pool](https://docs-v3.balancer.fi/concepts/guides/create-custom-amm-with-novel-invariant.html#build-your-custom-amm)
-2. Register the pool with the `Vault` by calling `VaultExtension.registerPool` with the necessary arguments
+2. Register the pool with the `Vault` by calling `VaultExtension.registerPool`
+   - [See docs on `registerPool`](https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool)
+   - This is the step where the pool declares what tokens it will manage
+   - TODO: Decide on registering pools via script or frontend
 3. Initialize the pool with the `Vault` by calling `Router.initialize` with the necessary arguments
    - [See docs on`Router.initialize`](https://docs-v3.balancer.fi/concepts/router/overview.html#initialize)
 

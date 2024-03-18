@@ -10,6 +10,10 @@ temp
 cache
 artifacts
 
+#Foundry files
+cache_forge
+out
+
 #zkSync files
 artifacts-zk
 cache-zk

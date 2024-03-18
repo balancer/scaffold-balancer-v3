@@ -28,7 +28,17 @@ const Subgraph: NextPage = () => {
       <div className="max-w-screen-2xl mx-auto">
         <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
           <div className="mb-10">
-            <h1 className="text-3xl md:text-5xl font-bold my-10">📡 Subgraph</h1>
+            <div className="flex flex-wrap justify-between items-center">
+              <h1 className="text-3xl md:text-5xl font-bold my-10">📡 Subgraph</h1>
+              <a
+                href="https://api.studio.thegraph.com/proxy/31386/balancer-v3-sepolia/version/latest/graphql?query=query+AllPools+%7B%0A++pools+%7B%0A++++address%0A++++isInitialized%0A++++totalShares%0A++++tokens+%7B%0A++++++address%0A++++++balance%0A++++++name%0A++++++symbol%0A++++%7D%0A++%7D%0A%7D"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-accent rounded-lg"
+              >
+                Explore Subgraph
+              </a>
+            </div>
             <p className="text-xl">
               In order for end users to interact with a pool, the pool contract must first be indexed by Balancer&apos;s
               official subgraph. See all the pools currently indexed by the Balancer v3 sepolia subgraph below.
