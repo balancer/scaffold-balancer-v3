@@ -1,8 +1,12 @@
 # 🏗 Scaffold-Balancer
 
-A series of guides and a prototyping tools for creating custom pools that integrate with Balancer v3
+⚖️ Balancer is a decentralized automated market maker (AMM) protocol built on Ethereum that represents a flexible building block for programmable liquidity.
 
-## Requirements
+🛠️ This repo is a series of guides and a prototyping tools for creating custom pools that integrate with Balancer v3
+
+## Checkpoint 0: 📦 Environment 📚
+
+### Requirements
 
 Before you begin, you need to install the following tools:
 
@@ -10,7 +14,7 @@ Before you begin, you need to install the following tools:
 - Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
 - [Git](https://git-scm.com/downloads)
 
-## Quickstart
+### Quickstart
 
 1. Clone the repo
 
@@ -30,32 +34,52 @@ yarn install
 yarn start
 ```
 
-## Deploying Contracts
+📱 Open http://localhost:3000 to see the app.
 
-1. Set a `DEPLOYER_PRIVATE_KEY` in a `.env` at path `packagages/hardhat/.env`
+## Checkpoint 1: 🌊 Create A Custom Pool
 
-2. Run the deploy script\*
+### 1.1 Write a Custom Pool Contract
+
+- All custom pool contracts must inherit from `IBasePool` and `BalancerPoolToken` and impliment the three required functions: `onSwap`, `computeInvariant`, and `computeBalance`
+
+- Begin your journey by reading the [docs on creating a custom pool](https://docs-v3.balancer.fi/concepts/guides/create-custom-amm-with-novel-invariant.html#build-your-custom-amm)
+
+### 1.2 Modify the Deploy Script
+
+- You will need to modify the deploy script to use your desired contract names and constructor arguments. Deploy scripts can be found at `packages/hardhat/deploy`
+
+### 1.3 Deploying your Custom Pool
+
+- Set a `DEPLOYER_PRIVATE_KEY` in a `.env` at path `packagages/hardhat/.env` (Your PK must have testnet sepolia ETH)
+- Run the deploy script
 
 ```
 yarn deploy --network sepolia
 ```
 
-\*Whenever you deploy new contract the frontend will automatically update to point at the newly deployed contract
+👀 Notice that whenever you deploy new contract the scaffold eth frontend will automatically update to point at the newly deployed contract
 
-## How To Create Custom Pool
+### 1.4 Register the pool with the `Vault`
 
-1. Deploy a contract that inherits from `IBasePool` and `BalancerPoolToken` and impliments the three required functions: `onSwap`, `computeInvariant`, and `computeBalance`
-   - [See docs on creating custom pool](https://docs-v3.balancer.fi/concepts/guides/create-custom-amm-with-novel-invariant.html#build-your-custom-amm)
-2. Register the pool with the `Vault` by calling `VaultExtension.registerPool`
-   - [See docs on `registerPool`](https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool)
-   - This is the step where the pool declares what tokens it will manage
-   - TODO: Decide on registering pools via script or frontend
-3. Initialize the pool with the `Vault` by calling `Router.initialize` with the necessary arguments
-   - [See docs on`Router.initialize`](https://docs-v3.balancer.fi/concepts/router/overview.html#initialize)
+- The custom pool contract must be registered with the vault by calling `VaultExtension.registerPool`
+- This is the step where the pool declares what tokens it will manage
+- [👀 docs on `registerPool`](https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool)
 
-## How To Interact With A Custom Pool
+### 1.5 Initialize the Pool
 
-- The `Router` is the recommended entrypoint for all user operations
-  - [See Router Technical Description](https://docs-v3.balancer.fi/concepts/router/technical.html)
-- The `Router` provides functions for querying and executing `swap`, `add`, and `remove`
-  - [See Router API](https://docs-v3.balancer.fi/concepts/router/overview.html)
+- Initialize the pool with the `Vault` by calling `Router.initialize` with the necessary arguments
+- [👀 docs on`Router.initialize`](https://docs-v3.balancer.fi/concepts/router/overview.html#initialize)
+
+### 1.6 Interact with your custom pool
+
+- On the `localhost:3000/pools` page, select your custom pool from the dropdown
+- Review the pool details and composition post pool initialization
+- Try out executing a swap, join, and exit with your custom pool
+
+## Checkpoint 2: 🧭 Integrate pool with the Smart Order Router (SOR)
+
+TBD
+
+## Checkpoint 3: 📡 Integrate pool with the Balancer v3 Subgraph
+
+TBD
