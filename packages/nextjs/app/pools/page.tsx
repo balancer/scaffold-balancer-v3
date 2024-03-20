@@ -4,7 +4,7 @@ import { useState } from "react";
 import { PoolActions, PoolComposition, PoolDetails } from "./_components/";
 import type { NextPage } from "next";
 import { type Address, isAddress } from "viem";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import deployedContractsData from "~~/contracts/deployedContracts";
 import { usePoolContract } from "~~/hooks/balancer";
 import scaffoldConfig from "~~/scaffold.config";
@@ -13,10 +13,10 @@ import scaffoldConfig from "~~/scaffold.config";
  *
  */
 const Pools: NextPage = () => {
-  const [poolAddress, setPoolAddress] = useState<Address>("");
+  const [poolAddressInput, setPoolAddressInput] = useState<Address>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const isValidAddress = isAddress(poolAddress);
+  const isValidAddress = isAddress(poolAddressInput);
 
   const scaffoldPoolsRawData = deployedContractsData[scaffoldConfig.targetNetworks[0].id];
   const scaffoldPools = Object.entries(scaffoldPoolsRawData).map(([name, details]) => ({
@@ -32,8 +32,8 @@ const Pools: NextPage = () => {
     <div className="flex-grow bg-base-300">
       <div className="max-w-screen-2xl mx-auto">
         <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
-          <div className="pb-10">
-            <h1 className="text-3xl md:text-5xl font-bold my-10">🌊 Pools</h1>
+          <div className="pb-7">
+            <h1 className="text-3xl md:text-5xl font-bold my-7">🌊 Custom Pools</h1>
             <p className="text-xl my-0">
               Balancer is infinitely extensible to allow for any conceivable pool type with custom curves, logic,
               parameters, and more. Each pool deployed to balancer is its own smart contract. This tool allows you to
@@ -47,10 +47,10 @@ const Pools: NextPage = () => {
               <div
                 tabIndex={0}
                 role="button"
-                className="btn text-lg btn-accent w-96 font-normal"
+                className="btn text-lg btn-accent w-96 font-normal relative"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
-                Choose custom pool
+                <div>Choose custom pool</div> <ChevronDownIcon className="absolute top-4 right-5 w-5 h-5" />
               </div>
               <ul
                 tabIndex={0}
@@ -77,14 +77,14 @@ const Pools: NextPage = () => {
               className="flex flex-row items-center gap-2"
               onSubmit={event => {
                 event.preventDefault();
-                setSelectedPool(poolAddress);
-                setPoolAddress("");
+                setSelectedPool(poolAddressInput);
+                setPoolAddressInput("");
               }}
             >
               <div className="relative">
                 <input
-                  value={poolAddress}
-                  onChange={e => setPoolAddress(e.target.value)}
+                  value={poolAddressInput}
+                  onChange={e => setPoolAddressInput(e.target.value)}
                   className="input input-bordered bg-base-200 w-96 text-center pr-16"
                   placeholder="Search by contract addresss"
                 />
@@ -98,12 +98,13 @@ const Pools: NextPage = () => {
               </div>
             </form>
           </section>
-
-          <div className="flex w-full mb-3 overflow-auto">
-            <h3 className="font-extrabold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500">
+          <div className="text-center mb-3">
+            <h3 className="font-extrabold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500 mb-0">
               {pool?.name}
             </h3>
+            <h3 className="text-2xl text-base-100">{pool?.address}</h3>
           </div>
+
           {selectedPool && (
             <div className="w-full">
               <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-10 mb-5">
