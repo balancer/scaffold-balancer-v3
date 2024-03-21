@@ -33,24 +33,26 @@ export const PoolDetails = ({ poolAddress }: { poolAddress: string }) => {
   ];
   return (
     <div className="w-full">
-      <h5 className="text-2xl font-bold mb-3">Details</h5>
-      <div className="overflow-x-auto rounded-lg">
-        <table className="table text-lg">
-          <thead>
-            <tr className="text-lg bg-base-100 border-b border-accent">
-              <th className="border-r border-accent">Attribute</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody className="bg-base-200">
-            {detailsRows.map(({ attribute, detail }, index) => (
-              <tr key={attribute} className={`${index < detailsRows.length - 1 ? "border-b border-accent" : ""}`}>
-                <td className="border-r border-accent">{attribute}</td>
-                <td>{detail}</td>
+      <div className="overflow-x-auto rounded-lg bg-base-200 p-5">
+        <h5 className="text-xl font-bold mb-3">Pool Attributes</h5>
+        <div className="border border-base-100 rounded-lg">
+          <table className="table text-lg">
+            <thead>
+              <tr className="border-b border-base-100 text-base-content text-lg">
+                <th className="border-r border-base-100">Attribute</th>
+                <th>Details</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-base-200">
+              {detailsRows.map(({ attribute, detail }, index) => (
+                <tr key={attribute} className={`${index < detailsRows.length - 1 ? "border-b border-base-100" : ""}`}>
+                  <td className="border-r border-base-100">{attribute}</td>
+                  <td>{detail}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

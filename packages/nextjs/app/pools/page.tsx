@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PoolActions, PoolComposition, PoolDetails } from "./_components/";
+import { PoolActions, PoolComposition, PoolDetails, UserLiquidity } from "./_components/";
 import type { NextPage } from "next";
 import { type Address, isAddress } from "viem";
 import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
@@ -107,11 +107,12 @@ const Pools: NextPage = () => {
 
           {selectedPool && (
             <div className="w-full">
-              <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-10 mb-5">
-                <PoolComposition />
+              <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
+                <div className="flex flex-col gap-7">
+                  <UserLiquidity />
+                  <PoolComposition />
+                </div>
                 <PoolActions />
-              </div>
-              <div className="w-full">
                 <PoolDetails poolAddress={selectedPool} />
               </div>
             </div>
