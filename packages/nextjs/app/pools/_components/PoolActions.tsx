@@ -7,6 +7,8 @@ type Action = "Swap" | "Join" | "Exit";
 
 /**
  * Allow user to perform swap, join, and exit transactions with a pool
+ *
+ * inspirational demo 👉 https://docs.balancer.fi/tools/core/pools.html
  */
 export const PoolActions = () => {
   const [activeTab, setActiveTab] = useState<Action>("Swap");

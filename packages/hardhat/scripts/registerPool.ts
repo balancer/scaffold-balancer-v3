@@ -33,31 +33,31 @@ async function main() {
     {
       token: "0xB77EB1A70A96fDAAeB31DB1b42F2b8b5846b2613", // sepoliaDAI
       tokenType: 0, // STANDARD
-      rateProvider: "???", // contract address that satisfies IRateProvider?
+      rateProvider: "0x0000000000000000000000000000000000000000", // https://docs-v3.balancer.fi/reference/contracts/rate-providers.html#none-of-the-assets
       yieldFeeExempt: false,
     },
     {
       token: "0x80D6d3946ed8A1Da4E226aa21CCdDc32bd127d1A", // sepoliaUSDC
       tokenType: 0, // STANDARD
-      rateProvider: "???", // contract address that satisfies IRateProvider?
+      rateProvider: "0x0000000000000000000000000000000000000000", // https://docs-v3.balancer.fi/reference/contracts/rate-providers.html#none-of-the-assets
       yieldFeeExempt: false,
     },
   ];
-  const pauseWindowEndTime = 0; // The timestamp after which it is no longer possible to pause the pool
-  const pauseManager = hre.ethers.ZeroAddress; // Optional contract the Vault will allow to pause the pool
-  const hookConfig = [
-    // Flags indicating which hooks the pool supports
-    {
-      shouldCallBeforeInitialize: false,
-      shouldCallAfterInitialize: false,
-      shouldCallBeforeSwap: false,
-      shouldCallAfterSwap: false,
-      shouldCallBeforeAddLiquidity: false,
-      shouldCallAfterAddLiquidity: false,
-      shouldCallBeforeRemoveLiquidity: false,
-      shouldCallAfterRemoveLiquidity: false,
-    },
-  ];
+  // The timestamp after which it is no longer possible to pause the pool
+  const pauseWindowEndTime = 0;
+  // Optional contract the Vault will allow to pause the pool
+  const pauseManager = hre.ethers.ZeroAddress;
+  // Flags indicating which hooks the pool supports
+  const hookConfig = {
+    shouldCallBeforeInitialize: false,
+    shouldCallAfterInitialize: false,
+    shouldCallBeforeSwap: false,
+    shouldCallAfterSwap: false,
+    shouldCallBeforeAddLiquidity: false,
+    shouldCallAfterAddLiquidity: false,
+    shouldCallBeforeRemoveLiquidity: false,
+    shouldCallAfterRemoveLiquidity: false,
+  };
   const liquidityManagement = {
     supportsAddLiquidityCustom: false,
     supportsRemoveLiquidityCustom: false,
