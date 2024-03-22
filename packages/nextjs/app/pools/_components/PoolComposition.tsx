@@ -1,11 +1,16 @@
 // import { SkeletonLoader } from "~~/components/common";
+import { useVaultContract } from "~~/hooks/balancer";
 
 /**
  * Display a pool's token composition including the tokens' address, balance, and weight
  *
  * https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#pool-information
  */
-export const PoolComposition = () => {
+export const PoolComposition = ({ poolAddress }: { poolAddress: string }) => {
+  const { data: pool } = useVaultContract(poolAddress);
+
+  console.log("useVaultContract", pool);
+
   return (
     <div className="w-full flex flex-col">
       <div className="bg-base-200 p-4 rounded-lg ">

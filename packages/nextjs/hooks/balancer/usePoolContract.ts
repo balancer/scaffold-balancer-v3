@@ -9,6 +9,8 @@ import {
 
 /**
  * Read a pool contract's details
+ * @dev the pool contract only contains basic information relating to the BPT token
+ * all the data about the pool's assets is stored in the vault contract
  */
 export const usePoolContract = (poolAddress: string) => {
   const client = usePublicClient();

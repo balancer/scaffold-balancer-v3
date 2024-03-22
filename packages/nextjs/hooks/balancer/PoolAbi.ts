@@ -1,6 +1,6 @@
 /**
  * @dev Not sure if this ABI will work for all pool contracts?
- * Ripped from compilation of one of the pools deployed through scaffold eth
+ * Ripped from compilation of one of the custom pools deployed through scaffold eth
  */
 export const PoolAbi = [
   {

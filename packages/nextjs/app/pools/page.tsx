@@ -110,7 +110,7 @@ const Pools: NextPage = () => {
               <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
                 <div className="flex flex-col gap-7">
                   <UserLiquidity />
-                  <PoolComposition />
+                  <PoolComposition poolAddress={selectedPool} />
                 </div>
                 <PoolActions />
                 <PoolAttributes poolAddress={selectedPool} />

@@ -1505,7 +1505,7 @@ const externalContracts = {
         },
       ],
     },
-    VaulExtension: {
+    VaultExtension: {
       address: "0x718e1176f01dDBb2409A77B2847B749c8dF4457f",
       abi: [
         {
