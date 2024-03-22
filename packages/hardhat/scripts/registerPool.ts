@@ -31,9 +31,9 @@ async function main() {
   const [signer] = await hre.ethers.getSigners();
   const vaultExtension = await hre.ethers.getContractAt(vaultExtensionAbi, balancer.vaultExtensionAddr, signer);
 
-  /*****************************
-   *  args for registerPool    *
-   *****************************/
+  /////////////////////////////
+  // args for registerPool  //
+  //////////////////////////
   // 1. Address of pool to register
   const { target: poolAddress } = await hre.ethers.getContract<Contract>(customPool.name, signer);
   // 2. An array of descriptors for the tokens the pool will manage.
@@ -59,6 +59,9 @@ async function main() {
     supportsRemoveLiquidityCustom: false,
   };
 
+  ////////////////////////
+  // send register tx  //
+  //////////////////////
   console.log("Sending tx to register pool...");
   const txResponse = await vaultExtension.registerPool(
     poolAddress,

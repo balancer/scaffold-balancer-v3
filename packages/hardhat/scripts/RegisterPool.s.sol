@@ -29,9 +29,12 @@ contract RegisterPool is Script {
 		uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
 		vm.startBroadcast(deployerPrivateKey);
 
-		// args for registerPool()
+		/////////////////////////////
+		// args for registerPool  //
+		//////////////////////////
+		// 1. Address of pool to register
 		address pool = 0x37495BE0Af7B427Ddb9C504cE53617F9F04620aD;
-		// An array of descriptors for the tokens the pool will manage.
+		// 2. An array of descriptors for the tokens the pool will manage.
 		TokenConfig[] memory tokenConfig = new TokenConfig[](2);
 		tokenConfig[0] = TokenConfig({
 			token: IERC20(sepoliaDAI),
@@ -45,11 +48,11 @@ contract RegisterPool is Script {
 			rateProvider: IRateProvider(address(0)),
 			yieldFeeExempt: false
 		});
-		// The timestamp after which it is no longer possible to pause the pool
+		// 3. The timestamp after which it is no longer possible to pause the pool
 		uint256 pauseWindowEndTime = 0;
-		// Optional contract the Vault will allow to pause the pool
+		// 4. Optional contract the Vault will allow to pause the pool
 		address pauseManager = address(0);
-		// Flags indicating which hooks the pool supports
+		// 5. Flags indicating which hooks the pool supports
 		PoolHooks memory hookConfig = PoolHooks({
 			shouldCallBeforeInitialize: false,
 			shouldCallAfterInitialize: false,
@@ -60,12 +63,15 @@ contract RegisterPool is Script {
 			shouldCallBeforeRemoveLiquidity: false,
 			shouldCallAfterRemoveLiquidity: false
 		});
-		// Liquidity management flags with implemented methods
+		// 6. Liquidity management flags with implemented methods
 		LiquidityManagement memory liquidityManagement = LiquidityManagement({
 			supportsAddLiquidityCustom: false,
 			supportsRemoveLiquidityCustom: false
 		});
-		// register the pool with the vault
+
+		////////////////////////
+		// send register tx  //
+		//////////////////////
 		vaultExtension.registerPool(
 			pool,
 			tokenConfig,

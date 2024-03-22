@@ -6,7 +6,7 @@
 
 ## Checkpoint 0: 📦 Environment 📚
 
-### Requirements
+### 0.1 Requirements
 
 Before you begin, you need to install the following tools:
 
@@ -14,7 +14,7 @@ Before you begin, you need to install the following tools:
 - Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
 - [Git](https://git-scm.com/downloads)
 
-### Quickstart
+### 0.2 Quickstart
 
 1. Clone the repo
 
@@ -36,7 +36,7 @@ yarn start
 
 📱 Open http://localhost:3000 to see the app.
 
-### Set Environment Variables
+### 0.3 Set Environment Variables
 
 In order to deploy new custom pool contracts on sepolia and execute scripts, you must set a `DEPLOYER_PRIVATE_KEY` at the path `packagages/hardhat/.env` (And your PK must have testnet sepolia ETH)
 
@@ -63,14 +63,13 @@ yarn deploy --network sepolia
 
 👀 Notice that whenever you deploy new contract the scaffold eth frontend will automatically update to point at the newly deployed contract
 
-### 1.4 Register a new pool with the `Vault`
+### 1.4 Register a new pool with the Vault
 
-Before your pool can be initialized, you must first register it with the Vault. This is the step where the pool declares what tokens it will manage, which hooks the pool supports, and other configuration.
+Before a pool can be initialized, it must be registered with the Vault. This is the step where the pool declares what tokens it will manage, which hooks the pool supports, and other configuration.
 
-1. From the terminal, move into the `packages/hardhat` directory
-2. Modify the `registerPool.ts` script and `helper.config.ts` file
-   - [👀 docs on `registerPool`](https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool)
-3. Execute the script
+1. Modify the `registerPool.ts` script and `helper.config.ts` file with your desired `registerPool` args
+   - [👀 docs on `VaultExtension.registerPool`](https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool)
+2. From the terminal, move into the `packages/hardhat` directory and execute the script
 
 ```
 yarn hardhat run scripts/registerPool.ts --network sepolia
@@ -78,8 +77,15 @@ yarn hardhat run scripts/registerPool.ts --network sepolia
 
 ### 1.5 Initialize the Pool
 
-- Initialize the pool with the `Vault` by calling `Router.initialize` with the necessary arguments
-- [👀 docs on`Router.initialize`](https://docs-v3.balancer.fi/concepts/router/overview.html#initialize)
+1. Modify the `initializePool.ts` script with your desired `initialize` args
+
+   - [👀 docs on`Router.initialize`](https://docs-v3.balancer.fi/concepts/router/overview.html#initialize)
+
+2. From the terminal, move into the `packages/hardhat` directory and execute the script
+
+```
+yarn hardhat run scripts/initializePool.ts --network sepolia
+```
 
 ### 1.6 Interact with your custom pool
 

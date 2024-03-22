@@ -33,13 +33,15 @@ const networkConfig: { [key: number]: NetworkConfigEntryTypes } = {
         {
           token: "0xB77EB1A70A96fDAAeB31DB1b42F2b8b5846b2613", // sepoliaDAI
           tokenType: 0, // STANDARD
-          rateProvider: "0x0000000000000000000000000000000000000000", // https://docs-v3.balancer.fi/reference/contracts/rate-providers.html#none-of-the-assets
+          // https://docs-v3.balancer.fi/reference/contracts/rate-providers.html#none-of-the-assets
+          rateProvider: "0x0000000000000000000000000000000000000000",
           yieldFeeExempt: false,
         },
         {
           token: "0x80D6d3946ed8A1Da4E226aa21CCdDc32bd127d1A", // sepoliaUSDC
           tokenType: 0, // STANDARD
-          rateProvider: "0x0000000000000000000000000000000000000000", // https://docs-v3.balancer.fi/reference/contracts/rate-providers.html#none-of-the-assets
+          // https://docs-v3.balancer.fi/reference/contracts/rate-providers.html#none-of-the-assets
+          rateProvider: "0x0000000000000000000000000000000000000000",
           yieldFeeExempt: false,
         },
       ],
