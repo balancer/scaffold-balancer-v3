@@ -5,21 +5,11 @@ import { Address } from "~~/components/scaffold-eth";
 import { usePoolContract } from "~~/hooks/balancer";
 
 /**
- * Display a pool's attritubes 
- * @dev do we want to display any of the pool config details? -> https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpoolconfig
- * 
- * struct PoolConfig {
-    bool isPoolRegistered;
-    bool isPoolInitialized;
-    bool isPoolPaused;
-    bool isPoolInRecoveryMode;
-    bool hasDynamicSwapFee;
-    uint64 staticSwapFeePercentage; // stores an 18-decimal FP value (max FixedPoint.ONE)
-    uint24 tokenDecimalDiffs; // stores 18-(token decimals), for each token
-    uint32 pauseWindowEndTime;
-    PoolHooks hooks;
-    LiquidityManagement liquidityManagement;
-    }
+ * Display a pool's attritubes
+ *
+ * @dev do we want to display any of the pool config details?
+ * https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpoolconfig
+ * https://github.com/balancer/balancer-v3-monorepo/blob/48435cb1e0acb212a4103a6bedd2271e94174a01/pkg/interfaces/contracts/vault/VaultTypes.sol#L25-L37
  */
 export const PoolAttributes = ({ poolAddress }: { poolAddress: string }) => {
   const { data: pool } = usePoolContract(poolAddress);
