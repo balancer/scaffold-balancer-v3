@@ -3,12 +3,16 @@ import { networkConfig } from "../helper.config";
 import { Contract } from "ethers";
 
 /**
+ * Register an already deployed pool on sepolia
+ *
+ * balancer docs
+ * https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool
+ *
  * registerPool function
  * https://github.com/balancer/balancer-v3-monorepo/blob/2ad8501c85e8afb2f25d970344af700a571b1d0b/pkg/vault/contracts/VaultExtension.sol#L130-L149
  *
  * VaultTypes (TokenType, TokenConfig, IRateProvider)
  * https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/interfaces/contracts/vault/VaultTypes.sol
- *
  */
 async function main() {
   const privateKey = process.env.DEPLOYER_PRIVATE_KEY;
