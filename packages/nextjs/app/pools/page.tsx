@@ -10,14 +10,10 @@ import { usePoolContract } from "~~/hooks/balancer";
 import scaffoldConfig from "~~/scaffold.config";
 
 /**
- *
+ * Page for viewing custom pool data and performing actions (swap, join, exit) on a pool
  */
 const Pools: NextPage = () => {
-  const [poolAddressInput, setPoolAddressInput] = useState<Address>("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  const isValidAddress = isAddress(poolAddressInput);
-
+  // Grab custom pool contract info for pools deployed through scaffold-eth
   const scaffoldPoolsRawData = deployedContractsData[scaffoldConfig.targetNetworks[0].id];
   const scaffoldPools = Object.entries(scaffoldPoolsRawData).map(([name, details]) => ({
     name,
@@ -25,7 +21,6 @@ const Pools: NextPage = () => {
   }));
 
   const [selectedPool, setSelectedPool] = useState<Address>(scaffoldPools[0].address);
-
   const { data: pool } = usePoolContract(selectedPool);
 
   return (
@@ -42,62 +37,8 @@ const Pools: NextPage = () => {
             </p>
           </div>
 
-          <section className="flex justify-center flex-wrap gap-5 w-full mb-5 items-center text-xl py-5 border-b border-t border-base-100">
-            <div className={`dropdown dropdown-end ${isDropdownOpen ? "dropdown-open" : ""}`}>
-              <div
-                tabIndex={0}
-                role="button"
-                className="btn text-lg btn-accent w-96 font-normal relative"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              >
-                <div>Choose custom pool</div> <ChevronDownIcon className="absolute top-4 right-5 w-5 h-5" />
-              </div>
-              <ul
-                tabIndex={0}
-                className={`dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-3 ${
-                  !isDropdownOpen ? "hidden" : ""
-                }`}
-              >
-                {scaffoldPools.map(pool => (
-                  <li key={pool.name}>
-                    <button
-                      onClick={() => {
-                        setSelectedPool(pool.address);
-                        setIsDropdownOpen(false); // Close the dropdown
-                      }}
-                    >
-                      {pool.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>OR</div>
-            <form
-              className="flex flex-row items-center gap-2"
-              onSubmit={event => {
-                event.preventDefault();
-                setSelectedPool(poolAddressInput);
-                setPoolAddressInput("");
-              }}
-            >
-              <div className="relative">
-                <input
-                  value={poolAddressInput}
-                  onChange={e => setPoolAddressInput(e.target.value)}
-                  className="input input-bordered bg-base-200 w-96 text-center pr-16"
-                  placeholder="Search by contract addresss"
-                />
-                <button
-                  className="btn btn-sm btn-accent absolute top-2 right-3 "
-                  type="submit"
-                  disabled={!isValidAddress}
-                >
-                  <MagnifyingGlassIcon className="h-5 w-5" />
-                </button>
-              </div>
-            </form>
-          </section>
+          <PoolSelector scaffoldPools={scaffoldPools} setSelectedPool={setSelectedPool} />
+
           <div className="text-center mb-5 border-base-100">
             <h3 className="font-extrabold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500 mb-0">
               {pool?.name}
@@ -124,3 +65,67 @@ const Pools: NextPage = () => {
 };
 
 export default Pools;
+
+/**
+ * The dropdown selector for internal custom pool and the external pool address input
+ */
+const PoolSelector = ({ scaffoldPools, setSelectedPool }: { scaffoldPools: any; setSelectedPool: any }) => {
+  const [poolAddressInput, setPoolAddressInput] = useState<Address>("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const isValidAddress = isAddress(poolAddressInput);
+  return (
+    <section className="flex justify-center flex-wrap gap-5 w-full mb-5 items-center text-xl py-5 border-b border-t border-base-100">
+      <div className={`dropdown dropdown-end ${isDropdownOpen ? "dropdown-open" : ""}`}>
+        <div
+          tabIndex={0}
+          role="button"
+          className="btn text-lg btn-accent w-96 font-normal relative"
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        >
+          <div>Choose custom pool</div> <ChevronDownIcon className="absolute top-4 right-5 w-5 h-5" />
+        </div>
+        <ul
+          tabIndex={0}
+          className={`dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-3 ${
+            !isDropdownOpen ? "hidden" : ""
+          }`}
+        >
+          {scaffoldPools.map((pool: any) => (
+            <li key={pool.name}>
+              <button
+                onClick={() => {
+                  setSelectedPool(pool.address);
+                  setIsDropdownOpen(false); // Close the dropdown
+                }}
+              >
+                {pool.name}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>OR</div>
+      <form
+        className="flex flex-row items-center gap-2"
+        onSubmit={event => {
+          event.preventDefault();
+          setSelectedPool(poolAddressInput);
+          setPoolAddressInput("");
+        }}
+      >
+        <div className="relative">
+          <input
+            value={poolAddressInput}
+            onChange={e => setPoolAddressInput(e.target.value)}
+            className="input input-bordered bg-base-200 w-96 text-center pr-16"
+            placeholder="Search by contract addresss"
+          />
+          <button className="btn btn-sm btn-accent absolute top-2 right-3 " type="submit" disabled={!isValidAddress}>
+            <MagnifyingGlassIcon className="h-5 w-5" />
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+};
