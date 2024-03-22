@@ -36,6 +36,10 @@ yarn start
 
 📱 Open http://localhost:3000 to see the app.
 
+### Set Environment Variables
+
+In order to deploy new custom pool contracts on sepolia and execute scripts, you must set a `DEPLOYER_PRIVATE_KEY` at the path `packagages/hardhat/.env` (And your PK must have testnet sepolia ETH)
+
 ## Checkpoint 1: 🌊 Create A Custom Pool
 
 ### 1.1 Write a Custom Pool Contract
@@ -46,11 +50,11 @@ yarn start
 
 ### 1.2 Modify the Deploy Script
 
-- You will need to modify the deploy script to use your desired contract names and constructor arguments. Deploy scripts can be found at `packages/hardhat/deploy`
+- You must modify the deploy script to match your custom pool contract names and constructor arguments
+- Deploy scripts can be found at `packages/hardhat/deploy`
 
 ### 1.3 Deploying your Custom Pool
 
-- Set a `DEPLOYER_PRIVATE_KEY` in a `.env` at path `packagages/hardhat/.env` (Your PK must have testnet sepolia ETH)
 - Run the deploy script
 
 ```
@@ -59,11 +63,18 @@ yarn deploy --network sepolia
 
 👀 Notice that whenever you deploy new contract the scaffold eth frontend will automatically update to point at the newly deployed contract
 
-### 1.4 Register the pool with the `Vault`
+### 1.4 Register a new pool with the `Vault`
 
-- The custom pool contract must be registered with the vault by calling `VaultExtension.registerPool`
-- This is the step where the pool declares what tokens it will manage
-- [👀 docs on `registerPool`](https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool)
+Before your pool can be initialized, you must first register it with the Vault. This is the step where the pool declares what tokens it will manage, which hooks the pool supports, and other configuration.
+
+1. From the terminal, move into the `packages/hardhat` directory
+2. Modify the `registerPool.ts` script and `helper.config.ts` file
+   - [👀 docs on `registerPool`](https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool)
+3. Execute the script
+
+```
+yarn hardhat run scripts/registerPool.ts --network sepolia
+```
 
 ### 1.5 Initialize the Pool
 
