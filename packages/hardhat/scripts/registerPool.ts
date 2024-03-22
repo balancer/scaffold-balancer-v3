@@ -26,32 +26,23 @@ async function main() {
   const chainId = Number(await hre.ethers.provider.getNetwork().then(network => network.chainId));
 
   // grab the VaultExtension contract
-  const { vaultExtensionAddr } = networkConfig[chainId].balancer;
+  const { balancer, customPool } = networkConfig[chainId];
   const { abi: vaultExtensionAbi } = await hre.artifacts.readArtifact("IVaultExtension");
   const [signer] = await hre.ethers.getSigners();
-  const vaultExtension = await hre.ethers.getContractAt(vaultExtensionAbi, vaultExtensionAddr, signer);
+  const vaultExtension = await hre.ethers.getContractAt(vaultExtensionAbi, balancer.vaultExtensionAddr, signer);
 
-  // args for registerPool
-  const { target: poolAddress } = await hre.ethers.getContract<Contract>("ConstantPricePool", signer);
-  const tokenConfig = [
-    {
-      token: "0xB77EB1A70A96fDAAeB31DB1b42F2b8b5846b2613", // sepoliaDAI
-      tokenType: 0, // STANDARD
-      rateProvider: "0x0000000000000000000000000000000000000000", // https://docs-v3.balancer.fi/reference/contracts/rate-providers.html#none-of-the-assets
-      yieldFeeExempt: false,
-    },
-    {
-      token: "0x80D6d3946ed8A1Da4E226aa21CCdDc32bd127d1A", // sepoliaUSDC
-      tokenType: 0, // STANDARD
-      rateProvider: "0x0000000000000000000000000000000000000000", // https://docs-v3.balancer.fi/reference/contracts/rate-providers.html#none-of-the-assets
-      yieldFeeExempt: false,
-    },
-  ];
-  // The timestamp after which it is no longer possible to pause the pool
+  /*****************************
+   *  args for registerPool    *
+   *****************************/
+  // 1. Address of pool to register
+  const { target: poolAddress } = await hre.ethers.getContract<Contract>(customPool.name, signer);
+  // 2. An array of descriptors for the tokens the pool will manage.
+  const tokenConfig = customPool.tokenConfig;
+  // 3. The timestamp after which it is no longer possible to pause the pool
   const pauseWindowEndTime = 0;
-  // Optional contract the Vault will allow to pause the pool
+  // 4. Optional contract the Vault will allow to pause the pool
   const pauseManager = hre.ethers.ZeroAddress;
-  // Flags indicating which hooks the pool supports
+  // 5. Flags indicating which hooks the pool supports
   const hookConfig = {
     shouldCallBeforeInitialize: false,
     shouldCallAfterInitialize: false,
@@ -62,6 +53,7 @@ async function main() {
     shouldCallBeforeRemoveLiquidity: false,
     shouldCallAfterRemoveLiquidity: false,
   };
+  // 6. Liquidity management flags with implemented methods
   const liquidityManagement = {
     supportsAddLiquidityCustom: false,
     supportsRemoveLiquidityCustom: false,
