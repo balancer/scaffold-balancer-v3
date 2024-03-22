@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PoolActions, PoolComposition, PoolDetails, UserLiquidity } from "./_components/";
+import { PoolActions, PoolAttributes, PoolComposition, UserLiquidity } from "./_components/";
 import type { NextPage } from "next";
 import { type Address, isAddress } from "viem";
 import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
@@ -98,7 +98,7 @@ const Pools: NextPage = () => {
               </div>
             </form>
           </section>
-          <div className="text-center py-5 border-b border-t border-base-100">
+          <div className="text-center mb-5 border-base-100">
             <h3 className="font-extrabold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500 mb-0">
               {pool?.name}
             </h3>
@@ -113,7 +113,7 @@ const Pools: NextPage = () => {
                   <PoolComposition />
                 </div>
                 <PoolActions />
-                <PoolDetails poolAddress={selectedPool} />
+                <PoolAttributes poolAddress={selectedPool} />
               </div>
             </div>
           )}

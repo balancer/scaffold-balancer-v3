@@ -11,12 +11,11 @@ import "./vault/BalancerPoolToken.sol";
  * @notice CURRENTLY A WIP. This is an example custom pool implementation used.
  */
 contract ConstantPricePool is IBasePool, BalancerPoolToken {
-
 	constructor(
 		IVault vault,
 		string memory name,
 		string memory symbol
-	) BalancerPoolToken(vault, name, symbol)  {}
+	) BalancerPoolToken(vault, name, symbol) {}
 
 	/**
 	 * @notice Execute a swap in the pool.
@@ -58,18 +57,16 @@ contract ConstantPricePool is IBasePool, BalancerPoolToken {
 
 		newBalance =
 			(balancesLiveScaled18[tokenInIndex] +
-				invariant * (invariantRatio)) -
+				invariant *
+				(invariantRatio)) -
 			invariant;
 	}
 
 	/**
-     * @notice Gets the tokens registered to a pool.
-     * @dev Delegated to the Vault; added here as a convenience, mainly for off-chain processes.
+	 * @notice Gets the tokens registered to a pool.
+	 * @dev Delegated to the Vault; added here as a convenience, mainly for off-chain processes.
 	 * @dev TODO - left blank for now, but for finished example w/ scaffoldBalancer we need to implement this correctly.
-     * @return tokens List of tokens in the pool
-     */
-	function getPoolTokens() external view returns (IERC20[] memory tokens) {
-		
-	}
-
+	 * @return tokens List of tokens in the pool
+	 */
+	function getPoolTokens() external view returns (IERC20[] memory tokens) {}
 }

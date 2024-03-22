@@ -1,4 +1,4 @@
 export * from "./PoolActions";
 export * from "./PoolComposition";
-export * from "./PoolDetails";
+export * from "./PoolAttributes";
 export * from "./UserLiquidity";

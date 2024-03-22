@@ -5,7 +5,7 @@ import { Address } from "~~/components/scaffold-eth";
 import { usePoolContract } from "~~/hooks/balancer";
 
 /**
- * Display a pool's contract details
+ * Display a pool's attritubes 
  * @dev do we want to display any of the pool config details? -> https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpoolconfig
  * 
  * struct PoolConfig {
@@ -21,7 +21,7 @@ import { usePoolContract } from "~~/hooks/balancer";
     LiquidityManagement liquidityManagement;
     }
  */
-export const PoolDetails = ({ poolAddress }: { poolAddress: string }) => {
+export const PoolAttributes = ({ poolAddress }: { poolAddress: string }) => {
   const { data: pool } = usePoolContract(poolAddress);
 
   const detailsRows = [
@@ -35,24 +35,16 @@ export const PoolDetails = ({ poolAddress }: { poolAddress: string }) => {
     <div className="w-full">
       <div className="overflow-x-auto rounded-lg bg-base-200 p-5">
         <h5 className="text-xl font-bold mb-3">Pool Attributes</h5>
-
         <div className="border border-base-100 rounded-lg">
-          <table className="table text-lg">
-            {/* <thead>
-              <tr className="text-lg border-b border-base-100 text-base-content">
-                <th className="border-r border-base-100">Attribute</th>
-                <th>Details</th>
-              </tr>
-            </thead> */}
-            <tbody className="bg-base-200">
-              {detailsRows.map(({ attribute, detail }, index) => (
-                <tr key={attribute} className={`${index < detailsRows.length - 1 ? "border-b border-base-100" : ""}`}>
-                  <td>{attribute}</td>
-                  <td>{detail}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {detailsRows.map(({ attribute, detail }, index) => (
+            <div
+              key={attribute}
+              className={`p-3 grid grid-cols-2 ${index == detailsRows.length - 1 ? "" : "border-b border-base-100"}`}
+            >
+              <div>{attribute}</div>
+              <div>{detail}</div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
