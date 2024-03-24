@@ -9,26 +9,10 @@ import {TestAddresses} from "../test/utils/TestAddresses.sol";
 // import {TestAddresses} from  "packages/hardhat/test/utils/TestAddresses.sol";
 
 /**
- * TODO - Steve, move this blob of comments to the PR once I make a dev branch, and a feature branch and a PR to fix the deployment script onto said dev branch.
- * TODO - where I left off STEVE --> I gotta debug the dependencies / mappings cause I'm trying to use TestAddresses.sol (a new contract I made to make things cleaner) Ultimately though, I just need to test if IVault(vaultAddress).registerPool() works instead of calling IVaultExtension.registerPool()
- * 
- * Register an already deployed pool on sepolia
- *
- * balancer docs
- * https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool
- *
- * registerPool function
- * https://github.com/balancer/balancer-v3-monorepo/blob/2ad8501c85e8afb2f25d970344af700a571b1d0b/pkg/vault/contracts/VaultExtension.sol#L130-L149
- *
- * VaultTypes (TokenType, TokenConfig, IRateProvider)
- * https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/interfaces/contracts/vault/VaultTypes.sol
- */
-
-/**
  * @title RegisterPool Script
  * @author BUIDL GUIDL (placeholder)
  * @notice The script registers a pool with the BalancerV3 Vault on sepolia 
- * @dev This is in the early WIP stage, so we are working with already deployed pools for now. See PR # for context on related docs, code blobs, etc.
+ * @dev This is in the early WIP stage, so we are working with already deployed pools for now. See PR#13 for context on related docs, code blobs, etc.
  */
 contract RegisterPool is TestAddresses, Script {
 	// IVaultExtension constant vaultExtension =
