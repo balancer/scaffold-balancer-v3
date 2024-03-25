@@ -65,15 +65,35 @@ yarn deploy --network sepolia
 
 ### 1.4 Register a new pool with the Vault
 
+#### 1.4.1 Using Hardhat
+
 Before a pool can be initialized, it must be registered with the Vault. This is the step where the pool declares what tokens it will manage, which hooks the pool supports, and other configuration.
 
 1. Modify the `registerPool.ts` script and `helper.config.ts` file with your desired `registerPool` args
    - [👀 docs on `VaultExtension.registerPool`](https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool)
-2. From the terminal, move into the `packages/hardhat` directory and execute the script
+2. From the terminal, move into the `packages/hardhat` directory.
+3. Execute the script
 
 ```
 yarn hardhat run scripts/registerPool.ts --network sepolia
 ```
+
+### 1.4.2 Using Foundry
+<!-- 3. Install any submodules. If you have not installed the submodules, probably because you ran `git clone <repo link>`, you may run into errors when running `forge build` since it is looking for the dependencies for the project. `git submodule update --init --recursive` can be used if you clone the repo without installing the submodules. -->
+
+
+1. While still in the same directory, install forge on your machine if you have not already: `forge install`
+
+
+  > NOTE: If you need to download the latest version of foundry, just run `foundryup`
+
+2. Run the following CLI command (assuming `.env` is populated appropriately) to simulate registering the pool in question with the vault.
+
+`source .env && forge script scripts/RegisterPool.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
+
+3. Run the following CLI command to deploy the script.
+
+`source .env && forge script scripts/RegisterPool.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast`
 
 ### 1.5 Initialize the Pool
 
