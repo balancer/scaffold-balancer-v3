@@ -65,46 +65,51 @@ yarn deploy --network sepolia
 
 ### 1.4 Register a new pool with the Vault
 
-#### 1.4.1 Using Hardhat
-
 Before a pool can be initialized, it must be registered with the Vault. This is the step where the pool declares what tokens it will manage, which hooks the pool supports, and other configuration.
 
-1. Modify the `registerPool.ts` script and `helper.config.ts` file with your desired `registerPool` args
-   - [👀 docs on `VaultExtension.registerPool`](https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool)
-2. From the terminal, move into the `packages/hardhat` directory.
-3. Execute the script
+1. From the terminal, move into the `packages/hardhat` directory
 
-```
-yarn hardhat run scripts/registerPool.ts --network sepolia
-```
-
-### 1.4.2 Using Foundry
+2. While still in the same directory, install forge on your machine if you have not already: `forge install`
 <!-- 3. Install any submodules. If you have not installed the submodules, probably because you ran `git clone <repo link>`, you may run into errors when running `forge build` since it is looking for the dependencies for the project. `git submodule update --init --recursive` can be used if you clone the repo without installing the submodules. -->
 
+> NOTE: If you need to download the latest version of foundry, just run `foundryup`
 
-1. While still in the same directory, install forge on your machine if you have not already: `forge install`
+3. Modify the `RegisterPool.s.sol` script with your desired `registerPool` args
 
+   - [👀 docs on `VaultExtension.registerPool`](https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool)
 
-  > NOTE: If you need to download the latest version of foundry, just run `foundryup`
+4. Run the following CLI command (assuming `.env` is populated appropriately) to simulate registering the pool in question with the vault
 
-2. Run the following CLI command (assuming `.env` is populated appropriately) to simulate registering the pool in question with the vault.
+```
+make registerPool
+```
 
-`source .env && forge script scripts/RegisterPool.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
+5. Run the following CLI command to actually send the register pool transaction
 
-3. Run the following CLI command to deploy the script.
-
-`source .env && forge script scripts/RegisterPool.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast`
+```
+make registerPool FLAGS="--broadcast"
+```
 
 ### 1.5 Initialize the Pool
 
-1. Modify the `initializePool.ts` script with your desired `initialize` args
+This is the step where initial liquidity is added to your custom pool, after which users will be able to swap, join, and exit.
+
+1. From the terminal, move into the `packages/hardhat` directory
+
+2. Modify the `InitializePool.s.sol` script with your desired `initialize` args
 
    - [👀 docs on`Router.initialize`](https://docs-v3.balancer.fi/concepts/router/overview.html#initialize)
 
-2. From the terminal, move into the `packages/hardhat` directory and execute the script
+3. Run the following CLI command (assuming `.env` is populated appropriately) to simulate intializing the custom pool
 
 ```
-yarn hardhat run scripts/initializePool.ts --network sepolia
+make initializePool
+```
+
+4. Run the following CLI command to actually send the initialize pool transaction
+
+```
+make initializePool FLAGS="--broadcast"
 ```
 
 ### 1.6 Interact with your custom pool
@@ -120,5 +125,3 @@ TBD
 ## Checkpoint 3: 📡 Integrate pool with the Balancer v3 Subgraph
 
 TBD
-
-test
