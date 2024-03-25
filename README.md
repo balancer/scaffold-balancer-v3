@@ -100,3 +100,5 @@ TBD
 ## Checkpoint 3: 📡 Integrate pool with the Balancer v3 Subgraph
 
 TBD
+
+test
