@@ -15,18 +15,15 @@ import {TestAddresses} from "../test/utils/TestAddresses.sol";
  * @dev This is in the early WIP stage, so we are working with already deployed pools for now. See PR#13 for context on related docs, code blobs, etc.
  */
 contract RegisterPool is TestAddresses, Script {
-	// IVaultExtension constant vaultExtension =
-	// 	IVaultExtension(0x718e1176f01dDBb2409A77B2847B749c8dF4457f);
 
-	// address sepoliaDAI = 0xB77EB1A70A96fDAAeB31DB1b42F2b8b5846b2613;
-	// address sepoliaUSDC = 0x80D6d3946ed8A1Da4E226aa21CCdDc32bd127d1A;
-
+	/// @dev See TODO below; make sure to populate `address pool` below with your custom pool address.
 	function run() external {
-		uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
-		vm.startBroadcast(deployerPrivateKey);
 
 		/// args for registerPool
-		address pool = address(0); // Address of pool to register NOTE - this pool is already registered, so you need to replace it or else the script will revert.
+		address pool = address(0); // TODO - dev, populate with your custom pool address!
+
+		uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
+		vm.startBroadcast(deployerPrivateKey);
 
 		TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
 
