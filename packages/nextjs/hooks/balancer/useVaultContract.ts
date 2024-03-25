@@ -6,34 +6,46 @@ import {
 import externalContracts from "~~/contracts/externalContracts";
 
 /**
- * Read data about pool assets from Balancer's VaultExtension contract
+ * Read data about pool assets from Balancer's Vault contract
  * https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#pool-information
  *
- * @dev all of the reads will revert if the pool is not registered AND initialized
+ * @dev reads will revert if the pool is not registered
  */
 export const useVaultContract = (poolAddress: string) => {
   const client = usePublicClient();
   const chainId = client.chain.id;
 
-  const { VaultExtension } = externalContracts[chainId as keyof typeof externalContracts];
+  const { Vault } = externalContracts[chainId as keyof typeof externalContracts];
 
   return useQuery<any>(
     ["VaultContract", poolAddress],
     async () => {
-      //   const [poolTokenInfo] = await Promise.all([
-      //     client.readContract({
-      //       abi: VaultExtension.abi,
-      //       address: VaultExtension.address,
-      //       functionName: "getPoolTokenInfo",
-      //       args: [poolAddress],
-      //     }),
-      //   ]);
+      const [getPoolTokens, poolTokenInfo, poolConfig] = await Promise.all([
+        client.readContract({
+          abi: Vault.abi,
+          address: Vault.address,
+          functionName: "getPoolTokens",
+          args: [poolAddress],
+        }),
+        client.readContract({
+          abi: Vault.abi,
+          address: Vault.address,
+          functionName: "getPoolTokenInfo",
+          args: [poolAddress],
+        }),
+        client.readContract({
+          abi: Vault.abi,
+          address: Vault.address,
+          functionName: "getPoolConfig",
+          args: [poolAddress],
+        }),
+      ]);
 
       // Reverts if pool is not registered
       const isInitialized = await client
         .readContract({
-          abi: VaultExtension.abi,
-          address: VaultExtension.address,
+          abi: Vault.abi,
+          address: Vault.address,
           functionName: "isPoolInitialized",
           args: [poolAddress],
         })
@@ -41,7 +53,9 @@ export const useVaultContract = (poolAddress: string) => {
 
       return {
         isInitialized,
-        // poolTokenInfo,
+        getPoolTokens,
+        poolTokenInfo,
+        poolConfig,
       };
     },
     { enabled: poolAddress !== undefined },
