@@ -13,6 +13,7 @@ artifacts
 #Foundry files
 cache_forge
 out
+broadcast
 
 #zkSync files
 artifacts-zk

@@ -1,3 +1,7 @@
+/**
+ * @dev this script is not fully implemented
+ */
+
 import hre from "hardhat";
 import { networkConfig } from "../helper.config";
 import { Contract } from "ethers";
