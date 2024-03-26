@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { PoolActions, PoolAttributes, PoolComposition, PoolConfig, PoolSelector, UserLiquidity } from "./_components/";
 import type { NextPage } from "next";
 import { type Address } from "viem";
+import { SkeletonLoader } from "~~/components/common";
 import deployedContractsData from "~~/contracts/deployedContracts";
 import { usePoolContract } from "~~/hooks/balancer";
 import scaffoldConfig from "~~/scaffold.config";
@@ -20,7 +21,8 @@ const Pools: NextPage = () => {
   }));
 
   const [selectedPool, setSelectedPool] = useState<Address>(scaffoldPools[0].address);
-  const { data: pool } = usePoolContract(selectedPool);
+  const { data: pool, isLoading: isPoolLoading } = usePoolContract(selectedPool);
+  console.log("pool", pool);
 
   return (
     <div className="flex-grow bg-base-300">
@@ -38,27 +40,32 @@ const Pools: NextPage = () => {
 
           <PoolSelector scaffoldPools={scaffoldPools} setSelectedPool={setSelectedPool} />
 
-          <div className="text-center mb-5 border-base-100">
-            <h3 className="font-extrabold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500 mb-0">
-              {pool?.name}
-            </h3>
-            <h3 className="md:text-2xl text-base-100">{pool?.address}</h3>
-          </div>
-
-          {selectedPool && (
-            <div className="w-full">
-              <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
-                <div className="flex flex-col gap-7">
-                  <UserLiquidity poolAddress={selectedPool} />
-                  <PoolComposition poolAddress={selectedPool} />
-                  <PoolAttributes poolAddress={selectedPool} />
-                </div>
-                <div className="flex flex-col gap-7">
-                  <PoolActions />
-                  <PoolConfig poolAddress={selectedPool} />
-                </div>
+          {isPoolLoading ? (
+            <PoolPageSkeleton />
+          ) : (
+            <Fragment>
+              <div className="text-center mb-5 border-base-100">
+                <h3 className="font-extrabold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500 mb-0">
+                  {pool?.name}
+                </h3>
+                <h3 className="md:text-2xl text-base-100">{pool?.address}</h3>
               </div>
-            </div>
+              {selectedPool && (
+                <div className="w-full">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
+                    <div className="flex flex-col gap-7">
+                      <UserLiquidity pool={pool} />
+                      <PoolComposition pool={pool} />
+                      <PoolAttributes pool={pool} />
+                    </div>
+                    <div className="flex flex-col gap-7">
+                      <PoolActions />
+                      <PoolConfig pool={pool} />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Fragment>
           )}
         </div>
       </div>
@@ -67,3 +74,34 @@ const Pools: NextPage = () => {
 };
 
 export default Pools;
+
+const PoolPageSkeleton = () => {
+  return (
+    <div className="w-full">
+      <div className="flex h-20 mb-7">
+        <SkeletonLoader />
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
+        <div className="flex flex-col gap-7">
+          <div className="w-full h-60">
+            <SkeletonLoader />
+          </div>
+          <div className="w-full h-60">
+            <SkeletonLoader />
+          </div>
+          <div className="w-full h-60">
+            <SkeletonLoader />
+          </div>
+        </div>
+        <div className="flex flex-col gap-7">
+          <div className="w-full h-72">
+            <SkeletonLoader />
+          </div>
+          <div className="w-full h-72">
+            <SkeletonLoader />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
