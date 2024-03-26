@@ -20,7 +20,7 @@ const Pools: NextPage = () => {
     ...details,
   }));
 
-  const [selectedPool, setSelectedPool] = useState<Address>(scaffoldPools[0].address);
+  const [selectedPool, setSelectedPool] = useState<Address>(scaffoldPools[0]?.address || "");
   const { data: pool, isLoading: isPoolLoading } = usePoolContract(selectedPool);
   console.log("pool", pool);
 

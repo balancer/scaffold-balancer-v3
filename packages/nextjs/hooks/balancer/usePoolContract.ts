@@ -117,6 +117,6 @@ export const usePoolContract = (poolAddress: string) => {
         poolConfig,
       };
     },
-    { enabled: poolAddress !== undefined },
+    { enabled: poolAddress !== "" },
   );
 };
