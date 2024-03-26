@@ -5,9 +5,9 @@ import { erc20ABI, usePublicClient, useQuery } from "wagmi";
 import externalContracts from "~~/contracts/externalContracts";
 
 /**
- * Read a pool contract's details
+ * Fetch all relevant details for a pool
  * @dev the pool contract only contains basic information relating to the BPT token
- * all the data about the pool's assets is stored in the vault contract
+ * @dev the data about the pool's assets is stored in the vault contract
  */
 export const usePoolContract = (poolAddress: string) => {
   const client = usePublicClient();
@@ -47,49 +47,35 @@ export const usePoolContract = (poolAddress: string) => {
         }),
       ]);
 
-      const isRegistered = await client
-        .readContract({
-          abi: Vault.abi,
-          address: Vault.address,
-          functionName: "isPoolRegistered",
-          args: [poolAddress],
-        })
-        .catch(() => false);
-
-      // Reverts if pool is not registered
-      const isInitialized = await client
-        .readContract({
-          abi: Vault.abi,
-          address: Vault.address,
-          functionName: "isPoolInitialized",
-          args: [poolAddress],
-        })
-        .catch(() => false);
+      const isRegistered = await client.readContract({
+        abi: Vault.abi,
+        address: Vault.address,
+        functionName: "isPoolRegistered",
+        args: [poolAddress],
+      });
 
       // fetch data about pool assets from vault contract
       const [poolTokenInfo, poolConfig] = await Promise.all([
         client.readContract({
           abi: Vault.abi,
           address: Vault.address,
-          functionName: "getPoolTokenInfo",
+          functionName: "getPoolTokenInfo", // https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpooltokeninfo
           args: [poolAddress],
         }),
         client.readContract({
           abi: Vault.abi,
           address: Vault.address,
-          functionName: "getPoolConfig",
+          functionName: "getPoolConfig", // https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpoolconfig
           args: [poolAddress],
         }),
-      ]).catch(() => [[], [], []]); // returns empty arrays if the pool is not registered
+      ]).catch(() => [[], []]); // return empty arrays if the pool is not registered
 
-      const poolTokenAddresses = poolTokenInfo[0];
-      const poolTokenBalances = poolTokenInfo[2];
-
-      const poolTokensWithBalances = Array.from({ length: poolTokenAddresses.length }, (_, i) => ({
+      // populate the poolTokens with balances, names, symbols, and decimals
+      const [poolTokenAddresses, , poolTokenBalances] = poolTokenInfo;
+      const poolTokensWithBalances = Array.from({ length: poolTokenAddresses?.length || 0 }, (_, i) => ({
         tokenAddress: poolTokenAddresses[i],
         tokenBalance: poolTokenBalances[i],
       }));
-
       const poolTokens = await Promise.all(
         poolTokensWithBalances.map(async ({ tokenAddress, tokenBalance }) => {
           const [symbol, decimals, name] = await Promise.all([
@@ -123,11 +109,10 @@ export const usePoolContract = (poolAddress: string) => {
         address: poolAddress,
         symbol,
         name,
+        isRegistered,
         totalSupply: formatUnits(totalSupply as bigint, decimals as number),
         decimals,
         vaultAddress,
-        isInitialized,
-        isRegistered,
         poolTokens,
         poolConfig,
       };

@@ -23,7 +23,9 @@ export const UserLiquidity = ({ poolAddress }: { poolAddress: string }) => {
         <h5 className="text-xl font-bold mb-3">My Liquidity</h5>
 
         {isLoading ? (
-          <SkeletonLoader />
+          <div className="w-full h-48">
+            <SkeletonLoader />
+          </div>
         ) : (
           <div className="border border-base-100 rounded-lg">
             <div className="flex justify-between border-base-100 border-b p-3 items-center">
