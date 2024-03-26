@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PoolActions, PoolAttributes, PoolComposition, PoolSelector, UserLiquidity } from "./_components/";
+import { PoolActions, PoolAttributes, PoolComposition, PoolConfig, PoolSelector, UserLiquidity } from "./_components/";
 import type { NextPage } from "next";
 import { type Address } from "viem";
 import deployedContractsData from "~~/contracts/deployedContracts";
@@ -53,7 +53,10 @@ const Pools: NextPage = () => {
                   <PoolComposition poolAddress={selectedPool} />
                   <PoolAttributes poolAddress={selectedPool} />
                 </div>
-                <PoolActions />
+                <div className="flex flex-col gap-7">
+                  <PoolActions />
+                  <PoolConfig poolAddress={selectedPool} />
+                </div>
               </div>
             </div>
           )}
