@@ -31,10 +31,10 @@ export const PoolAttributes = ({ poolAddress }: { poolAddress: string }) => {
             {detailsRows.map(({ attribute, detail }, index) => (
               <div
                 key={attribute}
-                className={`p-3 grid grid-cols-2 ${index == detailsRows.length - 1 ? "" : "border-b border-base-100"}`}
+                className={`grid grid-cols-2 ${index == detailsRows.length - 1 ? "" : "border-b border-base-100"}`}
               >
-                <div>{attribute}</div>
-                <div>{detail}</div>
+                <div className="p-3 border-r border-base-100">{attribute}</div>
+                <div className="p-3">{detail}</div>
               </div>
             ))}
           </div>

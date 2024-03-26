@@ -39,7 +39,7 @@ export const PoolComposition = ({ poolAddress }: { poolAddress: string }) => {
                   </div>
                 ))
               ) : (
-                <div>Pool has no token composition since it has not been registered!</div>
+                <div>Pool must be registered!</div>
               )}
             </div>
           </div>

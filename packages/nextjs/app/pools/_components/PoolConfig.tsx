@@ -10,7 +10,7 @@ export const PoolConfig = ({ poolAddress }: { poolAddress: string }) => {
   const { data: pool, isLoading } = usePoolContract(poolAddress);
 
   const detailsRows = [
-    { key: "isPoolRegistered", value: pool?.poolConfig?.isPoolRegistered?.toString() },
+    { key: "isPoolRegistered", value: pool?.isRegistered.toString() },
     { key: "isPoolInitialized", value: pool?.poolConfig?.isPoolInitialized?.toString() },
     { key: "isPoolPaused", value: pool?.poolConfig?.isPoolPaused?.toString() },
     { key: "pauseWindowEndTime", value: pool?.poolConfig?.pauseWindowEndTime?.toString() },
