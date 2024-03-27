@@ -19,14 +19,12 @@ const Pools: NextPage = () => {
     ...details,
   }));
 
-  const [selectedPoolAddress, setSelectedPoolAddress] = useState<string | undefined>(scaffoldPools[0]?.address || "");
+  const [selectedPoolAddress, setSelectedPoolAddress] = useState<string | undefined>();
   const {
     data: pool,
     isLoading,
     // isFetchedAfterMount
   } = usePoolContract(selectedPoolAddress);
-
-  console.log("pool", pool);
 
   return (
     <div className="flex-grow bg-base-300">
@@ -37,38 +35,50 @@ const Pools: NextPage = () => {
             <p className="text-xl my-0">
               Balancer is infinitely extensible to allow for any conceivable pool type with custom curves, logic,
               parameters, and more. Each pool deployed to balancer is its own smart contract. This tool allows you to
-              interact with any pool currently deployed (custom or existing). To get started, select one of your custom
-              pools deployed through scaffold eth or enter the contract address of the desired pool below.
+              interact with any pool currently deployed (custom or existing).
             </p>
           </div>
 
           <PoolSelector scaffoldPools={scaffoldPools} setSelectedPoolAddress={setSelectedPoolAddress} />
+
+          {!selectedPoolAddress && (
+            <p className="text-xl">
+              To get started, select one of your custom pools deployed through Scaffold Eth or search by contract
+              address
+            </p>
+          )}
 
           {isLoading ? (
             <PoolPageSkeleton />
           ) : (
             pool && (
               <Fragment>
-                <div className="text-center mb-5 border-base-100">
-                  <h3 className="font-extrabold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500 mb-0">
-                    {pool?.name}
-                  </h3>
-                  <h3 className="md:text-2xl text-base-100">{pool?.address}</h3>
+                {!pool.poolConfig.isPoolRegistered && <PoolNotRegisteredAlert />}
+                {!pool.poolConfig.isPoolInitialized && pool.poolConfig.isPoolRegistered && <PoolNotInitializedAlert />}
+
+                <div className="text-center mb-5 bg-base-200 p-3 w-full rounded-lg">
+                  <h3 className="font-extrabold text-3xl my-2">{pool.name}</h3>
                 </div>
 
-                <div className="w-full">
-                  <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
-                    <div className="flex flex-col gap-7">
-                      <UserLiquidity pool={pool} />
-                      <PoolComposition pool={pool} />
-                      <PoolAttributes pool={pool} />
-                    </div>
-                    <div className="flex flex-col gap-7">
-                      <PoolActions />
-                      <PoolConfig pool={pool} />
+                {pool.poolConfig.isPoolRegistered ? (
+                  <div className="w-full">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
+                      <div className="flex flex-col gap-7">
+                        <UserLiquidity pool={pool} />
+                        <PoolComposition pool={pool} />
+                        <PoolAttributes pool={pool} />
+                      </div>
+                      <div className="flex flex-col gap-7">
+                        <PoolActions />
+                        <PoolConfig pool={pool} />
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
+                    <PoolAttributes pool={pool} />
+                  </div>
+                )}
               </Fragment>
             )
           )}
@@ -106,6 +116,72 @@ const PoolPageSkeleton = () => {
             <SkeletonLoader />
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const PoolNotRegisteredAlert = () => {
+  return (
+    <div className="w-full mb-5">
+      <div role="alert" className="alert alert-warning flex flex-wrap justify-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="stroke-current shrink-0 h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
+        </svg>
+        <span>
+          This pool has not been registered. Check out our{" "}
+          <a
+            rel="noopener"
+            target="_blank"
+            className="underline text-blue-700"
+            href="https://github.com/MattPereira/scaffold-balancer-v3?tab=readme-ov-file#14-register-a-new-pool-with-the-vault"
+          >
+            how to register guide
+          </a>
+        </span>
+      </div>
+    </div>
+  );
+};
+
+const PoolNotInitializedAlert = () => {
+  return (
+    <div className="w-full mb-5">
+      <div role="alert" className="alert alert-warning justify-center flex flex-wrap rounded-lg">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="stroke-current shrink-0 h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
+        </svg>
+        <span>
+          This pool has not been initialized. Check out our{" "}
+          <a
+            rel="noopener"
+            target="_blank"
+            className="underline text-blue-700"
+            href="https://github.com/MattPereira/scaffold-balancer-v3?tab=readme-ov-file#14-register-a-new-pool-with-the-vault"
+          >
+            how to initialize guide
+          </a>
+        </span>
       </div>
     </div>
   );

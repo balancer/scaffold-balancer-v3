@@ -25,7 +25,7 @@ export const PoolSelector = ({
           className="btn text-lg btn-accent w-96 font-normal relative"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         >
-          <div>Choose custom pool</div> <ChevronDownIcon className="absolute top-4 right-5 w-5 h-5" />
+          <div>Your scaffold pools</div> <ChevronDownIcon className="absolute top-4 right-5 w-5 h-5" />
         </div>
         <ul
           tabIndex={0}
