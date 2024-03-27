@@ -16,17 +16,17 @@ export const PoolConfig = ({ pool }: { pool: any }) => {
     <div className="w-full">
       <div className="overflow-x-auto rounded-lg bg-base-200 p-5">
         <h5 className="text-xl font-bold mb-3">Pool Config</h5>
-        <div className="border border-base-100 rounded-lg">
+        <dl className="border border-base-100 rounded-lg">
           {detailsRows.map(({ key, value }, index) => (
             <div
               key={key}
               className={`grid grid-cols-2 ${index == detailsRows.length - 1 ? "" : "border-b border-base-100"}`}
             >
-              <div className="p-3 border-r border-base-100">{key}</div>
-              <div className="p-3">{value}</div>
+              <dt className="p-3 border-r border-base-100">{key}</dt>
+              <dd className="p-3">{value}</dd>
             </div>
           ))}
-        </div>
+        </dl>
       </div>
     </div>
   );

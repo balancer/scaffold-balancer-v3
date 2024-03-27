@@ -6,5 +6,5 @@ export type Pool = {
   vaultAddress: string | undefined;
   symbol: string | undefined;
   decimals: number | undefined;
-  totalSupply: string | undefined;
+  totalSupply: `${bigint}` | undefined;
 };

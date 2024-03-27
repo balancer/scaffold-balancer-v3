@@ -27,8 +27,8 @@ export const UserLiquidity = ({ pool }: { pool: any }) => {
             <div>TODO</div>
           </div>
           <div className="p-3 flex flex-col gap-3">
-            {pool?.poolTokens.length > 0 ? (
-              pool?.poolTokens?.map((token: any) => (
+            {pool?.poolTokens?.length > 0 ? (
+              pool.poolTokens.map((token: any) => (
                 <div key={token.address} className="flex justify-between items-center">
                   <div>
                     <div className="font-bold">{token.symbol}</div>

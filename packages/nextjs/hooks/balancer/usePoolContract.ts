@@ -1,48 +1,46 @@
 import { PoolAbi } from "./PoolAbi";
 // import type { Pool } from "./types";
-import { formatUnits } from "viem";
+import { type Address, formatUnits } from "viem";
 import { erc20ABI, usePublicClient, useQuery } from "wagmi";
 import externalContracts from "~~/contracts/externalContracts";
 
 /**
  * Fetch all relevant details for a pool
- * @dev the pool contract only contains basic information relating to the BPT token
- * @dev the data about the pool's assets is stored in the vault contract
  */
-export const usePoolContract = (poolAddress: string) => {
+export const usePoolContract = (poolAddress: Address | undefined) => {
   const client = usePublicClient();
   const chainId = client.chain.id;
 
   const { Vault } = externalContracts[chainId as keyof typeof externalContracts];
 
   return useQuery<any>(
-    ["PoolData", poolAddress, Vault.address],
+    ["PoolContract", { poolAddress, vaultAddress: Vault.address }],
     async () => {
       // fetch data about BPT from pool contract
       const [name, symbol, totalSupply, decimals, vaultAddress] = await Promise.all([
         client.readContract({
           abi: PoolAbi,
-          address: poolAddress,
+          address: poolAddress as Address,
           functionName: "name",
         }),
         client.readContract({
           abi: PoolAbi,
-          address: poolAddress,
+          address: poolAddress as Address,
           functionName: "symbol",
         }),
         client.readContract({
           abi: PoolAbi,
-          address: poolAddress,
+          address: poolAddress as Address,
           functionName: "totalSupply",
         }),
         client.readContract({
           abi: PoolAbi,
-          address: poolAddress,
+          address: poolAddress as Address,
           functionName: "decimals",
         }),
         client.readContract({
           abi: PoolAbi,
-          address: poolAddress,
+          address: poolAddress as Address,
           functionName: "getVault",
         }),
       ]);
@@ -51,28 +49,30 @@ export const usePoolContract = (poolAddress: string) => {
         abi: Vault.abi,
         address: Vault.address,
         functionName: "isPoolRegistered",
-        args: [poolAddress],
+        args: [poolAddress as Address],
       });
 
-      // fetch data about pool assets from vault contract
-      const [poolTokenInfo, poolConfig] = await Promise.all([
-        client.readContract({
+      const poolTokenInfo = await client
+        .readContract({
           abi: Vault.abi,
           address: Vault.address,
           functionName: "getPoolTokenInfo", // https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpooltokeninfo
-          args: [poolAddress],
-        }),
-        client.readContract({
+          args: [poolAddress as Address],
+        })
+        .catch(() => []); // return empty array if the pool is not registered
+
+      const poolConfig = await client
+        .readContract({
           abi: Vault.abi,
           address: Vault.address,
           functionName: "getPoolConfig", // https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpoolconfig
-          args: [poolAddress],
-        }),
-      ]).catch(() => [[], []]); // return empty arrays if the pool is not registered
+          args: [poolAddress as Address],
+        })
+        .catch(() => []); // return empty array if the pool is not registered
 
       // populate the poolTokens with balances, names, symbols, and decimals
       const [poolTokenAddresses, , poolTokenBalances] = poolTokenInfo;
-      const poolTokensWithBalances = Array.from({ length: poolTokenAddresses?.length || 0 }, (_, i) => ({
+      const poolTokensWithBalances = Array.from({ length: poolTokenAddresses?.length ?? 0 }, (_, i) => ({
         tokenAddress: poolTokenAddresses[i],
         tokenBalance: poolTokenBalances[i],
       }));
@@ -117,6 +117,6 @@ export const usePoolContract = (poolAddress: string) => {
         poolConfig,
       };
     },
-    { enabled: poolAddress !== "" },
+    { enabled: poolAddress !== undefined },
   );
 };

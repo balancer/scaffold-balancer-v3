@@ -5,11 +5,17 @@ import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outlin
 /**
  * The dropdown selector for internal custom pool and the external pool address input
  */
-export const PoolSelector = ({ scaffoldPools, setSelectedPool }: { scaffoldPools: any; setSelectedPool: any }) => {
-  const [poolAddressInput, setPoolAddressInput] = useState<Address>("");
+export const PoolSelector = ({
+  scaffoldPools,
+  setSelectedPoolAddress,
+}: {
+  scaffoldPools: any;
+  setSelectedPoolAddress: (_: Address | undefined) => void;
+}) => {
+  const [inputValue, setInputValue] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const isValidAddress = isAddress(poolAddressInput);
+  const isValidAddress = isAddress(inputValue);
   return (
     <section className="flex justify-center flex-wrap gap-5 w-full mb-5 items-center text-xl py-5 border-b border-t border-base-100">
       <div className={`dropdown dropdown-end ${isDropdownOpen ? "dropdown-open" : ""}`}>
@@ -31,7 +37,7 @@ export const PoolSelector = ({ scaffoldPools, setSelectedPool }: { scaffoldPools
             <li key={pool.name}>
               <button
                 onClick={() => {
-                  setSelectedPool(pool.address);
+                  setSelectedPoolAddress(pool.address);
                   setIsDropdownOpen(false); // Close the dropdown
                 }}
               >
@@ -46,14 +52,14 @@ export const PoolSelector = ({ scaffoldPools, setSelectedPool }: { scaffoldPools
         className="flex flex-row items-center gap-2"
         onSubmit={event => {
           event.preventDefault();
-          setSelectedPool(poolAddressInput);
-          setPoolAddressInput("");
+          setSelectedPoolAddress(inputValue);
+          setInputValue("");
         }}
       >
         <div className="relative">
           <input
-            value={poolAddressInput}
-            onChange={e => setPoolAddressInput(e.target.value)}
+            value={inputValue}
+            onChange={e => setInputValue(e.target.value)}
             className="input input-bordered bg-base-200 w-96 text-center pr-16"
             placeholder="Search by contract addresss"
           />
