@@ -1,7 +1,13 @@
+import { formatUnits } from "viem";
+
 /**
  * Display a pool's token composition including the tokens' symbols, names, and balances
  */
 export const PoolComposition = ({ pool }: { pool: any }) => {
+  // if pool is not registered, it won't have any pool tokens to display
+  if (!pool?.poolConfig?.isPoolRegistered) {
+    return null;
+  }
   return (
     <div className="w-full flex flex-col">
       <div className="bg-base-200 p-4 rounded-lg ">
@@ -13,24 +19,20 @@ export const PoolComposition = ({ pool }: { pool: any }) => {
               <div className="font-bold">{pool?.symbol}</div>
               <div className="text-sm">{pool?.name}</div>
             </div>
-            <div>{pool?.totalSupply}</div>
+            <div>{formatUnits(pool.totalSupply, pool.decimals)}</div>
           </div>
           <div className="p-3 flex flex-col gap-3">
-            {pool?.poolTokens.length > 0 ? (
-              pool?.poolTokens?.map((token: any) => (
-                <div key={token.address} className="flex justify-between items-center">
-                  <div>
-                    <div className="font-bold">{token.symbol}</div>
-                    <div className="text-sm">{token.name}</div>
-                  </div>
-                  <div>
-                    <div className="flex justify-end">{token.balance}</div>
-                  </div>
+            {pool.poolTokens.map((token: any) => (
+              <div key={token.address} className="flex justify-between items-center">
+                <div>
+                  <div className="font-bold">{token.symbol}</div>
+                  <div className="text-sm">{token.name}</div>
                 </div>
-              ))
-            ) : (
-              <div>Pool must be registered!</div>
-            )}
+                <div>
+                  <div className="flex justify-end">{formatUnits(token.balance, token.decimals)}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

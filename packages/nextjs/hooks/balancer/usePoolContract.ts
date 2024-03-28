@@ -1,6 +1,6 @@
 import { PoolAbi } from "./PoolAbi";
-// import type { Pool } from "./types";
-import { type Address, formatUnits } from "viem";
+import type { Pool } from "./types";
+import { type Address } from "viem";
 import { erc20ABI, usePublicClient, useQuery } from "wagmi";
 import externalContracts from "~~/contracts/externalContracts";
 
@@ -10,67 +10,65 @@ import externalContracts from "~~/contracts/externalContracts";
 export const usePoolContract = (poolAddress: Address | undefined) => {
   const client = usePublicClient();
   const chainId = client.chain.id;
-
   const { Vault } = externalContracts[chainId as keyof typeof externalContracts];
 
-  return useQuery<any>(
+  return useQuery<Pool>(
     ["PoolContract", { poolAddress, vaultAddress: Vault.address }],
     async () => {
-      // fetch data about BPT from pool contract
-      const [name, symbol, totalSupply, decimals, vaultAddress] = await Promise.all([
-        client.readContract({
-          abi: PoolAbi,
-          address: poolAddress as Address,
-          functionName: "name",
-        }),
-        client.readContract({
-          abi: PoolAbi,
-          address: poolAddress as Address,
-          functionName: "symbol",
-        }),
-        client.readContract({
-          abi: PoolAbi,
-          address: poolAddress as Address,
-          functionName: "totalSupply",
-        }),
-        client.readContract({
-          abi: PoolAbi,
-          address: poolAddress as Address,
-          functionName: "decimals",
-        }),
-        client.readContract({
-          abi: PoolAbi,
-          address: poolAddress as Address,
-          functionName: "getVault",
-        }),
-      ]);
+      const [name, symbol, totalSupply, decimals, vaultAddress, isRegistered, poolTokenInfo, poolConfig] =
+        await Promise.all([
+          // fetch data about BPT from pool contract
+          client.readContract({
+            abi: PoolAbi,
+            address: poolAddress as Address,
+            functionName: "name",
+          }) as Promise<string>,
+          client.readContract({
+            abi: PoolAbi,
+            address: poolAddress as Address,
+            functionName: "symbol",
+          }) as Promise<string>,
+          client.readContract({
+            abi: PoolAbi,
+            address: poolAddress as Address,
+            functionName: "totalSupply",
+          }) as Promise<bigint>,
+          client.readContract({
+            abi: PoolAbi,
+            address: poolAddress as Address,
+            functionName: "decimals",
+          }) as Promise<number>,
+          client.readContract({
+            abi: PoolAbi,
+            address: poolAddress as Address,
+            functionName: "getVault",
+          }) as Promise<string>,
+          // fetch data about pool assets from vault contract
+          client.readContract({
+            abi: Vault.abi,
+            address: Vault.address,
+            functionName: "isPoolRegistered",
+            args: [poolAddress as Address],
+          }),
+          client
+            .readContract({
+              abi: Vault.abi,
+              address: Vault.address,
+              functionName: "getPoolTokenInfo", // https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpooltokeninfo
+              args: [poolAddress as Address],
+            })
+            .catch(() => []),
+          client
+            .readContract({
+              abi: Vault.abi,
+              address: Vault.address,
+              functionName: "getPoolConfig", // https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpoolconfig
+              args: [poolAddress as Address],
+            })
+            .catch(() => undefined), // return undefined if the pool is not registered
+        ]);
 
-      const isRegistered = await client.readContract({
-        abi: Vault.abi,
-        address: Vault.address,
-        functionName: "isPoolRegistered",
-        args: [poolAddress as Address],
-      });
-
-      const poolTokenInfo = await client
-        .readContract({
-          abi: Vault.abi,
-          address: Vault.address,
-          functionName: "getPoolTokenInfo", // https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpooltokeninfo
-          args: [poolAddress as Address],
-        })
-        .catch(() => []); // return empty array if the pool is not registered
-
-      const poolConfig = await client
-        .readContract({
-          abi: Vault.abi,
-          address: Vault.address,
-          functionName: "getPoolConfig", // https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpoolconfig
-          args: [poolAddress as Address],
-        })
-        .catch(() => []); // return empty array if the pool is not registered
-
-      // populate the poolTokens with balances, names, symbols, and decimals
+      // populate the pool tokens with balances, names, symbols, and decimals
       const [poolTokenAddresses, , poolTokenBalances] = poolTokenInfo;
       const poolTokensWithBalances = Array.from({ length: poolTokenAddresses?.length ?? 0 }, (_, i) => ({
         tokenAddress: poolTokenAddresses[i],
@@ -100,7 +98,7 @@ export const usePoolContract = (poolAddress: Address | undefined) => {
             name,
             symbol,
             decimals,
-            balance: formatUnits(tokenBalance, decimals),
+            balance: tokenBalance,
           };
         }),
       );
@@ -110,7 +108,7 @@ export const usePoolContract = (poolAddress: Address | undefined) => {
         symbol,
         name,
         isRegistered,
-        totalSupply: formatUnits(totalSupply as bigint, decimals as number),
+        totalSupply,
         decimals,
         vaultAddress,
         poolTokens,

@@ -1,15 +1,17 @@
 import { useAccount } from "wagmi";
+import { type Pool } from "~~/hooks/balancer/types";
 
 /**
  * If there is a connected user, display their liquidity within the pool
  */
-export const UserLiquidity = ({ pool }: { pool: any }) => {
+export const UserLiquidity = ({ pool }: { pool: Pool }) => {
   const {
     isConnected,
     // address
   } = useAccount();
 
-  if (!isConnected) {
+  // only render the component if the pool is initialized and the user is connected
+  if (!isConnected || !pool?.poolConfig?.isPoolInitialized) {
     return null;
   }
 
@@ -27,21 +29,17 @@ export const UserLiquidity = ({ pool }: { pool: any }) => {
             <div>TODO</div>
           </div>
           <div className="p-3 flex flex-col gap-3">
-            {pool?.poolTokens?.length > 0 ? (
-              pool.poolTokens.map((token: any) => (
-                <div key={token.address} className="flex justify-between items-center">
-                  <div>
-                    <div className="font-bold">{token.symbol}</div>
-                    <div className="text-sm">{token.name}</div>
-                  </div>
-                  <div>
-                    <div className="flex justify-end">TODO</div>
-                  </div>
+            {pool.poolTokens.map((token: any) => (
+              <div key={token.address} className="flex justify-between items-center">
+                <div>
+                  <div className="font-bold">{token.symbol}</div>
+                  <div className="text-sm">{token.name}</div>
                 </div>
-              ))
-            ) : (
-              <div>Pool must be registered!</div>
-            )}
+                <div>
+                  <div className="flex justify-end">TODO</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

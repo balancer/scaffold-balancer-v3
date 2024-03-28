@@ -1,7 +1,15 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import { PoolActions, PoolAttributes, PoolComposition, PoolConfig, PoolSelector, UserLiquidity } from "./_components/";
+import {
+  PoolActions,
+  PoolAlert,
+  PoolAttributes,
+  PoolComposition,
+  PoolConfig,
+  PoolSelector,
+  UserLiquidity,
+} from "./_components/";
 import type { NextPage } from "next";
 import { SkeletonLoader } from "~~/components/common";
 import deployedContractsData from "~~/contracts/deployedContracts";
@@ -53,32 +61,31 @@ const Pools: NextPage = () => {
           ) : (
             pool && (
               <Fragment>
-                {!pool.poolConfig.isPoolRegistered && <PoolNotRegisteredAlert />}
-                {!pool.poolConfig.isPoolInitialized && pool.poolConfig.isPoolRegistered && <PoolNotInitializedAlert />}
-
                 <div className="text-center mb-5 bg-base-200 p-3 w-full rounded-lg">
                   <h3 className="font-extrabold text-3xl my-2">{pool.name}</h3>
                 </div>
+                <div className="w-full">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
+                    <div className="flex flex-col gap-7">
+                      <UserLiquidity pool={pool} />
+                      <PoolComposition pool={pool} />
+                      <PoolAttributes pool={pool} />
+                    </div>
+                    <div className="flex flex-col gap-7">
+                      {pool.poolConfig?.isPoolRegistered ? (
+                        pool.poolConfig?.isPoolInitialized ? (
+                          <PoolActions />
+                        ) : (
+                          <PoolAlert isRegistered={true} />
+                        )
+                      ) : (
+                        <PoolAlert isRegistered={false} />
+                      )}
 
-                {pool.poolConfig.isPoolRegistered ? (
-                  <div className="w-full">
-                    <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
-                      <div className="flex flex-col gap-7">
-                        <UserLiquidity pool={pool} />
-                        <PoolComposition pool={pool} />
-                        <PoolAttributes pool={pool} />
-                      </div>
-                      <div className="flex flex-col gap-7">
-                        <PoolActions />
-                        <PoolConfig pool={pool} />
-                      </div>
+                      <PoolConfig pool={pool} />
                     </div>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
-                    <PoolAttributes pool={pool} />
-                  </div>
-                )}
+                </div>
               </Fragment>
             )
           )}
@@ -116,72 +123,6 @@ const PoolPageSkeleton = () => {
             <SkeletonLoader />
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
-
-const PoolNotRegisteredAlert = () => {
-  return (
-    <div className="w-full mb-5">
-      <div role="alert" className="alert alert-warning flex flex-wrap justify-center">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="stroke-current shrink-0 h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-          />
-        </svg>
-        <span>
-          This pool has not been registered. Check out our{" "}
-          <a
-            rel="noopener"
-            target="_blank"
-            className="underline text-blue-700"
-            href="https://github.com/MattPereira/scaffold-balancer-v3?tab=readme-ov-file#14-register-a-new-pool-with-the-vault"
-          >
-            how to register guide
-          </a>
-        </span>
-      </div>
-    </div>
-  );
-};
-
-const PoolNotInitializedAlert = () => {
-  return (
-    <div className="w-full mb-5">
-      <div role="alert" className="alert alert-warning justify-center flex flex-wrap rounded-lg">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="stroke-current shrink-0 h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-          />
-        </svg>
-        <span>
-          This pool has not been initialized. Check out our{" "}
-          <a
-            rel="noopener"
-            target="_blank"
-            className="underline text-blue-700"
-            href="https://github.com/MattPereira/scaffold-balancer-v3?tab=readme-ov-file#14-register-a-new-pool-with-the-vault"
-          >
-            how to initialize guide
-          </a>
-        </span>
       </div>
     </div>
   );
