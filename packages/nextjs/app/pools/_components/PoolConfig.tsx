@@ -1,9 +1,11 @@
+import { type Pool } from "~~/hooks/balancer/types";
+
 /**
  * Display a pool's configuration details
  *
  * https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpoolconfig
  */
-export const PoolConfig = ({ pool }: { pool: any }) => {
+export const PoolConfig = ({ pool }: { pool: Pool }) => {
   const detailsRows = [
     { key: "isPoolRegistered", value: pool?.isRegistered.toString() },
     { key: "isPoolInitialized", value: pool?.poolConfig?.isPoolInitialized?.toString() },

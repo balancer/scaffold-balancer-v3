@@ -1,9 +1,10 @@
 import { formatUnits } from "viem";
+import { type Pool } from "~~/hooks/balancer/types";
 
 /**
  * Display a pool's token composition including the tokens' symbols, names, and balances
  */
-export const PoolComposition = ({ pool }: { pool: any }) => {
+export const PoolComposition = ({ pool }: { pool: Pool }) => {
   // if pool is not registered, it won't have any pool tokens to display
   if (!pool?.poolConfig?.isPoolRegistered) {
     return null;
