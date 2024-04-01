@@ -12,10 +12,7 @@ const POOLS_QUERY = gql`
       name
       symbol
       totalShares
-      tokens {
-        name
-        symbol
-      }
+      isInitialized
     }
   }
 `;
@@ -54,7 +51,7 @@ const Subgraph: NextPage = () => {
                         <th className="border-r border-base-100">Address</th>
                         <th className="border-r border-base-100">Name</th>
                         <th className="border-r border-base-100">Symbol</th>
-                        <th className="border-r border-base-100">Tokens</th>
+                        <th className="border-r border-base-100">isInitialized</th>
                         <th>Total Shares</th>
                       </tr>
                     </thead>
@@ -69,11 +66,7 @@ const Subgraph: NextPage = () => {
                           </td>
                           <td className="border-r border-base-100">{pool.name}</td>
                           <td className="border-r border-base-100">{pool.symbol}</td>
-                          <td className="border-r border-base-100">
-                            {pool.tokens.map((token: any, index: number) => (
-                              <div key={index}>{token.symbol}</div>
-                            ))}
-                          </td>
+                          <td className="border-r border-base-100">{pool.isInitialized.toString()}</td>
                           <td>{pool.totalShares}</td>
                         </tr>
                       ))}
