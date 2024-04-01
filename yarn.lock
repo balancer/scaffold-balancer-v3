@@ -231,6 +231,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@balancer/sdk@npm:^0.14.0":
+  version: 0.14.0
+  resolution: "@balancer/sdk@npm:0.14.0"
+  dependencies:
+    decimal.js-light: ^2.5.1
+    lodash.clonedeep: ^4.5.0
+    viem: ^2.1.1
+  checksum: eca0203ba6c12a2e7afb7b7e4448843366a8f22f3f81f7f484d2b9289db9842de06e97ce0440168a0e1da91f5b50497e3e4807e48c350b23a53c47f3de605492
+  languageName: node
+  linkType: hard
+
 "@chainsafe/as-sha256@npm:^0.3.1":
   version: 0.3.1
   resolution: "@chainsafe/as-sha256@npm:0.3.1"
@@ -1917,6 +1928,7 @@ __metadata:
   resolution: "@se-2/nextjs@workspace:packages/nextjs"
   dependencies:
     "@apollo/client": ^3.9.7
+    "@balancer/sdk": ^0.14.0
     "@ethersproject/providers": ^5.7.2
     "@heroicons/react": ^2.0.11
     "@rainbow-me/rainbowkit": 1.3.5
@@ -3878,6 +3890,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"abitype@npm:1.0.0":
+  version: 1.0.0
+  resolution: "abitype@npm:1.0.0"
+  peerDependencies:
+    typescript: ">=5.0.4"
+    zod: ^3 >=3.22.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+    zod:
+      optional: true
+  checksum: ea2c0548c3ba58c37a6de7483d63389074da498e63d803b742bbe94eb4eaa1f51a35d000c424058b2583aef56698cf07c696eb3bc4dd0303bc20c6f0826a241a
+  languageName: node
+  linkType: hard
+
 "abstract-level@npm:^1.0.0, abstract-level@npm:^1.0.2, abstract-level@npm:^1.0.3":
   version: 1.0.3
   resolution: "abstract-level@npm:1.0.3"
@@ -5640,7 +5667,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"decimal.js-light@npm:^2.5.0":
+"decimal.js-light@npm:^2.5.0, decimal.js-light@npm:^2.5.1":
   version: 2.5.1
   resolution: "decimal.js-light@npm:2.5.1"
   checksum: f5a2c7eac1c4541c8ab8a5c8abea64fc1761cefc7794bd5f8afd57a8a78d1b51785e0c4e4f85f4895a043eaa90ddca1edc3981d1263eb6ddce60f32bf5fe66c9
@@ -14379,6 +14406,27 @@ __metadata:
     typescript:
       optional: true
   checksum: 558bc2b46afb177a34356f3cc8e6e444f4a6bf4d8aa15658f95eecc1bb42bbc09f240a1fd8eae98fa4973c3a1dc34f0492034b4b4d182f65b2dadf80167c8cea
+  languageName: node
+  linkType: hard
+
+"viem@npm:^2.1.1":
+  version: 2.9.6
+  resolution: "viem@npm:2.9.6"
+  dependencies:
+    "@adraffy/ens-normalize": 1.10.0
+    "@noble/curves": 1.2.0
+    "@noble/hashes": 1.3.2
+    "@scure/bip32": 1.3.2
+    "@scure/bip39": 1.2.1
+    abitype: 1.0.0
+    isows: 1.0.3
+    ws: 8.13.0
+  peerDependencies:
+    typescript: ">=5.0.4"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 7022c7de6de98e9648c4d65fda08c1b7d5007f62a665bbabffca22fb867b9595df0fbd9092ee02a380bbe7dcd2286070454ab2e7f005d6958fcd6c8f756b03a4
   languageName: node
   linkType: hard
 

@@ -74,7 +74,7 @@ const Pools: NextPage = () => {
                     <div className="flex flex-col gap-7">
                       {pool.poolConfig?.isPoolRegistered ? (
                         pool.poolConfig?.isPoolInitialized ? (
-                          <PoolActions />
+                          <PoolActions pool={pool} />
                         ) : (
                           <PoolAlert isRegistered={true} />
                         )
