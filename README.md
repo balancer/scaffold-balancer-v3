@@ -40,6 +40,44 @@ yarn start
 
 In order to deploy new custom pool contracts on sepolia and execute scripts, you must set a `DEPLOYER_PRIVATE_KEY` at the path `packagages/hardhat/.env` (And your PK must have testnet sepolia ETH)
 
+### 0.4 (Optional) How to run Scaffold Eth on a forked network
+
+1. In the `hardhat.config.ts` file, manually set the `chainId` and `forking.url` for `networks.hardhat`
+
+_example of forking sepolia_
+
+```
+    hardhat: {
+      chainId: 11155111,
+      forking: {
+        url: `https://eth-sepolia.g.alchemy.com/v2/${providerApiKey}`,
+        enabled: process.env.MAINNET_FORKING_ENABLED === "true",
+      },
+    },
+```
+
+2. Run `yarn fork` from the root directory to start a local node that forks the network specified in step 1
+
+3. In the `scaffold.config.ts` file, configure the `forkedNetwork.id` to match the chainId of the network you want to fork
+
+```
+// forked network
+export const forkedNetwork = {
+  id: 11155111,
+  name: "Forked Sepolia",
+  network: "f-sepolia",
+  nativeCurrency: { name: "SEP", symbol: "ETH", decimals: 18 },
+  rpcUrls: {
+    default: { http: ["http://127.0.0.1:8545/"] },
+    public: { http: ["http://127.0.0.1:8545/"] },
+  },
+} as const satisfies chains.Chain;
+
+const scaffoldConfig = {
+  // The networks on which your DApp is live
+  targetNetworks: [forkedNetwork],
+```
+
 ## Checkpoint 1: 🌊 Create A Custom Pool
 
 ### 1.1 Write a Custom Pool Contract
@@ -79,13 +117,12 @@ yarn hardhat run scripts/registerPool.ts --network sepolia
 ```
 
 ### 1.4.2 Using Foundry
-<!-- 3. Install any submodules. If you have not installed the submodules, probably because you ran `git clone <repo link>`, you may run into errors when running `forge build` since it is looking for the dependencies for the project. `git submodule update --init --recursive` can be used if you clone the repo without installing the submodules. -->
 
+<!-- 3. Install any submodules. If you have not installed the submodules, probably because you ran `git clone <repo link>`, you may run into errors when running `forge build` since it is looking for the dependencies for the project. `git submodule update --init --recursive` can be used if you clone the repo without installing the submodules. -->
 
 1. While still in the same directory, install forge on your machine if you have not already: `forge install`
 
-
-  > NOTE: If you need to download the latest version of foundry, just run `foundryup`
+> NOTE: If you need to download the latest version of foundry, just run `foundryup`
 
 2. Run the following CLI command (assuming `.env` is populated appropriately) to simulate registering the pool in question with the vault.
 
