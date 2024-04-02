@@ -46,22 +46,25 @@ In order to deploy new custom pool contracts on sepolia and execute scripts, you
 
 _example of forking sepolia_
 
-```
+```typescript
+...
     hardhat: {
       chainId: 11155111,
       forking: {
         url: `https://eth-sepolia.g.alchemy.com/v2/${providerApiKey}`,
-        enabled: process.env.MAINNET_FORKING_ENABLED === "true",
-      },
-    },
+...
 ```
 
-2. Run `yarn fork` from the root directory to start a local node that forks the network specified in step 1
+2. Run the following command from the root directory to start a local node that forks the network specified in step 1
+
+```bash
+yarn fork
+```
 
 3. In the `scaffold.config.ts` file, configure the `forkedNetwork.id` to match the chainId of the network you want to fork
 
-```
-// forked network
+```typescript
+...
 export const forkedNetwork = {
   id: 11155111,
   name: "Forked Sepolia",
@@ -76,6 +79,7 @@ export const forkedNetwork = {
 const scaffoldConfig = {
   // The networks on which your DApp is live
   targetNetworks: [forkedNetwork],
+...
 ```
 
 ## Checkpoint 1: 🌊 Create A Custom Pool
