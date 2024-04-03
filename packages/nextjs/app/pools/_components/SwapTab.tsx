@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { parseUnits } from "viem";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
-// import { useSwap } from "~~/hooks/balancer/";
+import { useSwap } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
 
 /**
  * Allow user to perform swap transactions within a pool
  */
 export const SwapTab = ({ pool }: { pool: Pool }) => {
+  const { querySwap } = useSwap();
   const [swapConfig, setSwapConfig] = useState({
     tokenIn: {
       poolTokensIndex: 0,
@@ -55,6 +57,26 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
 
     setTokenInDropdownOpen(false);
     setTokenOutDropdownOpen(false);
+  };
+
+  const handleQuerySwap = async () => {
+    const { poolTokens } = pool;
+    const indexOfTokenIn = swapConfig.tokenIn.poolTokensIndex;
+    const indexOfTokenOut = swapConfig.tokenOut.poolTokensIndex;
+
+    const tokenIn = {
+      address: poolTokens[indexOfTokenIn].address as `0x${string}`,
+      decimals: poolTokens[indexOfTokenIn].decimals,
+      amountRaw: parseUnits(swapConfig.tokenIn.amount, poolTokens[indexOfTokenIn].decimals),
+    };
+
+    const tokenOut = {
+      address: poolTokens[indexOfTokenOut].address as `0x${string}`,
+      decimals: poolTokens[indexOfTokenOut].decimals,
+      amountRaw: parseUnits(swapConfig.tokenOut.amount, poolTokens[indexOfTokenOut].decimals),
+    };
+
+    await querySwap(pool.address as `Ox${string}`, tokenIn, tokenOut);
   };
 
   return (
@@ -136,7 +158,9 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         </div>
       </div>
       <div>
-        <button className="btn btn-accent mt-3 w-full rounded-lg">Query Swap</button>
+        <button onClick={handleQuerySwap} className="btn btn-accent mt-3 w-full rounded-lg">
+          Query Swap
+        </button>
       </div>
     </section>
   );

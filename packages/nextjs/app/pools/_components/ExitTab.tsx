@@ -1,3 +1,6 @@
+/**
+ *
+ */
 export const ExitTab = () => {
   return (
     <section>
