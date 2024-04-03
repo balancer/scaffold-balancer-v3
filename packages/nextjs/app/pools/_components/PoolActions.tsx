@@ -1,23 +1,21 @@
 import { useState } from "react";
-import { Exit } from "./Exit";
-import { Join } from "./Join";
-import { SwapTab } from "./Swap";
+import { ExitTab } from "./ExitTab";
+import { JoinTab } from "./JoinTab";
+import { SwapTab } from "./SwapTab";
 import { type Pool } from "~~/hooks/balancer/types";
 
 type Action = "Swap" | "Join" | "Exit";
 
 /**
  * Allow user to perform swap, join, and exit transactions with a pool
- *
- * inspirational demo 👉 https://docs.balancer.fi/tools/core/pools.html
  */
 export const PoolActions = ({ pool }: { pool: Pool }) => {
   const [activeTab, setActiveTab] = useState<Action>("Swap");
 
   const tabs = {
     Swap: <SwapTab pool={pool} />,
-    Join: <Join />,
-    Exit: <Exit />,
+    Join: <JoinTab pool={pool} />,
+    Exit: <ExitTab />,
   };
 
   return (

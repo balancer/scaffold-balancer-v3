@@ -1,104 +1,64 @@
-import { Fragment } from "react";
-import {
-  // useEffect,
-  useState,
-} from "react";
-// import { ChainId, Slippage, Swap, SwapBuildOutputExactIn, SwapKind } from "@balancer/sdk";
-// import { Address } from "viem";
-// import { usePublicClient } from "wagmi";
+import { useState } from "react";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
+// import { useSwap } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
 
-// import scaffoldConfig from "~~/scaffold.config";
-
 /**
- * Allow user to perform swap transactions within the given pool
+ * Allow user to perform swap transactions within a pool
  */
 export const SwapTab = ({ pool }: { pool: Pool }) => {
-  console.log("pool", pool);
-
   const [swapConfig, setSwapConfig] = useState({
     tokenIn: {
+      poolTokensIndex: 0,
       amount: "",
-      symbol: pool.poolTokens[0].symbol,
     },
     tokenOut: {
+      poolTokensIndex: 1,
       amount: "",
-      symbol: pool.poolTokens[1].symbol,
     },
   });
 
   const [isTokenInDropdownOpen, setTokenInDropdownOpen] = useState(false);
   const [isTokenOutDropdownOpen, setTokenOutDropdownOpen] = useState(false);
 
-  //   const client = usePublicClient();
-  //   const RPC_URL = client.chain.rpcUrls.default.http[0];
-
-  //   // User defined
-  //   const chainId = scaffoldConfig.targetNetworks[0].id;
-  //   const swapKind = SwapKind.GivenIn;
-
-  //   // User defined
-  //   const swapInput = {
-  //     chainId: ChainId.SEPOLIA,
-  //     swapKind: SwapKind.GivenIn,
-  //     paths: [
-  //       {
-  //         pools: [pool.address as Address],
-  //         tokens: [
-  //           {
-  //             address: "0xb19382073c7a0addbb56ac6af1808fa49e377b75" as Address,
-  //             decimals: 18,
-  //           }, // tokenIn
-  //           {
-  //             address: "0xf04378a3ff97b3f979a46f91f9b2d5a1d2394773" as Address,
-  //             decimals: 18,
-  //           }, // tokenOut
-  //         ],
-  //         vaultVersion: 3 as const,
-  //         inputAmountRaw: 1000000000000000000n,
-  //         outputAmountRaw: 990000000000000000n,
-  //       },
-  //     ],
-  //   };
-
-  //   const swap = new Swap(swapInput);
-
-  //   useEffect(() => {
-  //     async function querySwap() {
-  //       const updatedOutputAmount = await swap.query(RPC_URL);
-
-  //       console.log("updatedOutputAmount", updatedOutputAmount);
-  //     }
-  //     querySwap();
-  //   }, [chainId, swap, swapKind, swapInput, RPC_URL]);
-
-  const handleTokenAmountChange = (amount: string, tokenType: any) => {
+  const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
     setSwapConfig(prevConfig => ({
       ...prevConfig,
-      [tokenType]: {
-        ...prevConfig[tokenType as keyof typeof swapConfig],
+      [swapConfigKey]: {
+        ...prevConfig[swapConfigKey],
         amount,
       },
     }));
   };
 
-  // Function to handle the selection of a new token
-  const handleTokenSelection = (symbol: string, tokenType: string) => {
+  const handleTokenSelection = (selectedSymbol: string, swapConfigKey: "tokenIn" | "tokenOut") => {
+    // Find the original index of the token in pool using its symbol
+    const selectedIndex = pool.poolTokens.findIndex(token => token.symbol === selectedSymbol);
+    // Determine the index for the other token in the pool if there are only two tokens
+    const otherIndex = pool.poolTokens.length === 2 ? (selectedIndex === 0 ? 1 : 0) : -1;
+
     setSwapConfig(prevConfig => ({
       ...prevConfig,
-      [tokenType]: {
-        ...prevConfig[tokenType as keyof typeof swapConfig],
-        symbol,
+      [swapConfigKey]: {
+        // Update the selected token with the new index and reset the amount
+        poolTokensIndex: selectedIndex,
+        amount: "",
       },
+      // If there are only two tokens in pool, automatically set the other token
+      ...(pool.poolTokens.length === 2 && {
+        [swapConfigKey === "tokenIn" ? "tokenOut" : "tokenIn"]: {
+          poolTokensIndex: otherIndex,
+          amount: "",
+        },
+      }),
     }));
-    // Close the dropdowns
+
     setTokenInDropdownOpen(false);
     setTokenOutDropdownOpen(false);
   };
 
   return (
-    <Fragment>
+    <section>
       <div className="mb-5">
         <div>
           <label>Token In</label>
@@ -118,7 +78,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
               role="button"
               className="btn m-1 btn-accent rounded-lg w-24"
             >
-              {swapConfig.tokenIn.symbol} <ChevronDownIcon className="w-4 h-4" />
+              {pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].symbol} <ChevronDownIcon className="w-4 h-4" />
             </div>
             <ul
               tabIndex={0}
@@ -127,7 +87,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
               }`}
             >
               {pool.poolTokens
-                .filter(token => token.symbol !== swapConfig.tokenIn.symbol)
+                .filter((_, index) => index !== swapConfig.tokenIn.poolTokensIndex)
                 .map(token => (
                   <li key={token.symbol} onClick={() => handleTokenSelection(token.symbol, "tokenIn")}>
                     <a>{token.symbol}</a>
@@ -156,7 +116,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
               role="button"
               className="btn m-1 btn-accent rounded-lg w-24"
             >
-              {swapConfig.tokenOut.symbol} <ChevronDownIcon className="w-4 h-4" />
+              {pool.poolTokens[swapConfig.tokenOut.poolTokensIndex].symbol} <ChevronDownIcon className="w-4 h-4" />
             </div>
             <ul
               tabIndex={0}
@@ -165,7 +125,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
               }`}
             >
               {pool.poolTokens
-                .filter(token => token.symbol !== swapConfig.tokenOut.symbol)
+                .filter((_, index) => index !== swapConfig.tokenOut.poolTokensIndex)
                 .map(token => (
                   <li key={token.symbol} onClick={() => handleTokenSelection(token.symbol, "tokenOut")}>
                     <a>{token.symbol}</a>
@@ -178,6 +138,6 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
       <div>
         <button className="btn btn-accent mt-3 w-full rounded-lg">Query Swap</button>
       </div>
-    </Fragment>
+    </section>
   );
 };
