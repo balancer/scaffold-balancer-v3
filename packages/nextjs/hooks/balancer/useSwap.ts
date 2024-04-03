@@ -15,13 +15,8 @@ type QuerySwapResponse = Promise<any>;
 type SwapTxResponse = Promise<string | undefined>;
 
 type SwapFunctions = {
-  querySwap: (pool: Address, tokenIn: tokenInfo, tokenOut: tokenInfo) => QuerySwapResponse;
+  querySwap: (pool: Address, tokenIn: any, tokenOut: any) => QuerySwapResponse;
   swap: () => SwapTxResponse;
-};
-
-export type tokenInfo = {
-  address: `0x${string}`;
-  decimals: number;
 };
 
 /**
@@ -45,16 +40,16 @@ export const useSwap = (): SwapFunctions => {
     const chainId = client?.chain.id as number;
     const rpcUrl = client?.chain.rpcUrls.alchemy.http[0] as string;
 
-    console.log("tokenIn", tokenIn);
-    console.log("tokenOut", tokenOut);
-
     const swapInput = {
       chainId: chainId,
       swapKind: SwapKind.GivenIn,
       paths: [
         {
           pools: [pool as `0x${string}`],
-          tokens: [tokenIn, tokenOut],
+          tokens: [
+            { address: tokenIn.address, decimals: tokenIn.decimals },
+            { address: tokenOut.address, decimals: tokenOut.decimals },
+          ],
           vaultVersion: 3 as const,
           inputAmountRaw: tokenIn.amountRaw,
           outputAmountRaw: tokenOut.amountRaw,
