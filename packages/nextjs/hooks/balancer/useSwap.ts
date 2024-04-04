@@ -38,7 +38,7 @@ export const useSwap = (): SwapFunctions => {
   const querySwap = async (pool: Address, tokenIn: any, tokenOut: any): QuerySwapResponse => {
     // User defined
     const chainId = client?.chain.id as number;
-    const rpcUrl = client?.chain.rpcUrls.alchemy.http[0] as string;
+    const rpcUrl = client?.chain.rpcUrls.default.http[0] as string;
 
     const swapInput = {
       chainId: chainId,

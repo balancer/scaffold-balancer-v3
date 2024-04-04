@@ -28,8 +28,10 @@ export const PoolActions = ({ pool }: { pool: Pool }) => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as Action)}
-                className={`py-3 flex-1 hover:font-bold ${
-                  activeTab === tab ? "bg-base-100 rounded-tl-lg rounded-tr-lg" : ""
+                className={`font-bold py-3 flex-1  ${
+                  activeTab === tab
+                    ? "bg-base-100 rounded-tl-lg rounded-tr-lg"
+                    : "hover:bg-secondary rounded-tl-lg rounded-tr-lg"
                 } focus:outline-none`}
               >
                 {tab}

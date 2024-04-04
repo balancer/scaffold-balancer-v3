@@ -27,7 +27,9 @@ const Pools: NextPage = () => {
     ...details,
   }));
 
-  const [selectedPoolAddress, setSelectedPoolAddress] = useState<string | undefined>();
+  const [selectedPoolAddress, setSelectedPoolAddress] = useState<string | undefined>(
+    "0xAc79a8276860BF96D761804E5ed5736D3AFaAECF",
+  );
   const {
     data: pool,
     isLoading,

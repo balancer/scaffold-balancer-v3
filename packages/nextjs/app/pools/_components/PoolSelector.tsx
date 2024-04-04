@@ -22,14 +22,14 @@ export const PoolSelector = ({
         <div
           tabIndex={0}
           role="button"
-          className="btn text-lg btn-accent w-96 font-normal relative"
+          className="btn text-lg btn-neutral w-96 font-normal relative"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         >
           <div>Your scaffold pools</div> <ChevronDownIcon className="absolute top-4 right-5 w-5 h-5" />
         </div>
         <ul
           tabIndex={0}
-          className={`dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-3 ${
+          className={`dropdown-content z-[1] menu p-2 shadow bg-neutral text-neutral-content rounded-box w-52 mt-3 ${
             !isDropdownOpen ? "hidden" : ""
           }`}
         >

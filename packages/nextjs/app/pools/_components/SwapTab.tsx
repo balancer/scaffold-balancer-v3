@@ -98,7 +98,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
               onClick={() => setTokenInDropdownOpen(!isTokenInDropdownOpen)}
               tabIndex={0}
               role="button"
-              className="btn m-1 btn-accent rounded-lg w-24"
+              className="btn m-1 btn-accent rounded-lg w-28"
             >
               {pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].symbol} <ChevronDownIcon className="w-4 h-4" />
             </div>
@@ -136,7 +136,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
               onClick={() => setTokenOutDropdownOpen(!isTokenOutDropdownOpen)}
               tabIndex={0}
               role="button"
-              className="btn m-1 btn-accent rounded-lg w-24"
+              className="btn m-1 btn-accent rounded-lg w-28"
             >
               {pool.poolTokens[swapConfig.tokenOut.poolTokensIndex].symbol} <ChevronDownIcon className="w-4 h-4" />
             </div>
@@ -158,7 +158,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         </div>
       </div>
       <div>
-        <button onClick={handleQuerySwap} className="btn btn-accent mt-3 w-full rounded-lg">
+        <button onClick={handleQuerySwap} className="btn btn-neutral mt-3 w-full rounded-lg">
           Query Swap
         </button>
       </div>
