@@ -8,6 +8,8 @@ import {
   Slippage,
 } from "@balancer/sdk";
 import { useWalletClient } from "wagmi";
+import { useTransactor } from "~~/hooks/scaffold-eth";
+import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 type QueryJoinResponse = Promise<any>;
 
@@ -27,7 +29,8 @@ type JoinPoolFunctions = {
 export const useJoin = (): JoinPoolFunctions => {
   const [call, setCall] = useState<any>();
 
-  const { data: client } = useWalletClient();
+  const { data: walletClient } = useWalletClient();
+  const writeTx = useTransactor();
 
   /**
    * @param pool the address of pool
@@ -37,8 +40,8 @@ export const useJoin = (): JoinPoolFunctions => {
   const queryJoin = async (pool: string, amountsIn: InputAmount[]): QueryJoinResponse => {
     try {
       // User defined (along with the queryJoin parameters)
-      const chainId = client?.chain.id as number;
-      const rpcUrl = client?.chain.rpcUrls.default.http[0] as string;
+      const chainId = walletClient?.chain.id as number;
+      const rpcUrl = walletClient?.chain.rpcUrls.default.http[0] as string;
       const slippage = Slippage.fromPercentage("1"); // 1%
 
       // API used to fetch relevant pool data for addLiquidity.query
@@ -85,14 +88,27 @@ export const useJoin = (): JoinPoolFunctions => {
    */
   const joinPool = async (): JoinPoolTxResponse => {
     try {
-      const hash = await client?.sendTransaction({
-        account: client.account,
-        data: call.call,
-        to: call.to,
-        value: call.value,
-      });
+      if (!walletClient) {
+        throw new Error("Client is undefined");
+      }
 
-      return hash;
+      const txHashPromise = () =>
+        walletClient.sendTransaction({
+          account: walletClient.account,
+          data: call.call,
+          to: call.to,
+          value: call.value,
+        });
+
+      const hash = await writeTx(txHashPromise, { blockConfirmations: 1 });
+
+      if (!hash) {
+        throw new Error("Transaction failed");
+      }
+
+      const chainId = await walletClient.getChainId();
+      const blockExplorerTxURL = getBlockExplorerTxLink(chainId, hash);
+      return blockExplorerTxURL;
     } catch (e) {
       console.error("error", e);
     }
