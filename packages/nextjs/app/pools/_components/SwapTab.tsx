@@ -8,7 +8,8 @@ import { type Pool, PoolTokens } from "~~/hooks/balancer/types";
  * Allow user to perform swap transactions within a pool
  */
 export const SwapTab = ({ pool }: { pool: Pool }) => {
-  const { querySwap } = useSwap();
+  const [isTokenInDropdownOpen, setTokenInDropdownOpen] = useState(false);
+  const [isTokenOutDropdownOpen, setTokenOutDropdownOpen] = useState(false);
   const [swapConfig, setSwapConfig] = useState({
     tokenIn: {
       poolTokensIndex: 0,
@@ -19,9 +20,9 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
       amount: "",
     },
   });
+  const [queryResponse, setQueryResponse] = useState({ expectedAmount: "0", minOrMaxAmount: "0", swapKind: "" });
 
-  const [isTokenInDropdownOpen, setTokenInDropdownOpen] = useState(false);
-  const [isTokenOutDropdownOpen, setTokenOutDropdownOpen] = useState(false);
+  const { querySwap } = useSwap();
 
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
     setSwapConfig(prevConfig => ({
@@ -76,8 +77,26 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
       amountRaw: parseUnits(swapConfig.tokenOut.amount, poolTokens[indexOfTokenOut].decimals),
     };
 
-    await querySwap(pool.address as `Ox${string}`, tokenIn, tokenOut);
+    const { updatedAmount, call } = await querySwap(pool.address as `Ox${string}`, tokenIn, tokenOut);
+
+    if (updatedAmount.swapKind === 0) {
+      setQueryResponse({
+        expectedAmount: updatedAmount.expectedAmountOut.amount.toString(),
+
+        minOrMaxAmount: call.minAmountOut.amount.toString(),
+        swapKind: "GivenIn",
+      });
+    } else {
+      setQueryResponse({
+        expectedAmount: updatedAmount.expectedAmountIn.amount.toString(),
+
+        minOrMaxAmount: call.maxAmountIn.amount.toString(),
+        swapKind: "GivenOut",
+      });
+    }
+    console.log("queryResponse", queryResponse);
   };
+  console.log("queryResponse", queryResponse);
 
   const isDisabled = swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === "";
 
@@ -119,12 +138,12 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
       <div className="bg-base-100 rounded-lg p-5 mt-5">
         <>
           <div className="flex flex-wrap justify-between mb-3">
-            <div>Expected Out</div>
-            <div></div>
+            <div>Expected Amount {queryResponse.swapKind === "GivenIn" ? "Out" : "In"}</div>
+            <div>{queryResponse.expectedAmount}</div>
           </div>
           <div className="flex flex-wrap justify-between">
-            <div>Minimum Out</div>
-            <div></div>
+            <div>Minimum</div>
+            <div>{queryResponse.minOrMaxAmount}</div>
           </div>
           {/* {joinTxUrl && (
             <div className="flex flex-wrap justify-between mt-3">

@@ -11,6 +11,8 @@ import {
 } from "@balancer/sdk";
 import { Address } from "viem";
 import { useWalletClient } from "wagmi";
+import { useTransactor } from "~~/hooks/scaffold-eth";
+import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 type QuerySwapResponse = Promise<any>;
 
@@ -19,6 +21,12 @@ type SwapTxResponse = Promise<string | undefined>;
 type SwapFunctions = {
   querySwap: (pool: Address, tokenIn: any, tokenOut: any) => QuerySwapResponse;
   swap: () => SwapTxResponse;
+};
+
+type SwapConfig = {
+  slippage: Slippage;
+  deadline: bigint;
+  wethIsEth: boolean;
 };
 
 /**
@@ -30,7 +38,8 @@ type SwapFunctions = {
 export const useSwap = (): SwapFunctions => {
   const [call, setCall] = useState<any>();
 
-  const { data: client } = useWalletClient();
+  const { data: walletClient } = useWalletClient();
+  const writeTx = useTransactor();
 
   /**
    * @param pool the address of pool
@@ -40,8 +49,8 @@ export const useSwap = (): SwapFunctions => {
    */
   const querySwap = async (pool: Address, tokenIn: any, tokenOut: any): QuerySwapResponse => {
     // User defined
-    const chainId = client?.chain.id as number;
-    const rpcUrl = client?.chain.rpcUrls.default.http[0] as string;
+    const chainId = walletClient?.chain.id as number;
+    const rpcUrl = walletClient?.chain.rpcUrls.default.http[0] as string;
 
     const swapInput = {
       chainId: chainId,
@@ -62,37 +71,25 @@ export const useSwap = (): SwapFunctions => {
 
     const swap = new Swap(swapInput);
 
-    let updatedOutputAmount;
-    let call;
+    const updatedAmount = (await swap.query(rpcUrl)) as ExactInQueryOutput | ExactOutQueryOutput;
 
-    if (swapInput.swapKind === SwapKind.GivenIn) {
-      updatedOutputAmount = (await swap.query(rpcUrl)) as ExactInQueryOutput;
-      call = swap.buildCall({
-        slippage: Slippage.fromPercentage("0.1"), // 0.1%,
-        deadline: 999999999999999999n, // Deadline for the swap, in this case infinite
-        queryOutput: updatedOutputAmount,
-        wethIsEth: false,
-      }) as SwapBuildOutputExactIn;
-    } else {
-      updatedOutputAmount = (await swap.query(rpcUrl)) as ExactOutQueryOutput;
-      call = swap.buildCall({
-        slippage: Slippage.fromPercentage("0.1"), // 0.1%,
-        deadline: 999999999999999999n, // Deadline for the swap, in this case infinite
-        queryOutput: updatedOutputAmount,
-        wethIsEth: false,
-      }) as SwapBuildOutputExactOut;
-    }
+    const swapConfig: SwapConfig = {
+      slippage: Slippage.fromPercentage("0.1"),
+      deadline: 999999999999999999n,
+      wethIsEth: false,
+    };
 
-    console.log("updatedOutputAmount", updatedOutputAmount);
+    const call = swap.buildCall({
+      ...swapConfig,
+      queryOutput: updatedAmount,
+    }) as SwapBuildOutputExactIn | SwapBuildOutputExactOut;
 
     setCall(call);
-    console.log("call", call);
 
-    if (updatedOutputAmount.swapKind === SwapKind.GivenIn) {
-      return { expectedAmountOut: updatedOutputAmount.expectedAmountOut, minAmountOut: call };
-    } else if (updatedOutputAmount.swapKind === SwapKind.GivenOut) {
-      return { expectedAmountIn: updatedOutputAmount.expectedAmountIn, maxAmountIn: call };
-    }
+    return {
+      updatedAmount,
+      call,
+    };
   };
 
   /**
@@ -100,13 +97,27 @@ export const useSwap = (): SwapFunctions => {
    */
   const swap = async (): SwapTxResponse => {
     try {
-      const hash = await client?.sendTransaction({
-        account: client.account,
-        data: call.call,
-        to: call.to,
-        value: call.value,
-      });
-      return hash;
+      if (!walletClient) {
+        throw new Error("walletClient is undefined");
+      }
+
+      const txHashPromise = () =>
+        walletClient.sendTransaction({
+          account: walletClient.account,
+          data: call.call,
+          to: call.to,
+          value: call.value,
+        });
+
+      const hash = await writeTx(txHashPromise, { blockConfirmations: 1 });
+
+      if (!hash) {
+        throw new Error("Transaction failed");
+      }
+
+      const chainId = await walletClient.getChainId();
+      const blockExplorerTxURL = getBlockExplorerTxLink(chainId, hash);
+      return blockExplorerTxURL;
     } catch (e) {
       console.error("error", e);
     }
