@@ -2,9 +2,11 @@ import { useState } from "react";
 import {
   // ChainId,
   ExactInQueryOutput,
+  ExactOutQueryOutput,
   Slippage,
   Swap,
   SwapBuildOutputExactIn,
+  SwapBuildOutputExactOut,
   SwapKind,
 } from "@balancer/sdk";
 import { Address } from "viem";
@@ -34,6 +36,7 @@ export const useSwap = (): SwapFunctions => {
    * @param pool the address of pool
    * @param tokenIn the token to sell
    * @param tokenOut the token to buy
+   * @param swapKind the kind of swap (GivenIn or GivenOut)
    */
   const querySwap = async (pool: Address, tokenIn: any, tokenOut: any): QuerySwapResponse => {
     // User defined
@@ -42,7 +45,7 @@ export const useSwap = (): SwapFunctions => {
 
     const swapInput = {
       chainId: chainId,
-      swapKind: SwapKind.GivenIn,
+      swapKind: SwapKind.GivenOut,
       paths: [
         {
           pools: [pool as `0x${string}`],
@@ -51,33 +54,45 @@ export const useSwap = (): SwapFunctions => {
             { address: tokenOut.address, decimals: tokenOut.decimals },
           ],
           vaultVersion: 3 as const,
-          inputAmountRaw: tokenIn.amountRaw,
-          outputAmountRaw: tokenOut.amountRaw,
+          inputAmountRaw: tokenIn.amountRaw, // used for SwapKind.GivenIn
+          outputAmountRaw: tokenOut.amountRaw, // used for SwapKind.GivenOut
         },
       ],
     };
 
     const swap = new Swap(swapInput);
 
-    // Get up to date swap result by querying onchain
-    const updatedOutputAmount = (await swap.query(rpcUrl)) as ExactInQueryOutput;
-    console.log(`Updated amount: ${updatedOutputAmount.expectedAmountOut}`);
+    let updatedOutputAmount;
+    let call;
 
-    // Build call data using user defined slippage
-    const callData = swap.buildCall({
-      slippage: Slippage.fromPercentage("0.1"), // 0.1%,
-      deadline: 999999999999999999n, // Deadline for the swap, in this case infinite
-      queryOutput: updatedOutputAmount,
-      wethIsEth: false,
-    }) as SwapBuildOutputExactIn;
+    if (swapInput.swapKind === SwapKind.GivenIn) {
+      updatedOutputAmount = (await swap.query(rpcUrl)) as ExactInQueryOutput;
+      call = swap.buildCall({
+        slippage: Slippage.fromPercentage("0.1"), // 0.1%,
+        deadline: 999999999999999999n, // Deadline for the swap, in this case infinite
+        queryOutput: updatedOutputAmount,
+        wethIsEth: false,
+      }) as SwapBuildOutputExactIn;
+    } else {
+      updatedOutputAmount = (await swap.query(rpcUrl)) as ExactOutQueryOutput;
+      call = swap.buildCall({
+        slippage: Slippage.fromPercentage("0.1"), // 0.1%,
+        deadline: 999999999999999999n, // Deadline for the swap, in this case infinite
+        queryOutput: updatedOutputAmount,
+        wethIsEth: false,
+      }) as SwapBuildOutputExactOut;
+    }
 
-    setCall(callData);
+    console.log("updatedOutputAmount", updatedOutputAmount);
 
-    console.log(
-      `Min Amount Out: ${callData.minAmountOut.amount}\n\nTx Data:\nTo: ${callData.to}\nCallData: ${callData.callData}\nValue: ${callData.value}`,
-    );
+    setCall(call);
+    console.log("call", call);
 
-    return { updatedOutputAmount };
+    if (updatedOutputAmount.swapKind === SwapKind.GivenIn) {
+      return { expectedAmountOut: updatedOutputAmount.expectedAmountOut, minAmountOut: call };
+    } else if (updatedOutputAmount.swapKind === SwapKind.GivenOut) {
+      return { expectedAmountIn: updatedOutputAmount.expectedAmountIn, maxAmountIn: call };
+    }
   };
 
   /**

@@ -7,7 +7,7 @@ import {
   InputAmount,
   Slippage,
 } from "@balancer/sdk";
-import { useWalletClient } from "wagmi";
+import { usePublicClient, useWalletClient } from "wagmi";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
@@ -30,6 +30,7 @@ export const useJoin = (): JoinPoolFunctions => {
   const [call, setCall] = useState<any>();
 
   const { data: walletClient } = useWalletClient();
+  const publicClient = usePublicClient();
   const writeTx = useTransactor();
 
   /**
@@ -40,8 +41,8 @@ export const useJoin = (): JoinPoolFunctions => {
   const queryJoin = async (pool: string, amountsIn: InputAmount[]): QueryJoinResponse => {
     try {
       // User defined (along with the queryJoin parameters)
-      const chainId = walletClient?.chain.id as number;
-      const rpcUrl = walletClient?.chain.rpcUrls.default.http[0] as string;
+      const chainId = await publicClient.getChainId();
+      const rpcUrl = publicClient?.chain.rpcUrls.default.http[0] as string;
       const slippage = Slippage.fromPercentage("1"); // 1%
 
       // API used to fetch relevant pool data for addLiquidity.query
