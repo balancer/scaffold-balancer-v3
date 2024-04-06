@@ -17,8 +17,8 @@ export const PoolComposition = ({ pool }: { pool: Pool }) => {
         <div className="border border-base-100 rounded-lg">
           <div className="flex justify-between items-center border-base-100 border-b p-3">
             <div>
-              <div className="font-bold">{pool?.symbol}</div>
-              <div className="text-sm">{pool?.name}</div>
+              <div className="font-bold">BPT</div>
+              <div className="text-sm">{pool.name}</div>
             </div>
             <div>{formatUnits(pool.totalSupply, pool.decimals)}</div>
           </div>

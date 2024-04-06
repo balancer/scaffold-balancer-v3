@@ -23,8 +23,8 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
         <div className="border border-base-100 rounded-lg">
           <div className="flex justify-between border-base-100 border-b p-3 items-center">
             <div>
-              <div className="font-bold">{pool?.symbol}</div>
-              <div className="text-sm">{pool?.name}</div>
+              <div className="font-bold">BPT</div>
+              <div className="text-sm">{pool.name}</div>
             </div>
             <div>TODO</div>
           </div>

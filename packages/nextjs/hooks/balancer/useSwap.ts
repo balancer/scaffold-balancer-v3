@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { type SwapConfig } from "./types";
 import {
   // ChainId,
   ExactInQueryOutput,
@@ -6,10 +7,9 @@ import {
   Slippage,
   Swap,
   SwapBuildOutputExactIn,
-  SwapBuildOutputExactOut,
-  SwapKind,
+  SwapBuildOutputExactOut, // SwapKind,
 } from "@balancer/sdk";
-import { Address } from "viem";
+// import { Address } from "viem";
 import { useWalletClient } from "wagmi";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
@@ -19,14 +19,8 @@ type QuerySwapResponse = Promise<any>;
 type SwapTxResponse = Promise<string | undefined>;
 
 type SwapFunctions = {
-  querySwap: (pool: Address, tokenIn: any, tokenOut: any) => QuerySwapResponse;
+  querySwap: (swapConfig: SwapConfig) => QuerySwapResponse;
   swap: () => SwapTxResponse;
-};
-
-type SwapConfig = {
-  slippage: Slippage;
-  deadline: bigint;
-  wethIsEth: boolean;
 };
 
 /**
@@ -42,29 +36,34 @@ export const useSwap = (): SwapFunctions => {
   const writeTx = useTransactor();
 
   /**
-   * @param pool the address of pool
-   * @param tokenIn the token to sell
-   * @param tokenOut the token to buy
-   * @param swapKind the kind of swap (GivenIn or GivenOut)
+   * @param swapConfig the configuration object for the swap
    */
-  const querySwap = async (pool: Address, tokenIn: any, tokenOut: any): QuerySwapResponse => {
+  const querySwap = async (swapConfig: SwapConfig): QuerySwapResponse => {
     // User defined
     const chainId = walletClient?.chain.id as number;
     const rpcUrl = walletClient?.chain.rpcUrls.default.http[0] as string;
 
+    const { pool, tokenIn, tokenOut, swapKind } = swapConfig;
+
     const swapInput = {
       chainId: chainId,
-      swapKind: SwapKind.GivenOut,
+      swapKind: swapKind,
       paths: [
         {
-          pools: [pool as `0x${string}`],
+          pools: [pool],
           tokens: [
-            { address: tokenIn.address, decimals: tokenIn.decimals },
-            { address: tokenOut.address, decimals: tokenOut.decimals },
+            {
+              address: tokenIn.address,
+              decimals: tokenIn.decimals,
+            }, // tokenIn
+            {
+              address: tokenOut.address,
+              decimals: tokenOut.decimals,
+            }, // tokenOut
           ],
           vaultVersion: 3 as const,
-          inputAmountRaw: tokenIn.amountRaw, // used for SwapKind.GivenIn
-          outputAmountRaw: tokenOut.amountRaw, // used for SwapKind.GivenOut
+          inputAmountRaw: tokenIn.amountRaw,
+          outputAmountRaw: tokenOut.amountRaw,
         },
       ],
     };
@@ -73,14 +72,10 @@ export const useSwap = (): SwapFunctions => {
 
     const updatedAmount = (await swap.query(rpcUrl)) as ExactInQueryOutput | ExactOutQueryOutput;
 
-    const swapConfig: SwapConfig = {
+    const call = swap.buildCall({
       slippage: Slippage.fromPercentage("0.1"),
       deadline: 999999999999999999n,
       wethIsEth: false,
-    };
-
-    const call = swap.buildCall({
-      ...swapConfig,
       queryOutput: updatedAmount,
     }) as SwapBuildOutputExactIn | SwapBuildOutputExactOut;
 

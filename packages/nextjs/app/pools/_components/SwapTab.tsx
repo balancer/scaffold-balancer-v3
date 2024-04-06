@@ -1,16 +1,39 @@
-import { Dispatch, SetStateAction, useState } from "react";
-import { parseUnits } from "viem";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { TokenField } from "./TokenField";
+import { SwapKind } from "@balancer/sdk";
+import { formatUnits, parseUnits } from "viem";
 import { useSwap } from "~~/hooks/balancer/";
-import { type Pool, PoolTokens } from "~~/hooks/balancer/types";
+import { type Pool } from "~~/hooks/balancer/types";
+
+type SwapInputs = {
+  tokenIn: {
+    poolTokensIndex: number;
+    amount: string;
+  };
+  tokenOut: {
+    poolTokensIndex: number;
+    amount: string;
+  };
+  swapKind: SwapKind;
+};
+type QueryResponse = {
+  expectedAmount: string;
+  minOrMaxAmount: string;
+  swapKind: SwapKind | undefined;
+};
 
 /**
  * Allow user to perform swap transactions within a pool
  */
 export const SwapTab = ({ pool }: { pool: Pool }) => {
+  const [queryResponse, setQueryResponse] = useState<QueryResponse>({
+    expectedAmount: "0",
+    minOrMaxAmount: "0",
+    swapKind: undefined,
+  });
   const [isTokenInDropdownOpen, setTokenInDropdownOpen] = useState(false);
   const [isTokenOutDropdownOpen, setTokenOutDropdownOpen] = useState(false);
-  const [swapConfig, setSwapConfig] = useState({
+  const [swapConfig, setSwapConfig] = useState<SwapInputs>({
     tokenIn: {
       poolTokensIndex: 0,
       amount: "",
@@ -19,19 +42,34 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
       poolTokensIndex: 1,
       amount: "",
     },
+    swapKind: SwapKind.GivenOut,
   });
-  const [queryResponse, setQueryResponse] = useState({ expectedAmount: "0", minOrMaxAmount: "0", swapKind: "" });
 
   const { querySwap } = useSwap();
 
+  // Update the focused input amount with new value and reset the other input amount
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
-    setSwapConfig(prevConfig => ({
-      ...prevConfig,
-      [swapConfigKey]: {
-        ...prevConfig[swapConfigKey],
-        amount,
-      },
-    }));
+    setSwapConfig(prevConfig => {
+      const swapKind = swapConfigKey === "tokenIn" ? SwapKind.GivenIn : SwapKind.GivenOut;
+
+      setQueryResponse({
+        expectedAmount: "0",
+        minOrMaxAmount: "0",
+        swapKind: undefined,
+      });
+
+      return {
+        tokenIn: {
+          ...prevConfig.tokenIn,
+          amount: swapConfigKey === "tokenIn" ? amount : "",
+        },
+        tokenOut: {
+          ...prevConfig.tokenOut,
+          amount: swapConfigKey === "tokenOut" ? amount : "",
+        },
+        swapKind,
+      };
+    });
   };
 
   const handleTokenSelection = (selectedSymbol: string, swapConfigKey: "tokenIn" | "tokenOut") => {
@@ -77,28 +115,49 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
       amountRaw: parseUnits(swapConfig.tokenOut.amount, poolTokens[indexOfTokenOut].decimals),
     };
 
-    const { updatedAmount, call } = await querySwap(pool.address as `Ox${string}`, tokenIn, tokenOut);
+    const { updatedAmount, call } = await querySwap({
+      pool: pool.address as `0x${string}`,
+      tokenIn,
+      tokenOut,
+      swapKind: swapConfig.swapKind,
+    });
 
-    if (updatedAmount.swapKind === 0) {
+    if (updatedAmount.swapKind === SwapKind.GivenIn) {
       setQueryResponse({
         expectedAmount: updatedAmount.expectedAmountOut.amount.toString(),
-
         minOrMaxAmount: call.minAmountOut.amount.toString(),
-        swapKind: "GivenIn",
+        swapKind: SwapKind.GivenIn,
       });
+
+      setSwapConfig(prevConfig => ({
+        ...prevConfig,
+        tokenOut: {
+          ...prevConfig.tokenOut,
+          amount: Number(
+            formatUnits(updatedAmount.expectedAmountOut.amount.toString(), poolTokens[indexOfTokenOut].decimals),
+          ).toFixed(4),
+        },
+      }));
     } else {
       setQueryResponse({
         expectedAmount: updatedAmount.expectedAmountIn.amount.toString(),
-
         minOrMaxAmount: call.maxAmountIn.amount.toString(),
-        swapKind: "GivenOut",
+        swapKind: SwapKind.GivenOut,
       });
-    }
-    console.log("queryResponse", queryResponse);
-  };
-  console.log("queryResponse", queryResponse);
 
-  const isDisabled = swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === "";
+      setSwapConfig(prevConfig => ({
+        ...prevConfig,
+        tokenIn: {
+          ...prevConfig.tokenIn,
+          amount: Number(
+            formatUnits(updatedAmount.expectedAmountIn.amount.toString(), poolTokens[indexOfTokenIn].decimals),
+          ).toFixed(4),
+        },
+      }));
+    }
+  };
+
+  const isQueryDisabled = swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === "";
 
   return (
     <section>
@@ -111,6 +170,9 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         setTokenDropdownOpen={setTokenInDropdownOpen}
         poolTokens={pool.poolTokens}
         selectedTokenIndex={swapConfig.tokenIn.poolTokensIndex}
+        showAllowance={true}
+        showBalance={true}
+        isHighlighted={queryResponse.swapKind === SwapKind.GivenIn}
       />
       <TokenField
         label="Token Out"
@@ -121,13 +183,14 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         setTokenDropdownOpen={setTokenOutDropdownOpen}
         poolTokens={pool.poolTokens}
         selectedTokenIndex={swapConfig.tokenOut.poolTokensIndex}
+        isHighlighted={queryResponse.swapKind === SwapKind.GivenOut}
       />
       <div>
         <button
           onClick={handleQuerySwap}
-          disabled={isDisabled}
+          disabled={isQueryDisabled}
           className={`w-full text-white font-bold py-4 rounded-lg ${
-            isDisabled
+            isQueryDisabled
               ? "bg-[#334155] opacity-70 cursor-not-allowed"
               : "bg-gradient-to-tr from-indigo-700 from-15% to-fuchsia-600"
           }`}
@@ -138,11 +201,11 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
       <div className="bg-base-100 rounded-lg p-5 mt-5">
         <>
           <div className="flex flex-wrap justify-between mb-3">
-            <div>Expected Amount {queryResponse.swapKind === "GivenIn" ? "Out" : "In"}</div>
+            <div>Expected Amount {queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}</div>
             <div>{queryResponse.expectedAmount}</div>
           </div>
           <div className="flex flex-wrap justify-between">
-            <div>Minimum</div>
+            <div>{queryResponse.swapKind === SwapKind.GivenIn ? "Minumum Amount Out" : "Maximum Amount In"}</div>
             <div>{queryResponse.minOrMaxAmount}</div>
           </div>
           {/* {joinTxUrl && (
@@ -163,67 +226,3 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
     </section>
   );
 };
-
-interface TokenFieldProps {
-  label: string;
-  value: string;
-  onAmountChange: (value: string) => void;
-  onTokenSelect: (symbol: string) => void;
-  tokenDropdownOpen: boolean;
-  setTokenDropdownOpen: Dispatch<SetStateAction<boolean>>;
-  poolTokens: PoolTokens[];
-  selectedTokenIndex: number;
-}
-
-const TokenField: React.FC<TokenFieldProps> = ({
-  label,
-  value,
-  onAmountChange,
-  onTokenSelect,
-  tokenDropdownOpen,
-  setTokenDropdownOpen,
-  poolTokens,
-  selectedTokenIndex,
-}) => (
-  <div className="mb-5">
-    <div className="ml-2 mb-0.5">
-      <label>{label}</label>
-    </div>
-    <div className="relative">
-      <input
-        type="number"
-        value={value}
-        onChange={e => onAmountChange(e.target.value)}
-        placeholder="0.0"
-        className="text-right text-2xl w-full input input-bordered rounded-lg bg-base-200 p-10"
-      />
-      <div className="absolute top-0 left-0 flex gap-3 p-3">
-        <div>
-          <div
-            onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)}
-            tabIndex={0}
-            role="button"
-            className="bg-base-100 rounded-lg w-28 flex items-center justify-center gap-2 font-bold h-[58px] p-2"
-          >
-            {poolTokens[selectedTokenIndex].symbol} <ChevronDownIcon className="w-4 h-4" />
-          </div>
-          {tokenDropdownOpen && (
-            <ul tabIndex={0} className="mt-2 dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-              {poolTokens
-                .filter((_, index) => index !== selectedTokenIndex)
-                .map(token => (
-                  <li key={token.symbol} onClick={() => onTokenSelect(token.symbol)}>
-                    <a>{token.symbol}</a>
-                  </li>
-                ))}
-            </ul>
-          )}
-        </div>
-        <div className="flex flex-col gap-1 justify-center text-sm">
-          <div>Allowance:</div>
-          <div>Balance:</div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
