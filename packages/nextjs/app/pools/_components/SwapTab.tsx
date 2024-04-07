@@ -4,6 +4,7 @@ import { SwapKind } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useAccount, useContractRead, useContractWrite } from "wagmi";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import { GradientButton, OutlinedButton } from "~~/components/common";
 import { useSwap } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
@@ -200,8 +201,6 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
     }
   };
 
-  const isQueryDisabled = swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === "";
-
   const handleSwap = async () => {
     try {
       const txHash = await swap();
@@ -216,45 +215,44 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
     <section>
       <TokenField
         label="Token In"
+        tokenSymbol={pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].symbol}
         value={swapConfig.tokenIn.amount}
         onAmountChange={value => handleTokenAmountChange(value, "tokenIn")}
         onTokenSelect={symbol => handleTokenSelection(symbol, "tokenIn")}
         tokenDropdownOpen={isTokenInDropdownOpen}
         setTokenDropdownOpen={setTokenInDropdownOpen}
-        poolTokens={pool.poolTokens}
-        selectedTokenIndex={swapConfig.tokenIn.poolTokensIndex}
+        selectableTokens={pool.poolTokens.filter(
+          token => token.symbol !== pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].symbol,
+        )}
         allowance={formatUnits(allowance || 0n, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals)}
         balance={formatUnits(balance || 0n, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals)}
         isHighlighted={queryResponse.swapKind === SwapKind.GivenIn}
       />
       <TokenField
         label="Token Out"
+        tokenSymbol={pool.poolTokens[swapConfig.tokenOut.poolTokensIndex].symbol}
         value={swapConfig.tokenOut.amount}
         onAmountChange={value => handleTokenAmountChange(value, "tokenOut")}
         onTokenSelect={symbol => handleTokenSelection(symbol, "tokenOut")}
         tokenDropdownOpen={isTokenOutDropdownOpen}
         setTokenDropdownOpen={setTokenOutDropdownOpen}
-        poolTokens={pool.poolTokens}
-        selectedTokenIndex={swapConfig.tokenOut.poolTokensIndex}
+        selectableTokens={pool.poolTokens.filter(
+          token => token.symbol !== pool.poolTokens[swapConfig.tokenOut.poolTokensIndex].symbol,
+        )}
         isHighlighted={queryResponse.swapKind === SwapKind.GivenOut}
       />
       <div className={`grid gap-5 ${queryResponse.expectedAmount === "0" ? "grid-cols-1" : "grid-cols-2"}`}>
         <div>
-          <button
+          <GradientButton
             onClick={handleQuerySwap}
-            disabled={isQueryDisabled}
-            className={`w-full text-white font-bold py-4 rounded-lg ${
-              isQueryDisabled
-                ? "bg-[#334155] opacity-70 cursor-not-allowed"
-                : "bg-gradient-to-tr from-indigo-700 from-15% to-fuchsia-600"
-            }`}
+            isDisabled={swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === ""}
           >
             Query Swap
-          </button>
+          </GradientButton>
         </div>
         {queryResponse.expectedAmount === "0" ? null : !sufficientAllowance ? (
           <div>
-            <button
+            <OutlinedButton
               onClick={async () => {
                 try {
                   await writeTx(approve, { blockConfirmations: 1 });
@@ -263,19 +261,13 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
                   console.error("error", err);
                 }
               }}
-              className="border border-neutral hover:bg-neutral hover:text-neutral-content font-bold w-full py-4 rounded-lg"
             >
               Approve
-            </button>
+            </OutlinedButton>
           </div>
         ) : (
           <div>
-            <button
-              onClick={handleSwap}
-              className="border border-neutral hover:bg-neutral hover:text-neutral-content font-bold w-full py-4 rounded-lg"
-            >
-              Send Swap
-            </button>
+            <OutlinedButton onClick={handleSwap}>Send Swap</OutlinedButton>
           </div>
         )}
       </div>

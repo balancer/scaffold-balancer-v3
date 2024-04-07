@@ -60,9 +60,7 @@ export const useJoin = (): JoinPoolFunctions => {
       // Query addLiquidity to get the amount of BPT out
       const addLiquidity = new AddLiquidity();
       const queryOutput = await addLiquidity.query(addLiquidityInput, poolState);
-
       const expectedBptOut = queryOutput.bptOut.amount.toString();
-      console.log(`Expected BPT Out: ${expectedBptOut}`);
 
       // Applies slippage to the BPT out amount and constructs the call
       const call = addLiquidity.buildCall({
@@ -71,11 +69,9 @@ export const useJoin = (): JoinPoolFunctions => {
         chainId,
         wethIsEth: false,
       });
+      const minBptOut = call.minBptOut.amount.toString();
 
       setCall(call);
-
-      const minBptOut = call.minBptOut.amount.toString();
-      console.log(`Min BPT Out: ${minBptOut}`);
 
       return { expectedBptOut, minBptOut };
     } catch (error) {

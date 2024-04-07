@@ -1,23 +1,24 @@
+import { TokenField } from "./TokenField";
+import { GradientButton } from "~~/components/common";
+import { type Pool } from "~~/hooks/balancer/types";
+
 /**
  *
  */
-export const ExitTab = () => {
+export const ExitTab = ({ pool }: { pool: Pool }) => {
+  console.log("pool", pool);
   return (
     <section>
-      <div className="mb-5">
-        <div>
-          <label>BPT In</label>
-        </div>
-        <div className="relative">
-          <input type="number" className="text-2xl w-full input input-bordered rounded-lg bg-base-200 p-10" />
-
-          <div role="button" className="btn m-1 btn-accent rounded-lg absolute top-3 right-4">
-            B-50DAI-50USDe
-          </div>
-        </div>
-      </div>
+      <TokenField
+        label="BPT In"
+        tokenSymbol={pool.symbol}
+        value=""
+        onAmountChange={() => console.log("amount changed")}
+      />
       <div>
-        <button className="btn btn-accent mt-3 w-full rounded-lg">Query Join</button>
+        <GradientButton onClick={() => console.log("query exit button!")} isDisabled={false}>
+          Query Exit
+        </GradientButton>
       </div>
     </section>
   );

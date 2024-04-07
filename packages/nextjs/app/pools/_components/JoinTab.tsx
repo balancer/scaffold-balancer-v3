@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from "react";
+import { TokenField } from "./TokenField";
 import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useAccount, useContractReads, useContractWrite } from "wagmi";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import { GradientButton, OutlinedButton } from "~~/components/common";
 import { useJoin } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
+
+const initialQueryResponse = {
+  expectedBptOut: "0",
+  minBptOut: "0",
+};
 
 /**
  * 1. Query the results of join transaction
@@ -13,10 +20,7 @@ import { useTransactor } from "~~/hooks/scaffold-eth";
  * 3. User joins the pool
  */
 export const JoinTab = ({ pool }: { pool: Pool }) => {
-  const [queryResponse, setQueryResponse] = useState({
-    expectedBptOut: "0",
-    minBptOut: "0",
-  });
+  const [queryResponse, setQueryResponse] = useState(initialQueryResponse);
   const { expectedBptOut, minBptOut } = queryResponse;
   const [tokensToApprove, setTokensToApprove] = useState<any[]>([]);
   const [sufficientAllowances, setSufficientAllowances] = useState(false);
@@ -92,6 +96,7 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
       return token;
     });
     setTokenInputs(updatedTokens);
+    setQueryResponse(initialQueryResponse);
   };
 
   const handleQueryJoin = async () => {
@@ -117,64 +122,39 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
 
   return (
     <section>
+      {/* Token Inputs */}
       <div className="mb-5">
-        <div>
-          <label>Tokens In</label>
-        </div>
         {tokenInputs.map((token, index) => (
-          <div key={token.address} className="relative mb-3">
-            <input
-              value={
-                formatUnits(token.rawAmount, token.decimals) === "0" ? "" : formatUnits(token.rawAmount, token.decimals)
-              }
-              onChange={e => handleInputChange(index, e.target.value)}
-              type="number"
-              placeholder="0.0"
-              className="text-2xl w-full input input-bordered rounded-lg bg-base-200 p-10 text-right"
-            />
-            <div className="absolute top-0 left-0 flex gap-3 p-3">
-              <div className="text-center p-4 bg-base-100 rounded-md font-bold w-24">
-                {pool.poolTokens[index].symbol}
-              </div>
-              <div className="flex flex-col gap-1 justify-center">
-                <div className="text-sm">
-                  Allowance: {allowances && formatUnits((allowances[index].result as bigint) || 0n, token.decimals)}
-                </div>
-                <div className="text-sm">Balance: ???</div>
-              </div>
-            </div>
-          </div>
+          <TokenField
+            key={token.address}
+            label={index === 0 ? "Tokens In" : undefined}
+            tokenSymbol={pool.poolTokens[index].symbol}
+            value={
+              formatUnits(token.rawAmount, token.decimals) === "0" ? "" : formatUnits(token.rawAmount, token.decimals)
+            }
+            onAmountChange={value => handleInputChange(index, value)}
+            allowance={allowances && formatUnits((allowances[index].result as bigint) || 0n, token.decimals)}
+          />
         ))}
       </div>
+      {/* Query, Approve, and Join buttons */}
       <div className={`grid gap-5 ${expectedBptOut === "0" ? "grid-cols-1" : "grid-cols-2"}`}>
         <div>
-          <button
-            onClick={handleQueryJoin}
-            className="w-full bg-gradient-to-tr from-indigo-700 from-15% to-fuchsia-600 text-white font-bold py-4 rounded-lg"
-          >
+          <GradientButton onClick={handleQueryJoin} isDisabled={!tokenInputs.some(token => token.rawAmount > 0n)}>
             Query Join
-          </button>
+          </GradientButton>
         </div>
         {expectedBptOut === "0" ? null : !sufficientAllowances ? (
           <div>
-            <button
-              onClick={() => setTokensToApprove(tokenInputs)}
-              className="btn btn-warning mt-3 w-full rounded-md text-lg"
-            >
-              Approve
-            </button>
+            <OutlinedButton onClick={() => setTokensToApprove(tokenInputs)}>Approve</OutlinedButton>
           </div>
         ) : (
           <div>
-            <button
-              onClick={handleJoinPool}
-              className="border border-neutral hover:bg-neutral hover:text-neutral-content font-bold w-full py-4 rounded-lg"
-            >
-              Send Join
-            </button>
+            <OutlinedButton onClick={handleJoinPool}>Send Join</OutlinedButton>
           </div>
         )}
       </div>
+      {/* Query Result Details */}
       <div className="bg-base-100 rounded-lg p-5 mt-5">
         <>
           <div className="flex flex-wrap justify-between mb-3">

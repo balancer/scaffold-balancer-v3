@@ -15,7 +15,7 @@ export const PoolActions = ({ pool }: { pool: Pool }) => {
   const tabs = {
     Swap: <SwapTab pool={pool} />,
     Join: <JoinTab pool={pool} />,
-    Exit: <ExitTab />,
+    Exit: <ExitTab pool={pool} />,
   };
 
   return (
