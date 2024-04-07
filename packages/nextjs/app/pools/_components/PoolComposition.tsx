@@ -20,7 +20,12 @@ export const PoolComposition = ({ pool }: { pool: Pool }) => {
               <div className="font-bold">BPT</div>
               <div className="text-sm">{pool.name}</div>
             </div>
-            <div>{formatUnits(pool.totalSupply, pool.decimals)}</div>
+            <div>
+              <div className="font-bold text-end">
+                {Number(formatUnits(pool.totalSupply, pool.decimals)).toFixed(2)}
+              </div>
+              <div className="text-sm text-end">{pool.totalSupply.toString()}</div>
+            </div>
           </div>
           <div className="p-3 flex flex-col gap-3">
             {pool.poolTokens.map((token: any) => (
@@ -30,8 +35,14 @@ export const PoolComposition = ({ pool }: { pool: Pool }) => {
                   <div className="text-sm">{token.name}</div>
                 </div>
                 <div>
-                  <div className="flex justify-end">{formatUnits(token.balance, token.decimals)}</div>
+                  <div className="font-bold text-end">
+                    {Number(formatUnits(token.balance, token.decimals)).toFixed(2)}
+                  </div>
+                  <div className="text-sm">{token.balance.toString()}</div>
                 </div>
+                {/* <div>
+                  <div className="flex justify-end">{formatUnits(token.balance, token.decimals)}</div>
+                </div> */}
               </div>
             ))}
           </div>

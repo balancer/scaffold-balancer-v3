@@ -12,9 +12,9 @@ interface TokenFieldProps {
   poolTokens: PoolTokens[];
   selectedTokenIndex: number;
   lastChanged?: "tokenIn" | "tokenOut" | "";
-  showAllowance?: boolean; // New optional prop for showing allowance
-  showBalance?: boolean; // New optional prop for showing balance
-  isHighlighted?: boolean; // Optional boolean for highlight control
+  allowance?: string;
+  balance?: string;
+  isHighlighted?: boolean;
 }
 
 /**
@@ -32,8 +32,8 @@ export const TokenField: React.FC<TokenFieldProps> = ({
   poolTokens,
   selectedTokenIndex,
   isHighlighted,
-  showAllowance = false, // Default to not showing if prop is not provided
-  showBalance = false, // Default to not showing if prop is not provided
+  allowance,
+  balance,
 }) => (
   <div className="mb-5">
     <div className="ml-2 mb-0.5">
@@ -79,8 +79,8 @@ export const TokenField: React.FC<TokenFieldProps> = ({
           )}
         </div>
         <div className="flex flex-col gap-1 justify-center text-sm">
-          {showAllowance && <div>Allowance:</div>}
-          {showBalance && <div>Balance:</div>}
+          {allowance && <div>Allowance: {allowance}</div>}
+          {balance && <div>Balance: {balance} </div>}
         </div>
       </div>
     </div>

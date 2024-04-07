@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
-import { useContractReads, useContractWrite } from "wagmi";
-import { useAccount } from "wagmi";
+import { useAccount, useContractReads, useContractWrite } from "wagmi";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { useJoin } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
@@ -32,7 +31,7 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
   const [joinTxUrl, setJoinTxUrl] = useState<string | undefined>();
 
   const { queryJoin, joinPool } = useJoin();
-  const writeTx = useTransactor();
+  const writeTx = useTransactor(); // scaffold hook for tx status toast notifications
 
   const {
     writeAsync: approveAsync,
@@ -167,7 +166,10 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
           </div>
         ) : (
           <div>
-            <button onClick={handleJoinPool} className="btn btn-success mt-3 w-full rounded-md text-lg">
+            <button
+              onClick={handleJoinPool}
+              className="border border-neutral hover:bg-neutral hover:text-neutral-content font-bold w-full py-4 rounded-lg"
+            >
               Send Join
             </button>
           </div>

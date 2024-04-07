@@ -74,9 +74,9 @@ export const useSwap = (): SwapFunctions => {
 
     const call = swap.buildCall({
       slippage: Slippage.fromPercentage("0.1"),
-      deadline: 999999999999999999n,
-      wethIsEth: false,
+      deadline: 999999999999999999n, // Deadline for the swap, in this case infinite
       queryOutput: updatedAmount,
+      wethIsEth: false,
     }) as SwapBuildOutputExactIn | SwapBuildOutputExactOut;
 
     setCall(call);
@@ -95,6 +95,8 @@ export const useSwap = (): SwapFunctions => {
       if (!walletClient) {
         throw new Error("walletClient is undefined");
       }
+
+      console.log("call", call);
 
       const txHashPromise = () =>
         walletClient.sendTransaction({
