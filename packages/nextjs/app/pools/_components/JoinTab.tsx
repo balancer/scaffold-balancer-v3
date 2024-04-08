@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { TokenField } from "./TokenField";
 import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useAccount, useContractReads, useContractWrite } from "wagmi";
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import { PoolFeedback, TokenField } from "~~/app/pools/_components";
 import { GradientButton, OutlinedButton } from "~~/components/common";
 import { useJoin } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
@@ -74,6 +73,7 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
         try {
           await writeTx(approveAsync, { blockConfirmations: 1 });
           setTokensToApprove(tokens => tokens.slice(1)); // Remove the approved token from the queue
+          setSufficientAllowances(tokensToApprove.length === 0); // If there are no more tokens to approve, set sufficientAllowances to true
         } catch (error) {
           console.error("Approval error:", error);
         } finally {
@@ -83,7 +83,7 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
     };
 
     approveToken();
-  }, [tokensToApprove, approveAsync, writeTx, isApproving, isError, isSuccess]);
+  }, [tokensToApprove, approveAsync, writeTx, isApproving, isError, isSuccess, tokenInputs]);
 
   useEffect(() => {
     if (allowances && allowances.length === tokenInputs.length) {
@@ -130,7 +130,6 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
 
   return (
     <section>
-      {/* Token Inputs */}
       <div className="mb-5">
         {tokenInputs.map((token, index) => (
           <TokenField
@@ -169,33 +168,16 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
         )}
       </div>
 
-      {/* Query Result Display */}
-      <h5 className="mt-5 mb-1 ml-2">BPT Out</h5>
-      <div className="bg-[#FCD34D40] border border-amber-400 rounded-lg p-5">
-        <>
-          <div className="flex flex-wrap justify-between mb-3">
-            <div>Expected</div>
-            <div>{expectedBptOut}</div>
-          </div>
-          <div className="flex flex-wrap justify-between">
-            <div>Minimum</div>
-            <div>{minBptOut}</div>
-          </div>
-          {joinTxUrl && (
-            <div className="flex flex-wrap justify-between mt-3">
-              <div>Actual</div>
-              <a
-                rel="noopener"
-                target="_blank"
-                href={joinTxUrl}
-                className="text-neutral underline flex items-center gap-1"
-              >
-                block explorer <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-              </a>
-            </div>
-          )}
-        </>
-      </div>
+      <PoolFeedback title="BPT Out" transactionUrl={joinTxUrl}>
+        <div className="flex flex-wrap justify-between mb-3">
+          <div>Expected</div>
+          <div>{expectedBptOut}</div>
+        </div>
+        <div className="flex flex-wrap justify-between">
+          <div>Minimum</div>
+          <div>{minBptOut}</div>
+        </div>
+      </PoolFeedback>
     </section>
   );
 };

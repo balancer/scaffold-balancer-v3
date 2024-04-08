@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { TokenField } from "./TokenField";
 import { SwapKind } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useAccount, useContractRead, useContractWrite } from "wagmi";
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import { PoolFeedback, TokenField } from "~~/app/pools/_components";
 import { GradientButton, OutlinedButton } from "~~/components/common";
 import { useSwap } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
@@ -166,9 +165,10 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
     });
 
     if (updatedAmount.swapKind === SwapKind.GivenIn) {
-      const expectedAmount = updatedAmount.expectedAmountOut.amount.toString();
+      const expectedAmountOut = updatedAmount.expectedAmountOut.amount.toString();
+      const tokenOutDecimals = poolTokens[indexOfTokenOut].decimals;
       setQueryResponse({
-        expectedAmount,
+        expectedAmount: expectedAmountOut,
         minOrMaxAmount: call.minAmountOut.amount.toString(),
         swapKind: SwapKind.GivenIn,
       });
@@ -177,13 +177,14 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         ...prevConfig,
         tokenOut: {
           ...prevConfig.tokenOut,
-          amount: Number(formatUnits(expectedAmount, poolTokens[indexOfTokenOut].decimals)).toFixed(4),
+          amount: Number(formatUnits(expectedAmountOut, tokenOutDecimals)).toFixed(4),
         },
       }));
     } else {
-      const expectedAmount = updatedAmount.expectedAmountIn.amount.toString();
+      const expectedAmountIn = updatedAmount.expectedAmountIn.amount.toString();
+      const tokenInDecimals = poolTokens[indexOfTokenIn].decimals;
       setQueryResponse({
-        expectedAmount,
+        expectedAmount: expectedAmountIn,
         minOrMaxAmount: call.maxAmountIn.amount.toString(),
         swapKind: SwapKind.GivenOut,
       });
@@ -192,7 +193,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         ...prevConfig,
         tokenIn: {
           ...prevConfig.tokenIn,
-          amount: Number(formatUnits(expectedAmount, poolTokens[indexOfTokenIn].decimals)).toFixed(4),
+          amount: Number(formatUnits(expectedAmountIn, tokenInDecimals)).toFixed(4),
         },
       }));
     }
@@ -271,9 +272,10 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
           </div>
         )}
       </div>
-      {/* Query Result Display */}
-      <h5 className="mt-5 mb-1 ml-2">Amount {queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}</h5>
-      <div className="bg-[#FCD34D40] border border-amber-400 rounded-lg p-5">
+      <PoolFeedback
+        title={`Amount ${queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}
+        transactionUrl={swapTxUrl}
+      >
         <div className="flex flex-wrap justify-between mb-3">
           <div>Expected </div>
           <div>{queryResponse.expectedAmount}</div>
@@ -282,20 +284,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
           <div>{queryResponse.swapKind === SwapKind.GivenIn ? "Minumum" : "Maximum"}</div>
           <div>{queryResponse.minOrMaxAmount}</div>
         </div>
-        {swapTxUrl && (
-          <div className="flex flex-wrap justify-between mt-3">
-            <div>Actual</div>
-            <a
-              rel="noopener"
-              target="_blank"
-              href={swapTxUrl}
-              className="text-neutral underline flex items-center gap-1"
-            >
-              block explorer <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-            </a>
-          </div>
-        )}
-      </div>
+      </PoolFeedback>
     </section>
   );
 };
