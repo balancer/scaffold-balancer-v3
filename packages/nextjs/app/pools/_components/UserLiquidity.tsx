@@ -18,7 +18,6 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
     async function fetchExitQuery() {
       if (!userPoolBalance) return;
       const { expectedAmountsOut } = await queryExit(userPoolBalance);
-      console.log("expectedAmountsOut", expectedAmountsOut);
       setExpectedAmountsOut(expectedAmountsOut);
     }
     fetchExitQuery();

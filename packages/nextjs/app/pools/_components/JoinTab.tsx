@@ -3,7 +3,7 @@ import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useAccount, useContractReads, useContractWrite } from "wagmi";
 import { PoolFeedback, TokenField } from "~~/app/pools/_components";
-import { GradientButton, OutlinedButton } from "~~/components/common";
+import { StyledQueryButton, StyledTxButton } from "~~/components/common";
 import { useJoin } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
@@ -153,17 +153,17 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
       {/* Query, Approve, and Join Buttons */}
       <div className={`grid gap-5 ${expectedBptOut === "0" ? "grid-cols-1" : "grid-cols-2"}`}>
         <div>
-          <GradientButton onClick={handleQueryJoin} isDisabled={!tokenInputs.some(token => token.rawAmount > 0n)}>
+          <StyledQueryButton onClick={handleQueryJoin} isDisabled={!tokenInputs.some(token => token.rawAmount > 0n)}>
             Query Join
-          </GradientButton>
+          </StyledQueryButton>
         </div>
         {expectedBptOut === "0" ? null : !sufficientAllowances ? (
           <div>
-            <OutlinedButton onClick={() => setTokensToApprove(tokenInputs)}>Approve</OutlinedButton>
+            <StyledTxButton onClick={() => setTokensToApprove(tokenInputs)}>Approve</StyledTxButton>
           </div>
         ) : (
           <div>
-            <OutlinedButton onClick={handleJoinPool}>Send Join</OutlinedButton>
+            <StyledTxButton onClick={handleJoinPool}>Send Join</StyledTxButton>
           </div>
         )}
       </div>

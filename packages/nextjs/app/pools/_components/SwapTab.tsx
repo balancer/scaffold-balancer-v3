@@ -3,7 +3,7 @@ import { SwapKind } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useAccount, useContractRead, useContractWrite } from "wagmi";
 import { PoolFeedback, TokenField } from "~~/app/pools/_components";
-import { GradientButton, OutlinedButton } from "~~/components/common";
+import { StyledQueryButton, StyledTxButton } from "~~/components/common";
 import { useSwap } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
@@ -58,7 +58,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
   const { querySwap, swap } = useSwap(pool.address as `0x${string}`);
   const writeTx = useTransactor();
 
-  const { data: allowance } = useContractRead({
+  const { data: allowance, refetch: refetchAllowance } = useContractRead({
     address: pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].address,
     abi: parseAbi(["function allowance(address owner, address spender) returns (uint256)"]),
     functionName: "allowance" as any, // ???
@@ -202,6 +202,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
   const handleApprove = async () => {
     try {
       await writeTx(approve, { blockConfirmations: 1 });
+      await refetchAllowance();
       setSufficientAllowance(true);
     } catch (err) {
       console.error("error", err);
@@ -255,20 +256,20 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
       {/* Query, Approve, and Swap Buttons */}
       <div className={`grid gap-5 ${queryResponse.expectedAmount === "0" ? "grid-cols-1" : "grid-cols-2"}`}>
         <div>
-          <GradientButton
+          <StyledQueryButton
             onClick={handleQuerySwap}
             isDisabled={swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === ""}
           >
             Query Swap
-          </GradientButton>
+          </StyledQueryButton>
         </div>
         {queryResponse.expectedAmount === "0" ? null : !sufficientAllowance ? (
           <div>
-            <OutlinedButton onClick={handleApprove}>Approve</OutlinedButton>
+            <StyledTxButton onClick={handleApprove}>Approve</StyledTxButton>
           </div>
         ) : (
           <div>
-            <OutlinedButton onClick={handleSwap}>Send Swap</OutlinedButton>
+            <StyledTxButton onClick={handleSwap}>Send Swap</StyledTxButton>
           </div>
         )}
       </div>

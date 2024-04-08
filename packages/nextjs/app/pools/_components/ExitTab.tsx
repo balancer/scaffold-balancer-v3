@@ -2,7 +2,7 @@ import { useState } from "react";
 import { TokenAmount } from "@balancer/sdk";
 import { formatUnits, parseUnits } from "viem";
 import { PoolFeedback, TokenField } from "~~/app/pools/_components";
-import { GradientButton, OutlinedButton } from "~~/components/common";
+import { StyledQueryButton, StyledTxButton } from "~~/components/common";
 import { useExit } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
 
@@ -50,10 +50,10 @@ export const ExitTab = ({ pool }: { pool: Pool }) => {
         balance={Number(formatUnits(userPoolBalance || 0n, pool.decimals)).toFixed(4)}
       />
       <div className={`grid gap-5 ${queryResponse.expectedAmountsOut ? "grid-cols-2" : "grid-cols-1"}`}>
-        <GradientButton onClick={handleExitQuery} isDisabled={bptAmountIn === ""}>
+        <StyledQueryButton onClick={handleExitQuery} isDisabled={bptAmountIn === ""}>
           Query Exit
-        </GradientButton>
-        {queryResponse.expectedAmountsOut && <OutlinedButton onClick={handleExitPool}>Exit Pool</OutlinedButton>}
+        </StyledQueryButton>
+        {queryResponse.expectedAmountsOut && <StyledTxButton onClick={handleExitPool}>Exit Pool</StyledTxButton>}
       </div>
 
       <PoolFeedback title="Expected Tokens Out" transactionUrl={exitTxUrl}>

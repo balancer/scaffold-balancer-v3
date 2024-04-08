@@ -1,3 +1,3 @@
 export * from "./SkeletonLoader";
-export * from "./GradientButton";
-export * from "./OutlinedButton";
+export * from "./StyledQueryButton";
+export * from "./StyledTxButton";
