@@ -11,9 +11,8 @@ import {
 import { parseAbi } from "viem";
 import { useContractRead, usePublicClient, useWalletClient } from "wagmi";
 import { type Pool } from "~~/hooks/balancer/types";
-
-// import { useTransactor } from "~~/hooks/scaffold-eth";
-// import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
+import { useTransactor } from "~~/hooks/scaffold-eth";
+import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 /**
  * Custom hook for exiting a pool where queryExit sets state of
@@ -23,17 +22,15 @@ export const useExit = (pool: Pool) => {
   const [call, setCall] = useState<any>();
 
   const { data: walletClient } = useWalletClient();
-  const userAccount = walletClient?.account?.address;
   const publicClient = usePublicClient();
-  // const writeTx = useTransactor();
+  const writeTx = useTransactor();
 
   const queryExit = async (rawAmount: bigint) => {
-    // User defined
     const chainId = await publicClient.getChainId();
     const rpcUrl = publicClient?.chain.rpcUrls.default.http[0] as string;
     const slippage = Slippage.fromPercentage("1"); // 1%
 
-    // API used to fetch relevant pool data
+    // Fetch relevant pool data for removeLiquidity.query
     const balancerApi = new BalancerApi("https://backend-v3-canary.beets-ftm-node.com/graphql", chainId);
     const poolState: PoolState = await balancerApi.pools.fetchPoolState(pool.address.toLowerCase());
 
@@ -56,13 +53,7 @@ export const useExit = (pool: Pool) => {
     const removeLiquidity = new RemoveLiquidity();
     const queryOutput = await removeLiquidity.query(removeLiquidityInput, poolState);
 
-    console.log(`BPT In: ${queryOutput.bptIn.amount.toString()},\nExpected Tokens Out:`);
-    console.table({
-      tokensOut: queryOutput.amountsOut.map(a => a.token.address),
-      amountsOut: queryOutput.amountsOut.map(a => a.amount),
-    });
-
-    // Applies slippage to the tokens out amounts and constructs the call
+    // Construct call object for exit transaction and save to state
     const call = removeLiquidity.buildCall({
       ...queryOutput,
       slippage,
@@ -71,22 +62,34 @@ export const useExit = (pool: Pool) => {
     });
     setCall(call);
 
-    console.log(`Min Tokens Out:`);
-    console.table({
-      tokensOut: call.minAmountsOut.map(a => a.token.address),
-      minAmountsOut: call.minAmountsOut.map(a => a.amount),
-    });
+    return { expectedAmountsOut: queryOutput.amountsOut, minAmountsOut: call.minAmountsOut };
   };
 
   const exitPool = async () => {
-    const hash = await walletClient?.sendTransaction({
-      account: userAccount,
-      data: call.call,
-      to: call.to,
-      value: call.value,
-    });
+    try {
+      if (!walletClient) {
+        throw new Error("Client is undefined");
+      }
+      const txHashPromise = () =>
+        walletClient.sendTransaction({
+          account: walletClient.account,
+          data: call.call,
+          to: call.to,
+          value: call.value,
+        });
 
-    return hash;
+      const hash = await writeTx(txHashPromise, { blockConfirmations: 1 });
+
+      if (!hash) {
+        throw new Error("Transaction failed");
+      }
+
+      const chainId = await walletClient.getChainId();
+      const blockExplorerTxURL = getBlockExplorerTxLink(chainId, hash);
+      return blockExplorerTxURL;
+    } catch (error) {
+      console.error("error", error);
+    }
   };
 
   const { data: userPoolBalance } = useContractRead({

@@ -247,6 +247,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         )}
         isHighlighted={queryResponse.swapKind === SwapKind.GivenOut}
       />
+      {/* Query, Approve, and Swap Buttons */}
       <div className={`grid gap-5 ${queryResponse.expectedAmount === "0" ? "grid-cols-1" : "grid-cols-2"}`}>
         <div>
           <GradientButton
@@ -266,31 +267,29 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
           </div>
         )}
       </div>
-
-      <div className="bg-base-100 rounded-lg p-5 mt-5">
-        <>
-          <div className="flex flex-wrap justify-between mb-3">
-            <div>Expected Amount {queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}</div>
-            <div>{queryResponse.expectedAmount}</div>
+      {/* Query Result Display */}
+      <div className="bg-[#FCD34D40] border border-amber-400 rounded-lg p-5 mt-5">
+        <div className="flex flex-wrap justify-between mb-3">
+          <div>Expected Amount {queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}</div>
+          <div>{queryResponse.expectedAmount}</div>
+        </div>
+        <div className="flex flex-wrap justify-between">
+          <div>{queryResponse.swapKind === SwapKind.GivenIn ? "Minumum Amount Out" : "Maximum Amount In"}</div>
+          <div>{queryResponse.minOrMaxAmount}</div>
+        </div>
+        {swapTxUrl && (
+          <div className="flex flex-wrap justify-between mt-3">
+            <div>Actual Amount Out</div>
+            <a
+              rel="noopener"
+              target="_blank"
+              href={swapTxUrl}
+              className="text-neutral underline flex items-center gap-1"
+            >
+              block explorer <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+            </a>
           </div>
-          <div className="flex flex-wrap justify-between">
-            <div>{queryResponse.swapKind === SwapKind.GivenIn ? "Minumum Amount Out" : "Maximum Amount In"}</div>
-            <div>{queryResponse.minOrMaxAmount}</div>
-          </div>
-          {swapTxUrl && (
-            <div className="flex flex-wrap justify-between mt-3">
-              <div>Actual Amount Out</div>
-              <a
-                rel="noopener"
-                target="_blank"
-                href={swapTxUrl}
-                className="text-neutral underline flex items-center gap-1"
-              >
-                block explorer <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-              </a>
-            </div>
-          )}
-        </>
+        )}
       </div>
     </section>
   );

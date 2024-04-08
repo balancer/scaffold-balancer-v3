@@ -106,8 +106,8 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
 
   const handleJoinPool = async () => {
     try {
-      const txHash = await joinPool();
-      setJoinTxUrl(txHash);
+      const txUrl = await joinPool();
+      setJoinTxUrl(txUrl);
       setTokenInputs(
         pool.poolTokens.map(token => ({
           address: token.address as `0x${string}`,
@@ -137,7 +137,8 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
           />
         ))}
       </div>
-      {/* Query, Approve, and Join buttons */}
+
+      {/* Query, Approve, and Join Buttons */}
       <div className={`grid gap-5 ${expectedBptOut === "0" ? "grid-cols-1" : "grid-cols-2"}`}>
         <div>
           <GradientButton onClick={handleQueryJoin} isDisabled={!tokenInputs.some(token => token.rawAmount > 0n)}>
@@ -154,8 +155,9 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
           </div>
         )}
       </div>
-      {/* Query Result Details */}
-      <div className="bg-base-100 rounded-lg p-5 mt-5">
+
+      {/* Query Result Display */}
+      <div className="bg-[#FCD34D40] border border-amber-400 rounded-lg p-5 mt-5">
         <>
           <div className="flex flex-wrap justify-between mb-3">
             <div>Expected BPT Out</div>

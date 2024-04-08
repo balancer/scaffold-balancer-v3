@@ -35,7 +35,7 @@ export const TokenField: React.FC<TokenFieldProps> = ({
   setTokenDropdownOpen,
   selectableTokens,
 }) => {
-  const isTokenSwapField = !!(tokenDropdownOpen && setTokenDropdownOpen && onTokenSelect && selectableTokens);
+  const isTokenSwapField = !!(setTokenDropdownOpen && onTokenSelect && selectableTokens);
   return (
     <div className="mb-5">
       {label && (
@@ -50,7 +50,7 @@ export const TokenField: React.FC<TokenFieldProps> = ({
           onChange={e => onAmountChange(e.target.value)}
           placeholder="0.0"
           className={`text-right text-2xl w-full input input-bordered rounded-lg bg-base-200 p-10 ${
-            isHighlighted ? "ring-2 ring-pink-500" : ""
+            isHighlighted ? "ring-2 ring-fuchsia-600" : ""
           }`}
         />
         <div className="absolute top-0 left-0 flex gap-3 p-3">
