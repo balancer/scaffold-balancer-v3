@@ -90,7 +90,7 @@ export const TokenField: React.FC<TokenFieldProps> = ({
           )}
           <div className="flex flex-col gap-1 justify-center text-sm">
             <table className="">
-              <tbody>
+              <tbody className="text-neutral-400">
                 {allowance && (
                   <tr>
                     <td className="align-top">Allowed :</td>

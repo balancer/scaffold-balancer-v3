@@ -10,7 +10,7 @@ export const PoolSelector = ({
   setSelectedPoolAddress,
 }: {
   scaffoldPools: any;
-  setSelectedPoolAddress: (_: Address | undefined) => void;
+  setSelectedPoolAddress: (_: Address) => void;
 }) => {
   const [inputValue, setInputValue] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

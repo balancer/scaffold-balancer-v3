@@ -2,7 +2,7 @@ import { SwapKind } from "@balancer/sdk";
 import { type Address } from "viem";
 
 export type Pool = {
-  address: Address | undefined;
+  address: Address;
   decimals: number;
   isRegistered: boolean;
   name: string;
@@ -47,7 +47,6 @@ export type PoolConfig = {
 };
 
 export type SwapConfig = {
-  pool: `0x${string}`;
   tokenIn: {
     address: `0x${string}`;
     decimals: number;

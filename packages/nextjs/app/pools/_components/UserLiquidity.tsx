@@ -1,4 +1,6 @@
+import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
+import { useExit } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
 
 /**
@@ -9,6 +11,8 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
     isConnected,
     // address
   } = useAccount();
+
+  const { userPoolBalance } = useExit(pool);
 
   // only render the component if the pool is initialized and the user is connected
   if (!isConnected || !pool?.poolConfig?.isPoolInitialized) {
@@ -26,7 +30,12 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
               <div className="font-bold">BPT</div>
               <div className="text-sm">{pool.name}</div>
             </div>
-            <div>TODO</div>
+            <div>
+              <div className="font-bold text-end">
+                {Number(formatUnits(userPoolBalance || 0n, pool.decimals)).toFixed(2)}
+              </div>
+              <div className="text-sm">{userPoolBalance?.toString()}</div>
+            </div>
           </div>
           <div className="p-3 flex flex-col gap-3">
             {pool.poolTokens.map((token: any) => (

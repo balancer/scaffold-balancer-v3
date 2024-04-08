@@ -34,7 +34,7 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
   );
   const [joinTxUrl, setJoinTxUrl] = useState<string | undefined>();
 
-  const { queryJoin, joinPool } = useJoin();
+  const { queryJoin, joinPool } = useJoin(pool.address as `0x${string}`);
   const writeTx = useTransactor(); // scaffold hook for tx status toast notifications
 
   const {
@@ -100,7 +100,7 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
   };
 
   const handleQueryJoin = async () => {
-    const queryResponse = await queryJoin(pool.address as string, tokenInputs);
+    const queryResponse = await queryJoin(tokenInputs);
     setQueryResponse(queryResponse);
   };
 

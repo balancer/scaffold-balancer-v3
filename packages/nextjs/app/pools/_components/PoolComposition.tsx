@@ -40,9 +40,6 @@ export const PoolComposition = ({ pool }: { pool: Pool }) => {
                   </div>
                   <div className="text-sm">{token.balance.toString()}</div>
                 </div>
-                {/* <div>
-                  <div className="flex justify-end">{formatUnits(token.balance, token.decimals)}</div>
-                </div> */}
               </div>
             ))}
           </div>

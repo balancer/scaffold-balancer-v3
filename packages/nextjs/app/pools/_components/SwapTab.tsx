@@ -56,7 +56,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
   const [swapTxUrl, setSwapTxUrl] = useState<string | undefined>();
 
   const { address: connectedAddress } = useAccount();
-  const { querySwap, swap } = useSwap();
+  const { querySwap, swap } = useSwap(pool.address as `0x${string}`);
   const writeTx = useTransactor();
 
   const { data: allowance } = useContractRead({
@@ -69,7 +69,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
   const { data: balance } = useContractRead({
     address: pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].address,
     abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
-    functionName: "balanceOf" as any,
+    functionName: "balanceOf" as any, // ???
     args: [connectedAddress as string],
   });
 
@@ -160,44 +160,50 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
     };
 
     const { updatedAmount, call } = await querySwap({
-      pool: pool.address as `0x${string}`,
       tokenIn,
       tokenOut,
       swapKind: swapConfig.swapKind,
     });
 
     if (updatedAmount.swapKind === SwapKind.GivenIn) {
+      const expectedAmount = updatedAmount.expectedAmountOut.amount.toString();
       setQueryResponse({
-        expectedAmount: updatedAmount.expectedAmountOut.amount.toString(),
+        expectedAmount,
         minOrMaxAmount: call.minAmountOut.amount.toString(),
         swapKind: SwapKind.GivenIn,
       });
-      // Update the token out amount with the expected amount
+      // Update the tokenOut amount with the expected amount
       setSwapConfig(prevConfig => ({
         ...prevConfig,
         tokenOut: {
           ...prevConfig.tokenOut,
-          amount: Number(
-            formatUnits(updatedAmount.expectedAmountOut.amount.toString(), poolTokens[indexOfTokenOut].decimals),
-          ).toFixed(4),
+          amount: Number(formatUnits(expectedAmount, poolTokens[indexOfTokenOut].decimals)).toFixed(4),
         },
       }));
     } else {
+      const expectedAmount = updatedAmount.expectedAmountIn.amount.toString();
       setQueryResponse({
-        expectedAmount: updatedAmount.expectedAmountIn.amount.toString(),
+        expectedAmount,
         minOrMaxAmount: call.maxAmountIn.amount.toString(),
         swapKind: SwapKind.GivenOut,
       });
-      // Update the token in amount with the expected amount
+      // Update the tokenIn amount with the expected amount
       setSwapConfig(prevConfig => ({
         ...prevConfig,
         tokenIn: {
           ...prevConfig.tokenIn,
-          amount: Number(
-            formatUnits(updatedAmount.expectedAmountIn.amount.toString(), poolTokens[indexOfTokenIn].decimals),
-          ).toFixed(4),
+          amount: Number(formatUnits(expectedAmount, poolTokens[indexOfTokenIn].decimals)).toFixed(4),
         },
       }));
+    }
+  };
+
+  const handleApprove = async () => {
+    try {
+      await writeTx(approve, { blockConfirmations: 1 });
+      setSufficientAllowance(true);
+    } catch (err) {
+      console.error("error", err);
     }
   };
 
@@ -252,18 +258,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         </div>
         {queryResponse.expectedAmount === "0" ? null : !sufficientAllowance ? (
           <div>
-            <OutlinedButton
-              onClick={async () => {
-                try {
-                  await writeTx(approve, { blockConfirmations: 1 });
-                  setSufficientAllowance(true);
-                } catch (err) {
-                  console.error("error", err);
-                }
-              }}
-            >
-              Approve
-            </OutlinedButton>
+            <OutlinedButton onClick={handleApprove}>Approve</OutlinedButton>
           </div>
         ) : (
           <div>
