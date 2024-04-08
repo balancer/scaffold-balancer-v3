@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { type TokenAmount } from "@balancer/sdk";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import { useExit } from "~~/hooks/balancer/";
@@ -7,12 +9,21 @@ import { type Pool } from "~~/hooks/balancer/types";
  * If there is a connected user, display their liquidity within the pool
  */
 export const UserLiquidity = ({ pool }: { pool: Pool }) => {
-  const {
-    isConnected,
-    // address
-  } = useAccount();
+  const [expectedAmountsOut, setExpectedAmountsOut] = useState<TokenAmount[] | undefined>();
 
-  const { userPoolBalance } = useExit(pool);
+  const { isConnected } = useAccount();
+  const { userPoolBalance, queryExit } = useExit(pool);
+
+  useEffect(() => {
+    async function fetchExitQuery() {
+      if (!userPoolBalance) return;
+      const { expectedAmountsOut } = await queryExit(userPoolBalance);
+      console.log("expectedAmountsOut", expectedAmountsOut);
+      setExpectedAmountsOut(expectedAmountsOut);
+    }
+    fetchExitQuery();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userPoolBalance]); // excluded queryExit from deps array because it causes infinite re-renders
 
   // only render the component if the pool is initialized and the user is connected
   if (!isConnected || !pool?.poolConfig?.isPoolInitialized) {
@@ -38,15 +49,20 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
             </div>
           </div>
           <div className="p-3 flex flex-col gap-3">
-            {pool.poolTokens.map((token: any) => (
+            {pool.poolTokens.map((token, index) => (
               <div key={token.address} className="flex justify-between items-center">
                 <div>
                   <div className="font-bold">{token.symbol}</div>
                   <div className="text-sm">{token.name}</div>
                 </div>
-                <div>
-                  <div className="flex justify-end">TODO</div>
-                </div>
+                {expectedAmountsOut && (
+                  <div>
+                    <div className="font-bold text-end">
+                      {Number(formatUnits(expectedAmountsOut[index].amount, token.decimals)).toFixed(2)}
+                    </div>
+                    <div className="text-sm">{expectedAmountsOut[index].amount.toString()}</div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

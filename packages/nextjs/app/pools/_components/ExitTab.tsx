@@ -6,7 +6,7 @@ import { GradientButton, OutlinedButton } from "~~/components/common";
 import { useExit } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
 
-type QueryResponse = {
+type ExitQueryResponse = {
   expectedAmountsOut: TokenAmount[] | undefined;
   minAmountsOut: TokenAmount[] | undefined;
 };
@@ -17,7 +17,7 @@ type QueryResponse = {
 export const ExitTab = ({ pool }: { pool: Pool }) => {
   const [bptAmountIn, setBptAmountIn] = useState("");
   const [exitTxUrl, setExitTxUrl] = useState<string | undefined>();
-  const [queryResponse, setQueryResponse] = useState<QueryResponse>({
+  const [queryResponse, setQueryResponse] = useState<ExitQueryResponse>({
     expectedAmountsOut: undefined,
     minAmountsOut: undefined,
   });
