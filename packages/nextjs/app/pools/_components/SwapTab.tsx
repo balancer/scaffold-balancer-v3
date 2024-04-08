@@ -230,8 +230,12 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         selectableTokens={pool.poolTokens.filter(
           token => token.symbol !== pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].symbol,
         )}
-        allowance={formatUnits(allowance || 0n, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals)}
-        balance={formatUnits(balance || 0n, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals)}
+        allowance={Number(
+          formatUnits(allowance || 0n, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals),
+        ).toFixed(4)}
+        balance={Number(
+          formatUnits(balance || 0n, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals),
+        ).toFixed(4)}
         isHighlighted={queryResponse.swapKind === SwapKind.GivenIn}
       />
       <TokenField
@@ -268,18 +272,19 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         )}
       </div>
       {/* Query Result Display */}
-      <div className="bg-[#FCD34D40] border border-amber-400 rounded-lg p-5 mt-5">
+      <h5 className="mt-5 mb-1 ml-2">Amount {queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}</h5>
+      <div className="bg-[#FCD34D40] border border-amber-400 rounded-lg p-5">
         <div className="flex flex-wrap justify-between mb-3">
-          <div>Expected Amount {queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}</div>
+          <div>Expected </div>
           <div>{queryResponse.expectedAmount}</div>
         </div>
         <div className="flex flex-wrap justify-between">
-          <div>{queryResponse.swapKind === SwapKind.GivenIn ? "Minumum Amount Out" : "Maximum Amount In"}</div>
+          <div>{queryResponse.swapKind === SwapKind.GivenIn ? "Minumum" : "Maximum"}</div>
           <div>{queryResponse.minOrMaxAmount}</div>
         </div>
         {swapTxUrl && (
           <div className="flex flex-wrap justify-between mt-3">
-            <div>Actual Amount Out</div>
+            <div>Actual</div>
             <a
               rel="noopener"
               target="_blank"

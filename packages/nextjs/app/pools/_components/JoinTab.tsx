@@ -57,6 +57,14 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
       args: [connectedAddress as string, pool.vaultAddress],
     })),
   });
+  const { data: balances } = useContractReads({
+    contracts: tokenInputs.map(token => ({
+      address: token.address,
+      abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
+      functionName: "balanceOf",
+      args: [connectedAddress as string],
+    })),
+  });
 
   // Initiates token approval tx `tokensToApprove` changes??
   useEffect(() => {
@@ -133,7 +141,12 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
               formatUnits(token.rawAmount, token.decimals) === "0" ? "" : formatUnits(token.rawAmount, token.decimals)
             }
             onAmountChange={value => handleInputChange(index, value)}
-            allowance={allowances && formatUnits((allowances[index].result as bigint) || 0n, token.decimals)}
+            allowance={
+              allowances && Number(formatUnits((allowances[index].result as bigint) || 0n, token.decimals)).toFixed(4)
+            }
+            balance={
+              balances && Number(formatUnits((balances[index].result as bigint) || 0n, token.decimals)).toFixed(4)
+            }
           />
         ))}
       </div>
@@ -157,19 +170,20 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
       </div>
 
       {/* Query Result Display */}
-      <div className="bg-[#FCD34D40] border border-amber-400 rounded-lg p-5 mt-5">
+      <h5 className="mt-5 mb-1 ml-2">BPT Out</h5>
+      <div className="bg-[#FCD34D40] border border-amber-400 rounded-lg p-5">
         <>
           <div className="flex flex-wrap justify-between mb-3">
-            <div>Expected BPT Out</div>
+            <div>Expected</div>
             <div>{expectedBptOut}</div>
           </div>
           <div className="flex flex-wrap justify-between">
-            <div>Minimum BPT Out</div>
+            <div>Minimum</div>
             <div>{minBptOut}</div>
           </div>
           {joinTxUrl && (
             <div className="flex flex-wrap justify-between mt-3">
-              <div>Actual BPT Out</div>
+              <div>Actual</div>
               <a
                 rel="noopener"
                 target="_blank"
