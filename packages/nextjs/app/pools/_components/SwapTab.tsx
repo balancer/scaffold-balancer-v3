@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import { SwapKind } from "@balancer/sdk";
-import { formatUnits, parseAbi, parseUnits } from "viem";
-import { useAccount, useContractRead, useContractWrite } from "wagmi";
+import { formatUnits, parseUnits } from "viem";
 import { PoolFeedback, TokenField } from "~~/app/pools/_components";
 import { StyledQueryButton, StyledTxButton } from "~~/components/common";
 import { useSwap } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
-import { useTransactor } from "~~/hooks/scaffold-eth";
 
-type SwapConfig = {
+export type SwapConfig = {
   tokenIn: {
     poolTokensIndex: number;
     amount: string;
@@ -19,7 +17,8 @@ type SwapConfig = {
   };
   swapKind: SwapKind;
 };
-type QueryResponse = {
+
+type SwapQueryResponse = {
   expectedAmount: string;
   minOrMaxAmount: string;
   swapKind: SwapKind | undefined;
@@ -47,77 +46,48 @@ const initialSwapConfig = {
  * Allow user to perform swap transactions within a pool
  */
 export const SwapTab = ({ pool }: { pool: Pool }) => {
-  const [queryResponse, setQueryResponse] = useState<QueryResponse>(initialQueryResponse);
+  const [queryResponse, setQueryResponse] = useState<SwapQueryResponse>(initialQueryResponse);
   const [isTokenInDropdownOpen, setTokenInDropdownOpen] = useState(false);
   const [isTokenOutDropdownOpen, setTokenOutDropdownOpen] = useState(false);
-  const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
   const [sufficientAllowance, setSufficientAllowance] = useState(false);
   const [swapTxUrl, setSwapTxUrl] = useState<string | undefined>();
+  const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
 
-  const { address: connectedAddress } = useAccount();
-  const { querySwap, swap } = useSwap(pool.address as `0x${string}`);
-  const writeTx = useTransactor();
-
-  const { data: allowance, refetch: refetchAllowance } = useContractRead({
-    address: pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].address,
-    abi: parseAbi(["function allowance(address owner, address spender) returns (uint256)"]),
-    functionName: "allowance" as any, // ???
-    args: [connectedAddress as string, pool.vaultAddress],
-  });
-
-  const { data: balance } = useContractRead({
-    address: pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].address,
-    abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
-    functionName: "balanceOf" as any, // ???
-    args: [connectedAddress as string],
-  });
-
-  const { writeAsync: approve } = useContractWrite({
-    address: pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].address,
-    abi: parseAbi(["function approve(address spender, uint256 amount) returns (bool)"]),
-    functionName: "approve",
-    args: [
-      pool.vaultAddress,
-      parseUnits(swapConfig.tokenIn.amount, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals),
-    ],
-  });
+  const { querySwap, swap, tokenInAllowance, refetchTokenInAllowance, tokenInBalance, approveTokenIn } = useSwap(
+    pool,
+    swapConfig,
+  );
 
   // Verify user has sufficient allowance to perform the swap
   useEffect(() => {
     const tokenInDecimals = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals;
     const tokenInRawAmount = parseUnits(swapConfig.tokenIn.amount, tokenInDecimals);
-    if (allowance && allowance >= tokenInRawAmount) {
+    if (tokenInAllowance && tokenInAllowance >= tokenInRawAmount) {
       setSufficientAllowance(true);
     } else {
       setSufficientAllowance(false);
     }
-  }, [allowance, swapConfig.tokenIn.amount, pool.poolTokens, swapConfig.tokenIn.poolTokensIndex]);
+  }, [tokenInAllowance, swapConfig.tokenIn.amount, pool.poolTokens, swapConfig.tokenIn.poolTokensIndex]);
 
-  // Update the focused input amount with new value and reset the other input amount
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
-    setSwapConfig(prevConfig => {
-      const swapKind = swapConfigKey === "tokenIn" ? SwapKind.GivenIn : SwapKind.GivenOut;
-
-      setQueryResponse(initialQueryResponse); // Reset query response when input amount changes
-
-      return {
-        tokenIn: {
-          ...prevConfig.tokenIn,
-          amount: swapConfigKey === "tokenIn" ? amount : "",
-        },
-        tokenOut: {
-          ...prevConfig.tokenOut,
-          amount: swapConfigKey === "tokenOut" ? amount : "",
-        },
-        swapKind,
-      };
-    });
+    // Reset query response whenever input amount changes
+    setQueryResponse(initialQueryResponse);
+    // Update the focused input amount with new value and reset the other input amount
+    setSwapConfig(prevConfig => ({
+      tokenIn: {
+        ...prevConfig.tokenIn,
+        amount: swapConfigKey === "tokenIn" ? amount : "",
+      },
+      tokenOut: {
+        ...prevConfig.tokenOut,
+        amount: swapConfigKey === "tokenOut" ? amount : "",
+      },
+      swapKind: swapConfigKey === "tokenIn" ? SwapKind.GivenIn : SwapKind.GivenOut,
+    }));
   };
 
   const handleTokenSelection = (selectedSymbol: string, swapConfigKey: "tokenIn" | "tokenOut") => {
-    // Find the original index of the token in pool using its symbol
     const selectedIndex = pool.poolTokens.findIndex(token => token.symbol === selectedSymbol);
-    // Determine the index for the other token in the pool if there are only two tokens
     const otherIndex = pool.poolTokens.length === 2 ? (selectedIndex === 0 ? 1 : 0) : -1;
 
     setSwapConfig(prevConfig => ({
@@ -142,31 +112,13 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
 
   // Query the swap and update the expected and min/max amounts in/out
   const handleQuerySwap = async () => {
-    const { poolTokens } = pool;
-    const indexOfTokenIn = swapConfig.tokenIn.poolTokensIndex;
-    const indexOfTokenOut = swapConfig.tokenOut.poolTokensIndex;
+    const { updatedAmount, call } = await querySwap();
 
-    const tokenIn = {
-      address: poolTokens[indexOfTokenIn].address as `0x${string}`,
-      decimals: poolTokens[indexOfTokenIn].decimals,
-      amountRaw: parseUnits(swapConfig.tokenIn.amount, poolTokens[indexOfTokenIn].decimals),
-    };
-
-    const tokenOut = {
-      address: poolTokens[indexOfTokenOut].address as `0x${string}`,
-      decimals: poolTokens[indexOfTokenOut].decimals,
-      amountRaw: parseUnits(swapConfig.tokenOut.amount, poolTokens[indexOfTokenOut].decimals),
-    };
-
-    const { updatedAmount, call } = await querySwap({
-      tokenIn,
-      tokenOut,
-      swapKind: swapConfig.swapKind,
-    });
+    const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
+    const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
 
     if (updatedAmount.swapKind === SwapKind.GivenIn) {
       const expectedAmountOut = updatedAmount.expectedAmountOut.amount.toString();
-      const tokenOutDecimals = poolTokens[indexOfTokenOut].decimals;
       setQueryResponse({
         expectedAmount: expectedAmountOut,
         minOrMaxAmount: call.minAmountOut.amount.toString(),
@@ -177,12 +129,11 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         ...prevConfig,
         tokenOut: {
           ...prevConfig.tokenOut,
-          amount: Number(formatUnits(expectedAmountOut, tokenOutDecimals)).toFixed(4),
+          amount: Number(formatUnits(expectedAmountOut, tokenOut.decimals)).toFixed(4),
         },
       }));
     } else {
       const expectedAmountIn = updatedAmount.expectedAmountIn.amount.toString();
-      const tokenInDecimals = poolTokens[indexOfTokenIn].decimals;
       setQueryResponse({
         expectedAmount: expectedAmountIn,
         minOrMaxAmount: call.maxAmountIn.amount.toString(),
@@ -193,7 +144,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         ...prevConfig,
         tokenIn: {
           ...prevConfig.tokenIn,
-          amount: Number(formatUnits(expectedAmountIn, tokenInDecimals)).toFixed(4),
+          amount: Number(formatUnits(expectedAmountIn, tokenIn.decimals)).toFixed(4),
         },
       }));
     }
@@ -201,8 +152,8 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
 
   const handleApprove = async () => {
     try {
-      await writeTx(approve, { blockConfirmations: 1 });
-      await refetchAllowance();
+      await approveTokenIn();
+      await refetchTokenInAllowance();
       setSufficientAllowance(true);
     } catch (err) {
       console.error("error", err);
@@ -233,10 +184,10 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
           token => token.symbol !== pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].symbol,
         )}
         allowance={Number(
-          formatUnits(allowance || 0n, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals),
+          formatUnits(tokenInAllowance ?? 0n, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals),
         ).toFixed(4)}
         balance={Number(
-          formatUnits(balance || 0n, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals),
+          formatUnits(tokenInBalance ?? 0n, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals),
         ).toFixed(4)}
         isHighlighted={queryResponse.swapKind === SwapKind.GivenIn}
       />
@@ -253,7 +204,6 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         )}
         isHighlighted={queryResponse.swapKind === SwapKind.GivenOut}
       />
-      {/* Query, Approve, and Swap Buttons */}
       <div className={`grid gap-5 ${queryResponse.expectedAmount === "0" ? "grid-cols-1" : "grid-cols-2"}`}>
         <div>
           <StyledQueryButton

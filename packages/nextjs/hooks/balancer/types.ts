@@ -1,4 +1,3 @@
-import { SwapKind } from "@balancer/sdk";
 import { type Address } from "viem";
 
 export type Pool = {
@@ -44,18 +43,4 @@ export type PoolConfig = {
     shouldCallBeforeRemoveLiquidity: boolean;
     shouldCallBeforeSwap: boolean;
   };
-};
-
-export type SwapConfig = {
-  tokenIn: {
-    address: `0x${string}`;
-    decimals: number;
-    amountRaw: bigint;
-  };
-  tokenOut: {
-    address: `0x${string}`;
-    decimals: number;
-    amountRaw: bigint;
-  };
-  swapKind: SwapKind;
 };
