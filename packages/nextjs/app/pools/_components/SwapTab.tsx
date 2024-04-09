@@ -43,7 +43,8 @@ const initialSwapConfig = {
 };
 
 /**
- * Allow user to perform swap transactions within a pool
+ * Allow user to query swap, approve tokenIn, and send swap transactions
+ * @notice using poolTokensIndex to reference the token in the pool
  */
 export const SwapTab = ({ pool }: { pool: Pool }) => {
   const [queryResponse, setQueryResponse] = useState<SwapQueryResponse>(initialQueryResponse);
@@ -58,16 +59,24 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
     swapConfig,
   );
 
+  const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
+  const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
+
   // Verify user has sufficient allowance to perform the swap
   useEffect(() => {
-    const tokenInDecimals = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals;
-    const tokenInRawAmount = parseUnits(swapConfig.tokenIn.amount, tokenInDecimals);
+    const tokenInRawAmount = parseUnits(swapConfig.tokenIn.amount, tokenIn.decimals);
     if (tokenInAllowance && tokenInAllowance >= tokenInRawAmount) {
       setSufficientAllowance(true);
     } else {
       setSufficientAllowance(false);
     }
-  }, [tokenInAllowance, swapConfig.tokenIn.amount, pool.poolTokens, swapConfig.tokenIn.poolTokensIndex]);
+  }, [
+    tokenInAllowance,
+    swapConfig.tokenIn.amount,
+    pool.poolTokens,
+    swapConfig.tokenIn.poolTokensIndex,
+    tokenIn.decimals,
+  ]);
 
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
     // Reset query response whenever input amount changes
@@ -113,9 +122,6 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
   // Query the swap and update the expected and min/max amounts in/out
   const handleQuerySwap = async () => {
     const { updatedAmount, call } = await querySwap();
-
-    const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
-    const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
 
     if (updatedAmount.swapKind === SwapKind.GivenIn) {
       const expectedAmountOut = updatedAmount.expectedAmountOut.amount.toString();
@@ -174,34 +180,26 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
     <section>
       <TokenField
         label="Token In"
-        tokenSymbol={pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].symbol}
+        tokenSymbol={tokenIn.symbol}
         value={swapConfig.tokenIn.amount}
         onAmountChange={value => handleTokenAmountChange(value, "tokenIn")}
         onTokenSelect={symbol => handleTokenSelection(symbol, "tokenIn")}
         tokenDropdownOpen={isTokenInDropdownOpen}
         setTokenDropdownOpen={setTokenInDropdownOpen}
-        selectableTokens={pool.poolTokens.filter(
-          token => token.symbol !== pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].symbol,
-        )}
-        allowance={Number(
-          formatUnits(tokenInAllowance ?? 0n, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals),
-        ).toFixed(4)}
-        balance={Number(
-          formatUnits(tokenInBalance ?? 0n, pool.poolTokens[swapConfig.tokenIn.poolTokensIndex].decimals),
-        ).toFixed(4)}
+        selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenIn.symbol)}
+        allowance={Number(formatUnits(tokenInAllowance ?? 0n, tokenIn.decimals)).toFixed(4)}
+        balance={Number(formatUnits(tokenInBalance ?? 0n, tokenIn.decimals)).toFixed(4)}
         isHighlighted={queryResponse.swapKind === SwapKind.GivenIn}
       />
       <TokenField
         label="Token Out"
-        tokenSymbol={pool.poolTokens[swapConfig.tokenOut.poolTokensIndex].symbol}
+        tokenSymbol={tokenOut.symbol}
         value={swapConfig.tokenOut.amount}
         onAmountChange={value => handleTokenAmountChange(value, "tokenOut")}
         onTokenSelect={symbol => handleTokenSelection(symbol, "tokenOut")}
         tokenDropdownOpen={isTokenOutDropdownOpen}
         setTokenDropdownOpen={setTokenOutDropdownOpen}
-        selectableTokens={pool.poolTokens.filter(
-          token => token.symbol !== pool.poolTokens[swapConfig.tokenOut.poolTokensIndex].symbol,
-        )}
+        selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenOut.symbol)}
         isHighlighted={queryResponse.swapKind === SwapKind.GivenOut}
       />
       <div className={`grid gap-5 ${queryResponse.expectedAmount === "0" ? "grid-cols-1" : "grid-cols-2"}`}>
