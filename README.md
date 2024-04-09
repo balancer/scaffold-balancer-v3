@@ -2,7 +2,19 @@
 
 ⚖️ Balancer is a decentralized automated market maker (AMM) protocol built on Ethereum that represents a flexible building block for programmable liquidity.
 
-🛠️ This repo is a series of guides and a prototyping tools for creating custom pools that integrate with Balancer v3
+🛠️ This repo is a series of guides and a prototyping tools for creating custom pools that integrate with Balancer v3. 
+
+It uses example contracts for a custom pool, custom pool factory, test files, and deployment scripts. The core idea is to help educate developers with creating custom pools and integrating with BalancerV3, and to provide a starting point for developers to create their own custom pools and factories.
+
+✏️ The agenda of this README is listed below:
+
+0. **Checkpoint 0** - 📚 Setup of the environment.
+1. **Checkpoint 1** - 🌊 Creating a custom pool, registering, initializing it with balancerV3 vault, and interacting with it.
+2. **Checkpoint 2** - 🔧 Creating a custom pool factory, deploying it, and generating a pool from it that you can interact with.
+3. **Checkpoint 3** - 🧪 Writing Typical Unit and Fuzz Tests for Custom Pool Example
+4. **Checkpoint 4** - 🎨 Creating Your Own Custom Pool with the Template Files
+5. **Checkpoint 5** - 📡 Integrate pool with the Balancer v3 Subgraph
+6. **Checkpoint 6** - 🧭 Integrate pool with the Smart Order Router (SOR)
 
 ## Checkpoint 0: 📦 Environment 📚
 
@@ -41,6 +53,8 @@ yarn start
 In order to deploy new custom pool contracts on sepolia and execute scripts, you must set a `DEPLOYER_PRIVATE_KEY` at the path `packagages/hardhat/.env` (And your PK must have testnet sepolia ETH)
 
 ## Checkpoint 1: 🌊 Create A Custom Pool
+
+This checkpoint is all about creating a custom pool, registering it with the BalancerV3 Vault, and initializing it. It is focused on giving you as a dev a scaffolding kit to play with your custom pool.
 
 ### 1.1 Write a Custom Pool Contract
 
@@ -113,10 +127,52 @@ yarn hardhat run scripts/initializePool.ts --network sepolia
 - Review the pool details and composition post pool initialization
 - Try out executing a swap, join, and exit with your custom pool
 
-## Checkpoint 2: 🧭 Integrate pool with the Smart Order Router (SOR)
+## Checkpoint 2: 🔧 Create a custom pool factory
+
+Now that you have created a custom pool, it is time to deploy the associated custom pool factory. For this repo, we've created a custom pool factory example and associated script to deploy it.
+
+The example factory uses the `ConstantPricePool.sol` as the Custom Pool type.
+
+The concept is that once the custom pool factory is deployed, anyone can come along and deploy more of that specific custom pool type, with varying pool parameters.
+
+This section will walk you through:
+- Deployment of the custom pool factory example.
+- Interacting with the pool factory within the ScaffoldBalancer UI by generating new pools from it on the testnet.
+
+1. Run the following CLI command (assuming `.env` is populated appropriately) to simulate deployment of the pool factory.
+
+`source .env && forge script scripts/DeployCustomPoolFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
+
+2. Run the following CLI command to deploy the script.
+
+`source .env && forge script scripts/DeployCustomPoolFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast`
+
+## Checkpoint 3: Writing Typical Unit and Fuzz Tests for Custom Pool Example
+
+TODO
+
+## Checkpoint 4: Creating Your Own Custom Pool with the Template Files
+
+This is just a guide, so please use your own due diligence with your project before deploying any actual smart contracts of course.
+
+1. Rename custom pool and reconfigure it as needed for your own needs.
+2. Update dependencies and details within solidity scripts found [here](packages/hardhat/scripts).
+3. Deploy, Register, and Initialize your custom pool using said scripts in #2. Interact with it to ensure it is functioning as you desire.
+4. Simulate the deployment of your own custom pool factory, and interact with it to ensure it is functioning as you desire.
+5. TODO - details regarding integration with SOR and Subgraph
+
+Now you should have a custom pool and custom pool factory of your own, and have a better understanding of integrating with the new BalancerV3 tech stack.
+
+The next step is to reach out, if you haven't already, to the Balancer ecosystem via:
+
+1. [Discord](TODO - get the right link)
+2. [Balancer Grants](TODO - get the right link) if you've got an idea for a custom pool that you'd like to apply for a grant with.
+3. [BD team](TODO - Link to BD team)
+
+## Checkpoint 5: 🧭 Integrate pool with the Smart Order Router (SOR)
 
 TBD
 
-## Checkpoint 3: 📡 Integrate pool with the Balancer v3 Subgraph
+## Checkpoint 6: 📡 Integrate pool with the Balancer v3 Subgraph
 
 TBD

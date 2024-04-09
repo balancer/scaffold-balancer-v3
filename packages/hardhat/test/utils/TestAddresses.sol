@@ -18,7 +18,6 @@ contract TestAddresses {
     // Balancer Pools
     address public testPool = 0x37495BE0Af7B427Ddb9C504cE53617F9F04620aD; // already deployed by BLabs?
 
-
     // DeFi Ecosystem
     address public ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
