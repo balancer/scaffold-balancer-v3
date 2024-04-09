@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
-import { useAccount, useContractReads, usePublicClient, useWalletClient } from "wagmi";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { PoolFeedback, TokenField } from "~~/app/pools/_components";
 import { StyledQueryButton, StyledTxButton } from "~~/components/common";
 import { useJoin } from "~~/hooks/balancer/";
@@ -31,41 +31,21 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
   const [isApproving, setIsApproving] = useState(false); // Flag to indicate if approval process is ongoing
   const [tokensToApprove, setTokensToApprove] = useState<any[]>([]);
 
-  const { queryJoin, joinPool } = useJoin(pool);
+  const { queryJoin, joinPool, allowances, refetchAllowances, tokenBalances } = useJoin(pool, tokenInputs);
   const account = useAccount();
 
-  const { data: allowances, refetch: refetchAllowances } = useContractReads({
-    contracts: tokenInputs.map(token => ({
-      address: token.address,
-      abi: parseAbi(["function allowance(address owner, address spender) returns (uint256)"]),
-      functionName: "allowance",
-      args: [account.address as string, pool.vaultAddress],
-    })),
-  });
-  console.log("allowances", allowances);
-  const { data: balances } = useContractReads({
-    contracts: tokenInputs.map(token => ({
-      address: token.address,
-      abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
-      functionName: "balanceOf",
-      args: [account.address as string],
-    })),
-  });
-
   const writeTx = useTransactor(); // scaffold hook for tx status toast notifications
-
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
 
   useEffect(() => {
-    async function checkAndPrepareApprovals() {
+    async function determineTokensToApprove() {
       if (allowances) {
         const tokensNeedingApproval = tokenInputs.filter((token, index) => {
           const allowance = BigInt((allowances[index]?.result as string) || "0");
           return allowance < token.rawAmount; // Check if allowance is less than required amount
         });
         setTokensToApprove(tokensNeedingApproval);
-        console.log("tokensNeedingApproval.length", tokensNeedingApproval.length);
         if (tokensNeedingApproval.length > 0) {
           setSufficientAllowances(false);
         } else {
@@ -74,7 +54,7 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
       }
     }
 
-    checkAndPrepareApprovals();
+    determineTokensToApprove();
   }, [tokenInputs, allowances]);
 
   const handleInputChange = (index: number, value: string) => {
@@ -90,6 +70,7 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
 
   const handleQueryJoin = async () => {
     const queryResponse = await queryJoin(tokenInputs);
+    if (!queryResponse) return;
     setQueryResponse(queryResponse);
   };
 
@@ -101,6 +82,32 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
     } catch (e) {
       console.error("error", e);
     }
+  };
+
+  const handleApprove = async () => {
+    if (!walletClient) return;
+    tokensToApprove.forEach(async token => {
+      try {
+        setIsApproving(true);
+        const { request } = await publicClient.simulateContract({
+          address: token.address,
+          abi: parseAbi(["function approve(address spender, uint256 amount) returns (bool)"]),
+          functionName: "approve",
+          account: account.address,
+          args: [pool.vaultAddress, token.rawAmount],
+        });
+
+        await writeTx(() => walletClient.writeContract(request), {
+          blockConfirmations: 1,
+          onBlockConfirmation: () => {
+            refetchAllowances(); // update UI with new allowances
+          },
+        });
+      } catch (error) {
+        console.error("Approval error", error);
+        setIsApproving(false);
+      }
+    });
   };
 
   return (
@@ -119,7 +126,8 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
               allowances && Number(formatUnits((allowances[index].result as bigint) || 0n, token.decimals)).toFixed(4)
             }
             balance={
-              balances && Number(formatUnits((balances[index].result as bigint) || 0n, token.decimals)).toFixed(4)
+              tokenBalances &&
+              Number(formatUnits((tokenBalances[index].result as bigint) || 0n, token.decimals)).toFixed(4)
             }
           />
         ))}
@@ -133,43 +141,7 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
         </div>
         {queryResponse.expectedBptOut === "0" ? null : !sufficientAllowances ? (
           <div>
-            <StyledTxButton
-              isDisabled={isApproving}
-              onClick={() => {
-                if (!walletClient) return;
-                try {
-                  setIsApproving(true);
-                  tokensToApprove.forEach(async token => {
-                    try {
-                      const { request } = await publicClient.simulateContract({
-                        address: token.address,
-                        abi: parseAbi(["function approve(address spender, uint256 amount) returns (bool)"]),
-                        functionName: "approve",
-                        account: account.address,
-                        args: [pool.vaultAddress, token.rawAmount],
-                      });
-                      console.log("request", request);
-                      await writeTx(() => walletClient.writeContract(request), {
-                        blockConfirmations: 1,
-                        onBlockConfirmation: txnReceipt => {
-                          // Custom logic to run on block confirmation
-                          // You can place more complex logic here, such as updating component state,
-                          // calling other functions, or triggering notifications
-                          refetchAllowances();
-                          console.log("Transaction confirmed:", txnReceipt);
-                        },
-                      });
-                    } catch (error) {
-                      console.error("Approval error", error);
-                      setIsApproving(false);
-                    }
-                  });
-                } catch (error) {
-                  console.error("Approval error", error);
-                  setIsApproving(false);
-                }
-              }}
-            >
+            <StyledTxButton isDisabled={isApproving} onClick={handleApprove}>
               {isApproving ? "..." : "Approve"}
             </StyledTxButton>
           </div>
@@ -182,12 +154,22 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
 
       <PoolFeedback title="BPT Out" transactionUrl={joinTxUrl}>
         <div className="flex flex-wrap justify-between mb-3">
-          <div>Expected</div>
-          <div>{queryResponse.expectedBptOut}</div>
+          <div className="font-bold">Expected</div>
+          <div className="text-end">
+            <div className="font-bold">
+              {Number(formatUnits(BigInt(queryResponse.expectedBptOut), pool.decimals)).toFixed(4)}
+            </div>
+            <div className="text-sm">{queryResponse.expectedBptOut}</div>
+          </div>
         </div>
         <div className="flex flex-wrap justify-between">
-          <div>Minimum</div>
-          <div>{queryResponse.minBptOut}</div>
+          <div className="font-bold">Minimum</div>
+          <div className="text-end">
+            <div className="font-bold">
+              {Number(formatUnits(BigInt(queryResponse.minBptOut), pool.decimals)).toFixed(4)}
+            </div>
+            <div className="text-sm">{queryResponse.minBptOut}</div>
+          </div>
         </div>
       </PoolFeedback>
     </section>

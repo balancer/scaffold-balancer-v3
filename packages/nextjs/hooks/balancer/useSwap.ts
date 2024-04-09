@@ -55,8 +55,6 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
     const chainId = walletClient?.chain.id as number;
     const rpcUrl = walletClient?.chain.rpcUrls.default.http[0] as string;
 
-    // const { tokenIn, tokenOut, swapKind } = swapConfig;
-
     const swapInput = {
       chainId: chainId,
       swapKind: swapConfig.swapKind,
@@ -81,7 +79,6 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
     };
 
     const swap = new Swap(swapInput);
-
     const updatedAmount = (await swap.query(rpcUrl)) as ExactInQueryOutput | ExactOutQueryOutput;
 
     const call = swap.buildCall({

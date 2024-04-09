@@ -19,14 +19,14 @@ export type SwapConfig = {
 };
 
 type SwapQueryResponse = {
-  expectedAmount: string;
-  minOrMaxAmount: string;
+  expectedAmount: any;
+  minOrMaxAmount: any;
   swapKind: SwapKind | undefined;
 };
 
 const initialQueryResponse = {
-  expectedAmount: "0",
-  minOrMaxAmount: "0",
+  expectedAmount: undefined,
+  minOrMaxAmount: undefined,
   swapKind: undefined,
 };
 
@@ -43,7 +43,11 @@ const initialSwapConfig = {
 };
 
 /**
- * Allow user to query swap, approve tokenIn, and send swap transactions
+ * 1. Choose tokenIn and tokenOut
+ * 2. Query the results of swap transaction
+ * 3. User approves the vault for the tokenIn used in the swap transaction (if necessary)
+ * 4. User sends transaction to swap the tokens
+ *
  * @notice using poolTokensIndex to reference the token in the pool
  */
 export const SwapTab = ({ pool }: { pool: Pool }) => {
@@ -124,10 +128,11 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
     const { updatedAmount, call } = await querySwap();
 
     if (updatedAmount.swapKind === SwapKind.GivenIn) {
-      const expectedAmountOut = updatedAmount.expectedAmountOut.amount.toString();
+      const rawExpectedAmountOut = updatedAmount.expectedAmountOut.amount;
+      console.log(updatedAmount);
       setQueryResponse({
-        expectedAmount: expectedAmountOut,
-        minOrMaxAmount: call.minAmountOut.amount.toString(),
+        expectedAmount: updatedAmount.expectedAmountOut,
+        minOrMaxAmount: call.minAmountOut,
         swapKind: SwapKind.GivenIn,
       });
       // Update the tokenOut amount with the expected amount
@@ -135,14 +140,16 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         ...prevConfig,
         tokenOut: {
           ...prevConfig.tokenOut,
-          amount: Number(formatUnits(expectedAmountOut, tokenOut.decimals)).toFixed(4),
+          amount: Number(formatUnits(rawExpectedAmountOut, tokenOut.decimals)).toFixed(4),
         },
       }));
     } else {
-      const expectedAmountIn = updatedAmount.expectedAmountIn.amount.toString();
+      console.log("updatedAmount", updatedAmount);
+      console.log("call", call);
+      const rawExpectedAmountIn = updatedAmount.expectedAmountIn.amount;
       setQueryResponse({
-        expectedAmount: expectedAmountIn,
-        minOrMaxAmount: call.maxAmountIn.amount.toString(),
+        expectedAmount: updatedAmount.expectedAmountIn,
+        minOrMaxAmount: call.maxAmountIn,
         swapKind: SwapKind.GivenOut,
       });
       // Update the tokenIn amount with the expected amount
@@ -150,7 +157,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         ...prevConfig,
         tokenIn: {
           ...prevConfig.tokenIn,
-          amount: Number(formatUnits(expectedAmountIn, tokenIn.decimals)).toFixed(4),
+          amount: Number(formatUnits(rawExpectedAmountIn, tokenIn.decimals)).toFixed(4),
         },
       }));
     }
@@ -202,7 +209,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenOut.symbol)}
         isHighlighted={queryResponse.swapKind === SwapKind.GivenOut}
       />
-      <div className={`grid gap-5 ${queryResponse.expectedAmount === "0" ? "grid-cols-1" : "grid-cols-2"}`}>
+      <div className={`z-100 grid gap-5 ${!queryResponse.expectedAmount ? "grid-cols-1" : "grid-cols-2"}`}>
         <div>
           <StyledQueryButton
             onClick={handleQuerySwap}
@@ -211,7 +218,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
             Query Swap
           </StyledQueryButton>
         </div>
-        {queryResponse.expectedAmount === "0" ? null : !sufficientAllowance ? (
+        {!queryResponse.expectedAmount ? null : !sufficientAllowance ? (
           <div>
             <StyledTxButton onClick={handleApprove}>Approve</StyledTxButton>
           </div>
@@ -226,12 +233,34 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         transactionUrl={swapTxUrl}
       >
         <div className="flex flex-wrap justify-between mb-3">
-          <div>Expected </div>
-          <div>{queryResponse.expectedAmount}</div>
+          <div className="font-bold">Expected</div>
+          <div className="text-end">
+            <div className="font-bold">
+              {queryResponse.expectedAmount
+                ? Number(
+                    formatUnits(queryResponse.expectedAmount.amount, queryResponse.expectedAmount.token.decimals),
+                  ).toFixed(4)
+                : "0.0000"}
+            </div>
+            <div className="text-sm">
+              {queryResponse.expectedAmount ? queryResponse.expectedAmount.amount.toString() : "0"}
+            </div>
+          </div>
         </div>
         <div className="flex flex-wrap justify-between">
-          <div>{queryResponse.swapKind === SwapKind.GivenIn ? "Minumum" : "Maximum"}</div>
-          <div>{queryResponse.minOrMaxAmount}</div>
+          <div className="font-bold">{queryResponse.swapKind === SwapKind.GivenIn ? "Minumum" : "Maximum"}</div>
+          <div className="text-end">
+            <div className="font-bold">
+              {queryResponse.minOrMaxAmount
+                ? Number(
+                    formatUnits(queryResponse.minOrMaxAmount.amount, queryResponse.minOrMaxAmount.token.decimals),
+                  ).toFixed(4)
+                : "0.0000"}
+            </div>
+            <div className="text-sm">
+              {queryResponse.minOrMaxAmount ? queryResponse.minOrMaxAmount.amount.toString() : "0"}
+            </div>
+          </div>
         </div>
       </PoolFeedback>
     </section>

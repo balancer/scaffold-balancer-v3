@@ -49,13 +49,13 @@ export const TokenField: React.FC<TokenFieldProps> = ({
           value={value}
           onChange={e => onAmountChange(e.target.value)}
           placeholder="0.0"
-          className={`text-right text-2xl w-full input input-bordered rounded-lg bg-base-200 p-10 ${
+          className={`text-right text-2xl w-full input input-bordered rounded-lg bg-base-300 p-10 ${
             isHighlighted ? "ring-2 ring-fuchsia-600" : ""
           }`}
         />
         <div className="absolute top-0 left-0 flex gap-3 p-3">
           {isTokenSwapField ? (
-            <div>
+            <div className="relative">
               <div
                 onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)}
                 tabIndex={0}
@@ -88,24 +88,26 @@ export const TokenField: React.FC<TokenFieldProps> = ({
               </div>
             </div>
           )}
-          <div className="flex flex-col gap-1 justify-center text-sm">
-            <table className="">
-              <tbody className="text-neutral-400">
-                {allowance && (
-                  <tr>
-                    <td className="align-top">Allowed :</td>
-                    <td className="pl-1">{allowance}</td>
-                  </tr>
-                )}
-                {balance && (
-                  <tr>
-                    <td className="align-top">Balance :</td>
-                    <td className="pl-1">{balance}</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          {!tokenDropdownOpen && (
+            <div className="flex flex-col gap-1 justify-center text-sm">
+              <table className="">
+                <tbody className="text-neutral-400">
+                  {allowance && (
+                    <tr>
+                      <td className="align-top">Allowed :</td>
+                      <td className="pl-1">{allowance}</td>
+                    </tr>
+                  )}
+                  {balance && (
+                    <tr>
+                      <td className="align-top">Balance :</td>
+                      <td className="pl-1">{balance}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>

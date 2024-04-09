@@ -12,7 +12,8 @@ type ExitQueryResponse = {
 };
 
 /**
- *
+ * 1. Query the results of exit transaction
+ * 2. User sends transaction to exit the pool
  */
 export const ExitTab = ({ pool }: { pool: Pool }) => {
   const [bptAmountIn, setBptAmountIn] = useState("");
@@ -70,7 +71,10 @@ export const ExitTab = ({ pool }: { pool: Pool }) => {
                   <div className="text-sm">{queryResponse.expectedAmountsOut[index].amount.toString()}</div>
                 </div>
               ) : (
-                <div className="font-bold">0</div>
+                <div className="text-end">
+                  <div className="font-bold">0.0000</div>
+                  <div className="text-sm">0</div>
+                </div>
               )}
             </div>
           </div>

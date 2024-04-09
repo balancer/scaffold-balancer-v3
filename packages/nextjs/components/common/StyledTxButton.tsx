@@ -17,10 +17,12 @@ export const StyledTxButton: React.FC<StyledTxButtonProps> = ({ onClick, childre
   const outlinedStyles = `border border-neutral hover:bg-neutral hover:text-neutral-content font-bold w-full py-4 rounded-lg`;
   const solidStyles = `bg-neutral hover:bg-neutral-200 text-neutral-content font-bold w-full py-4 rounded-lg`;
 
+  const processingStyles = `bg-neutral-300 py-3 w-full rounded-lg`;
+
   const classNames = children === "Approve" ? outlinedStyles : solidStyles;
   return (
-    <button onClick={onClick} className={classNames} disabled={isDisabled}>
-      {children}
+    <button onClick={onClick} className={isDisabled ? processingStyles : classNames} disabled={isDisabled}>
+      {isDisabled ? <span className="loading loading-bars loading-md text-neutral-600"></span> : children}
     </button>
   );
 };

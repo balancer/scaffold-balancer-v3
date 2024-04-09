@@ -14,7 +14,7 @@ export const StyledQueryButton: React.FC<StyledQueryButtonProps> = ({ isDisabled
         disabled={isDisabled}
         className={`w-full text-white font-bold py-4 rounded-lg ${
           isDisabled
-            ? "bg-[#334155] opacity-70 cursor-not-allowed"
+            ? "bg-[#334155] opacity-70"
             : "bg-gradient-to-tr from-indigo-700 from-15% to-fuchsia-600 hover:from-indigo-700 hover:to-fuchsia-700"
         }`}
       >
