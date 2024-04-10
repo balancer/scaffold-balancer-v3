@@ -165,8 +165,8 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
 
   const handleApprove = async () => {
     try {
-      await approveTokenIn();
-      await refetchTokenInAllowance();
+      approveTokenIn();
+      refetchTokenInAllowance();
       setSufficientAllowance(true);
     } catch (err) {
       console.error("error", err);

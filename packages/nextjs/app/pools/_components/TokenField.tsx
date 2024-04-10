@@ -11,31 +11,34 @@ interface TokenFieldProps {
   tokenDropdownOpen?: boolean;
   setTokenDropdownOpen?: Dispatch<SetStateAction<boolean>>;
   selectableTokens?: PoolTokens[];
-  lastChanged?: "tokenIn" | "tokenOut" | "";
   allowance?: string;
   balance?: string;
   isHighlighted?: boolean;
+  setMaxAmount?: () => void;
 }
 
 /**
  * Input field for token amounts
  * (optional dropdown for swap token selection)
  * (optional allowance and balance displays)
+ * (optional setMaxAmount button)
  */
 export const TokenField: React.FC<TokenFieldProps> = ({
   label,
   value,
   tokenSymbol,
   onAmountChange,
-  isHighlighted,
-  allowance,
-  balance,
   onTokenSelect,
   tokenDropdownOpen,
   setTokenDropdownOpen,
   selectableTokens,
+  allowance,
+  balance,
+  isHighlighted,
+  setMaxAmount,
 }) => {
   const isTokenSwapField = !!(setTokenDropdownOpen && onTokenSelect && selectableTokens);
+
   return (
     <div className="mb-5">
       {label && (
@@ -101,7 +104,14 @@ export const TokenField: React.FC<TokenFieldProps> = ({
                   {balance && (
                     <tr>
                       <td className="align-top">Balance :</td>
-                      <td className="pl-1">{balance}</td>
+                      <td className="pl-1">
+                        {balance}{" "}
+                        {setMaxAmount && (
+                          <button className="text-fuchsia-500" onClick={setMaxAmount}>
+                            Max
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   )}
                 </tbody>

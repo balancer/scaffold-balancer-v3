@@ -16,7 +16,7 @@ type ExitQueryResponse = {
  * 2. User sends transaction to exit the pool
  */
 export const ExitTab = ({ pool }: { pool: Pool }) => {
-  const [bptAmountIn, setBptAmountIn] = useState("");
+  const [bptIn, setBptIn] = useState({ rawAmount: 0n, displayValue: "" });
   const [exitTxUrl, setExitTxUrl] = useState<string | undefined>();
   const [queryResponse, setQueryResponse] = useState<ExitQueryResponse>({
     expectedAmountsOut: undefined,
@@ -26,13 +26,14 @@ export const ExitTab = ({ pool }: { pool: Pool }) => {
   const { userPoolBalance, queryExit, exitPool } = useExit(pool);
 
   const handleAmountChange = (amount: string) => {
-    setBptAmountIn(amount);
+    const rawAmount = parseUnits(amount, pool.decimals);
+    setBptIn({ rawAmount, displayValue: amount });
+
     setQueryResponse({ expectedAmountsOut: undefined, minAmountsOut: undefined });
   };
 
   const handleExitQuery = async () => {
-    const rawAmount = parseUnits(bptAmountIn, pool.decimals);
-    const { expectedAmountsOut, minAmountsOut } = await queryExit(rawAmount);
+    const { expectedAmountsOut, minAmountsOut } = await queryExit(bptIn.rawAmount);
     setQueryResponse({ expectedAmountsOut, minAmountsOut });
   };
 
@@ -41,17 +42,26 @@ export const ExitTab = ({ pool }: { pool: Pool }) => {
     setExitTxUrl(txUrl);
   };
 
+  const setMaxAmount = () => {
+    setBptIn({
+      rawAmount: userPoolBalance || 0n,
+      displayValue: Number(formatUnits(userPoolBalance || 0n, pool.decimals)).toFixed(4),
+    });
+    setQueryResponse({ expectedAmountsOut: undefined, minAmountsOut: undefined });
+  };
+
   return (
     <section>
       <TokenField
         label="BPT In"
         tokenSymbol={pool.symbol}
-        value={bptAmountIn}
+        value={bptIn.displayValue}
         onAmountChange={handleAmountChange}
         balance={Number(formatUnits(userPoolBalance || 0n, pool.decimals)).toFixed(4)}
+        setMaxAmount={setMaxAmount}
       />
       <div className={`grid gap-5 ${queryResponse.expectedAmountsOut ? "grid-cols-2" : "grid-cols-1"}`}>
-        <StyledQueryButton onClick={handleExitQuery} isDisabled={bptAmountIn === ""}>
+        <StyledQueryButton onClick={handleExitQuery} isDisabled={bptIn.displayValue === ""}>
           Query Exit
         </StyledQueryButton>
         {queryResponse.expectedAmountsOut && <StyledTxButton onClick={handleExitPool}>Exit Pool</StyledTxButton>}
