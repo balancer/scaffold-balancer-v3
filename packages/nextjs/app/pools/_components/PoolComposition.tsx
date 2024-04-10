@@ -22,7 +22,7 @@ export const PoolComposition = ({ pool }: { pool: Pool }) => {
             </div>
             <div>
               <div className="font-bold text-end">
-                {Number(formatUnits(pool.totalSupply, pool.decimals)).toFixed(2)}
+                {Number(formatUnits(pool.totalSupply, pool.decimals)).toFixed(4)}
               </div>
               <div className="text-sm text-end">{pool.totalSupply.toString()}</div>
             </div>
@@ -34,9 +34,9 @@ export const PoolComposition = ({ pool }: { pool: Pool }) => {
                   <div className="font-bold">{token.symbol}</div>
                   <div className="text-sm">{token.name}</div>
                 </div>
-                <div>
+                <div className="text-end">
                   <div className="font-bold text-end">
-                    {Number(formatUnits(token.balance, token.decimals)).toFixed(2)}
+                    {Number(formatUnits(token.balance, token.decimals)).toFixed(4)}
                   </div>
                   <div className="text-sm">{token.balance.toString()}</div>
                 </div>

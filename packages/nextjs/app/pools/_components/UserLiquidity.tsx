@@ -41,7 +41,7 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
               <div className="text-sm">{pool.name}</div>
             </div>
             <div className="text-end">
-              <div className="font-bold">{Number(formatUnits(userPoolBalance || 0n, pool.decimals)).toFixed(2)}</div>
+              <div className="font-bold">{Number(formatUnits(userPoolBalance || 0n, pool.decimals)).toFixed(4)}</div>
               <div className="text-sm">{userPoolBalance?.toString()}</div>
             </div>
           </div>
@@ -53,14 +53,14 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
                   <div className="text-sm">{token.name}</div>
                 </div>
 
-                <div>
+                <div className="text-end">
                   <div className="font-bold text-end">
                     {expectedAmountsOut
                       ? Number(formatUnits(expectedAmountsOut[index].amount, token.decimals)).toFixed(2)
-                      : "0"}
+                      : "0.0000"}
                   </div>
                   <div className="text-sm">
-                    {expectedAmountsOut ? expectedAmountsOut[index].amount.toString() : "0.0000"}
+                    {expectedAmountsOut ? expectedAmountsOut[index].amount.toString() : "0"}
                   </div>
                 </div>
               </div>
