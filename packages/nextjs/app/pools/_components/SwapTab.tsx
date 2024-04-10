@@ -5,6 +5,7 @@ import { PoolFeedback, TokenField } from "~~/app/pools/_components";
 import { StyledQueryButton, StyledTxButton } from "~~/components/common";
 import { useSwap } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
+import { useTransactor } from "~~/hooks/scaffold-eth";
 
 export type SwapConfig = {
   tokenIn: {
@@ -57,11 +58,13 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
   const [sufficientAllowance, setSufficientAllowance] = useState(false);
   const [swapTxUrl, setSwapTxUrl] = useState<string | undefined>();
   const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
+  const [isApproving, setIsApproving] = useState(false);
 
-  const { querySwap, swap, tokenInAllowance, refetchTokenInAllowance, tokenInBalance, approveTokenIn } = useSwap(
+  const { querySwap, swap, tokenInAllowance, refetchTokenInAllowance, tokenInBalance, approveAsync } = useSwap(
     pool,
     swapConfig,
   );
+  const writeTx = useTransactor();
 
   const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
   const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
@@ -121,6 +124,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
 
     setTokenInDropdownOpen(false);
     setTokenOutDropdownOpen(false);
+    setQueryResponse(initialQueryResponse);
   };
 
   // Query the swap and update the expected and min/max amounts in/out
@@ -144,8 +148,6 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         },
       }));
     } else {
-      console.log("updatedAmount", updatedAmount);
-      console.log("call", call);
       const rawExpectedAmountIn = updatedAmount.expectedAmountIn.amount;
       setQueryResponse({
         expectedAmount: updatedAmount.expectedAmountIn,
@@ -165,11 +167,17 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
 
   const handleApprove = async () => {
     try {
-      approveTokenIn();
-      refetchTokenInAllowance();
-      setSufficientAllowance(true);
+      setIsApproving(true);
+      await writeTx(approveAsync, {
+        blockConfirmations: 1,
+        onBlockConfirmation: () => {
+          refetchTokenInAllowance();
+          setIsApproving(false);
+        },
+      });
     } catch (err) {
       console.error("error", err);
+      setIsApproving(false);
     }
   };
 
@@ -220,7 +228,9 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         </div>
         {!queryResponse.expectedAmount ? null : !sufficientAllowance ? (
           <div>
-            <StyledTxButton onClick={handleApprove}>Approve</StyledTxButton>
+            <StyledTxButton isDisabled={isApproving} onClick={handleApprove}>
+              Approve
+            </StyledTxButton>
           </div>
         ) : (
           <div>

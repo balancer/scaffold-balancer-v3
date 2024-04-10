@@ -11,24 +11,30 @@ type ExitQueryResponse = {
   minAmountsOut: TokenAmount[] | undefined;
 };
 
+const initialBptIn = {
+  rawAmount: 0n,
+  displayValue: "",
+};
+
+const initialQueryResponse = {
+  expectedAmountsOut: undefined,
+  minAmountsOut: undefined,
+};
+
 /**
  * 1. Query the results of exit transaction
  * 2. User sends transaction to exit the pool
  */
 export const ExitTab = ({ pool }: { pool: Pool }) => {
-  const [bptIn, setBptIn] = useState({ rawAmount: 0n, displayValue: "" });
+  const [bptIn, setBptIn] = useState(initialBptIn);
   const [exitTxUrl, setExitTxUrl] = useState<string | undefined>();
-  const [queryResponse, setQueryResponse] = useState<ExitQueryResponse>({
-    expectedAmountsOut: undefined,
-    minAmountsOut: undefined,
-  });
+  const [queryResponse, setQueryResponse] = useState<ExitQueryResponse>(initialQueryResponse);
 
   const { userPoolBalance, queryExit, exitPool } = useExit(pool);
 
   const handleAmountChange = (amount: string) => {
     const rawAmount = parseUnits(amount, pool.decimals);
     setBptIn({ rawAmount, displayValue: amount });
-
     setQueryResponse({ expectedAmountsOut: undefined, minAmountsOut: undefined });
   };
 
@@ -40,6 +46,7 @@ export const ExitTab = ({ pool }: { pool: Pool }) => {
   const handleExitPool = async () => {
     const txUrl = await exitPool();
     setExitTxUrl(txUrl);
+    setBptIn(initialBptIn);
   };
 
   const setMaxAmount = () => {

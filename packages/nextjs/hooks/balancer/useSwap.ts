@@ -8,6 +8,7 @@ import {
   SwapBuildOutputExactIn,
   SwapBuildOutputExactOut, // SwapKind,
 } from "@balancer/sdk";
+import { WriteContractResult } from "@wagmi/core";
 import { parseAbi, parseUnits } from "viem";
 import { useContractRead, useContractWrite, useWalletClient } from "wagmi";
 import { type SwapConfig } from "~~/app/pools/_components/SwapTab";
@@ -28,7 +29,7 @@ type SwapFunctions = {
   tokenInAllowance: bigint | undefined;
   tokenInBalance: bigint | undefined;
   refetchTokenInAllowance: () => void;
-  approveTokenIn: () => void;
+  approveAsync: () => Promise<WriteContractResult>;
 };
 
 /**
@@ -124,6 +125,7 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
       return blockExplorerTxURL;
     } catch (e) {
       console.error("error", e);
+      throw e; // rethrow the error so the caller can handle it!
     }
   };
 
@@ -148,13 +150,5 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
     args: [pool.vaultAddress, parseUnits(swapConfig.tokenIn.amount, tokenIn.decimals)],
   });
 
-  const approveTokenIn = async () => {
-    try {
-      await writeTx(approveAsync, { blockConfirmations: 1 });
-    } catch (e) {
-      console.error("error", e);
-    }
-  };
-
-  return { querySwap, swap, tokenInBalance, tokenInAllowance, refetchTokenInAllowance, approveTokenIn };
+  return { querySwap, swap, tokenInBalance, tokenInAllowance, refetchTokenInAllowance, approveAsync };
 };

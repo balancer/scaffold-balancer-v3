@@ -28,9 +28,8 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
   const [queryResponse, setQueryResponse] = useState(initialQueryResponse);
   const [joinTxUrl, setJoinTxUrl] = useState<string | undefined>();
   const [sufficientAllowances, setSufficientAllowances] = useState(false);
-  const [isApproving, setIsApproving] = useState(false); // Flag to indicate if approval process is ongoing
+  const [isApproving, setIsApproving] = useState(false);
   const [tokensToApprove, setTokensToApprove] = useState<any[]>([]);
-
   const { queryJoin, joinPool, allowances, refetchAllowances, tokenBalances } = useJoin(pool, tokenInputs);
   const account = useAccount();
 
@@ -100,11 +99,14 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
         await writeTx(() => walletClient.writeContract(request), {
           blockConfirmations: 1,
           onBlockConfirmation: () => {
-            refetchAllowances(); // update UI with new allowances
+            refetchAllowances();
+            setIsApproving(false);
           },
         });
       } catch (error) {
         console.error("Approval error", error);
+        console.log("approval CANCELED");
+
         setIsApproving(false);
       }
     });
@@ -142,12 +144,12 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
         {queryResponse.expectedBptOut === "0" ? null : !sufficientAllowances ? (
           <div>
             <StyledTxButton isDisabled={isApproving} onClick={handleApprove}>
-              {isApproving ? "..." : "Approve"}
+              Approve
             </StyledTxButton>
           </div>
         ) : (
           <div>
-            <StyledTxButton onClick={handleJoinPool}>Send Join</StyledTxButton>
+            <StyledTxButton onClick={handleJoinPool}>Add Liquidity</StyledTxButton>
           </div>
         )}
       </div>
