@@ -1,4 +1,5 @@
 import { useState } from "react";
+// import externalContracts from "../../contracts/externalContracts";
 import {
   // ChainId,
   ExactInQueryOutput,
@@ -48,6 +49,9 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
 
   const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
   const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
+
+  // For potentially parsing tx event logs...
+  // const vaultAbi = externalContracts[chainId as keyof typeof externalContracts].Vault.abi;
 
   /**
    * @param swapConfig the configuration object for the swap
@@ -109,7 +113,7 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
       const txHashPromise = () =>
         walletClient.sendTransaction({
           account: walletClient.account,
-          data: call.call,
+          data: call.callData,
           to: call.to,
           value: call.value,
         });
@@ -133,14 +137,14 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
     address: tokenIn.address,
     abi: parseAbi(["function allowance(address owner, address spender) returns (uint256)"]),
     functionName: "allowance" as any, // ???
-    args: [walletClient?.account.address as string, pool.vaultAddress],
+    args: [walletClient?.account.address as `0x${string}`, pool.vaultAddress],
   });
 
   const { data: tokenInBalance } = useContractRead({
     address: tokenIn.address,
     abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
     functionName: "balanceOf" as any, // ???
-    args: [walletClient?.account.address as string],
+    args: [walletClient?.account.address as `0x${string}`],
   });
 
   const { writeAsync: approveAsync } = useContractWrite({

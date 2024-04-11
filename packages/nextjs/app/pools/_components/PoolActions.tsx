@@ -3,19 +3,25 @@ import { ExitTab } from "./ExitTab";
 import { JoinTab } from "./JoinTab";
 import { SwapTab } from "./SwapTab";
 import { type Pool } from "~~/hooks/balancer/types";
+import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
 
 type Action = "Swap" | "Join" | "Exit";
+
+export interface PoolActionsProps {
+  pool: Pool;
+  refetchPool: RefetchPool;
+}
 
 /**
  * Allow user to perform swap, join, and exit transactions with a pool
  */
-export const PoolActions = ({ pool }: { pool: Pool }) => {
+export const PoolActions: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [activeTab, setActiveTab] = useState<Action>("Swap");
 
   const tabs = {
-    Swap: <SwapTab pool={pool} />,
-    Join: <JoinTab pool={pool} />,
-    Exit: <ExitTab pool={pool} />,
+    Swap: <SwapTab pool={pool} refetchPool={refetchPool} />,
+    Join: <JoinTab pool={pool} refetchPool={refetchPool} />,
+    Exit: <ExitTab pool={pool} refetchPool={refetchPool} />,
   };
 
   return (

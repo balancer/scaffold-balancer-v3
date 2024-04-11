@@ -1,10 +1,10 @@
 import { useState } from "react";
+import { PoolActionsProps } from "./PoolActions";
 import { TokenAmount } from "@balancer/sdk";
 import { formatUnits, parseUnits } from "viem";
 import { PoolFeedback, TokenField } from "~~/app/pools/_components";
 import { StyledQueryButton, StyledTxButton } from "~~/components/common";
 import { useExit } from "~~/hooks/balancer/";
-import { type Pool } from "~~/hooks/balancer/types";
 
 type ExitQueryResponse = {
   expectedAmountsOut: TokenAmount[] | undefined;
@@ -25,10 +25,11 @@ const initialQueryResponse = {
  * 1. Query the results of exit transaction
  * 2. User sends transaction to exit the pool
  */
-export const ExitTab = ({ pool }: { pool: Pool }) => {
+export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [bptIn, setBptIn] = useState(initialBptIn);
   const [exitTxUrl, setExitTxUrl] = useState<string | undefined>();
   const [queryResponse, setQueryResponse] = useState<ExitQueryResponse>(initialQueryResponse);
+  const [isExiting, setIsExiting] = useState(false);
 
   const { userPoolBalance, queryExit, exitPool } = useExit(pool);
 
@@ -44,9 +45,17 @@ export const ExitTab = ({ pool }: { pool: Pool }) => {
   };
 
   const handleExitPool = async () => {
-    const txUrl = await exitPool();
-    setExitTxUrl(txUrl);
-    setBptIn(initialBptIn);
+    try {
+      setIsExiting(true);
+      const txUrl = await exitPool();
+      setExitTxUrl(txUrl);
+      setBptIn(initialBptIn);
+      refetchPool();
+    } catch (error) {
+      console.error("Error exiting pool", error);
+    } finally {
+      setIsExiting(false);
+    }
   };
 
   const setMaxAmount = () => {
@@ -67,11 +76,19 @@ export const ExitTab = ({ pool }: { pool: Pool }) => {
         balance={Number(formatUnits(userPoolBalance || 0n, pool.decimals)).toFixed(4)}
         setMaxAmount={setMaxAmount}
       />
-      <div className={`grid gap-5 ${queryResponse.expectedAmountsOut ? "grid-cols-2" : "grid-cols-1"}`}>
+      <div
+        className={`grid gap-5 ${
+          queryResponse.expectedAmountsOut ? (exitTxUrl ? "grid-cols-1" : "grid-cols-2") : "grid-cols-1"
+        }`}
+      >
         <StyledQueryButton onClick={handleExitQuery} isDisabled={bptIn.displayValue === ""}>
           Query Exit
         </StyledQueryButton>
-        {queryResponse.expectedAmountsOut && <StyledTxButton onClick={handleExitPool}>Exit Pool</StyledTxButton>}
+        {queryResponse.expectedAmountsOut && !exitTxUrl && (
+          <StyledTxButton isDisabled={isExiting} onClick={handleExitPool}>
+            Exit Pool
+          </StyledTxButton>
+        )}
       </div>
 
       <PoolFeedback title="Expected Tokens Out" transactionUrl={exitTxUrl}>

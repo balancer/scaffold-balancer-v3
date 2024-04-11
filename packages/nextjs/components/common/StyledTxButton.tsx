@@ -15,7 +15,7 @@ interface StyledTxButtonProps {
  */
 export const StyledTxButton: React.FC<StyledTxButtonProps> = ({ onClick, children, isDisabled }) => {
   const outlinedStyles = `border border-neutral hover:bg-neutral hover:text-neutral-content font-bold w-full py-4 rounded-lg`;
-  const solidStyles = `bg-neutral hover:bg-neutral-200 text-neutral-content font-bold w-full py-4 rounded-lg`;
+  const solidStyles = `bg-neutral text-neutral-content font-bold w-full py-4 rounded-lg`;
 
   const processingStyles = `bg-neutral-300 py-3 w-full rounded-lg`;
 

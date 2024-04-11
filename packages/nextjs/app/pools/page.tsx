@@ -27,12 +27,8 @@ const Pools: NextPage = () => {
     ...details,
   }));
 
-  const [selectedPoolAddress, setSelectedPoolAddress] = useState<string>("0xAc79a8276860BF96D761804E5ed5736D3AFaAECF");
-  const {
-    data: pool,
-    isLoading,
-    // isFetchedAfterMount
-  } = usePoolContract(selectedPoolAddress);
+  const [selectedPoolAddress, setSelectedPoolAddress] = useState<string>("");
+  const { data: pool, isLoading, refetch: refetchPool } = usePoolContract(selectedPoolAddress);
 
   return (
     <div className="flex-grow bg-base-300">
@@ -74,7 +70,7 @@ const Pools: NextPage = () => {
                     <div className="flex flex-col gap-7">
                       {pool.poolConfig?.isPoolRegistered ? (
                         pool.poolConfig?.isPoolInitialized ? (
-                          <PoolActions pool={pool} />
+                          <PoolActions pool={pool} refetchPool={refetchPool} />
                         ) : (
                           <PoolAlert isRegistered={true} />
                         )

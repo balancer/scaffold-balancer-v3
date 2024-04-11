@@ -96,7 +96,8 @@ export const useExit = (pool: Pool) => {
     address: pool.address,
     abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
     functionName: "balanceOf" as any, // must type any because of parseAbi ???
-    args: [walletClient?.account?.address as string],
+    args: [walletClient?.account?.address as `0x${string}`],
+    watch: true,
   });
 
   return { userPoolBalance, queryExit, exitPool };

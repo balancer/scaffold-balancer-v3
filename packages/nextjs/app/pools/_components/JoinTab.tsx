@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { PoolActionsProps } from "./PoolActions";
 import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { PoolFeedback, TokenField } from "~~/app/pools/_components";
 import { StyledQueryButton, StyledTxButton } from "~~/components/common";
 import { useJoin } from "~~/hooks/balancer/";
-import { type Pool } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 
 const initialQueryResponse = {
@@ -18,7 +18,7 @@ const initialQueryResponse = {
  * 2. User approves the vault for the tokens used in the join transaction (if necessary)
  * 3. User sends transaction to join the pool
  */
-export const JoinTab = ({ pool }: { pool: Pool }) => {
+export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const initialTokenInputs = pool.poolTokens.map(token => ({
     address: token.address as `0x${string}`,
     decimals: token.decimals,
@@ -28,14 +28,15 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
   const [queryResponse, setQueryResponse] = useState(initialQueryResponse);
   const [joinTxUrl, setJoinTxUrl] = useState<string | undefined>();
   const [sufficientAllowances, setSufficientAllowances] = useState(false);
-  const [isApproving, setIsApproving] = useState(false);
   const [tokensToApprove, setTokensToApprove] = useState<any[]>([]);
-  const { queryJoin, joinPool, allowances, refetchAllowances, tokenBalances } = useJoin(pool, tokenInputs);
-  const account = useAccount();
+  const [isApproving, setIsApproving] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
 
+  const { queryJoin, joinPool, allowances, refetchAllowances, tokenBalances } = useJoin(pool, tokenInputs);
   const writeTx = useTransactor(); // scaffold hook for tx status toast notifications
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
+  const account = useAccount();
 
   useEffect(() => {
     async function determineTokensToApprove() {
@@ -75,11 +76,16 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
 
   const handleJoinPool = async () => {
     try {
+      setIsJoining(true);
       const txUrl = await joinPool();
       setJoinTxUrl(txUrl);
       setTokenInputs(initialTokenInputs);
+      refetchAllowances();
+      refetchPool();
     } catch (e) {
       console.error("error", e);
+    } finally {
+      setIsJoining(false);
     }
   };
 
@@ -105,8 +111,6 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
         });
       } catch (error) {
         console.error("Approval error", error);
-        console.log("approval CANCELED");
-
         setIsApproving(false);
       }
     });
@@ -135,13 +139,15 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
         ))}
       </div>
 
-      <div className={`grid gap-5 ${queryResponse.expectedBptOut === "0" ? "grid-cols-1" : "grid-cols-2"}`}>
+      <div
+        className={`grid gap-5 ${queryResponse.expectedBptOut === "0" || joinTxUrl ? "grid-cols-1" : "grid-cols-2"}`}
+      >
         <div>
           <StyledQueryButton onClick={handleQueryJoin} isDisabled={!tokenInputs.some(token => token.rawAmount > 0n)}>
             Query Join
           </StyledQueryButton>
         </div>
-        {queryResponse.expectedBptOut === "0" ? null : !sufficientAllowances ? (
+        {queryResponse.expectedBptOut === "0" || joinTxUrl ? null : !sufficientAllowances ? (
           <div>
             <StyledTxButton isDisabled={isApproving} onClick={handleApprove}>
               Approve
@@ -149,7 +155,9 @@ export const JoinTab = ({ pool }: { pool: Pool }) => {
           </div>
         ) : (
           <div>
-            <StyledTxButton onClick={handleJoinPool}>Add Liquidity</StyledTxButton>
+            <StyledTxButton isDisabled={isJoining} onClick={handleJoinPool}>
+              Add Liquidity
+            </StyledTxButton>
           </div>
         )}
       </div>

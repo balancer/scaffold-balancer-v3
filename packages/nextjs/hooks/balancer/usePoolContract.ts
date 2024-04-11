@@ -115,6 +115,8 @@ export const usePoolContract = (pool: Address) => {
         poolConfig,
       };
     },
-    { enabled: pool !== undefined },
+    { enabled: pool !== "" },
   );
 };
+
+export type RefetchPool = ReturnType<typeof usePoolContract>["refetch"];

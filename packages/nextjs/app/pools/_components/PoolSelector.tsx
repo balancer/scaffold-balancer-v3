@@ -17,7 +17,7 @@ export const PoolSelector = ({
 
   const isValidAddress = isAddress(inputValue);
   return (
-    <section className="flex justify-center flex-wrap gap-5 w-full mb-5 items-center text-xl py-5 border-b border-t border-base-100">
+    <section className="flex justify-center flex-wrap gap-5 w-full mb-5 items-center text-xl py-5">
       <div className={`dropdown dropdown-end ${isDropdownOpen ? "dropdown-open" : ""}`}>
         <div
           tabIndex={0}

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
+import { PoolActionsProps } from "./PoolActions";
 import { SwapKind } from "@balancer/sdk";
 import { formatUnits, parseUnits } from "viem";
 import { PoolFeedback, TokenField } from "~~/app/pools/_components";
 import { StyledQueryButton, StyledTxButton } from "~~/components/common";
 import { useSwap } from "~~/hooks/balancer/";
-import { type Pool } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 
 export type SwapConfig = {
@@ -51,7 +51,7 @@ const initialSwapConfig = {
  *
  * @notice using poolTokensIndex to reference the token in the pool
  */
-export const SwapTab = ({ pool }: { pool: Pool }) => {
+export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [queryResponse, setQueryResponse] = useState<SwapQueryResponse>(initialQueryResponse);
   const [isTokenInDropdownOpen, setTokenInDropdownOpen] = useState(false);
   const [isTokenOutDropdownOpen, setTokenOutDropdownOpen] = useState(false);
@@ -59,6 +59,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
   const [swapTxUrl, setSwapTxUrl] = useState<string | undefined>();
   const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
   const [isApproving, setIsApproving] = useState(false);
+  const [isSwapping, setIsSwapping] = useState(false);
 
   const { querySwap, swap, tokenInAllowance, refetchTokenInAllowance, tokenInBalance, approveAsync } = useSwap(
     pool,
@@ -133,7 +134,6 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
 
     if (updatedAmount.swapKind === SwapKind.GivenIn) {
       const rawExpectedAmountOut = updatedAmount.expectedAmountOut.amount;
-      console.log(updatedAmount);
       setQueryResponse({
         expectedAmount: updatedAmount.expectedAmountOut,
         minOrMaxAmount: call.minAmountOut,
@@ -183,11 +183,15 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
 
   const handleSwap = async () => {
     try {
+      setIsSwapping(true);
       const txHash = await swap();
       setSwapTxUrl(txHash);
       setSwapConfig(initialSwapConfig);
+      refetchPool();
     } catch (e) {
       console.error("error", e);
+    } finally {
+      setIsSwapping(false);
     }
   };
 
@@ -217,7 +221,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenOut.symbol)}
         isHighlighted={queryResponse.swapKind === SwapKind.GivenOut}
       />
-      <div className={`z-100 grid gap-5 ${!queryResponse.expectedAmount ? "grid-cols-1" : "grid-cols-2"}`}>
+      <div className={`z-100 grid gap-5 ${!queryResponse.expectedAmount || swapTxUrl ? "grid-cols-1" : "grid-cols-2"}`}>
         <div>
           <StyledQueryButton
             onClick={handleQuerySwap}
@@ -226,7 +230,7 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
             Query Swap
           </StyledQueryButton>
         </div>
-        {!queryResponse.expectedAmount ? null : !sufficientAllowance ? (
+        {!queryResponse.expectedAmount || swapTxUrl ? null : !sufficientAllowance ? (
           <div>
             <StyledTxButton isDisabled={isApproving} onClick={handleApprove}>
               Approve
@@ -234,7 +238,9 @@ export const SwapTab = ({ pool }: { pool: Pool }) => {
           </div>
         ) : (
           <div>
-            <StyledTxButton onClick={handleSwap}>Send Swap</StyledTxButton>
+            <StyledTxButton isDisabled={isSwapping} onClick={handleSwap}>
+              Send Swap
+            </StyledTxButton>
           </div>
         )}
       </div>
