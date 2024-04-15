@@ -10,7 +10,7 @@ import {
   SwapBuildOutputExactOut, // SwapKind,
 } from "@balancer/sdk";
 import { WriteContractResult } from "@wagmi/core";
-import { parseAbi, parseUnits } from "viem";
+import { parseAbi } from "viem";
 import { useContractRead, useContractWrite, useWalletClient } from "wagmi";
 import { type SwapConfig } from "~~/app/pools/_components/SwapTab";
 import { type Pool } from "~~/hooks/balancer/types";
@@ -60,6 +60,8 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
     const chainId = walletClient?.chain.id as number;
     const rpcUrl = walletClient?.chain.rpcUrls.default.http[0] as string;
 
+    console.log("swapConfig", swapConfig);
+
     const swapInput = {
       chainId: chainId,
       swapKind: swapConfig.swapKind,
@@ -77,8 +79,8 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
             }, // tokenOut
           ],
           vaultVersion: 3 as const,
-          inputAmountRaw: parseUnits(swapConfig.tokenIn.amount, tokenIn.decimals),
-          outputAmountRaw: parseUnits(swapConfig.tokenOut.amount, tokenOut.decimals),
+          inputAmountRaw: swapConfig.tokenIn.rawAmount,
+          outputAmountRaw: swapConfig.tokenOut.rawAmount,
         },
       ],
     };
@@ -151,7 +153,7 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
     address: tokenIn.address,
     abi: parseAbi(["function approve(address spender, uint256 amount) returns (bool)"]),
     functionName: "approve",
-    args: [pool.vaultAddress, parseUnits(swapConfig.tokenIn.amount, tokenIn.decimals)],
+    args: [pool.vaultAddress, swapConfig.tokenIn.rawAmount],
   });
 
   return { querySwap, swap, tokenInBalance, tokenInAllowance, refetchTokenInAllowance, approveAsync };

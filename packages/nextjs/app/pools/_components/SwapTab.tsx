@@ -11,10 +11,12 @@ export type SwapConfig = {
   tokenIn: {
     poolTokensIndex: number;
     amount: string;
+    rawAmount: bigint;
   };
   tokenOut: {
     poolTokensIndex: number;
     amount: string;
+    rawAmount: bigint;
   };
   swapKind: SwapKind;
 };
@@ -35,10 +37,12 @@ const initialSwapConfig = {
   tokenIn: {
     poolTokensIndex: 0,
     amount: "",
+    rawAmount: 0n,
   },
   tokenOut: {
     poolTokensIndex: 1,
     amount: "",
+    rawAmount: 0n,
   },
   swapKind: SwapKind.GivenOut,
 };
@@ -72,19 +76,12 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
 
   // Verify user has sufficient allowance to perform the swap
   useEffect(() => {
-    const tokenInRawAmount = parseUnits(swapConfig.tokenIn.amount, tokenIn.decimals);
-    if (tokenInAllowance && tokenInAllowance >= tokenInRawAmount) {
+    if (tokenInAllowance && tokenInAllowance >= swapConfig.tokenIn.rawAmount) {
       setSufficientAllowance(true);
     } else {
       setSufficientAllowance(false);
     }
-  }, [
-    tokenInAllowance,
-    swapConfig.tokenIn.amount,
-    pool.poolTokens,
-    swapConfig.tokenIn.poolTokensIndex,
-    tokenIn.decimals,
-  ]);
+  }, [tokenInAllowance, swapConfig.tokenIn.rawAmount, pool.poolTokens, swapConfig.tokenIn.poolTokensIndex]);
 
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
     // Reset query response whenever input amount changes
@@ -94,10 +91,12 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       tokenIn: {
         ...prevConfig.tokenIn,
         amount: swapConfigKey === "tokenIn" ? amount : "",
+        rawAmount: swapConfigKey === "tokenIn" ? parseUnits(amount, tokenIn.decimals) : 0n,
       },
       tokenOut: {
         ...prevConfig.tokenOut,
         amount: swapConfigKey === "tokenOut" ? amount : "",
+        rawAmount: swapConfigKey === "tokenOut" ? parseUnits(amount, tokenOut.decimals) : 0n,
       },
       swapKind: swapConfigKey === "tokenIn" ? SwapKind.GivenIn : SwapKind.GivenOut,
     }));
@@ -146,6 +145,7 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         tokenOut: {
           ...prevConfig.tokenOut,
           amount: Number(formatUnits(rawExpectedAmountOut, tokenOut.decimals)).toFixed(4),
+          rawAmount: rawExpectedAmountOut,
         },
       }));
     } else {
@@ -161,6 +161,7 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         tokenIn: {
           ...prevConfig.tokenIn,
           amount: Number(formatUnits(rawExpectedAmountIn, tokenIn.decimals)).toFixed(4),
+          rawAmount: rawExpectedAmountIn,
         },
       }));
     }
@@ -187,8 +188,8 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       setIsSwapping(true);
       const txHash = await swap();
       setSwapTxUrl(txHash);
-      setSwapConfig(initialSwapConfig);
       refetchPool();
+      refetchTokenInAllowance();
     } catch (e) {
       console.error("error", e);
     } finally {
@@ -222,29 +223,24 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenOut.symbol)}
         isHighlighted={queryResponse.swapKind === SwapKind.GivenOut}
       />
-      <div className={`z-100 grid gap-5 ${!queryResponse.expectedAmount || swapTxUrl ? "grid-cols-1" : "grid-cols-2"}`}>
-        <div>
-          <StyledQueryButton
-            onClick={handleQuerySwap}
-            isDisabled={swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === ""}
-          >
-            Query Swap
-          </StyledQueryButton>
-        </div>
-        {!queryResponse.expectedAmount || swapTxUrl ? null : !sufficientAllowance ? (
-          <div>
-            <StyledTxButton isDisabled={isApproving} onClick={handleApprove}>
-              Approve
-            </StyledTxButton>
-          </div>
-        ) : (
-          <div>
-            <StyledTxButton isDisabled={isSwapping} onClick={handleSwap}>
-              Send Swap
-            </StyledTxButton>
-          </div>
-        )}
-      </div>
+
+      {!queryResponse.expectedAmount ? (
+        <StyledQueryButton
+          onClick={handleQuerySwap}
+          isDisabled={swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === ""}
+        >
+          Query Swap
+        </StyledQueryButton>
+      ) : !sufficientAllowance ? (
+        <StyledTxButton isDisabled={isApproving} onClick={handleApprove}>
+          Approve
+        </StyledTxButton>
+      ) : (
+        <StyledTxButton isDisabled={isSwapping} onClick={handleSwap}>
+          Send Swap
+        </StyledTxButton>
+      )}
+
       <PoolFeedback
         title={`Amount ${queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}
         transactionUrl={swapTxUrl}
