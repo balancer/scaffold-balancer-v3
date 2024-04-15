@@ -1,6 +1,7 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   PoolActions,
   PoolAlert,
@@ -18,17 +19,28 @@ import scaffoldConfig from "~~/scaffold.config";
 
 /**
  * Page for viewing custom pool data and performing actions (swap, join, exit) on a pool
+ *
+ * http://localhost:3000/pools?address=
  */
 const Pools: NextPage = () => {
+  const [selectedPoolAddress, setSelectedPoolAddress] = useState<string>("");
+  const { data: pool, isLoading, refetch: refetchPool, isFetchedAfterMount } = usePoolContract(selectedPoolAddress);
+
+  const searchParams = useSearchParams();
+  const poolAddress = searchParams.get("address");
+
+  useEffect(() => {
+    if (poolAddress) {
+      setSelectedPoolAddress(poolAddress);
+    }
+  }, [poolAddress]);
+
   // Grab custom pool contract info for pools deployed through scaffold-eth
   const scaffoldPoolsRawData = deployedContractsData[scaffoldConfig.targetNetworks[0].id];
   const scaffoldPools = Object.entries(scaffoldPoolsRawData).map(([name, details]) => ({
     name,
     ...details,
   }));
-
-  const [selectedPoolAddress, setSelectedPoolAddress] = useState<string>("");
-  const { data: pool, isLoading, refetch: refetchPool } = usePoolContract(selectedPoolAddress);
 
   return (
     <div className="flex-grow bg-base-300">
@@ -55,10 +67,12 @@ const Pools: NextPage = () => {
           {isLoading ? (
             <PoolPageSkeleton />
           ) : (
-            pool && (
+            pool &&
+            isFetchedAfterMount && (
               <Fragment>
                 <div className="text-center mb-5 bg-base-200 p-3 w-full rounded-lg">
                   <h3 className="font-extrabold text-3xl my-2">{pool.name}</h3>
+                  <h5 className="text-sm md:text-lg xl:text-xl">{pool.address}</h5>
                 </div>
                 <div className="w-full">
                   <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">

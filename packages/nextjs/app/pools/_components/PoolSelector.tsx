@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { type Address, isAddress } from "viem";
 import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
@@ -15,7 +16,10 @@ export const PoolSelector = ({
   const [inputValue, setInputValue] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const router = useRouter();
+  const pathname = usePathname();
   const isValidAddress = isAddress(inputValue);
+
   return (
     <section className="flex justify-center flex-wrap gap-5 w-full mb-5 items-center text-xl py-5">
       <div className={`dropdown dropdown-end ${isDropdownOpen ? "dropdown-open" : ""}`}>
@@ -53,6 +57,7 @@ export const PoolSelector = ({
         onSubmit={event => {
           event.preventDefault();
           setSelectedPoolAddress(inputValue);
+          router.push(`${pathname}?address=${inputValue}`);
           setInputValue("");
         }}
       >

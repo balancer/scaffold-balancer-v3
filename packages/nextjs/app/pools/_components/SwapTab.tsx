@@ -130,6 +130,7 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
 
   // Query the swap and update the expected and min/max amounts in/out
   const handleQuerySwap = async () => {
+    setSwapTxUrl(undefined);
     const { updatedAmount, call } = await querySwap();
 
     if (updatedAmount.swapKind === SwapKind.GivenIn) {
