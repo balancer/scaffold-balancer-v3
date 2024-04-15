@@ -2,15 +2,7 @@
 
 import { Fragment, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  PoolActions,
-  PoolAlert,
-  PoolAttributes,
-  PoolComposition,
-  PoolConfig,
-  PoolSelector,
-  UserLiquidity,
-} from "./_components/";
+import { PoolActions, PoolAttributes, PoolComposition, PoolConfig, PoolSelector, UserLiquidity } from "./_components/";
 import type { NextPage } from "next";
 import { SkeletonLoader } from "~~/components/common";
 import deployedContractsData from "~~/contracts/deployedContracts";
@@ -19,8 +11,6 @@ import scaffoldConfig from "~~/scaffold.config";
 
 /**
  * Page for viewing custom pool data and performing actions (swap, join, exit) on a pool
- *
- * http://localhost:3000/pools?address=
  */
 const Pools: NextPage = () => {
   const [selectedPoolAddress, setSelectedPoolAddress] = useState<string>("");
@@ -82,16 +72,7 @@ const Pools: NextPage = () => {
                       <PoolAttributes pool={pool} />
                     </div>
                     <div className="flex flex-col gap-7">
-                      {pool.poolConfig?.isPoolRegistered ? (
-                        pool.poolConfig?.isPoolInitialized ? (
-                          <PoolActions pool={pool} refetchPool={refetchPool} />
-                        ) : (
-                          <PoolAlert isRegistered={true} />
-                        )
-                      ) : (
-                        <PoolAlert isRegistered={false} />
-                      )}
-
+                      {pool.poolConfig?.isPoolInitialized && <PoolActions pool={pool} refetchPool={refetchPool} />}
                       <PoolConfig pool={pool} />
                     </div>
                   </div>

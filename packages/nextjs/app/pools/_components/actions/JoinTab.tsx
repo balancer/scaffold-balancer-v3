@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { PoolActionsProps } from "./PoolActions";
+import { PoolActionsProps } from "../PoolActions";
+import { PoolActionButton, QueryResults, SuccessNotification, TokenField } from "./";
 import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
-import { PoolActionButton, PoolFeedback, SuccessAlert, TokenField } from "~~/app/pools/_components";
 import { useJoin } from "~~/hooks/balancer/";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 
@@ -149,7 +149,7 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       </div>
 
       {joinTxUrl && queryResponse.expectedBptOut !== "0" ? (
-        <SuccessAlert transactionUrl={joinTxUrl} />
+        <SuccessNotification transactionUrl={joinTxUrl} />
       ) : queryResponse.expectedBptOut === "0" ? (
         <PoolActionButton
           onClick={handleQueryJoin}
@@ -169,7 +169,7 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       )}
 
       {queryResponse.expectedBptOut !== "0" && (
-        <PoolFeedback title="BPT Out">
+        <QueryResults title="BPT Out">
           <div className="flex flex-wrap justify-between mb-3">
             <div className="font-bold">Expected</div>
             <div className="text-end">
@@ -188,7 +188,7 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
               <div className="text-sm">{queryResponse.minBptOut}</div>
             </div>
           </div>
-        </PoolFeedback>
+        </QueryResults>
       )}
     </section>
   );

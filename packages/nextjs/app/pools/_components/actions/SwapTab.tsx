@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { PoolActionsProps } from "./PoolActions";
+import { PoolActionsProps } from "../PoolActions";
+import { PoolActionButton, QueryResults, SuccessNotification, TokenField } from "./";
 import { SwapKind } from "@balancer/sdk";
 import { formatUnits, parseUnits } from "viem";
-import { PoolActionButton, PoolFeedback, SuccessAlert, TokenField } from "~~/app/pools/_components";
 import { useSwap } from "~~/hooks/balancer/";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 
@@ -234,7 +234,7 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       />
 
       {swapTxUrl ? (
-        <SuccessAlert transactionUrl={swapTxUrl} />
+        <SuccessNotification transactionUrl={swapTxUrl} />
       ) : !queryResponse.expectedAmount ? (
         <PoolActionButton
           onClick={handleQuerySwap}
@@ -254,7 +254,7 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       )}
 
       {queryResponse.expectedAmount && (
-        <PoolFeedback title={`Amount ${queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}>
+        <QueryResults title={`Amount ${queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}>
           <div className="flex flex-wrap justify-between mb-3">
             <div className="font-bold">Expected</div>
             <div className="text-end">
@@ -285,7 +285,7 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
               </div>
             </div>
           </div>
-        </PoolFeedback>
+        </QueryResults>
       )}
     </section>
   );

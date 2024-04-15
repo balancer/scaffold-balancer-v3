@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { PoolActionsProps } from "./PoolActions";
+import { PoolActionsProps } from "../PoolActions";
+import { PoolActionButton, QueryResults, SuccessNotification, TokenField } from "./";
 import { TokenAmount } from "@balancer/sdk";
 import { formatUnits, parseUnits } from "viem";
-import { PoolActionButton, PoolFeedback, SuccessAlert, TokenField } from "~~/app/pools/_components";
 import { useExit } from "~~/hooks/balancer/";
 
 type ExitQueryResponse = {
@@ -84,7 +84,7 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       />
 
       {exitTxUrl && queryResponse.expectedAmountsOut ? (
-        <SuccessAlert transactionUrl={exitTxUrl} />
+        <SuccessNotification transactionUrl={exitTxUrl} />
       ) : !queryResponse.expectedAmountsOut ? (
         <PoolActionButton onClick={handleExitQuery} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
           Query
@@ -96,7 +96,7 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       )}
 
       {queryResponse.expectedAmountsOut && (
-        <PoolFeedback title="Expected Tokens Out">
+        <QueryResults title="Expected Tokens Out">
           {pool.poolTokens.map((token, index) => (
             <div key={token.address} className={`${index === 0 ? "mb-3" : ""} flex justify-between items-center`}>
               <div>
@@ -113,7 +113,7 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
               </div>
             </div>
           ))}
-        </PoolFeedback>
+        </QueryResults>
       )}
     </section>
   );

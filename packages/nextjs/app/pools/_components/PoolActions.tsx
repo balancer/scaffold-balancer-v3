@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { ExitTab } from "./ExitTab";
-import { JoinTab } from "./JoinTab";
-import { SwapTab } from "./SwapTab";
+import { ExitTab, JoinTab, SwapTab } from "./actions";
 import { type Pool } from "~~/hooks/balancer/types";
 import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
 
