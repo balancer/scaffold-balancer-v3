@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { PoolActionsProps } from "./PoolActions";
 import { SwapKind } from "@balancer/sdk";
 import { formatUnits, parseUnits } from "viem";
-import { PoolFeedback, TokenField } from "~~/app/pools/_components";
-import { StyledQueryButton, StyledTxButton } from "~~/components/common";
+import { PoolActionButton, PoolFeedback, SuccessAlert, TokenField } from "~~/app/pools/_components";
 import { useSwap } from "~~/hooks/balancer/";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 
@@ -64,6 +63,7 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
   const [isApproving, setIsApproving] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
+  const [isQuerying, setIsQuerying] = useState(false);
 
   const { querySwap, swap, tokenInAllowance, refetchTokenInAllowance, tokenInBalance, approveAsync } = useSwap(
     pool,
@@ -86,6 +86,7 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
     // Reset query response whenever input amount changes
     setQueryResponse(initialQueryResponse);
+    setSwapTxUrl(undefined);
     // Update the focused input amount with new value and reset the other input amount
     setSwapConfig(prevConfig => ({
       tokenIn: {
@@ -129,41 +130,49 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
 
   // Query the swap and update the expected and min/max amounts in/out
   const handleQuerySwap = async () => {
-    setSwapTxUrl(undefined);
-    const { updatedAmount, call } = await querySwap();
+    try {
+      setSwapTxUrl(undefined);
+      setIsQuerying(true);
 
-    if (updatedAmount.swapKind === SwapKind.GivenIn) {
-      const rawExpectedAmountOut = updatedAmount.expectedAmountOut.amount;
-      setQueryResponse({
-        expectedAmount: updatedAmount.expectedAmountOut,
-        minOrMaxAmount: call.minAmountOut,
-        swapKind: SwapKind.GivenIn,
-      });
-      // Update the tokenOut amount with the expected amount
-      setSwapConfig(prevConfig => ({
-        ...prevConfig,
-        tokenOut: {
-          ...prevConfig.tokenOut,
-          amount: Number(formatUnits(rawExpectedAmountOut, tokenOut.decimals)).toFixed(4),
-          rawAmount: rawExpectedAmountOut,
-        },
-      }));
-    } else {
-      const rawExpectedAmountIn = updatedAmount.expectedAmountIn.amount;
-      setQueryResponse({
-        expectedAmount: updatedAmount.expectedAmountIn,
-        minOrMaxAmount: call.maxAmountIn,
-        swapKind: SwapKind.GivenOut,
-      });
-      // Update the tokenIn amount with the expected amount
-      setSwapConfig(prevConfig => ({
-        ...prevConfig,
-        tokenIn: {
-          ...prevConfig.tokenIn,
-          amount: Number(formatUnits(rawExpectedAmountIn, tokenIn.decimals)).toFixed(4),
-          rawAmount: rawExpectedAmountIn,
-        },
-      }));
+      const { updatedAmount, call } = await querySwap();
+
+      if (updatedAmount.swapKind === SwapKind.GivenIn) {
+        const rawExpectedAmountOut = updatedAmount.expectedAmountOut.amount;
+        setQueryResponse({
+          expectedAmount: updatedAmount.expectedAmountOut,
+          minOrMaxAmount: call.minAmountOut,
+          swapKind: SwapKind.GivenIn,
+        });
+        // Update the tokenOut amount with the expected amount
+        setSwapConfig(prevConfig => ({
+          ...prevConfig,
+          tokenOut: {
+            ...prevConfig.tokenOut,
+            amount: Number(formatUnits(rawExpectedAmountOut, tokenOut.decimals)).toFixed(4),
+            rawAmount: rawExpectedAmountOut,
+          },
+        }));
+      } else {
+        const rawExpectedAmountIn = updatedAmount.expectedAmountIn.amount;
+        setQueryResponse({
+          expectedAmount: updatedAmount.expectedAmountIn,
+          minOrMaxAmount: call.maxAmountIn,
+          swapKind: SwapKind.GivenOut,
+        });
+        // Update the tokenIn amount with the expected amount
+        setSwapConfig(prevConfig => ({
+          ...prevConfig,
+          tokenIn: {
+            ...prevConfig.tokenIn,
+            amount: Number(formatUnits(rawExpectedAmountIn, tokenIn.decimals)).toFixed(4),
+            rawAmount: rawExpectedAmountIn,
+          },
+        }));
+      }
+    } catch (error) {
+      console.error("error", error);
+    } finally {
+      setIsQuerying(false);
     }
   };
 
@@ -224,58 +233,60 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         isHighlighted={queryResponse.swapKind === SwapKind.GivenOut}
       />
 
-      {!queryResponse.expectedAmount ? (
-        <StyledQueryButton
+      {swapTxUrl ? (
+        <SuccessAlert transactionUrl={swapTxUrl} />
+      ) : !queryResponse.expectedAmount ? (
+        <PoolActionButton
           onClick={handleQuerySwap}
-          isDisabled={swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === ""}
+          isDisabled={isQuerying}
+          isFormEmpty={swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === ""}
         >
-          Query Swap
-        </StyledQueryButton>
+          Query
+        </PoolActionButton>
       ) : !sufficientAllowance ? (
-        <StyledTxButton isDisabled={isApproving} onClick={handleApprove}>
+        <PoolActionButton isDisabled={isApproving} onClick={handleApprove}>
           Approve
-        </StyledTxButton>
+        </PoolActionButton>
       ) : (
-        <StyledTxButton isDisabled={isSwapping} onClick={handleSwap}>
-          Send Swap
-        </StyledTxButton>
+        <PoolActionButton isDisabled={isSwapping} onClick={handleSwap}>
+          Swap
+        </PoolActionButton>
       )}
 
-      <PoolFeedback
-        title={`Amount ${queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}
-        transactionUrl={swapTxUrl}
-      >
-        <div className="flex flex-wrap justify-between mb-3">
-          <div className="font-bold">Expected</div>
-          <div className="text-end">
-            <div className="font-bold">
-              {queryResponse.expectedAmount
-                ? Number(
-                    formatUnits(queryResponse.expectedAmount.amount, queryResponse.expectedAmount.token.decimals),
-                  ).toFixed(4)
-                : "0.0000"}
-            </div>
-            <div className="text-sm">
-              {queryResponse.expectedAmount ? queryResponse.expectedAmount.amount.toString() : "0"}
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap justify-between">
-          <div className="font-bold">{queryResponse.swapKind === SwapKind.GivenIn ? "Minumum" : "Maximum"}</div>
-          <div className="text-end">
-            <div className="font-bold">
-              {queryResponse.minOrMaxAmount
-                ? Number(
-                    formatUnits(queryResponse.minOrMaxAmount.amount, queryResponse.minOrMaxAmount.token.decimals),
-                  ).toFixed(4)
-                : "0.0000"}
-            </div>
-            <div className="text-sm">
-              {queryResponse.minOrMaxAmount ? queryResponse.minOrMaxAmount.amount.toString() : "0"}
+      {queryResponse.expectedAmount && (
+        <PoolFeedback title={`Amount ${queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}>
+          <div className="flex flex-wrap justify-between mb-3">
+            <div className="font-bold">Expected</div>
+            <div className="text-end">
+              <div className="font-bold">
+                {queryResponse.expectedAmount
+                  ? Number(
+                      formatUnits(queryResponse.expectedAmount.amount, queryResponse.expectedAmount.token.decimals),
+                    ).toFixed(4)
+                  : "0.0000"}
+              </div>
+              <div className="text-sm">
+                {queryResponse.expectedAmount ? queryResponse.expectedAmount.amount.toString() : "0"}
+              </div>
             </div>
           </div>
-        </div>
-      </PoolFeedback>
+          <div className="flex flex-wrap justify-between">
+            <div className="font-bold">{queryResponse.swapKind === SwapKind.GivenIn ? "Minumum" : "Maximum"}</div>
+            <div className="text-end">
+              <div className="font-bold">
+                {queryResponse.minOrMaxAmount
+                  ? Number(
+                      formatUnits(queryResponse.minOrMaxAmount.amount, queryResponse.minOrMaxAmount.token.decimals),
+                    ).toFixed(4)
+                  : "0.0000"}
+              </div>
+              <div className="text-sm">
+                {queryResponse.minOrMaxAmount ? queryResponse.minOrMaxAmount.amount.toString() : "0"}
+              </div>
+            </div>
+          </div>
+        </PoolFeedback>
+      )}
     </section>
   );
 };

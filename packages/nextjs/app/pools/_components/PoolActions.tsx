@@ -36,7 +36,7 @@ export const PoolActions: React.FC<PoolActionsProps> = ({ pool, refetchPool }) =
                 onClick={() => setActiveTab(tab as Action)}
                 className={`font-bold py-3 flex-1  ${
                   activeTab === tab
-                    ? "border border-neutral rounded-tl-lg rounded-tr-lg"
+                    ? "border border-neutral rounded-tl-lg rounded-tr-lg bg-neutral text-neutral-content"
                     : "border-b border-neutral hover:border hover:border-neutral rounded-tl-lg rounded-tr-lg"
                 } focus:outline-none`}
               >

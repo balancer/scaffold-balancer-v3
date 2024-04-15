@@ -3,8 +3,7 @@ import { PoolActionsProps } from "./PoolActions";
 import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
-import { PoolFeedback, TokenField } from "~~/app/pools/_components";
-import { StyledQueryButton, StyledTxButton } from "~~/components/common";
+import { PoolActionButton, PoolFeedback, SuccessAlert, TokenField } from "~~/app/pools/_components";
 import { useJoin } from "~~/hooks/balancer/";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 
@@ -29,6 +28,7 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [joinTxUrl, setJoinTxUrl] = useState<string | undefined>();
   const [sufficientAllowances, setSufficientAllowances] = useState(false);
   const [tokensToApprove, setTokensToApprove] = useState<any[]>([]);
+  const [isQuerying, setIsQuerying] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
 
@@ -69,9 +69,16 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   };
 
   const handleQueryJoin = async () => {
-    const queryResponse = await queryJoin(tokenInputs);
-    if (!queryResponse) return;
-    setQueryResponse(queryResponse);
+    try {
+      setIsQuerying(true);
+      const queryResponse = await queryJoin(tokenInputs);
+      if (!queryResponse) throw new Error("Query response is undefined");
+      setQueryResponse(queryResponse);
+    } catch (error) {
+      console.error("Query error", error);
+    } finally {
+      setIsQuerying(false);
+    }
   };
 
   const handleJoinPool = async () => {
@@ -116,6 +123,8 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
     });
   };
 
+  console.log("isQuerying", isQuerying);
+
   return (
     <section>
       <div className="mb-5">
@@ -139,49 +148,48 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         ))}
       </div>
 
-      <div
-        className={`grid gap-5 ${queryResponse.expectedBptOut === "0" || joinTxUrl ? "grid-cols-1" : "grid-cols-2"}`}
-      >
-        <div>
-          <StyledQueryButton onClick={handleQueryJoin} isDisabled={!tokenInputs.some(token => token.rawAmount > 0n)}>
-            Query Join
-          </StyledQueryButton>
-        </div>
-        {queryResponse.expectedBptOut === "0" || joinTxUrl ? null : !sufficientAllowances ? (
-          <div>
-            <StyledTxButton isDisabled={isApproving} onClick={handleApprove}>
-              Approve
-            </StyledTxButton>
-          </div>
-        ) : (
-          <div>
-            <StyledTxButton isDisabled={isJoining} onClick={handleJoinPool}>
-              Add Liquidity
-            </StyledTxButton>
-          </div>
-        )}
-      </div>
+      {joinTxUrl && queryResponse.expectedBptOut !== "0" ? (
+        <SuccessAlert transactionUrl={joinTxUrl} />
+      ) : queryResponse.expectedBptOut === "0" ? (
+        <PoolActionButton
+          onClick={handleQueryJoin}
+          isDisabled={isQuerying}
+          isFormEmpty={tokenInputs.every(token => token.rawAmount === 0n)}
+        >
+          Query
+        </PoolActionButton>
+      ) : !sufficientAllowances ? (
+        <PoolActionButton isDisabled={isApproving} onClick={handleApprove}>
+          Approve
+        </PoolActionButton>
+      ) : (
+        <PoolActionButton isDisabled={isJoining} onClick={handleJoinPool}>
+          Add Liquidity
+        </PoolActionButton>
+      )}
 
-      <PoolFeedback title="BPT Out" transactionUrl={joinTxUrl}>
-        <div className="flex flex-wrap justify-between mb-3">
-          <div className="font-bold">Expected</div>
-          <div className="text-end">
-            <div className="font-bold">
-              {Number(formatUnits(BigInt(queryResponse.expectedBptOut), pool.decimals)).toFixed(4)}
+      {queryResponse.expectedBptOut !== "0" && (
+        <PoolFeedback title="BPT Out">
+          <div className="flex flex-wrap justify-between mb-3">
+            <div className="font-bold">Expected</div>
+            <div className="text-end">
+              <div className="font-bold">
+                {Number(formatUnits(BigInt(queryResponse.expectedBptOut), pool.decimals)).toFixed(4)}
+              </div>
+              <div className="text-sm">{queryResponse.expectedBptOut}</div>
             </div>
-            <div className="text-sm">{queryResponse.expectedBptOut}</div>
           </div>
-        </div>
-        <div className="flex flex-wrap justify-between">
-          <div className="font-bold">Minimum</div>
-          <div className="text-end">
-            <div className="font-bold">
-              {Number(formatUnits(BigInt(queryResponse.minBptOut), pool.decimals)).toFixed(4)}
+          <div className="flex flex-wrap justify-between">
+            <div className="font-bold">Minimum</div>
+            <div className="text-end">
+              <div className="font-bold">
+                {Number(formatUnits(BigInt(queryResponse.minBptOut), pool.decimals)).toFixed(4)}
+              </div>
+              <div className="text-sm">{queryResponse.minBptOut}</div>
             </div>
-            <div className="text-sm">{queryResponse.minBptOut}</div>
           </div>
-        </div>
-      </PoolFeedback>
+        </PoolFeedback>
+      )}
     </section>
   );
 };
