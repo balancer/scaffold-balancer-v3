@@ -20,7 +20,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
  * because of how permissions and proxies are set up
  */
 const externalContracts = {
-  11155111: {
+  31337: {
     Vault: {
       address: "0x1FC7F1F84CFE61a04224AC8D3F87f56214FeC08c",
       abi: [

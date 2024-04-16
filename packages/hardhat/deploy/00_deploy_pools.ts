@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { networkConfig } from "../helper.config";
+// import { networkConfig } from "../helper.config";
 
 // import { Contract } from "ethers";
 
@@ -23,10 +23,11 @@ const deployConstantPricePool: DeployFunction = async function (hre: HardhatRunt
   */
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
-  const chainId = Number(await hre.ethers.provider.getNetwork().then(network => network.chainId));
+  // const chainId = Number(await hre.ethers.provider.getNetwork().then(network => network.chainId));
 
   // Vault address is same for all pools
-  const { vaultAddr } = networkConfig[chainId].balancer;
+  // const { vaultAddr } = networkConfig[chainId].balancer;
+  const vaultAddr = "0x1FC7F1F84CFE61a04224AC8D3F87f56214FeC08c";
 
   // Deploy ConstantPricePool
   const constantPoolName = "Balancer Constant Price Pool";

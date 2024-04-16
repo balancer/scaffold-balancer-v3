@@ -40,7 +40,7 @@ yarn start
 
 In order to deploy new custom pool contracts on sepolia and execute scripts, you must set a `DEPLOYER_PRIVATE_KEY` at the path `packagages/hardhat/.env` (And your PK must have testnet sepolia ETH)
 
-### 0.4 (Optional) How to run Scaffold Eth on a forked network
+### 0.4 (Optional B Difficult) Run Scafffold ETH on fork with custom hardhat chainId
 
 1. In the `hardhat.config.ts` file, manually set the `chainId` and `forking.url` for `networks.hardhat`
 
@@ -81,6 +81,8 @@ const scaffoldConfig = {
   targetNetworks: [forkedNetwork],
 ...
 ```
+
+4. Debug deploying the contracts and pulling info into `nextjs/contracts/deployedContracts.ts`
 
 ## Checkpoint 1: 🌊 Create A Custom Pool
 
