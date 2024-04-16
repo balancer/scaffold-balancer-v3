@@ -13,11 +13,20 @@ import { type Pool } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
+type QueryExitResponse = Promise<{ expectedAmountsOut: any; minAmountsOut: any }>;
+
+type ExitPoolTxResponse = Promise<string | undefined>;
+
+type ExitPoolFunctions = {
+  queryExit: (rawAmount: bigint) => QueryExitResponse;
+  exitPool: () => ExitPoolTxResponse;
+};
+
 /**
- * Custom hook for exiting a pool where queryExit sets state of
- * the call object that is used to construct the transaction
+ * Custom hook for exiting a pool where `queryExit()` sets state of
+ * the call object that is used to construct the transaction that is later sent by `exitPool()`
  */
-export const useExit = (pool: Pool) => {
+export const useExit = (pool: Pool): ExitPoolFunctions => {
   const [call, setCall] = useState<any>();
 
   const { data: walletClient } = useWalletClient();
@@ -29,7 +38,7 @@ export const useExit = (pool: Pool) => {
     const rpcUrl = publicClient?.chain.rpcUrls.default.http[0] as string;
     const slippage = Slippage.fromPercentage("1"); // 1%
 
-    // Fetch relevant pool data for removeLiquidity.query
+    // Fetch necessary pool data
     const balancerApi = new BalancerApi("https://backend-v3-canary.beets-ftm-node.com/graphql", chainId);
     const poolState: PoolState = await balancerApi.pools.fetchPoolState(pool.address.toLowerCase());
 
