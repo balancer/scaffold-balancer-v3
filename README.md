@@ -129,23 +129,54 @@ yarn hardhat run scripts/initializePool.ts --network sepolia
 
 ## Checkpoint 2: 🔧 Create a custom pool factory
 
-Now that you have created a custom pool, it is time to deploy the associated custom pool factory. For this repo, we've created a custom pool factory example and associated script to deploy it.
+Now that you have created a custom pool, it is time to deploy the associated custom pool factory. For this repo, we've created a custom pool factory example and associated script to deploy it, and create a new pool using said factory.
 
-The example factory uses the `ConstantPricePool.sol` as the Custom Pool type.
+The example factory continues off of the previous section and uses `ConstantPricePool.sol` as the Custom Pool type.
 
-The concept is that once the custom pool factory is deployed, anyone can come along and deploy more of that specific custom pool type, with varying pool parameters.
+The concept is that once the custom pool factory is deployed, anyone can come along and deploy more of that specific custom pool type, with varying pool parameters. Within the script the first pool from said factory is deployed, registered, and initialized, so you can interact with it right away. Another script is created so you can create more pools and enter in the param details via your favorite code editor too.
 
 This section will walk you through:
 - Deployment of the custom pool factory example.
-- Interacting with the pool factory within the ScaffoldBalancer UI by generating new pools from it on the testnet.
+- Running the script to deploy more pools from said custom pool factory.
+- Interacting with the pool factory within the ScaffoldBalancer UI with the Debug Tab.
 
-1. Run the following CLI command (assuming `.env` is populated appropriately) to simulate deployment of the pool factory.
+## Checkpoint 2.1: Deploying the Custom Pool Factory
+
+Run the following CLI command (assuming `.env` is populated appropriately) to simulate deployment of the pool factory.
 
 `source .env && forge script scripts/DeployCustomPoolFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
 
-2. Run the following CLI command to deploy the script.
+You should see that the simulation was completed and the factory contract was successfully deployed in it.
+
+Next, we will actually deploy it so we can interact with it. Run the following CLI command to run the script to deploy a constant price custom pool factory.
 
 `source .env && forge script scripts/DeployCustomPoolFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast`
+
+## Checkpoint 2.2: Interacting with the Testnet Custom Pool Factory via Scripts
+
+Now the pool factory has been deployed to the respective network (default is the testnet Sepolia). Once you click the transaction details (as shown within the screenshots below), you will see that a pool was deployed as well. You can also find this information within the deployment script return values.
+
+Copy and paste this new pool address and input it into the ScaffoldBalancer front end tool. You can now interact with it exactly like in section 1!
+
+The beauty of the factory contract is that it inherits and abides by the Balancer Factory architecture. This means that pools created from a properly constructed factory contract will adhere to much easier integration for things like the BalancerV3 Subgraph.
+
+We will now run the script to call `create()` from the new custom pool factory contract that you just deployed. This script will also register and initialize the pool.
+
+TODO - create script
+
+Copy and paste this new pool address and input it into the ScaffoldBalancer front end tool. You can now interact with it like the other pools!
+
+## TODO - Checkpoint 2.3: Interacting with the Testnet Custom Pool Factory via Debug Tab
+
+At this point, the factory has been deployed, and you have deployed at least one more pool from the factory using the scripts within this repo. 
+
+Pools can also be created using the Debug Tab, theoretically. Currently SE-2 has some trouble with structs within the debug tab, and as such it is recommended to use scripts to work with any input params involving structs.
+
+That said, this section outlines how one would use the debug tab to create a pool using a factory contract.
+
+TODO
+
+---
 
 ## Checkpoint 3: Writing Typical Unit and Fuzz Tests for Custom Pool Example
 
