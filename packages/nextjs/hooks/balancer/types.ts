@@ -6,6 +6,7 @@ export type Pool = {
   isRegistered: boolean;
   name: string;
   symbol: string;
+  userBalance: bigint;
   poolConfig: PoolConfig | undefined;
   poolTokens: Array<PoolTokens> | [];
   totalSupply: bigint;

@@ -1,7 +1,7 @@
 import { PoolAbi } from "./PoolAbi";
 import type { Pool } from "./types";
 import { type Address } from "viem";
-import { erc20ABI, usePublicClient, useQuery } from "wagmi";
+import { erc20ABI, usePublicClient, useQuery, useWalletClient } from "wagmi";
 import externalContracts from "~~/contracts/externalContracts";
 
 /**
@@ -9,13 +9,16 @@ import externalContracts from "~~/contracts/externalContracts";
  */
 export const usePoolContract = (pool: Address) => {
   const client = usePublicClient();
+  const { data: walletClient } = useWalletClient();
   const chainId = client.chain.id;
   const { Vault } = externalContracts[chainId as keyof typeof externalContracts];
 
+  const connectedAddress = walletClient?.account?.address;
+
   return useQuery<Pool>(
-    ["PoolContract", { pool, vaultAddress: Vault.address }],
+    ["PoolContract", { pool, vaultAddress: Vault.address, connectedAddress }],
     async () => {
-      const [name, symbol, totalSupply, decimals, vaultAddress, isRegistered, poolTokenInfo, poolConfig] =
+      const [name, symbol, totalSupply, decimals, vaultAddress, userBalance, isRegistered, poolTokenInfo, poolConfig] =
         await Promise.all([
           // fetch data about BPT from pool contract
           client.readContract({
@@ -43,6 +46,14 @@ export const usePoolContract = (pool: Address) => {
             address: pool,
             functionName: "getVault",
           }) as Promise<string>,
+          client
+            .readContract({
+              abi: PoolAbi,
+              address: pool,
+              functionName: "balanceOf",
+              args: [connectedAddress],
+            })
+            .catch(() => 0n) as Promise<bigint>,
           // fetch data about pool assets from vault contract
           client.readContract({
             abi: Vault.abi,
@@ -111,6 +122,7 @@ export const usePoolContract = (pool: Address) => {
         totalSupply,
         decimals,
         vaultAddress,
+        userBalance,
         poolTokens,
         poolConfig,
       };

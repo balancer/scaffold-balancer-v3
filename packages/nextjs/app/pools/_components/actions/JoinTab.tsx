@@ -123,8 +123,6 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
     });
   };
 
-  console.log("isQuerying", isQuerying);
-
   return (
     <section>
       <div className="mb-5">

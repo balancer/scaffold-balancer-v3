@@ -8,8 +8,7 @@ import {
   RemoveLiquidityKind,
   Slippage,
 } from "@balancer/sdk";
-import { parseAbi } from "viem";
-import { useContractRead, usePublicClient, useWalletClient } from "wagmi";
+import { usePublicClient, useWalletClient } from "wagmi";
 import { type Pool } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
@@ -92,13 +91,5 @@ export const useExit = (pool: Pool) => {
     }
   };
 
-  const { data: userPoolBalance } = useContractRead({
-    address: pool.address,
-    abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
-    functionName: "balanceOf" as any, // must type any because of parseAbi ???
-    args: [walletClient?.account?.address as `0x${string}`],
-    watch: true,
-  });
-
-  return { userPoolBalance, queryExit, exitPool };
+  return { queryExit, exitPool };
 };

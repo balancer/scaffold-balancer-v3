@@ -12,17 +12,20 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
   const [expectedAmountsOut, setExpectedAmountsOut] = useState<TokenAmount[] | undefined>();
 
   const { isConnected } = useAccount();
-  const { userPoolBalance, queryExit } = useExit(pool);
+  const { queryExit } = useExit(pool);
 
   useEffect(() => {
     async function fetchExitQuery() {
-      if (!userPoolBalance) return;
-      const { expectedAmountsOut } = await queryExit(userPoolBalance);
-      setExpectedAmountsOut(expectedAmountsOut);
+      if (pool.userBalance > 0n) {
+        const { expectedAmountsOut } = await queryExit(pool.userBalance);
+        setExpectedAmountsOut(expectedAmountsOut);
+      } else {
+        setExpectedAmountsOut(undefined);
+      }
     }
     fetchExitQuery();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userPoolBalance]); // excluded queryExit from deps array because it causes infinite re-renders
+  }, [pool.userBalance]); // excluded queryExit from deps array because it causes infinite re-renders
 
   // only render the component if the pool is initialized and the user is connected
   if (!isConnected || !pool?.poolConfig?.isPoolInitialized) {
@@ -41,8 +44,8 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
               <div className="text-sm">{pool.name}</div>
             </div>
             <div className="text-end">
-              <div className="font-bold">{Number(formatUnits(userPoolBalance || 0n, pool.decimals)).toFixed(4)}</div>
-              <div className="text-sm">{userPoolBalance?.toString()}</div>
+              <div className="font-bold">{Number(formatUnits(pool.userBalance || 0n, pool.decimals)).toFixed(4)}</div>
+              <div className="text-sm">{pool.userBalance?.toString()}</div>
             </div>
           </div>
           <div className="p-3 flex flex-col gap-3">

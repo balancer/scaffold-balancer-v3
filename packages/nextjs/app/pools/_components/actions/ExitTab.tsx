@@ -31,7 +31,7 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [isExiting, setIsExiting] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
 
-  const { userPoolBalance, queryExit, exitPool } = useExit(pool);
+  const { queryExit, exitPool } = useExit(pool);
 
   const handleAmountChange = (amount: string) => {
     const rawAmount = parseUnits(amount, pool.decimals);
@@ -66,8 +66,8 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
 
   const setMaxAmount = () => {
     setBptIn({
-      rawAmount: userPoolBalance || 0n,
-      displayValue: Number(formatUnits(userPoolBalance || 0n, pool.decimals)).toFixed(4),
+      rawAmount: pool.userBalance,
+      displayValue: Number(formatUnits(pool.userBalance || 0n, pool.decimals)).toFixed(4),
     });
     setQueryResponse({ expectedAmountsOut: undefined, minAmountsOut: undefined });
   };
@@ -79,7 +79,7 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         tokenSymbol={pool.symbol}
         value={bptIn.displayValue}
         onAmountChange={handleAmountChange}
-        balance={Number(formatUnits(userPoolBalance || 0n, pool.decimals)).toFixed(4)}
+        balance={Number(formatUnits(pool.userBalance, pool.decimals)).toFixed(4)}
         setMaxAmount={setMaxAmount}
       />
 
