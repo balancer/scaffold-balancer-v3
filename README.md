@@ -28,7 +28,19 @@ git clone git@github.com:MattPereira/scaffold-balancer-v3.git
 yarn install
 ```
 
-3. Start Frontend
+3. Start the local fork
+
+```
+yarn fork
+```
+
+4. Deploy contracts
+
+```
+yarn deploy
+```
+
+5. Start Frontend
 
 ```
 yarn start
