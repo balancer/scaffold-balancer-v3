@@ -50,45 +50,49 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
   const rpcUrl = walletClient?.chain.rpcUrls.default.http[0] as string;
 
   const querySwap = async (): QuerySwapResponse => {
-    const swapInput = {
-      chainId: chainId,
-      swapKind: swapConfig.swapKind,
-      paths: [
-        {
-          pools: [pool.address as `0x${string}`],
-          tokens: [
-            {
-              address: tokenIn.address as `0x${string}`,
-              decimals: tokenIn.decimals,
-            }, // tokenIn
-            {
-              address: tokenOut.address as `0x${string}`,
-              decimals: tokenOut.decimals,
-            }, // tokenOut
-          ],
-          vaultVersion: 3 as const,
-          inputAmountRaw: swapConfig.tokenIn.rawAmount,
-          outputAmountRaw: swapConfig.tokenOut.rawAmount,
-        },
-      ],
-    };
+    try {
+      const swapInput = {
+        chainId: chainId,
+        swapKind: swapConfig.swapKind,
+        paths: [
+          {
+            pools: [pool.address as `0x${string}`],
+            tokens: [
+              {
+                address: tokenIn.address as `0x${string}`,
+                decimals: tokenIn.decimals,
+              }, // tokenIn
+              {
+                address: tokenOut.address as `0x${string}`,
+                decimals: tokenOut.decimals,
+              }, // tokenOut
+            ],
+            vaultVersion: 3 as const,
+            inputAmountRaw: swapConfig.tokenIn.rawAmount,
+            outputAmountRaw: swapConfig.tokenOut.rawAmount,
+          },
+        ],
+      };
 
-    const swap = new Swap(swapInput);
-    const updatedAmount = (await swap.query(rpcUrl)) as ExactInQueryOutput | ExactOutQueryOutput;
+      const swap = new Swap(swapInput);
+      const updatedAmount = (await swap.query(rpcUrl)) as ExactInQueryOutput | ExactOutQueryOutput;
 
-    const call = swap.buildCall({
-      slippage: Slippage.fromPercentage("0.1"),
-      deadline: 999999999999999999n, // Deadline for the swap, in this case infinite
-      queryOutput: updatedAmount,
-      wethIsEth: false,
-    }) as SwapBuildOutputExactIn | SwapBuildOutputExactOut;
+      const call = swap.buildCall({
+        slippage: Slippage.fromPercentage("0.1"),
+        deadline: 999999999999999999n, // Deadline for the swap, in this case infinite
+        queryOutput: updatedAmount,
+        wethIsEth: false,
+      }) as SwapBuildOutputExactIn | SwapBuildOutputExactOut;
 
-    setCall(call);
+      setCall(call);
 
-    return {
-      updatedAmount,
-      call,
-    };
+      return {
+        updatedAmount,
+        call,
+      };
+    } catch (error) {
+      throw error; // throw it for handling in consuming component
+    }
   };
 
   /**

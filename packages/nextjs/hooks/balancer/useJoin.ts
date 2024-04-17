@@ -73,7 +73,7 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
 
       return { expectedBptOut, minBptOut };
     } catch (error) {
-      console.error("error", error);
+      throw error; // throw it for handling in consuming component
     }
   };
 

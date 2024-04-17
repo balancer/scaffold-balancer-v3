@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { PoolActionsProps } from "../PoolActions";
-import { PoolActionButton, QueryResults, SuccessNotification, TokenField } from "./";
+import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from "./";
 import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
@@ -31,6 +31,7 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [isQuerying, setIsQuerying] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+  const [queryErrorMsg, setQueryErrorMsg] = useState<string | null>();
 
   const { queryJoin, joinPool, allowances, refetchAllowances, tokenBalances } = useJoin(pool, tokenInputs);
   const writeTx = useTransactor(); // scaffold hook for tx status toast notifications
@@ -58,6 +59,7 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   }, [tokenInputs, allowances]);
 
   const handleInputChange = (index: number, value: string) => {
+    setQueryErrorMsg(null);
     const updatedTokens = tokenInputs.map((token, idx) => {
       if (idx === index) {
         return { ...token, rawAmount: parseUnits(value, token.decimals) };
@@ -75,7 +77,9 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       if (!queryResponse) throw new Error("Query response is undefined");
       setQueryResponse(queryResponse);
     } catch (error) {
-      console.error("Query error", error);
+      console.error("error", error);
+      const errorMessage = (error as { shortMessage?: string }).shortMessage || "An unknown error occurred";
+      setQueryErrorMsg(errorMessage);
     } finally {
       setIsQuerying(false);
     }
@@ -147,7 +151,7 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       </div>
 
       {joinTxUrl && queryResponse.expectedBptOut !== "0" ? (
-        <SuccessNotification transactionUrl={joinTxUrl} />
+        <ActionSuccessAlert transactionUrl={joinTxUrl} />
       ) : queryResponse.expectedBptOut === "0" ? (
         <PoolActionButton
           onClick={handleQueryJoin}
@@ -167,7 +171,7 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       )}
 
       {queryResponse.expectedBptOut !== "0" && (
-        <QueryResults title="BPT Out">
+        <QueryResultsWrapper title="BPT Out">
           <div className="flex flex-wrap justify-between mb-3">
             <div className="font-bold">Expected</div>
             <div className="text-end">
@@ -186,8 +190,10 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
               <div className="text-sm">{queryResponse.minBptOut}</div>
             </div>
           </div>
-        </QueryResults>
+        </QueryResultsWrapper>
       )}
+
+      {queryErrorMsg && <QueryErrorAlert message={queryErrorMsg} />}
     </section>
   );
 };

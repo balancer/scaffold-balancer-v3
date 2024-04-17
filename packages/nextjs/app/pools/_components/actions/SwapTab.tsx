@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { PoolActionsProps } from "../PoolActions";
-import { PoolActionButton, QueryResults, SuccessNotification, TokenField } from "./";
+import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from "./";
 import { SwapKind } from "@balancer/sdk";
 import { formatUnits, parseUnits } from "viem";
 import { useSwap } from "~~/hooks/balancer/";
@@ -64,6 +64,7 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [isApproving, setIsApproving] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
+  const [queryErrorMsg, setQueryErrorMsg] = useState<string | null>();
 
   const { querySwap, swap, tokenInAllowance, refetchTokenInAllowance, tokenInBalance, approveAsync } = useSwap(
     pool,
@@ -84,9 +85,10 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   }, [tokenInAllowance, swapConfig.tokenIn.rawAmount, pool.poolTokens, swapConfig.tokenIn.poolTokensIndex]);
 
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
-    // Reset query response whenever input amount changes
+    // Clean up UI to prepare for new query
     setQueryResponse(initialQueryResponse);
     setSwapTxUrl(undefined);
+    setQueryErrorMsg(null);
     // Update the focused input amount with new value and reset the other input amount
     setSwapConfig(prevConfig => ({
       tokenIn: {
@@ -104,6 +106,11 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   };
 
   const handleTokenSelection = (selectedSymbol: string, swapConfigKey: "tokenIn" | "tokenOut") => {
+    // Clean up UI to prepare for new query
+    setQueryResponse(initialQueryResponse);
+    setSwapTxUrl(undefined);
+    setQueryErrorMsg(null);
+
     const selectedIndex = pool.poolTokens.findIndex(token => token.symbol === selectedSymbol);
     const otherIndex = pool.poolTokens.length === 2 ? (selectedIndex === 0 ? 1 : 0) : -1;
 
@@ -171,6 +178,8 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       }
     } catch (error) {
       console.error("error", error);
+      const errorMessage = (error as { shortMessage?: string }).shortMessage || "An unknown error occurred";
+      setQueryErrorMsg(errorMessage);
     } finally {
       setIsQuerying(false);
     }
@@ -234,7 +243,7 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       />
 
       {swapTxUrl ? (
-        <SuccessNotification transactionUrl={swapTxUrl} />
+        <ActionSuccessAlert transactionUrl={swapTxUrl} />
       ) : !queryResponse.expectedAmount ? (
         <PoolActionButton
           onClick={handleQuerySwap}
@@ -254,7 +263,7 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       )}
 
       {queryResponse.expectedAmount && (
-        <QueryResults title={`Amount ${queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}>
+        <QueryResultsWrapper title={`Amount ${queryResponse.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}>
           <div className="flex flex-wrap justify-between mb-3">
             <div className="font-bold">Expected</div>
             <div className="text-end">
@@ -285,8 +294,10 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
               </div>
             </div>
           </div>
-        </QueryResults>
+        </QueryResultsWrapper>
       )}
+
+      {queryErrorMsg && <QueryErrorAlert message={queryErrorMsg} />}
     </section>
   );
 };

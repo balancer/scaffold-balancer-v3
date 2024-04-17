@@ -15,18 +15,6 @@ export const PoolComposition = ({ pool }: { pool: Pool }) => {
         <h5 className="text-xl font-bold mb-3">Pool Composition</h5>
 
         <div className="border border-base-100 rounded-lg">
-          <div className="flex justify-between items-center border-base-100 border-b p-3">
-            <div>
-              <div className="font-bold">BPT</div>
-              <div className="text-sm">{pool.name}</div>
-            </div>
-            <div>
-              <div className="font-bold text-end">
-                {Number(formatUnits(pool.totalSupply, pool.decimals)).toFixed(4)}
-              </div>
-              <div className="text-sm text-end">{pool.totalSupply.toString()}</div>
-            </div>
-          </div>
           <div className="p-3 flex flex-col gap-3">
             {pool.poolTokens.map((token: any) => (
               <div key={token.address} className="flex justify-between items-center">

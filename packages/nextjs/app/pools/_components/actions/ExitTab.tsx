@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PoolActionsProps } from "../PoolActions";
-import { PoolActionButton, QueryResults, SuccessNotification, TokenField } from "./";
+import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from "./";
 import { TokenAmount } from "@balancer/sdk";
 import { formatUnits, parseUnits } from "viem";
 import { useExit } from "~~/hooks/balancer/";
@@ -30,10 +30,12 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [queryResponse, setQueryResponse] = useState<ExitQueryResponse>(initialQueryResponse);
   const [isExiting, setIsExiting] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
+  const [queryErrorMsg, setQueryErrorMsg] = useState<string | null>();
 
   const { queryExit, exitPool } = useExit(pool);
 
   const handleAmountChange = (amount: string) => {
+    setQueryErrorMsg(null);
     const rawAmount = parseUnits(amount, pool.decimals);
     setBptIn({ rawAmount, displayValue: amount });
     setQueryResponse({ expectedAmountsOut: undefined, minAmountsOut: undefined });
@@ -45,6 +47,9 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       const { expectedAmountsOut, minAmountsOut } = await queryExit(bptIn.rawAmount);
       setQueryResponse({ expectedAmountsOut, minAmountsOut });
     } catch (error) {
+      console.error("error", error);
+      const errorMessage = (error as { shortMessage?: string }).shortMessage || "An unknown error occurred";
+      setQueryErrorMsg(errorMessage);
     } finally {
       setIsQuerying(false);
     }
@@ -84,7 +89,7 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       />
 
       {exitTxUrl && queryResponse.expectedAmountsOut ? (
-        <SuccessNotification transactionUrl={exitTxUrl} />
+        <ActionSuccessAlert transactionUrl={exitTxUrl} />
       ) : !queryResponse.expectedAmountsOut ? (
         <PoolActionButton onClick={handleExitQuery} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
           Query
@@ -96,7 +101,7 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       )}
 
       {queryResponse.expectedAmountsOut && (
-        <QueryResults title="Expected Tokens Out">
+        <QueryResultsWrapper title="Expected Tokens Out">
           {pool.poolTokens.map((token, index) => (
             <div key={token.address} className={`${index === 0 ? "mb-3" : ""} flex justify-between items-center`}>
               <div>
@@ -113,8 +118,10 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
               </div>
             </div>
           ))}
-        </QueryResults>
+        </QueryResultsWrapper>
       )}
+
+      {queryErrorMsg && <QueryErrorAlert message={queryErrorMsg} />}
     </section>
   );
 };
