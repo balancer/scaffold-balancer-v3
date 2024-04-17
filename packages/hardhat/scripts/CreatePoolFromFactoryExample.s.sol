@@ -24,6 +24,9 @@ contract CreatePoolFromFactoryExample is TestAddresses, HelperFunctions, Script 
 	function run() external {
 
 		CustomPoolFactoryExample customPoolFactory = CustomPoolFactoryExample(address(1)); // TODO - replace with actual custom pool factory address
+		
+		address frontEndAddress; // TODO - dev, input your connected dev wallet address here. This address, as long as it lines up with your .env setup, will be the wallet you are using to initialize the pool and thus receive BPT.
+
 
 		/// Vars specific to local mainnet fork deployment (mainnet deployment)
 
@@ -53,7 +56,7 @@ contract CreatePoolFromFactoryExample is TestAddresses, HelperFunctions, Script 
 			yieldFeeExempt: false
 		});
 		tokenConfig[1] = TokenConfig({
-			token: IERC20(scETHToken),
+			token: IERC20(address(scETHToken)),
 			tokenType: TokenType.STANDARD,
 			rateProvider: IRateProvider(address(0)),
 			yieldFeeExempt: false
@@ -95,6 +98,21 @@ contract CreatePoolFromFactoryExample is TestAddresses, HelperFunctions, Script 
 		);
 
 		/// initialize pool tx - TODO - STEVE THIS IS WHERE YOU LEFT OFF, check vault contract again if you need to initialize, and also check first that you even need to register still if you have created a factory and pools are created through that. 
+		
+		// TODO - setup the params for initialize()
+        IERC20[] memory tokens; // Tokens used to seed the pool (must match the registered tokens)
+		tokens[0] = IERC20(address(scbalToken));
+		tokens[1] = IERC20(address(scETHToken));
+
+		uint256[] exactAmountsIn;
+		// exactAmountsIn(0) = 1; // TODO
+		// exactAmountsIn(1) = 1; // TODO
+        // uint256 minBptAmountOut = 1 ether; // TODO
+		// bytes memory userData = ?;  // TODO - Additional (optional) data required for adding initial liquidity
+		
+		uint256 bptOut = vault.initialize(newPool, frontEndAddress, tokens, exactAmountsIn, minBptAmountOut, userData); // Initializes a registered pool by adding liquidity; mints BPT tokens for the first time in exchange.
+
+		// temporary test TODO add a console.log checking how much BPT was returned
 
 		vm.stopBroadcast();
 	}
