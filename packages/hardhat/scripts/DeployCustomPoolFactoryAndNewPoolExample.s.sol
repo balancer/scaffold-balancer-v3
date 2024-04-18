@@ -6,11 +6,9 @@ import { Script, console } from "forge-std/Script.sol";
 import { IERC20 } from "../contracts/interfaces/IVaultExtension.sol";
 import { LiquidityManagement, IRateProvider, PoolHooks, TokenConfig, TokenType } from "../contracts/interfaces/VaultTypes.sol";
 import {TestAddresses} from "../test/utils/TestAddresses.sol";
-// import {TestAddresses} from  "packages/hardhat/test/utils/TestAddresses.sol";
 import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
-import {ScaffoldBalancerToken} from "packages/hardhat/contracts/ScaffoldBalancerToken.sol";
-import {HelperFunctions} from "packages/hardhat/test/utils/HelperFunctions.sol";
-
+import {FakeTestERC20} from "../contracts/FakeTestERC20.sol";
+import {HelperFunctions} from "../test/utils/HelperFunctions.sol";
 
 /**
  * @title CreatePoolFromFactoryExample Script
@@ -22,14 +20,13 @@ import {HelperFunctions} from "packages/hardhat/test/utils/HelperFunctions.sol";
  */
 contract DeployCustomPoolFactoryAndNewPoolExample is TestAddresses, HelperFunctions, Script {
 
-	function run() external {
+	address devFrontEndAddress = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045; // TODO - dev, input your connected dev wallet address here. This address receives the BPT. The deployer wallet (default the `.env` DEPLOYER wallet you specify), sets everything up and sends its BPTs to this address.
 
-		CustomPoolFactoryExample customPoolFactory = CustomPoolFactoryExample(address(1)); // TODO - replace with actual custom pool factory address
-		
-		address frontEndAddress; // TODO - dev, input your connected dev wallet address here. This address, as long as it lines up with your .env setup, will be the wallet that receives BPT. The deployer address will have the seed liquidity but the BPT will be sent to this wallet.
+	uint256 pauseWindowDuration = 365 days; // NOTE: placeholder pauseWindowDuration var
+
+	function run() external {
 		
 		/// args for factory deployment
-		uint256 pauseWindowDuration = 365 days; // NOTE: placeholder pauseWindowDuration var
 
 		uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
 		vm.startBroadcast(deployerPrivateKey);
@@ -39,9 +36,9 @@ contract DeployCustomPoolFactoryAndNewPoolExample is TestAddresses, HelperFuncti
 		
 		/// Vars specific to creating a pool from your custom pool factory on testnet. 
 
-		ScaffoldBalancerToken scbalToken = new ScaffoldBalancerToken("Scaffold Balancer Test Token #1","scBAL"); // the ScaffoldBalancer ($scBAL) ERC20 token used for these examples. NOTE - 1000 $scBAL is minted to the msg.sender deploying the contract. 
+		FakeTestERC20 scbalToken = new FakeTestERC20("Scaffold Balancer Test Token #1","scBAL"); // the ScaffoldBalancer ($scBAL) ERC20 token used for these examples. NOTE - 1000 $scBAL is minted to the msg.sender deploying the contract. 
 
-		ScaffoldBalancerToken scETHToken = new ScaffoldBalancerToken("Scaffold Balancer Test Token #2","scETH"); // the ScaffoldBalancer ($scETH) ERC20 token used for these examples. NOTE - 1000 $scETH is minted to the msg.sender deploying the contract. 
+		FakeTestERC20 scETHToken = new FakeTestERC20("Scaffold Balancer Test Token #2","scETH"); // the ScaffoldBalancer ($scETH) ERC20 token used for these examples. NOTE - 1000 $scETH is minted to the msg.sender deploying the contract. 
 
 		TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
 
@@ -78,11 +75,11 @@ contract DeployCustomPoolFactoryAndNewPoolExample is TestAddresses, HelperFuncti
 			supportsRemoveLiquidityCustom: false
 		}); // Liquidity management flags with implemented methods
 
-		string name = "Example Custom Balancer Constant Price Pool #1";
-		string symbol = "cBPT1";
-		bytes32 salt = converNamesToBytes32(name);
+		string memory name = "Example Custom Balancer Constant Price Pool #1";
+		string memory symbol = "cBPT1";
+		bytes32 salt = convertNameToBytes32(name);
 		
-		address newPool = customPoolFactory.createPool(name, symbol, tokenConfig, salt);
+		address newPool = customPoolFactory.create(name, symbol, tokenConfig, salt);
 
 		/// send register tx 
 		vault.registerPool(
@@ -100,15 +97,17 @@ contract DeployCustomPoolFactoryAndNewPoolExample is TestAddresses, HelperFuncti
 		tokens[0] = IERC20(address(scbalToken));
 		tokens[1] = IERC20(address(scETHToken));
 
-		uint256[] exactAmountsIn; 
-		exactAmountsIn(0) = 1 ether; // assume that scBAL and scETH are the same price. Bullish on BAL!
-		exactAmountsIn(1) = 1 ether;
+		uint256[] memory exactAmountsIn; 
+		exactAmountsIn[0] = 1 ether; // assume that scBAL and scETH are the same price. Bullish on BAL!
+		exactAmountsIn[1] = 1 ether;
         uint256 minBptAmountOut = 1 ether; // TODO - debug this based on sim
 		bytes memory userData = bytes("");  // TODO - Additional (optional) data required for adding initial liquidity
-		
-		uint256 bptOut = vault.initialize(newPool, frontEndAddress, tokens, exactAmountsIn, minBptAmountOut, userData); // Initializes a registered pool by adding liquidity; mints BPT tokens for the first time in exchange.
+
+		{
+		uint256 bptOut = vault.initialize(newPool, devFrontEndAddress, tokens, exactAmountsIn, minBptAmountOut, userData); // Initializes a registered pool by adding liquidity; mints BPT tokens for the first time in exchange.
 
 		console.log("BPTOut: %s", bptOut); // TODO - delete temporary console checking how much BPT was returned once we know it works.
+		}
 
 		vm.stopBroadcast();
 	}
