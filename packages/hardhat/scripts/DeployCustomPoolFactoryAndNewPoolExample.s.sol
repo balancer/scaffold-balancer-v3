@@ -15,21 +15,27 @@ import {HelperFunctions} from "packages/hardhat/test/utils/HelperFunctions.sol";
 /**
  * @title CreatePoolFromFactoryExample Script
  * @author BUIDL GUIDL (placeholder)
- * @notice The script, using the `.env` specified deployer wallet, deploys a custom pool (currently the constant price custom pool), creates a new pool with it, registers the new pool with the BalancerV3 Vault on sepolia, and initializes it. It does all of this so it is ready to use with the ScaffoldBalancer front end tool.
+ * @notice The script, using the `.env` specified deployer wallet, deploys the custom pool factory (currently the constant price custom pool), creates a new pool with it, registers the new pool with the BalancerV3 Vault on sepolia, and initializes it. It does all of this so it is ready to use with the ScaffoldBalancer front end tool.
  * @dev TODO - See issue #26 Questions specific to this solidity file.
- * @dev TODO - Bring in logic from DeployCustomPoolFactoryExample.s.sol because it can all be done in one script IMO.
+ * @dev See TODO below; make sure to rename and edit the `CustomPoolFactoryExample.sol` with your own pool type, respectively.
+ * @dev to run sim for script, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFactoryAndNewPoolExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
  */
-contract CreatePoolFromFactoryExample is TestAddresses, HelperFunctions, Script {
+contract DeployCustomPoolFactoryAndNewPoolExample is TestAddresses, HelperFunctions, Script {
 
 	function run() external {
 
 		CustomPoolFactoryExample customPoolFactory = CustomPoolFactoryExample(address(1)); // TODO - replace with actual custom pool factory address
 		
 		address frontEndAddress; // TODO - dev, input your connected dev wallet address here. This address, as long as it lines up with your .env setup, will be the wallet that receives BPT. The deployer address will have the seed liquidity but the BPT will be sent to this wallet.
+		
+		/// args for factory deployment
+		uint256 pauseWindowDuration = 365 days; // NOTE: placeholder pauseWindowDuration var
 
 		uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
-
 		vm.startBroadcast(deployerPrivateKey);
+
+		/// Deploy CustomPoolFactory
+		CustomPoolFactoryExample customPoolFactory = new CustomPoolFactoryExample(vault, pauseWindowDuration); // TODO - replace with your own custom pool factory and respective constructor params.
 		
 		/// Vars specific to creating a pool from your custom pool factory on testnet. 
 
