@@ -13,12 +13,11 @@ import {HelperFunctions} from "packages/hardhat/test/utils/HelperFunctions.sol";
 
 
 /**
- * TODO - this was copied from register pool script, needs to be rewritten to create a pool from a factory address.
  * @title CreatePoolFromFactoryExample Script
  * @author BUIDL GUIDL (placeholder)
  * @notice The script, using the `.env` specified deployer wallet, deploys a custom pool (currently the constant price custom pool), creates a new pool with it, registers the new pool with the BalancerV3 Vault on sepolia, and initializes it. It does all of this so it is ready to use with the ScaffoldBalancer front end tool.
- * @dev STEVE TODO - maybe add conditional logic checking for network and using either a test wallet or the deployer wallet or ??? (it is a nice to have). Either way, once the contracts are deployed, the dev can connect whatever front end wallet they want and play with the pool in the test environment.
- * @dev Make sure to get the address of the CustomPoolFactoryExample after having had run `DeployCustomPoolFactoryExample.s.sol` before running this script.
+ * @dev TODO - See issue #26 Questions specific to this solidity file.
+ * @dev TODO - Bring in logic from DeployCustomPoolFactoryExample.s.sol because it can all be done in one script IMO.
  */
 contract CreatePoolFromFactoryExample is TestAddresses, HelperFunctions, Script {
 
@@ -26,26 +25,17 @@ contract CreatePoolFromFactoryExample is TestAddresses, HelperFunctions, Script 
 
 		CustomPoolFactoryExample customPoolFactory = CustomPoolFactoryExample(address(1)); // TODO - replace with actual custom pool factory address
 		
-		address frontEndAddress; // TODO - dev, input your connected dev wallet address here. This address, as long as it lines up with your .env setup, will be the wallet you are using to initialize the pool and thus receive BPT.
-
-
-		/// Vars specific to local mainnet fork deployment (mainnet deployment)
+		address frontEndAddress; // TODO - dev, input your connected dev wallet address here. This address, as long as it lines up with your .env setup, will be the wallet that receives BPT. The deployer address will have the seed liquidity but the BPT will be sent to this wallet.
 
 		uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
 
 		vm.startBroadcast(deployerPrivateKey);
 		
-		/// setup the params needed to create the first pool from the factory.
-
 		/// Vars specific to creating a pool from your custom pool factory on testnet. 
 
 		ScaffoldBalancerToken scbalToken = new ScaffoldBalancerToken("Scaffold Balancer Test Token #1","scBAL"); // the ScaffoldBalancer ($scBAL) ERC20 token used for these examples. NOTE - 1000 $scBAL is minted to the msg.sender deploying the contract. 
 
 		ScaffoldBalancerToken scETHToken = new ScaffoldBalancerToken("Scaffold Balancer Test Token #2","scETH"); // the ScaffoldBalancer ($scETH) ERC20 token used for these examples. NOTE - 1000 $scETH is minted to the msg.sender deploying the contract. 
-
-		// // TODO - delete if you don't need these as ERC20s explicitly.
-		// ERC20 scBAL = ERC20(address(scbalToken));
-		// ERC20 scETH = ERC20(address(scETH));
 
 		TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
 
@@ -98,22 +88,21 @@ contract CreatePoolFromFactoryExample is TestAddresses, HelperFunctions, Script 
 			liquidityManagement
 		);
 
-		/// initialize pool tx - TODO - STEVE THIS IS WHERE YOU LEFT OFF, you're waiting on clarification from blabs on factory pools rqing registeration or not. BUT until then, you need to write up the appropriate params to get this script to compile.
+		/// initialize pool tx - TODO - see issue #26 requesting clarification from blabs on factory pools rqing registeration or not. BUT until then, you need to write up the appropriate params to get this script to compile.
 		
-		// TODO - setup the params for initialize()
         IERC20[] memory tokens; // Tokens used to seed the pool (must match the registered tokens)
 		tokens[0] = IERC20(address(scbalToken));
 		tokens[1] = IERC20(address(scETHToken));
 
-		uint256[] exactAmountsIn;
-		// exactAmountsIn(0) = 1; // TODO
-		// exactAmountsIn(1) = 1; // TODO
-        // uint256 minBptAmountOut = 1 ether; // TODO
-		// bytes memory userData = ?;  // TODO - Additional (optional) data required for adding initial liquidity
+		uint256[] exactAmountsIn; 
+		exactAmountsIn(0) = 1 ether; // assume that scBAL and scETH are the same price. Bullish on BAL!
+		exactAmountsIn(1) = 1 ether;
+        uint256 minBptAmountOut = 1 ether; // TODO - debug this based on sim
+		bytes memory userData = bytes("");  // TODO - Additional (optional) data required for adding initial liquidity
 		
 		uint256 bptOut = vault.initialize(newPool, frontEndAddress, tokens, exactAmountsIn, minBptAmountOut, userData); // Initializes a registered pool by adding liquidity; mints BPT tokens for the first time in exchange.
 
-		// temporary test TODO add a console.log checking how much BPT was returned
+		console.log("BPTOut: %s", bptOut); // TODO - delete temporary console checking how much BPT was returned once we know it works.
 
 		vm.stopBroadcast();
 	}
