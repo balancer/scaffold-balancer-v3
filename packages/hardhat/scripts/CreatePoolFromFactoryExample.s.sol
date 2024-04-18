@@ -16,7 +16,8 @@ import {HelperFunctions} from "packages/hardhat/test/utils/HelperFunctions.sol";
  * TODO - this was copied from register pool script, needs to be rewritten to create a pool from a factory address.
  * @title CreatePoolFromFactoryExample Script
  * @author BUIDL GUIDL (placeholder)
- * @notice The script deploys a custom pool (currently the constant price custom pool), creates a new pool with it, registers the new pool with the BalancerV3 Vault on sepolia, and initializes it. It does all of this so it is ready to use with the ScaffoldBalancer front end tool.
+ * @notice The script, using the `.env` specified deployer wallet, deploys a custom pool (currently the constant price custom pool), creates a new pool with it, registers the new pool with the BalancerV3 Vault on sepolia, and initializes it. It does all of this so it is ready to use with the ScaffoldBalancer front end tool.
+ * @dev STEVE TODO - maybe add conditional logic checking for network and using either a test wallet or the deployer wallet or ??? (it is a nice to have). Either way, once the contracts are deployed, the dev can connect whatever front end wallet they want and play with the pool in the test environment.
  * @dev Make sure to get the address of the CustomPoolFactoryExample after having had run `DeployCustomPoolFactoryExample.s.sol` before running this script.
  */
 contract CreatePoolFromFactoryExample is TestAddresses, HelperFunctions, Script {
@@ -97,7 +98,7 @@ contract CreatePoolFromFactoryExample is TestAddresses, HelperFunctions, Script 
 			liquidityManagement
 		);
 
-		/// initialize pool tx - TODO - STEVE THIS IS WHERE YOU LEFT OFF, check vault contract again if you need to initialize, and also check first that you even need to register still if you have created a factory and pools are created through that. 
+		/// initialize pool tx - TODO - STEVE THIS IS WHERE YOU LEFT OFF, you're waiting on clarification from blabs on factory pools rqing registeration or not. BUT until then, you need to write up the appropriate params to get this script to compile.
 		
 		// TODO - setup the params for initialize()
         IERC20[] memory tokens; // Tokens used to seed the pool (must match the registered tokens)
