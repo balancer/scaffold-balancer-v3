@@ -7,7 +7,9 @@ import {
   Slippage,
   Swap,
   SwapBuildOutputExactIn,
-  SwapBuildOutputExactOut, // SwapKind,
+  SwapBuildOutputExactOut,
+  SwapKind,
+  TokenAmount,
 } from "@balancer/sdk";
 import { WriteContractResult } from "@wagmi/core";
 import { parseAbi } from "viem";
@@ -18,8 +20,10 @@ import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 type QuerySwapResponse = Promise<{
-  updatedAmount: any;
-  call: any;
+  swapKind?: SwapKind;
+  expectedAmount?: TokenAmount | undefined;
+  minOrMaxAmount?: TokenAmount | undefined;
+  error?: { message: string };
 }>;
 
 type SwapTxUrl = Promise<string | undefined>;
@@ -86,12 +90,29 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
 
       setCall(call);
 
+      let expectedAmount: TokenAmount;
+      let minOrMaxAmount: TokenAmount;
+      const swapKind = updatedAmount.swapKind;
+
+      if (swapKind === SwapKind.GivenIn && "minAmountOut" in call) {
+        expectedAmount = updatedAmount.expectedAmountOut;
+        minOrMaxAmount = call.minAmountOut;
+      } else if (updatedAmount.swapKind === SwapKind.GivenOut && "maxAmountIn" in call) {
+        expectedAmount = updatedAmount.expectedAmountIn;
+        minOrMaxAmount = call.maxAmountIn;
+      } else {
+        throw new Error("Invalid swapKind or call object");
+      }
+
       return {
-        updatedAmount,
-        call,
+        swapKind,
+        expectedAmount,
+        minOrMaxAmount,
       };
     } catch (error) {
-      throw error; // throw it for handling in consuming component
+      console.error("error", error);
+      const message = (error as { message?: string }).message || "An unknown error occurred";
+      return { error: { message } };
     }
   };
 

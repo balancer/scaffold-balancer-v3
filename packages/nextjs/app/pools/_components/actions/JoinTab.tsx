@@ -18,12 +18,6 @@ const initialQueryResponse = {
  * 3. User sends transaction to join the pool
  */
 export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
-  const initialTokenInputs = pool.poolTokens.map(token => ({
-    address: token.address as `0x${string}`,
-    decimals: token.decimals,
-    rawAmount: 0n,
-  }));
-  const [tokenInputs, setTokenInputs] = useState<InputAmount[]>(initialTokenInputs);
   const [queryResponse, setQueryResponse] = useState(initialQueryResponse);
   const [joinTxUrl, setJoinTxUrl] = useState<string | undefined>();
   const [sufficientAllowances, setSufficientAllowances] = useState(false);
@@ -32,6 +26,13 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [isApproving, setIsApproving] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [queryErrorMsg, setQueryErrorMsg] = useState<string | null>();
+  const [tokenInputs, setTokenInputs] = useState<InputAmount[]>(
+    pool.poolTokens.map(token => ({
+      address: token.address as `0x${string}`,
+      decimals: token.decimals,
+      rawAmount: 0n,
+    })),
+  );
 
   const { queryJoin, joinPool, allowances, refetchAllowances, tokenBalances } = useJoin(pool, tokenInputs);
   const writeTx = useTransactor(); // scaffold hook for tx status toast notifications
@@ -71,18 +72,14 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   };
 
   const handleQueryJoin = async () => {
-    try {
-      setIsQuerying(true);
-      const queryResponse = await queryJoin(tokenInputs);
-      if (!queryResponse) throw new Error("Query response is undefined");
-      setQueryResponse(queryResponse);
-    } catch (error) {
-      console.error("error", error);
-      const errorMessage = (error as { shortMessage?: string }).shortMessage || "An unknown error occurred";
-      setQueryErrorMsg(errorMessage);
-    } finally {
-      setIsQuerying(false);
+    setIsQuerying(true);
+    const response = await queryJoin(tokenInputs);
+    if (response.error) {
+      setQueryErrorMsg(response.error.message);
+    } else {
+      setQueryResponse(response);
     }
+    setIsQuerying(false);
   };
 
   const handleJoinPool = async () => {
@@ -90,7 +87,6 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       setIsJoining(true);
       const txUrl = await joinPool();
       setJoinTxUrl(txUrl);
-      setTokenInputs(initialTokenInputs);
       refetchAllowances();
       refetchPool();
     } catch (e) {

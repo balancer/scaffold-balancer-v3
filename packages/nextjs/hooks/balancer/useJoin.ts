@@ -13,13 +13,13 @@ import { type Pool } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
-type QueryJoinResponse = Promise<{ expectedBptOut: string; minBptOut: string } | undefined>;
+type QueryJoinResponse = Promise<{ expectedBptOut: string; minBptOut: string; error?: { message: string } }>;
 
-type JoinPoolTxResponse = Promise<string | undefined>;
+type JoinPoolTxUrl = Promise<string | undefined>;
 
 type JoinPoolFunctions = {
   queryJoin: (amountsIn: InputAmount[]) => QueryJoinResponse;
-  joinPool: () => JoinPoolTxResponse;
+  joinPool: () => JoinPoolTxUrl;
   allowances: any[] | undefined;
   refetchAllowances: () => void;
   tokenBalances: any[] | undefined;
@@ -73,11 +73,13 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
 
       return { expectedBptOut, minBptOut };
     } catch (error) {
-      throw error; // throw it for handling in consuming component
+      console.error("error", error);
+      const message = (error as { message?: string }).message || "An unknown error occurred";
+      return { error: { message }, expectedBptOut: "", minBptOut: "" };
     }
   };
 
-  const joinPool = async (): JoinPoolTxResponse => {
+  const joinPool = async (): JoinPoolTxUrl => {
     try {
       if (!walletClient) {
         throw new Error("Client is undefined");

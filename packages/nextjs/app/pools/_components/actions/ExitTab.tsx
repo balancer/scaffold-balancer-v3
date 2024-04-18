@@ -41,18 +41,16 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
     setQueryResponse({ expectedAmountsOut: undefined, minAmountsOut: undefined });
   };
 
-  const handleExitQuery = async () => {
-    try {
-      setIsQuerying(true);
-      const { expectedAmountsOut, minAmountsOut } = await queryExit(bptIn.rawAmount);
+  const handleQueryExit = async () => {
+    setIsQuerying(true);
+    const response = await queryExit(bptIn.rawAmount);
+    if (response.error) {
+      setQueryErrorMsg(response.error.message);
+    } else {
+      const { expectedAmountsOut, minAmountsOut } = response;
       setQueryResponse({ expectedAmountsOut, minAmountsOut });
-    } catch (error) {
-      console.error("error", error);
-      const errorMessage = (error as { shortMessage?: string }).shortMessage || "An unknown error occurred";
-      setQueryErrorMsg(errorMessage);
-    } finally {
-      setIsQuerying(false);
     }
+    setIsQuerying(false);
   };
 
   const handleExitPool = async () => {
@@ -91,7 +89,7 @@ export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       {exitTxUrl && queryResponse.expectedAmountsOut ? (
         <ActionSuccessAlert transactionUrl={exitTxUrl} />
       ) : !queryResponse.expectedAmountsOut ? (
-        <PoolActionButton onClick={handleExitQuery} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
+        <PoolActionButton onClick={handleQueryExit} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
           Query
         </PoolActionButton>
       ) : (

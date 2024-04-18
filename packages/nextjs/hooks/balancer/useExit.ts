@@ -13,13 +13,13 @@ import { type Pool } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
-type QueryExitResponse = Promise<{ expectedAmountsOut: any; minAmountsOut: any }>;
+type QueryExitResponse = Promise<{ expectedAmountsOut?: any; minAmountsOut?: any; error?: { message: string } }>;
 
-type ExitPoolTxResponse = Promise<string | undefined>;
+type ExitPoolTxUrl = Promise<string | undefined>;
 
 type ExitPoolFunctions = {
   queryExit: (rawAmount: bigint) => QueryExitResponse;
-  exitPool: () => ExitPoolTxResponse;
+  exitPool: () => ExitPoolTxUrl;
 };
 
 /**
@@ -34,46 +34,52 @@ export const useExit = (pool: Pool): ExitPoolFunctions => {
   const writeTx = useTransactor();
 
   const queryExit = async (rawAmount: bigint) => {
-    const chainId = await publicClient.getChainId();
-    const rpcUrl = publicClient?.chain.rpcUrls.default.http[0] as string;
-    const slippage = Slippage.fromPercentage("1"); // 1%
+    try {
+      const chainId = await publicClient.getChainId();
+      const rpcUrl = publicClient?.chain.rpcUrls.default.http[0] as string;
+      const slippage = Slippage.fromPercentage("1"); // 1%
 
-    // Fetch necessary pool data
-    const balancerApi = new BalancerApi("https://backend-v3-canary.beets-ftm-node.com/graphql", chainId);
-    const poolState: PoolState = await balancerApi.pools.fetchPoolState(pool.address.toLowerCase());
+      const balancerApi = new BalancerApi("https://backend-v3-canary.beets-ftm-node.com/graphql", chainId);
+      const poolState: PoolState = await balancerApi.pools.fetchPoolState(pool.address.toLowerCase());
 
-    // Construct the RemoveLiquidityInput, in this case a RemoveLiquiditySingleTokenExactIn
-    const bptIn: InputAmount = {
-      rawAmount,
-      decimals: pool.decimals,
-      address: poolState.address,
-    };
+      // Construct the RemoveLiquidityInput, in this case a RemoveLiquiditySingleTokenExactIn
+      const bptIn: InputAmount = {
+        rawAmount,
+        decimals: pool.decimals,
+        address: poolState.address,
+      };
 
-    // Construct the RemoveLiquidityInput, in this case an RemoveLiquidityProportional
-    const removeLiquidityInput: RemoveLiquidityInput = {
-      chainId,
-      rpcUrl,
-      bptIn,
-      kind: RemoveLiquidityKind.Proportional,
-    };
+      // Construct the RemoveLiquidityInput, in this case an RemoveLiquidityProportional
+      const removeLiquidityInput: RemoveLiquidityInput = {
+        chainId,
+        rpcUrl,
+        bptIn,
+        kind: RemoveLiquidityKind.Proportional,
+      };
 
-    // Query removeLiquidity to get the token out amounts
-    const removeLiquidity = new RemoveLiquidity();
-    const queryOutput = await removeLiquidity.query(removeLiquidityInput, poolState);
+      // Query removeLiquidity to get the token out amounts
+      const removeLiquidity = new RemoveLiquidity();
+      const queryOutput = await removeLiquidity.query(removeLiquidityInput, poolState);
 
-    // Construct call object for exit transaction and save to state
-    const call = removeLiquidity.buildCall({
-      ...queryOutput,
-      slippage,
-      chainId,
-      wethIsEth: false,
-    });
-    setCall(call);
+      // Construct call object for exit transaction and save to state
+      const call = removeLiquidity.buildCall({
+        ...queryOutput,
+        slippage,
+        chainId,
+        wethIsEth: false,
+      });
 
-    return { expectedAmountsOut: queryOutput.amountsOut, minAmountsOut: call.minAmountsOut };
+      setCall(call);
+
+      return { expectedAmountsOut: queryOutput.amountsOut, minAmountsOut: call.minAmountsOut };
+    } catch (error) {
+      console.error("error", error);
+      const message = (error as { message?: string }).message || "An unknown error occurred";
+      return { error: { message } };
+    }
   };
 
-  const exitPool = async () => {
+  const exitPool = async (): ExitPoolTxUrl => {
     try {
       if (!walletClient) {
         throw new Error("Client is undefined");
