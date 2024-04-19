@@ -104,6 +104,10 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
         throw new Error("Invalid swapKind or call object");
       }
 
+      // console.log("updatedAmount", updatedAmount);
+
+      console.log("call from querySwap", call);
+
       return {
         swapKind,
         expectedAmount,
@@ -111,7 +115,7 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
       };
     } catch (error) {
       console.error("error", error);
-      const message = (error as { message?: string }).message || "An unknown error occurred";
+      const message = (error as { shortMessage?: string }).shortMessage || "An unknown error occurred";
       return { error: { message } };
     }
   };

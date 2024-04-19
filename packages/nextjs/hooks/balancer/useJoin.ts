@@ -71,10 +71,12 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
 
       setCall(call);
 
+      console.log("call from queryJoin", call);
+
       return { expectedBptOut, minBptOut };
     } catch (error) {
       console.error("error", error);
-      const message = (error as { message?: string }).message || "An unknown error occurred";
+      const message = (error as { shortMessage?: string }).shortMessage || "An unknown error occurred";
       return { error: { message }, expectedBptOut: "", minBptOut: "" };
     }
   };

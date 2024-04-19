@@ -74,7 +74,7 @@ export const useExit = (pool: Pool): ExitPoolFunctions => {
       return { expectedAmountsOut: queryOutput.amountsOut, minAmountsOut: call.minAmountsOut };
     } catch (error) {
       console.error("error", error);
-      const message = (error as { message?: string }).message || "An unknown error occurred";
+      const message = (error as { shortMessage?: string }).shortMessage || "An unknown error occurred";
       return { error: { message } };
     }
   };

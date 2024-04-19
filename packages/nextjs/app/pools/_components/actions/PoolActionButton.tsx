@@ -18,7 +18,7 @@ export const PoolActionButton: React.FC<PoolActionButtonProps> = ({ onClick, chi
   const outlined = `border border-neutral hover:bg-neutral hover:text-neutral-content`;
   const gradient = `text-white bg-gradient-to-tr from-indigo-700 from-15% to-fuchsia-600 hover:from-indigo-700 hover:to-fuchsia-700`;
 
-  const colorStyles = children === "Approve" ? outlined : isFormEmpty ? `bg-[#334155] opacity-70` : gradient;
+  const colorStyles = children === "Approve" ? outlined : isFormEmpty ? `bg-[#334155] opacity-70 text-white` : gradient;
   const baseStyles = `w-full rounded-lg font-bold py-4 `;
 
   return (
