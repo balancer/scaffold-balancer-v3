@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  BalancerApi, // ChainId,
+  BalancerApi,
   InputAmount,
   PoolState,
   RemoveLiquidity,
@@ -9,24 +9,20 @@ import {
   Slippage,
 } from "@balancer/sdk";
 import { usePublicClient, useWalletClient } from "wagmi";
-import { type Pool } from "~~/hooks/balancer/types";
+import { Pool, PoolActionTxUrl, QueryExitResponse } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
-type QueryExitResponse = Promise<{ expectedAmountsOut?: any; minAmountsOut?: any; error?: { message: string } }>;
-
-type ExitPoolTxUrl = Promise<string | undefined>;
-
-type ExitPoolFunctions = {
-  queryExit: (rawAmount: bigint) => QueryExitResponse;
-  exitPool: () => ExitPoolTxUrl;
+type PoolExitFunctions = {
+  queryExit: (rawAmount: bigint) => Promise<QueryExitResponse>;
+  exitPool: () => Promise<PoolActionTxUrl>;
 };
 
 /**
  * Custom hook for exiting a pool where `queryExit()` sets state of
  * the call object that is used to construct the transaction that is later sent by `exitPool()`
  */
-export const useExit = (pool: Pool): ExitPoolFunctions => {
+export const useExit = (pool: Pool): PoolExitFunctions => {
   const [call, setCall] = useState<any>();
 
   const { data: walletClient } = useWalletClient();
@@ -73,13 +69,12 @@ export const useExit = (pool: Pool): ExitPoolFunctions => {
 
       return { expectedAmountsOut: queryOutput.amountsOut, minAmountsOut: call.minAmountsOut };
     } catch (error) {
-      console.error("error", error);
       const message = (error as { shortMessage?: string }).shortMessage || "An unknown error occurred";
       return { error: { message } };
     }
   };
 
-  const exitPool = async (): ExitPoolTxUrl => {
+  const exitPool = async () => {
     try {
       if (!walletClient) {
         throw new Error("Client is undefined");
@@ -103,6 +98,7 @@ export const useExit = (pool: Pool): ExitPoolFunctions => {
       return blockExplorerTxURL;
     } catch (error) {
       console.error("error", error);
+      return null;
     }
   };
 

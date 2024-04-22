@@ -4,14 +4,20 @@ import { type Pool } from "~~/hooks/balancer/types";
  * Display a pool's configuration details
  */
 export const PoolConfig = ({ pool }: { pool: Pool }) => {
+  // only render the component if the pool has a poolConfig
+  if (!pool.poolConfig) {
+    return null;
+  }
+
   const detailsRows = [
-    { key: "tokenDecimalDiffs", value: pool?.poolConfig?.tokenDecimalDiffs?.toString() },
-    { key: "hasDynamicSwapFee", value: pool?.poolConfig?.hasDynamicSwapFee?.toString() },
-    { key: "staticSwapFeePercentage", value: pool?.poolConfig?.staticSwapFeePercentage?.toString() },
-    { key: "isPoolPaused", value: pool?.poolConfig?.isPoolPaused?.toString() },
-    { key: "pauseWindowEndTime", value: pool?.poolConfig?.pauseWindowEndTime?.toString() },
-    { key: "isPoolInRecoveryMode", value: pool?.poolConfig?.isPoolInRecoveryMode?.toString() },
+    { key: "tokenDecimalDiffs", value: pool.poolConfig.tokenDecimalDiffs.toString() },
+    { key: "hasDynamicSwapFee", value: pool.poolConfig.hasDynamicSwapFee.toString() },
+    { key: "staticSwapFeePercentage", value: pool.poolConfig.staticSwapFeePercentage.toString() },
+    { key: "isPoolPaused", value: pool.poolConfig.isPoolPaused.toString() },
+    { key: "pauseWindowEndTime", value: pool.poolConfig.pauseWindowEndTime.toString() },
+    { key: "isPoolInRecoveryMode", value: pool.poolConfig.isPoolInRecoveryMode.toString() },
   ];
+
   return (
     <div className="w-full">
       <div className="overflow-x-auto rounded-lg bg-base-200 p-5">

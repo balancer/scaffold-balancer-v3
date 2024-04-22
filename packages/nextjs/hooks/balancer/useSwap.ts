@@ -1,7 +1,5 @@
 import { useState } from "react";
-// import externalContracts from "../../contracts/externalContracts";
 import {
-  // ChainId,
   ExactInQueryOutput,
   ExactOutQueryOutput,
   Slippage,
@@ -14,23 +12,13 @@ import {
 import { WriteContractResult } from "@wagmi/core";
 import { parseAbi } from "viem";
 import { useContractRead, useContractWrite, useWalletClient } from "wagmi";
-import { type SwapConfig } from "~~/app/pools/_components/actions/SwapForm";
-import { type Pool } from "~~/hooks/balancer/types";
+import { Pool, PoolActionTxUrl, QuerySwapResponse, SwapConfig } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
-type QuerySwapResponse = Promise<{
-  swapKind?: SwapKind;
-  expectedAmount?: TokenAmount | undefined;
-  minOrMaxAmount?: TokenAmount | undefined;
-  error?: { message: string };
-}>;
-
-type SwapTxUrl = Promise<string | undefined>;
-
-type SwapFunctions = {
-  querySwap: () => QuerySwapResponse;
-  swap: () => SwapTxUrl;
+type PoolSwapFunctions = {
+  querySwap: () => Promise<QuerySwapResponse>;
+  swap: () => Promise<PoolActionTxUrl>;
   tokenInAllowance: bigint | undefined;
   tokenInBalance: bigint | undefined;
   refetchTokenInAllowance: () => void;
@@ -41,7 +29,7 @@ type SwapFunctions = {
  * Custom hook for swapping tokens in a pool where `querySwap()` sets state of
  * the call object that is used to construct the transaction that is then sent by `swap()`
  */
-export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
+export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions => {
   const [call, setCall] = useState<any>();
 
   const { data: walletClient } = useWalletClient();
@@ -53,7 +41,7 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
   const chainId = walletClient?.chain.id as number;
   const rpcUrl = walletClient?.chain.rpcUrls.default.http[0] as string;
 
-  const querySwap = async (): QuerySwapResponse => {
+  const querySwap = async () => {
     try {
       const swapInput = {
         chainId: chainId,
@@ -104,10 +92,6 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
         throw new Error("Invalid swapKind or call object");
       }
 
-      // console.log("updatedAmount", updatedAmount);
-
-      console.log("call from querySwap", call);
-
       return {
         swapKind,
         expectedAmount,
@@ -123,7 +107,7 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
   /**
    * Execute the swap tx and return the block explorer URL
    */
-  const swap = async (): SwapTxUrl => {
+  const swap = async () => {
     try {
       if (!walletClient) {
         throw new Error("walletClient is undefined");
@@ -143,15 +127,12 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): SwapFunctions => {
         throw new Error("Transaction failed");
       }
 
-      // For potentially parsing tx event logs...
-      // const vaultAbi = externalContracts[chainId as keyof typeof externalContracts].Vault.abi;
-
       const chainId = await walletClient.getChainId();
       const blockExplorerTxURL = getBlockExplorerTxLink(chainId, hash);
       return blockExplorerTxURL;
     } catch (e) {
       console.error("error", e);
-      throw e; // rethrow the error so the caller can handle it!
+      return null;
     }
   };
 

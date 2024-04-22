@@ -1,25 +1,14 @@
 import { useState } from "react";
-import {
-  AddLiquidity,
-  AddLiquidityInput,
-  AddLiquidityKind,
-  BalancerApi, //   ChainId,
-  InputAmount,
-  Slippage,
-} from "@balancer/sdk";
+import { AddLiquidity, AddLiquidityInput, AddLiquidityKind, BalancerApi, InputAmount, Slippage } from "@balancer/sdk";
 import { parseAbi } from "viem";
 import { useContractReads, usePublicClient, useWalletClient } from "wagmi";
-import { type Pool } from "~~/hooks/balancer/types";
+import { Pool, PoolActionTxUrl, QueryJoinResponse } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
-type QueryJoinResponse = Promise<{ expectedBptOut: string; minBptOut: string; error?: { message: string } }>;
-
-type JoinPoolTxUrl = Promise<string | undefined>;
-
 type JoinPoolFunctions = {
-  queryJoin: (amountsIn: InputAmount[]) => QueryJoinResponse;
-  joinPool: () => JoinPoolTxUrl;
+  queryJoin: () => Promise<QueryJoinResponse>;
+  joinPool: () => Promise<PoolActionTxUrl>;
   allowances: any[] | undefined;
   refetchAllowances: () => void;
   tokenBalances: any[] | undefined;
@@ -36,7 +25,7 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
   const publicClient = usePublicClient();
   const writeTx = useTransactor();
 
-  const queryJoin = async (): QueryJoinResponse => {
+  const queryJoin = async () => {
     try {
       // User defined (along with the queryJoin parameters)
       const chainId = await publicClient.getChainId();
@@ -58,7 +47,6 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
       // Query addLiquidity to get the amount of BPT out
       const addLiquidity = new AddLiquidity();
       const queryOutput = await addLiquidity.query(addLiquidityInput, poolState);
-      const expectedBptOut = queryOutput.bptOut.amount.toString();
 
       // Applies slippage to the BPT out amount and constructs the call
       const call = addLiquidity.buildCall({
@@ -67,21 +55,18 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
         chainId,
         wethIsEth: false,
       });
-      const minBptOut = call.minBptOut.amount.toString();
 
       setCall(call);
 
-      console.log("call from queryJoin", call);
-
-      return { expectedBptOut, minBptOut };
+      return { expectedBptOut: queryOutput.bptOut, minBptOut: call.minBptOut };
     } catch (error) {
       console.error("error", error);
       const message = (error as { shortMessage?: string }).shortMessage || "An unknown error occurred";
-      return { error: { message }, expectedBptOut: "", minBptOut: "" };
+      return { error: { message } };
     }
   };
 
-  const joinPool = async (): JoinPoolTxUrl => {
+  const joinPool = async () => {
     try {
       if (!walletClient) {
         throw new Error("Client is undefined");
@@ -106,6 +91,7 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
       return blockExplorerTxURL;
     } catch (e) {
       console.error("error", e);
+      return null;
     }
   };
 

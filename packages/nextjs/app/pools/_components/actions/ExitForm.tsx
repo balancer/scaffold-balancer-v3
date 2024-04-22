@@ -1,23 +1,13 @@
 import { useState } from "react";
 import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { TokenAmount } from "@balancer/sdk";
 import { formatUnits, parseUnits } from "viem";
 import { useExit } from "~~/hooks/balancer/";
-
-type ExitQueryResponse = {
-  expectedAmountsOut: TokenAmount[] | undefined;
-  minAmountsOut: TokenAmount[] | undefined;
-};
+import { PoolActionTxUrl, QueryExitResponse, QueryPoolActionError } from "~~/hooks/balancer/types";
 
 const initialBptIn = {
-  rawAmount: 0n,
-  displayValue: "",
-};
-
-const initialQueryResponse = {
-  expectedAmountsOut: undefined,
-  minAmountsOut: undefined,
+  rawAmount: 0n, // needed for precision to allow max exit
+  displayValue: "", // shown in UI
 };
 
 /**
@@ -25,27 +15,26 @@ const initialQueryResponse = {
  * 2. User sends transaction to exit the pool
  */
 export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
-  const [bptIn, setBptIn] = useState(initialBptIn);
-  const [exitTxUrl, setExitTxUrl] = useState<string | undefined>();
-  const [queryResponse, setQueryResponse] = useState<ExitQueryResponse>(initialQueryResponse);
-  const [isExiting, setIsExiting] = useState(false);
+  const [queryResponse, setQueryResponse] = useState<QueryExitResponse | null>(null);
+  const [queryError, setQueryError] = useState<QueryPoolActionError>(null);
+  const [exitTxUrl, setExitTxUrl] = useState<PoolActionTxUrl>(null);
   const [isQuerying, setIsQuerying] = useState(false);
-  const [queryErrorMsg, setQueryErrorMsg] = useState<string | null>();
-
+  const [isExiting, setIsExiting] = useState(false);
+  const [bptIn, setBptIn] = useState(initialBptIn);
   const { queryExit, exitPool } = useExit(pool);
 
   const handleAmountChange = (amount: string) => {
-    setQueryErrorMsg(null);
+    setQueryError(null);
     const rawAmount = parseUnits(amount, pool.decimals);
     setBptIn({ rawAmount, displayValue: amount });
-    setQueryResponse({ expectedAmountsOut: undefined, minAmountsOut: undefined });
+    setQueryResponse(null);
   };
 
   const handleQueryExit = async () => {
     setIsQuerying(true);
     const response = await queryExit(bptIn.rawAmount);
     if (response.error) {
-      setQueryErrorMsg(response.error.message);
+      setQueryError(response.error);
     } else {
       const { expectedAmountsOut, minAmountsOut } = response;
       setQueryResponse({ expectedAmountsOut, minAmountsOut });
@@ -72,8 +61,10 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       rawAmount: pool.userBalance,
       displayValue: Number(formatUnits(pool.userBalance || 0n, pool.decimals)).toFixed(4),
     });
-    setQueryResponse({ expectedAmountsOut: undefined, minAmountsOut: undefined });
+    setQueryResponse(null);
   };
+
+  const { expectedAmountsOut } = queryResponse ?? {};
 
   return (
     <section>
@@ -86,9 +77,9 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         setMaxAmount={setMaxAmount}
       />
 
-      {exitTxUrl && queryResponse.expectedAmountsOut ? (
+      {exitTxUrl && expectedAmountsOut ? (
         <ActionSuccessAlert transactionUrl={exitTxUrl} />
-      ) : !queryResponse.expectedAmountsOut ? (
+      ) : !expectedAmountsOut ? (
         <PoolActionButton onClick={handleQueryExit} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
           Query
         </PoolActionButton>
@@ -98,7 +89,7 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         </PoolActionButton>
       )}
 
-      {queryResponse.expectedAmountsOut && (
+      {expectedAmountsOut && (
         <QueryResultsWrapper title="Expected Tokens Out">
           {pool.poolTokens.map((token, index) => (
             <div key={token.address} className={`${index === 0 ? "mb-3" : ""} flex justify-between items-center`}>
@@ -107,10 +98,10 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
                 <div className="text-sm">{token.name}</div>
               </div>
               <div>
-                {queryResponse.expectedAmountsOut && (
+                {expectedAmountsOut && (
                   <div>
-                    <div className="font-bold text-end">{queryResponse.expectedAmountsOut[index].toSignificant(4)}</div>
-                    <div className="text-sm">{queryResponse.expectedAmountsOut[index].amount.toString()}</div>
+                    <div className="font-bold text-end">{expectedAmountsOut[index].toSignificant(4)}</div>
+                    <div className="text-sm">{expectedAmountsOut[index].amount.toString()}</div>
                   </div>
                 )}
               </div>
@@ -119,7 +110,7 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         </QueryResultsWrapper>
       )}
 
-      {queryErrorMsg && <QueryErrorAlert message={queryErrorMsg} />}
+      {queryError && <QueryErrorAlert message={queryError.message} />}
     </section>
   );
 };

@@ -6,7 +6,7 @@ import { type Pool } from "~~/hooks/balancer/types";
  */
 export const PoolComposition = ({ pool }: { pool: Pool }) => {
   // if pool is not registered, it won't have any pool tokens to display
-  if (!pool?.poolConfig?.isPoolRegistered) {
+  if (!pool.poolConfig?.isPoolRegistered) {
     return null;
   }
   return (

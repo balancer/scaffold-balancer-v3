@@ -1,5 +1,7 @@
+import { SwapKind, TokenAmount } from "@balancer/sdk";
 import { type Address } from "viem";
 
+// Pool Data
 export type Pool = {
   address: Address;
   decimals: number;
@@ -44,4 +46,41 @@ export type PoolConfig = {
     shouldCallBeforeRemoveLiquidity: boolean;
     shouldCallBeforeSwap: boolean;
   };
+};
+
+// Pool Actions
+export type QueryPoolActionError = { message: string } | null;
+export type PoolActionTxUrl = string | null;
+
+export type SwapConfig = {
+  tokenIn: {
+    poolTokensIndex: number;
+    amount: string;
+    rawAmount: bigint;
+  };
+  tokenOut: {
+    poolTokensIndex: number;
+    amount: string;
+    rawAmount: bigint;
+  };
+  swapKind: SwapKind;
+};
+
+export type QuerySwapResponse = {
+  swapKind?: SwapKind;
+  expectedAmount?: TokenAmount;
+  minOrMaxAmount?: TokenAmount;
+  error?: QueryPoolActionError;
+};
+
+export type QueryJoinResponse = {
+  expectedBptOut?: TokenAmount;
+  minBptOut?: TokenAmount;
+  error?: QueryPoolActionError;
+};
+
+export type QueryExitResponse = {
+  expectedAmountsOut?: TokenAmount[];
+  minAmountsOut?: TokenAmount[];
+  error?: QueryPoolActionError;
 };
