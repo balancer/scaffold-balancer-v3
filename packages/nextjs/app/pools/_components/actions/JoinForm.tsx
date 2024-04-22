@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from "./";
 import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
@@ -17,7 +17,7 @@ const initialQueryResponse = {
  * 2. User approves the vault for the tokens used in the join transaction (if necessary)
  * 3. User sends transaction to join the pool
  */
-export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
+export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [queryResponse, setQueryResponse] = useState(initialQueryResponse);
   const [joinTxUrl, setJoinTxUrl] = useState<string | undefined>();
   const [sufficientAllowances, setSufficientAllowances] = useState(false);
@@ -41,13 +41,15 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const account = useAccount();
 
   useEffect(() => {
+    // Determine which tokens need to be approved
     async function determineTokensToApprove() {
       if (allowances) {
         const tokensNeedingApproval = tokenInputs.filter((token, index) => {
           const allowance = BigInt((allowances[index]?.result as string) || "0");
-          return allowance < token.rawAmount; // Check if allowance is less than required amount
+          return allowance < token.rawAmount;
         });
         setTokensToApprove(tokensNeedingApproval);
+        // Check if all tokens have sufficient allowances
         if (tokensNeedingApproval.length > 0) {
           setSufficientAllowances(false);
         } else {
@@ -55,7 +57,6 @@ export const JoinTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         }
       }
     }
-
     determineTokensToApprove();
   }, [tokenInputs, allowances]);
 

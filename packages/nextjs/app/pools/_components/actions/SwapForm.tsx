@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
+import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from "./";
 import { SwapKind, TokenAmount } from "@balancer/sdk";
 import { formatUnits, parseUnits } from "viem";
 import { useSwap } from "~~/hooks/balancer/";
@@ -54,11 +54,10 @@ const initialSwapConfig = {
  *
  * @notice using poolTokensIndex to reference the token in the pool
  */
-export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
+export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [queryResponse, setQueryResponse] = useState<SwapQueryResponse>(initialQueryResponse);
   const [isTokenInDropdownOpen, setTokenInDropdownOpen] = useState(false);
   const [isTokenOutDropdownOpen, setTokenOutDropdownOpen] = useState(false);
-  const [sufficientAllowance, setSufficientAllowance] = useState(false);
   const [swapTxUrl, setSwapTxUrl] = useState<string | undefined>();
   const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
   const [isApproving, setIsApproving] = useState(false);
@@ -75,14 +74,9 @@ export const SwapTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
   const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
 
-  // Verify user has sufficient allowance to perform the swap
-  useEffect(() => {
-    if (tokenInAllowance && tokenInAllowance >= swapConfig.tokenIn.rawAmount) {
-      setSufficientAllowance(true);
-    } else {
-      setSufficientAllowance(false);
-    }
-  }, [tokenInAllowance, swapConfig.tokenIn.rawAmount, pool.poolTokens, swapConfig.tokenIn.poolTokensIndex]);
+  const sufficientAllowance = useMemo(() => {
+    return tokenInAllowance && tokenInAllowance >= swapConfig.tokenIn.rawAmount;
+  }, [tokenInAllowance, swapConfig.tokenIn.rawAmount]);
 
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
     // Clean up UI to prepare for new query

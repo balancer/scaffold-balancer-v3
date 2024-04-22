@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from "./";
 import { TokenAmount } from "@balancer/sdk";
 import { formatUnits, parseUnits } from "viem";
 import { useExit } from "~~/hooks/balancer/";
@@ -24,7 +24,7 @@ const initialQueryResponse = {
  * 1. Query the results of exit transaction
  * 2. User sends transaction to exit the pool
  */
-export const ExitTab: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
+export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [bptIn, setBptIn] = useState(initialBptIn);
   const [exitTxUrl, setExitTxUrl] = useState<string | undefined>();
   const [queryResponse, setQueryResponse] = useState<ExitQueryResponse>(initialQueryResponse);

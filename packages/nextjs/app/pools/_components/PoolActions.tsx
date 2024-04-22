@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ExitTab, JoinTab, SwapTab } from "./actions";
+import { ExitForm, JoinForm, SwapForm } from "./actions";
 import { type Pool } from "~~/hooks/balancer/types";
 import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
 
@@ -17,9 +17,9 @@ export const PoolActions: React.FC<PoolActionsProps> = ({ pool, refetchPool }) =
   const [activeTab, setActiveTab] = useState<Action>("Swap");
 
   const tabs = {
-    Swap: <SwapTab pool={pool} refetchPool={refetchPool} />,
-    Join: <JoinTab pool={pool} refetchPool={refetchPool} />,
-    Exit: <ExitTab pool={pool} refetchPool={refetchPool} />,
+    Swap: <SwapForm pool={pool} refetchPool={refetchPool} />,
+    Join: <JoinForm pool={pool} refetchPool={refetchPool} />,
+    Exit: <ExitForm pool={pool} refetchPool={refetchPool} />,
   };
 
   return (

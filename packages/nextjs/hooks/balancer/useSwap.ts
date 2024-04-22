@@ -14,7 +14,7 @@ import {
 import { WriteContractResult } from "@wagmi/core";
 import { parseAbi } from "viem";
 import { useContractRead, useContractWrite, useWalletClient } from "wagmi";
-import { type SwapConfig } from "~~/app/pools/_components/actions/SwapTab";
+import { type SwapConfig } from "~~/app/pools/_components/actions/SwapForm";
 import { type Pool } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
