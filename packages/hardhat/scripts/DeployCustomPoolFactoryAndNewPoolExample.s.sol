@@ -44,13 +44,13 @@ contract DeployCustomPoolFactoryAndNewPoolExample is TestAddresses, HelperFuncti
 
 		// make sure to have proper token order (alphanumeric)
 		tokenConfig[0] = TokenConfig({
-			token: IERC20(address(scUSD)),
+			token: IERC20(address(scDAI)),
 			tokenType: TokenType.STANDARD,
 			rateProvider: IRateProvider(address(0)),
 			yieldFeeExempt: false
 		});
 		tokenConfig[1] = TokenConfig({
-			token: IERC20(address(scDAI)),
+			token: IERC20(address(scUSD)),
 			tokenType: TokenType.STANDARD,
 			rateProvider: IRateProvider(address(0)),
 			yieldFeeExempt: false
@@ -60,7 +60,7 @@ contract DeployCustomPoolFactoryAndNewPoolExample is TestAddresses, HelperFuncti
 		string memory symbol = "cBPT1";
 		bytes32 salt = convertNameToBytes32(name);
 		
-		// address newPool = customPoolFactory.create(name, symbol, tokenConfig, salt);
+		address newPool = customPoolFactory.create(name, symbol, tokenConfig, salt);
 
 		// /// initialize pool tx - TODO - see issue #26 requesting clarification from blabs on factory pools rqing registeration or not. BUT until then, you need to write up the appropriate params to get this script to compile.
 		

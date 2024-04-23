@@ -48,6 +48,8 @@ contract CustomPoolFactoryExample is BasePoolFactory {
             salt
         );
 
+
+        /// TODO - STEVE THIS IS WHERE YOU LEFT OFF. TRYING TO FIGURE OUT WHY THE NEW ERROR (SEE TRACE) OCCURS WITHIN REGISTERPOOL(). IT SHOWS AS AN EVM ERROR
         getVault().registerPool(
             pool,
             tokens,
