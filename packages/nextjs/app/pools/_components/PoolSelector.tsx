@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { type Address, isAddress } from "viem";
 import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
@@ -10,19 +11,22 @@ export const PoolSelector = ({
   setSelectedPoolAddress,
 }: {
   scaffoldPools: any;
-  setSelectedPoolAddress: (_: Address | undefined) => void;
+  setSelectedPoolAddress: (_: Address) => void;
 }) => {
   const [inputValue, setInputValue] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const router = useRouter();
+  const pathname = usePathname();
   const isValidAddress = isAddress(inputValue);
+
   return (
-    <section className="flex justify-center flex-wrap gap-5 w-full mb-5 items-center text-xl py-5 border-b border-t border-base-100">
+    <section className="flex justify-center flex-wrap gap-5 w-full mb-5 items-center text-xl py-5">
       <div className={`dropdown dropdown-end ${isDropdownOpen ? "dropdown-open" : ""}`}>
         <div
           tabIndex={0}
           role="button"
-          className="btn text-lg btn-accent w-96 font-normal relative"
+          className="btn btn-outline text-lg btn-neutral w-96 font-normal relative"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         >
           <div>Your scaffold pools</div> <ChevronDownIcon className="absolute top-4 right-5 w-5 h-5" />
@@ -53,6 +57,7 @@ export const PoolSelector = ({
         onSubmit={event => {
           event.preventDefault();
           setSelectedPoolAddress(inputValue);
+          router.push(`${pathname}?address=${inputValue}`);
           setInputValue("");
         }}
       >
