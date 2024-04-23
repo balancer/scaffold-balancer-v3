@@ -2,10 +2,11 @@ import { useMemo, useState } from "react";
 import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from ".";
 import { PoolActionsProps } from "../PoolActions";
 import { SwapKind } from "@balancer/sdk";
-import { formatUnits, parseUnits } from "viem";
+import { parseUnits } from "viem";
 import { useSwap } from "~~/hooks/balancer/";
 import { PoolActionTxUrl, QueryPoolActionError, QuerySwapResponse, SwapConfig } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
+import { formatToHuman } from "~~/utils/formatToHuman";
 
 const initialSwapConfig = {
   tokenIn: {
@@ -124,7 +125,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
           ...prevConfig,
           tokenOut: {
             ...prevConfig.tokenOut,
-            amount: Number(formatUnits(rawExpectedAmount, tokenOut.decimals)).toFixed(4),
+            amount: formatToHuman(rawExpectedAmount, tokenOut.decimals),
             rawAmount: rawExpectedAmount,
           },
         }));
@@ -133,7 +134,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
           ...prevConfig,
           tokenIn: {
             ...prevConfig.tokenIn,
-            amount: Number(formatUnits(rawExpectedAmount, tokenIn.decimals)).toFixed(4),
+            amount: formatToHuman(rawExpectedAmount, tokenIn.decimals),
             rawAmount: rawExpectedAmount,
           },
         }));
@@ -185,8 +186,8 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         tokenDropdownOpen={isTokenInDropdownOpen}
         setTokenDropdownOpen={setTokenInDropdownOpen}
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenIn.symbol)}
-        allowance={Number(formatUnits(tokenInAllowance ?? 0n, tokenIn.decimals)).toFixed(4)}
-        balance={Number(formatUnits(tokenInBalance ?? 0n, tokenIn.decimals)).toFixed(4)}
+        allowance={formatToHuman(tokenInAllowance ?? 0n, tokenIn.decimals)}
+        balance={formatToHuman(tokenInBalance ?? 0n, tokenIn.decimals)}
         isHighlighted={queryResponse?.swapKind === SwapKind.GivenIn}
       />
       <TokenField
@@ -226,18 +227,14 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
           <div className="flex flex-wrap justify-between mb-3">
             <div className="font-bold">Expected</div>
             <div className="text-end">
-              <div className="font-bold">
-                {Number(formatUnits(expectedAmount.amount, expectedAmount.token.decimals)).toFixed(4)}
-              </div>
+              <div className="font-bold">{formatToHuman(expectedAmount.amount, expectedAmount.token.decimals)}</div>
               <div className="text-sm">{expectedAmount.amount.toString()}</div>
             </div>
           </div>
           <div className="flex flex-wrap justify-between">
             <div className="font-bold">{queryResponse?.swapKind === SwapKind.GivenIn ? "Minumum" : "Maximum"}</div>
             <div className="text-end">
-              <div className="font-bold">
-                {Number(formatUnits(minOrMaxAmount.amount, minOrMaxAmount.token.decimals)).toFixed(4)}
-              </div>
+              <div className="font-bold">{formatToHuman(minOrMaxAmount.amount, minOrMaxAmount.token.decimals)}</div>
               <div className="text-sm">{minOrMaxAmount.amount.toString()}</div>
             </div>
           </div>

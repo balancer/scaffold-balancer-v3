@@ -7,6 +7,7 @@ import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { useJoin } from "~~/hooks/balancer/";
 import { PoolActionTxUrl, QueryJoinResponse, QueryPoolActionError } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
+import { formatToHuman } from "~~/utils/formatToHuman";
 
 /**
  * 1. Query the results of join transaction
@@ -134,13 +135,8 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
               formatUnits(token.rawAmount, token.decimals) === "0" ? "" : formatUnits(token.rawAmount, token.decimals)
             }
             onAmountChange={value => handleInputChange(index, value)}
-            allowance={
-              allowances && Number(formatUnits((allowances[index].result as bigint) || 0n, token.decimals)).toFixed(4)
-            }
-            balance={
-              tokenBalances &&
-              Number(formatUnits((tokenBalances[index].result as bigint) || 0n, token.decimals)).toFixed(4)
-            }
+            allowance={allowances && formatToHuman((allowances[index].result as bigint) || 0n, token.decimals)}
+            balance={tokenBalances && formatToHuman((tokenBalances[index].result as bigint) || 0n, token.decimals)}
           />
         ))}
       </div>
@@ -170,16 +166,14 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
           <div className="flex flex-wrap justify-between mb-3">
             <div className="font-bold">Expected</div>
             <div className="text-end">
-              <div className="font-bold">
-                {Number(formatUnits(BigInt(expectedBptOut.amount), pool.decimals)).toFixed(4)}
-              </div>
+              <div className="font-bold">{formatToHuman(BigInt(expectedBptOut.amount), pool.decimals)}</div>
               <div className="text-sm">{expectedBptOut.amount.toString()}</div>
             </div>
           </div>
           <div className="flex flex-wrap justify-between">
             <div className="font-bold">Minimum</div>
             <div className="text-end">
-              <div className="font-bold">{Number(formatUnits(BigInt(minBptOut.amount), pool.decimals)).toFixed(4)}</div>
+              <div className="font-bold">{formatToHuman(BigInt(minBptOut.amount), pool.decimals)}</div>
               <div className="text-sm">{minBptOut.amount.toString()}</div>
             </div>
           </div>

@@ -1,5 +1,5 @@
-import { formatUnits } from "viem";
 import { type Pool } from "~~/hooks/balancer/types";
+import { formatToHuman } from "~~/utils/formatToHuman";
 
 /**
  * Display a pool's token composition including the tokens' symbols, names, and balances
@@ -23,9 +23,7 @@ export const PoolComposition = ({ pool }: { pool: Pool }) => {
                   <div className="text-sm">{token.name}</div>
                 </div>
                 <div className="text-end">
-                  <div className="font-bold text-end">
-                    {Number(formatUnits(token.balance, token.decimals)).toFixed(4)}
-                  </div>
+                  <div className="font-bold text-end">{formatToHuman(token.balance, token.decimals)}</div>
                   <div className="text-sm">{token.balance.toString()}</div>
                 </div>
               </div>

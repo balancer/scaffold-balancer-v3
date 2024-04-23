@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { type TokenAmount } from "@balancer/sdk";
-import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import { useExit } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
+import { formatToHuman } from "~~/utils/formatToHuman";
 
 /**
  * If there is a connected user, display their liquidity within the pool
@@ -44,7 +44,7 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
               <div className="text-sm">{pool.name}</div>
             </div>
             <div className="text-end">
-              <div className="font-bold">{Number(formatUnits(pool.userBalance || 0n, pool.decimals)).toFixed(4)}</div>
+              <div className="font-bold">{formatToHuman(pool.userBalance ?? 0n, pool.decimals)}</div>
               <div className="text-sm">{pool.userBalance?.toString()}</div>
             </div>
           </div>
@@ -58,9 +58,7 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
 
                 <div className="text-end">
                   <div className="font-bold text-end">
-                    {expectedAmountsOut
-                      ? Number(formatUnits(expectedAmountsOut[index].amount, token.decimals)).toFixed(2)
-                      : "0.0000"}
+                    {expectedAmountsOut ? formatToHuman(expectedAmountsOut[index].amount, token.decimals) : "0.0000"}
                   </div>
                   <div className="text-sm">
                     {expectedAmountsOut ? expectedAmountsOut[index].amount.toString() : "0"}

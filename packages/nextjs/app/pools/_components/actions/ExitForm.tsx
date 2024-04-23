@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { formatUnits, parseUnits } from "viem";
+import { parseUnits } from "viem";
 import { useExit } from "~~/hooks/balancer/";
 import { PoolActionTxUrl, QueryExitResponse, QueryPoolActionError } from "~~/hooks/balancer/types";
+import { formatToHuman } from "~~/utils/formatToHuman";
 
 const initialBptIn = {
   rawAmount: 0n, // needed for precision to allow max exit
@@ -59,7 +60,7 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const setMaxAmount = () => {
     setBptIn({
       rawAmount: pool.userBalance,
-      displayValue: Number(formatUnits(pool.userBalance || 0n, pool.decimals)).toFixed(4),
+      displayValue: formatToHuman(pool.userBalance || 0n, pool.decimals),
     });
     setQueryResponse(null);
   };
@@ -73,7 +74,7 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         tokenSymbol={pool.symbol}
         value={bptIn.displayValue}
         onAmountChange={handleAmountChange}
-        balance={Number(formatUnits(pool.userBalance, pool.decimals)).toFixed(4)}
+        balance={formatToHuman(pool.userBalance, pool.decimals)}
         setMaxAmount={setMaxAmount}
       />
 
