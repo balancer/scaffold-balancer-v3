@@ -6,6 +6,12 @@
 
 It uses example contracts for a custom pool, custom pool factory, test files, and deployment scripts. The core idea is to help educate developers with creating custom pools and integrating with BalancerV3, and to provide a starting point for developers to create their own custom pools and factories.
 
+This repo carries this goal out by providing the following things:
+
+1. A README to walk a dev through using the different functionalities of the repo.
+2. A front-end prototyping tool, example smart contracts and scripts, to help showcase simple integrations with Balancer's core architecture.
+3. Use of the same front-end framework with your own custom pools, and walking you through how to do so using the example smart contracts and scripts to start.
+
 ✏️ The agenda of this README is listed below:
 
 0. **Checkpoint 0** - 📚 Setup of the environment.
@@ -50,11 +56,17 @@ yarn start
 
 ### 0.3 Set Environment Variables
 
-In order to deploy new custom pool contracts on sepolia and execute scripts, you must set a `DEPLOYER_PRIVATE_KEY` at the path `packagages/hardhat/.env` (And your PK must have testnet sepolia ETH)
+In order to deploy new custom pool contracts on sepolia and execute scripts, you must set a `DEPLOYER_PRIVATE_KEY` at the path `packagages/hardhat/.env` (And your private key must have testnet sepolia ETH).
+
+Now that your environment is set up we can move onto deploying the example custom pool provided with this repo. It is a simple pool with a "Constant Sum" invariant.
 
 ## Checkpoint 1: 🌊 Create A Custom Pool
 
-This checkpoint is all about creating a custom pool, registering it with the BalancerV3 Vault, and initializing it. It is focused on giving you as a dev a scaffolding kit to play with your custom pool.
+This repo comes with example scripts and smart contracts for a constant sum custom pool. The scripts have been constructed to deploy the example contract so you can interact with the pool using the front end tool. 
+
+This checkpoint is all about creating a custom pool, registering it with the BalancerV3 Vault, and initializing it.
+
+TODO - STEVE THIS IS WHERE YOU LEFT OFF, YOU'RE LOOKING TO GO THROUGH THE ENTIRE README AND WRITE IN THE SECTIONS YOU THINK SHOULD BE IN HERE.
 
 ### 1.1 Write a Custom Pool Contract
 

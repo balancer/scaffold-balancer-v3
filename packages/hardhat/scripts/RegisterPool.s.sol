@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.18;
 
-import { Script, console } from "forge-std/Script.sol";
 import { IERC20 } from "../contracts/interfaces/IVaultExtension.sol";
 import { LiquidityManagement, IRateProvider, PoolHooks, TokenConfig, TokenType } from "../contracts/interfaces/VaultTypes.sol";
 import {TestAddresses} from "../test/utils/TestAddresses.sol";
