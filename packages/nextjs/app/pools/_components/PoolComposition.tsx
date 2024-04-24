@@ -1,12 +1,12 @@
-import { formatUnits } from "viem";
 import { type Pool } from "~~/hooks/balancer/types";
+import { formatToHuman } from "~~/utils/formatToHuman";
 
 /**
  * Display a pool's token composition including the tokens' symbols, names, and balances
  */
 export const PoolComposition = ({ pool }: { pool: Pool }) => {
   // if pool is not registered, it won't have any pool tokens to display
-  if (!pool?.poolConfig?.isPoolRegistered) {
+  if (!pool.poolConfig?.isPoolRegistered) {
     return null;
   }
   return (
@@ -15,13 +15,6 @@ export const PoolComposition = ({ pool }: { pool: Pool }) => {
         <h5 className="text-xl font-bold mb-3">Pool Composition</h5>
 
         <div className="border border-base-100 rounded-lg">
-          <div className="flex justify-between items-center border-base-100 border-b p-3">
-            <div>
-              <div className="font-bold">{pool?.symbol}</div>
-              <div className="text-sm">{pool?.name}</div>
-            </div>
-            <div>{formatUnits(pool.totalSupply, pool.decimals)}</div>
-          </div>
           <div className="p-3 flex flex-col gap-3">
             {pool.poolTokens.map((token: any) => (
               <div key={token.address} className="flex justify-between items-center">
@@ -29,8 +22,9 @@ export const PoolComposition = ({ pool }: { pool: Pool }) => {
                   <div className="font-bold">{token.symbol}</div>
                   <div className="text-sm">{token.name}</div>
                 </div>
-                <div>
-                  <div className="flex justify-end">{formatUnits(token.balance, token.decimals)}</div>
+                <div className="text-end">
+                  <div className="font-bold text-end">{formatToHuman(token.balance, token.decimals)}</div>
+                  <div className="text-sm">{token.balance.toString()}</div>
                 </div>
               </div>
             ))}
