@@ -40,7 +40,6 @@ contract DeployCustomPoolFromFactoryExample is
 		vm.startBroadcast(deployerPrivateKey);
 
 		/// Vars specific to creating a pool from your custom pool factory on testnet.
-		/// NOTE: This example generates new fake tokens to use, though in real networks and applications you likely will use pre-existing ERC20s. You may need to be wary that the pool factory can only have one pool for one pair with specific token configs. Previous to running this script, we run a script that creates a factory, and deploys a pool with the below fake tokens, so some internal reversions may occur on some networks. TODO - investigate with Balancer on this.
 		FakeTestERC20 scUSD = new FakeTestERC20(
 			"Scaffold Balancer Test Token #1",
 			"scUSD"
@@ -67,6 +66,7 @@ contract DeployCustomPoolFromFactoryExample is
 		});
 
 		string memory name = "Example Custom Balancer Constant Price Pool #2"; // TODO - Make sure to change the name to avoid collisions, this will occur if you run this script more than once without changing the name here.
+
 		string memory symbol = "cBPT1";
 		bytes32 salt = convertNameToBytes32(name);
 
@@ -81,8 +81,6 @@ contract DeployCustomPoolFromFactoryExample is
 
 		{
 			/// Initialize Pool via Router
-			/// approvals: NOTE that balancer uses permit2, but their dependency doesn't work so I need to investigate this.
-
 			approveForSender(); 
 			approveForPool(IERC20(newPool));
 
@@ -103,13 +101,11 @@ contract DeployCustomPoolFromFactoryExample is
 		for (uint256 i = 0; i < tokens.length; ++i) {
 			tokens[i].approve(address(router), type(uint256).max);
 			tokens[i].approve(address(vault), type(uint256).max);
-			// permit2.approve(address(tokens[i]), address(batchRouter), type(uint160).max, type(uint48).max);
 		}
 	}
 
 	function approveForPool(IERC20 bpt) internal {
 		bpt.approve(address(router), type(uint256).max);
 		bpt.approve(address(vault), type(uint256).max);
-		// bpt.approve(address(batchRouter), type(uint256).max);
 	}
 }

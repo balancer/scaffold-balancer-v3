@@ -20,7 +20,6 @@ import { IRouter } from "../contracts/interfaces/IRouter.sol";
  * @dev This script uses testERC20 contracts to instantly mint 1000 of each test token to deployer wallet.
  * @dev to run sim for script, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFactoryAndNewPoolExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
  * @dev to run the actual script on Sepolia network, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFactoryAndNewPoolExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast`
-
  */
 contract DeployCustomPoolFactoryAndNewPoolExample is
 	TestAddresses,
@@ -62,13 +61,13 @@ contract DeployCustomPoolFactoryAndNewPoolExample is
 		TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
 
 		// make sure to have proper token order (alphanumeric)
-		tokenConfig[0] = TokenConfig({
+		tokenConfig[1] = TokenConfig({
 			token: IERC20(address(scDAI)),
 			tokenType: TokenType.STANDARD,
 			rateProvider: IRateProvider(address(0)),
 			yieldFeeExempt: false
 		});
-		tokenConfig[1] = TokenConfig({
+		tokenConfig[0] = TokenConfig({
 			token: IERC20(address(scUSD)),
 			tokenType: TokenType.STANDARD,
 			rateProvider: IRateProvider(address(0)),
@@ -90,10 +89,8 @@ contract DeployCustomPoolFactoryAndNewPoolExample is
 		userData = bytes("");
 
 		{
-			/// approvals: NOTE that balancer uses permit2, but their dependency doesn't work so I need to investigate this.
-
-			approveForSender(); // approve for sender
-			approveForPool(IERC20(newPool)); // approve for pool
+			approveForSender();
+			approveForPool(IERC20(newPool));
 
 			router.initialize(
 				newPool,
@@ -105,7 +102,7 @@ contract DeployCustomPoolFactoryAndNewPoolExample is
 			); // Initializes a registered pool by adding liquidity; mints BPT tokens for the first time in exchange.
 		}
 
-		console.log("Factory Address: %s", address(customPoolFactory)); // TODO - delete temporary console checking how much BPT was returned once we know it works.
+		console.log("Factory Address: %s", address(customPoolFactory)); // address generated to be used within `DeployCustomPoolFromFactoryExample.s.sol`
 
 		vm.stopBroadcast();
 	}
