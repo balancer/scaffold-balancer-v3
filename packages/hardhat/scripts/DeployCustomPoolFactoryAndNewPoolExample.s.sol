@@ -15,9 +15,6 @@ import { IRouter } from "../contracts/interfaces/IRouter.sol";
  * @title DeployCustomPoolFactoryAndNewPoolExample Script
  * @author BUIDL GUIDL (placeholder)
  * @notice The script, using the `.env` specified deployer wallet, deploys the custom pool factory (currently the constant price custom pool), creates a new pool with it, registers the new pool with the BalancerV3 Vault on sepolia, and initializes it. It does all of this so it is ready to use with the ScaffoldBalancer front end tool.
- * @dev TODO - See issue #26 Questions specific to this solidity file.
- * @dev See TODO below; make sure to rename and edit the `CustomPoolFactoryExample.sol` with your own pool type, respectively.
- * @dev This script uses testERC20 contracts to instantly mint 1000 of each test token to deployer wallet.
  * @dev to run sim for script, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFactoryAndNewPoolExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
  * @dev to run the actual script on Sepolia network, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFactoryAndNewPoolExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast`
  */
@@ -52,7 +49,7 @@ contract DeployCustomPoolFactoryAndNewPoolExample is
 		FakeTestERC20 scUSD = new FakeTestERC20(
 			"Scaffold Balancer Test Token #1",
 			"scUSD"
-		);
+		); // This script uses FakeTestERC20 contracts to instantly mint 1000 of each test token to deployer wallet. 
 		FakeTestERC20 scDAI = new FakeTestERC20(
 			"Scaffold Balancer Test Token #2",
 			"scDAI"

@@ -13,8 +13,9 @@ import { BasePoolFactory } from "./BasePoolFactory.sol";
 import {ConstantPricePool} from "./ConstantPricePool.sol";
 
 /**
- * @notice General Stable Pool factory
- * @dev This is the most general factory, which allows up to four tokens.
+ * @title Example Custom Pool Factory Using Constant Price Invariant
+ * @author BUIDL GUIDL
+ * @notice This is an example Custom Pool Factory Implementation, is not ready for production, and should not be used in production. It is simply an example for developers to reference when creating their own custom pool, custom pool factory, etc. with BalancerV3.
  */
 contract CustomPoolFactoryExample is BasePoolFactory {
     // solhint-disable not-rely-on-time
@@ -48,8 +49,7 @@ contract CustomPoolFactoryExample is BasePoolFactory {
             salt
         );
 
-
-        /// TODO - STEVE THIS IS WHERE YOU LEFT OFF. TRYING TO FIGURE OUT WHY THE NEW ERROR (SEE TRACE) OCCURS WITHIN REGISTERPOOL(). IT SHOWS AS AN EVM ERROR
+        // Call registerPool from the vault. See `IVaultExtension.sol` for details on `registerPool()`
         getVault().registerPool(
             pool,
             tokens,
@@ -68,6 +68,6 @@ contract CustomPoolFactoryExample is BasePoolFactory {
             LiquidityManagement({ supportsAddLiquidityCustom: false, supportsRemoveLiquidityCustom: false })
         );
 
-        _registerPoolWithFactory(pool);
+        _registerPoolWithFactory(pool); // register pool with respective factory (example facotry that was created in a previous tx, if using this repo it would've likely been from `DeployCustomPoolFactoryAndNewPoolExample.s.sol` script being ran).
     }
 }

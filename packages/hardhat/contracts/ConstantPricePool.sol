@@ -6,9 +6,9 @@ import "./interfaces/IBasePool.sol";
 import "./vault/BalancerPoolToken.sol";
 
 /**
- * @title Example ConstantPricePool
+ * @title Example Custom Pool Implementation Using Constant Price Invariant
  * @author BUIDL GUIDL
- * @notice CURRENTLY A WIP. This is an example custom pool implementation used.
+ * @notice This is an example Custom Pool Implementation, is not ready for production, and should not be used in production. It is simply an example for developers to reference when creating their own custom pool, custom pool factory, etc. with BalancerV3.
  */
 contract ConstantPricePool is IBasePool, BalancerPoolToken {
 	constructor(

@@ -16,7 +16,6 @@ import { IRouter } from "../contracts/interfaces/IRouter.sol";
  * @author BUIDL GUIDL (placeholder)
  * @notice The script, using the `.env` specified deployer wallet, creates new pools from a pre-existing custom pool factory (adhering to the Constant Price Pool example by default). 
  * @dev You need to assign the appropriate custom pool factory address (and associated dependencies / params requirements). This script is to be used after DeployCustomPoolFactoryAndNewPoolExample.s.sol.  It does all of this so the new pool is ready to use with the ScaffoldBalancer front end tool.
- * @dev This script uses testERC20 contracts to instantly mint 1000 of each test token to deployer wallet.
  * @dev to run sim for script, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFromFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
  */
 contract DeployCustomPoolFromFactoryExample is
@@ -43,7 +42,7 @@ contract DeployCustomPoolFromFactoryExample is
 		FakeTestERC20 scUSD = new FakeTestERC20(
 			"Scaffold Balancer Test Token #1",
 			"scUSD"
-		);
+		); // This script uses FakeTestERC20 contracts to instantly mint 1000 of each test token to deployer wallet. 
 		FakeTestERC20 scDAI = new FakeTestERC20(
 			"Scaffold Balancer Test Token #2",
 			"scDAI"
