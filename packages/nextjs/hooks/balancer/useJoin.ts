@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { AddLiquidity, AddLiquidityInput, AddLiquidityKind, BalancerApi, InputAmount, Slippage } from "@balancer/sdk";
+import {
+  AddLiquidity,
+  AddLiquidityInput,
+  AddLiquidityKind,
+  InputAmount,
+  OnChainProvider,
+  PoolState,
+  Slippage,
+} from "@balancer/sdk";
 import { parseAbi } from "viem";
 import { useContractReads, usePublicClient, useWalletClient } from "wagmi";
 import { Pool, PoolActionTxUrl, QueryJoinResponse } from "~~/hooks/balancer/types";
@@ -32,9 +40,9 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
       const rpcUrl = publicClient?.chain.rpcUrls.default.http[0] as string;
       const slippage = Slippage.fromPercentage("1"); // 1%
 
-      // API used to fetch relevant pool data for addLiquidity.query
-      const balancerApi = new BalancerApi("https://backend-v3-canary.beets-ftm-node.com/graphql", chainId);
-      const poolState = await balancerApi.pools.fetchPoolState(pool.address.toLowerCase());
+      const onchainProvider = new OnChainProvider(rpcUrl, chainId);
+      const poolId = pool.address as `0x${string}`;
+      const poolState: PoolState = await onchainProvider.pools.fetchPoolState(poolId, "CustomPool");
 
       // Construct the addLiquidity input object
       const addLiquidityInput: AddLiquidityInput = {
@@ -75,7 +83,7 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
       const txHashPromise = () =>
         walletClient.sendTransaction({
           account: walletClient.account,
-          data: call.call,
+          data: call.callData,
           to: call.to,
           value: call.value,
         });

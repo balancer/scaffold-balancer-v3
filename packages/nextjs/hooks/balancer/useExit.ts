@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
-  BalancerApi,
   InputAmount,
+  OnChainProvider,
   PoolState,
   RemoveLiquidity,
   RemoveLiquidityInput,
@@ -35,8 +35,9 @@ export const useExit = (pool: Pool): PoolExitFunctions => {
       const rpcUrl = publicClient?.chain.rpcUrls.default.http[0] as string;
       const slippage = Slippage.fromPercentage("1"); // 1%
 
-      const balancerApi = new BalancerApi("https://backend-v3-canary.beets-ftm-node.com/graphql", chainId);
-      const poolState: PoolState = await balancerApi.pools.fetchPoolState(pool.address.toLowerCase());
+      const onchainProvider = new OnChainProvider(rpcUrl, chainId);
+      const poolId = pool.address as `0x${string}`;
+      const poolState: PoolState = await onchainProvider.pools.fetchPoolState(poolId, "CustomPool");
 
       // Construct the RemoveLiquidityInput, in this case a RemoveLiquiditySingleTokenExactIn
       const bptIn: InputAmount = {
@@ -82,7 +83,7 @@ export const useExit = (pool: Pool): PoolExitFunctions => {
       const txHashPromise = () =>
         walletClient.sendTransaction({
           account: walletClient.account,
-          data: call.call,
+          data: call.callData,
           to: call.to,
           value: call.value,
         });
