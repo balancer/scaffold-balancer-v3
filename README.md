@@ -6,21 +6,27 @@
 
 It uses example contracts for a custom pool, custom pool factory, test files, and deployment scripts. The core idea is to help educate developers with creating custom pools and integrating with BalancerV3, and to provide a starting point for developers to create their own custom pools and factories.
 
-This repo carries this goal out by providing the following things:
+When users clone this repo "off-the-shelf" they simply have to follow the environment setup instructions, run a few commands, and then they will have an example custom pool factory, and custom pools that they can interact with in a local front end. This README walks a user through the ins and outs of these example custom pool contracts. Once a user has gone through these example contracts, they can then use them as starting templates to create their own custom pool factories and pools.
 
-1. A README to walk a dev through using the different functionalities of the repo.
+The ability to interact with your own custom pool in a local front end is powerful as the front end is based on the same SDK and APIs / Subgraphs that Balancer as a protocol uses. 
+
+To expand on this, let's outline what this repo provides in more detail:
+
+1. A README to walk a dev through using the different functionalities of the repo. 
 2. A front-end prototyping tool, example smart contracts and scripts, to help showcase simple integrations with Balancer's core architecture.
 3. Use of the same front-end framework with your own custom pools, and walking you through how to do so using the example smart contracts and scripts to start.
 
 ✏️ The agenda of this README is listed below:
 
 0. **Checkpoint 0** - 📚 Setup of the environment.
-1. **Checkpoint 1** - 🌊 Creating a custom pool, registering, initializing it with balancerV3 vault, and interacting with it.
-2. **Checkpoint 2** - 🔧 Creating a custom pool factory, deploying it, and generating a pool from it that you can interact with.
+1. **Checkpoint 1** - 🌊 Creating a custom pool smart contract.
+2. **Checkpoint 2** - 🔧 Creating a custom pool factory, deploying it, and generating said pool from it that you can interact with using the front end in your local host.
 3. **Checkpoint 3** - 🧪 Writing Typical Unit and Fuzz Tests for Custom Pool Example
 4. **Checkpoint 4** - 🎨 Creating Your Own Custom Pool with the Template Files
 5. **Checkpoint 5** - 📡 Integrate pool with the Balancer v3 Subgraph
 6. **Checkpoint 6** - 🧭 Integrate pool with the Smart Order Router (SOR)
+
+In general, all smart contracts sections of this repo will already have `Example` smart contracts. These smart contract examples will be explained within this README.
 
 ## Checkpoint 0: 📦 Environment 📚
 
@@ -58,86 +64,168 @@ yarn start
 
 In order to deploy new custom pool contracts on sepolia and execute scripts, you must set a `DEPLOYER_PRIVATE_KEY` at the path `packagages/hardhat/.env` (And your private key must have testnet sepolia ETH).
 
-Now that your environment is set up we can move onto deploying the example custom pool provided with this repo. It is a simple pool with a "Constant Sum" invariant.
+Now that your environment is set up we can move onto the rest of the README focused on creating & deploying the example custom pool provided with this repo. It is a simple pool with a "Constant Sum" invariant.
 
-## Checkpoint 1: 🌊 Create A Custom Pool
+> If you would like to skip ahead to generating said Constant Sum Custom Pool with a factory, expand the toggle below, and run the following commands.
 
-This repo comes with example scripts and smart contracts for a constant sum custom pool. The scripts have been constructed to deploy the example contract so you can interact with the pool using the front end tool. 
+<details markdown='1'><summary>👩🏽‍🏫 Scripts to Just Get Custom Pool Examples and Play with Front End Tool </summary>
 
-This checkpoint is all about creating a custom pool, registering it with the BalancerV3 Vault, and initializing it.
+This script, using the `.env` specified deployer wallet, deploys the custom pool factory (currently the constant price custom pool), creates a new pool with it, registers the new pool with the BalancerV3 Vault on sepolia, and initializes it. It does all of this so it is ready to use with the ScaffoldBalancer front end tool.
 
-TODO - STEVE THIS IS WHERE YOU LEFT OFF, YOU'RE LOOKING TO GO THROUGH THE ENTIRE README AND WRITE IN THE SECTIONS YOU THINK SHOULD BE IN HERE.
+```
+source .env && forge script scripts/DeployCustomPoolFactoryAndNewPoolExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast
+```
+
+The script, using the `.env` specified deployer wallet, creates new pools from a pre-existing custom pool factory (adhering to the Constant Price Pool example by default). 
+
+> You will need to go into `DeployCustomPoolFromFactoryExample.s.sol` to assign the customPoolFactory address that you can get from the console logs from running the last script. 
+
+```
+source .env && forge script scripts/DeployCustomPoolFromFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast
+```
+
+Now you can take the addresses of the pools created and simply copy and paste them into the front end to interact with said pools.
+
+TODO @matt - Showcase the front end at a high level (showing, with a pool address input already, the possible interactions you can do with it).
+
+</details>
+
+## Checkpoint 1: 🌊 Create A Custom Pool - TODO @matt, we need to decide to keep this or not since we are mainly deploying through a factory now. 
+
+Ultimately, this repo can be used to create custom pool factories,  custom pools from said factory, and register and initialize them so the pools can be interacted with using this repo's front end, all in a local environment. Before jumping into all of that, it is key that developers understand the general make-up of a custom pool.
+
+Therefore, this checkpoint focuses on writing the smart contract for a custom pool (without a factory). We will walk through the `ConstantPricePoolExample.sol` found within `packages/hardhat/contracts/ConstantPricePoolExample.sol`.
 
 ### 1.1 Write a Custom Pool Contract
 
-- All custom pool contracts must inherit from `IBasePool` and `BalancerPoolToken` and impliment the three required functions: `onSwap`, `computeInvariant`, and `computeBalance`
+- All custom pool contracts must inherit from `IBasePool` and `BalancerPoolToken` and implement the three required functions: `onSwap`, `computeInvariant`, and `computeBalance`
 
-- Begin your journey by reading the [docs on creating a custom pool](https://docs-v3.balancer.fi/concepts/guides/create-custom-amm-with-novel-invariant.html#build-your-custom-amm)
+- Begin your journey by reading the [docs on creating a custom pool](https://docs-v3.balancer.fi/concepts/guides/create-custom-amm-with-novel-invariant.html#build-your-custom-amm).
 
-### 1.2 Modify the Deploy Script
+- TODO --> input more details
 
-- You must modify the deploy script to match your custom pool contract names and constructor arguments
-- Deploy scripts can be found at `packages/hardhat/deploy`
+Let's walk through each function in `ConstantPricePoolExample.sol`
 
-### 1.3 Deploying your Custom Pool
+#### 1.1.1 `onSwap()` Implementation - TODO
 
-- Run the deploy script
+- Looking at monorepo, one sees that `onSwap()` is ultimately called to return a value that ...
 
-```
-yarn deploy --network sepolia
-```
+- In the case of the Constant Price Pool example, you can see that the amountCalculatedScaled18 is simply the amountGivenScaled18.
 
-👀 Notice that whenever you deploy new contract the scaffold eth frontend will automatically update to point at the newly deployed contract
+> **Recall the architecture of BalancerV3, and how each custom pool function is called throughout the typical transactions carried out within the protocol.**
 
-### 1.4 Register a new pool with the Vault
-
-#### 1.4.1 Using Hardhat
-
-Before a pool can be initialized, it must be registered with the Vault. This is the step where the pool declares what tokens it will manage, which hooks the pool supports, and other configuration.
-
-1. Modify the `registerPool.ts` script and `helper.config.ts` file with your desired `registerPool` args
-   - [👀 docs on `VaultExtension.registerPool`](https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#registerpool)
-2. From the terminal, move into the `packages/hardhat` directory.
-3. Execute the script
+--- 
+<details markdown='1'><summary>👩🏽‍🏫 Solution Code for `onSwap` functions </summary>
+Inside `ConstantPricePoolExample.sol`
 
 ```
-yarn hardhat run scripts/registerPool.ts --network sepolia
-```
-
-### 1.4.2 Using Foundry
-<!-- 3. Install any submodules. If you have not installed the submodules, probably because you ran `git clone <repo link>`, you may run into errors when running `forge build` since it is looking for the dependencies for the project. `git submodule update --init --recursive` can be used if you clone the repo without installing the submodules. -->
-
-
-1. While still in the same directory, install forge on your machine if you have not already: `forge install`
-
-
-  > NOTE: If you need to download the latest version of foundry, just run `foundryup`
-
-2. Run the following CLI command (assuming `.env` is populated appropriately) to simulate registering the pool in question with the vault.
-
-`source .env && forge script scripts/RegisterPool.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
-
-3. Run the following CLI command to deploy the script.
-
-`source .env && forge script scripts/RegisterPool.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast`
-
-### 1.5 Initialize the Pool
-
-1. Modify the `initializePool.ts` script with your desired `initialize` args
-
-   - [👀 docs on`Router.initialize`](https://docs-v3.balancer.fi/concepts/router/overview.html#initialize)
-
-2. From the terminal, move into the `packages/hardhat` directory and execute the script
+   /**
+	 * @notice Execute a swap in the pool.
+	 * @param params Swap parameters
+	 * @return amountCalculatedScaled18 Calculated amount for the swap
+	 */
+	function onSwap(
+		SwapParams calldata params
+	) external pure returns (uint256 amountCalculatedScaled18) {
+		amountCalculatedScaled18 = params.amountGivenScaled18;
+	}
 
 ```
-yarn hardhat run scripts/initializePool.ts --network sepolia
+
+</details>
+
+---
+#### 🥅 ** `onSwap()` Goals / Checks**
+
+
+- [ ] ❓ Can you describe how `onSwap()` works within the Balancer V3 monorepo architecture and thus how custom pools must accomodate said architecture?
+
+---
+#### 1.1.2 `computeInvariant()` Implementation TODO
+
+- Looking at monorepo, one sees that `computeInvariant()` is ultimately called to return the new invariant resulting from the specific details influencing the respective pool.
+- In this case, it is constant sum invariant that we simply need to create.
+
+> **Recall the architecture of BalancerV3, and how each custom pool function is called throughout the typical treansactions carried out within the protocol.**
+
+--- 
+<details markdown='1'><summary>👩🏽‍🏫 Solution Code for `computeInvariant()` function </summary>
+Inside `ConstantPricePoolExample.sol`
+
+```
+  /**
+	 * @notice Computes and returns the pool's invariant.
+	 * @dev This function computes the invariant based on current balances
+	 * @param balancesLiveScaled18 Array of current pool balances for each token in the pool, scaled to 18 decimals
+	 * @return invariant The calculated invariant of the pool, represented as a uint256
+	 */
+	function computeInvariant(
+		uint256[] memory balancesLiveScaled18
+	) public pure returns (uint256 invariant) {
+		invariant = balancesLiveScaled18[0] + balancesLiveScaled18[1];
+	}
+
 ```
 
-### 1.6 Interact with your custom pool
+</details>
 
-- On the `localhost:3000/pools` page, select your custom pool from the dropdown
-- Review the pool details and composition post pool initialization
-- Try out executing a swap, join, and exit with your custom pool
+---
+#### 🥅 ** `computeInvariant()` Goals / Checks**
+
+
+- [ ] ❓ Can you describe how `computeInvariant()` works within the Balancer V3 monorepo architecture and thus how custom pools must accomodate said architecture?
+
+---
+
+#### 1.1.2 `computeBalance()` Implementation TODO
+
+- Looking at monorepo, one sees that `computeBalance()` is ultimately called to return the new balance of a token after an operation, given the invariant growth ratio and all other balances.
+- In this case, it is constant sum invariant that we simply need to create.
+
+> **Recall the architecture of BalancerV3, and how each custom pool function is called throughout the typical transactions carried out within the protocol.**
+
+--- 
+<details markdown='1'><summary>👩🏽‍🏫 Solution Code for `computeBalance()` function </summary>
+Inside `ConstantPricePoolExample.sol`
+
+```
+  /**
+	 * @dev Computes the new balance of a token after an operation, given the invariant growth ratio and all other
+	 * balances.
+	 * @param balancesLiveScaled18 Current live balances (adjusted for decimals, rates, etc.)
+	 * @param tokenInIndex The index of the token we're computing the balance for, in token registration order
+	 * @param invariantRatio The ratio of the new invariant (after an operation) to the old
+	 * @return newBalance The new balance of the selected token, after the operation
+	 */
+	function computeBalance(
+		uint256[] memory balancesLiveScaled18,
+		uint256 tokenInIndex,
+		uint256 invariantRatio
+	) external pure returns (uint256 newBalance) {
+		uint256 invariant = computeInvariant(balancesLiveScaled18);
+
+		newBalance =
+			(balancesLiveScaled18[tokenInIndex] +
+				invariant *
+				(invariantRatio)) -
+			invariant;
+	}
+
+```
+
+</details>
+
+---
+#### 🥅 ** `computeBalance()` Goals / Checks**
+
+
+- [ ] ❓ Can you describe how `computeBalance()` works within the Balancer V3 monorepo architecture and thus how custom pools must accomodate said architecture?
+
+---
+
+💡 Now we have walked through a basic custom pool construction, let's get into how the custom pool factory contracts work. 
+
+<!-- TODO - STEVE THIS IS WHERE YOU LEFT OFF -->
 
 ## Checkpoint 2: 🔧 Create a custom pool factory
 
@@ -187,6 +275,12 @@ Pools can also be created using the Debug Tab, theoretically. Currently SE-2 has
 That said, this section outlines how one would use the debug tab to create a pool using a factory contract.
 
 TODO
+
+### TODO - 2.4 Interact with your custom pool
+
+- On the `localhost:3000/pools` page, select your custom pool from the dropdown
+- Review the pool details and composition post pool initialization
+- Try out executing a swap, join, and exit with your custom pool
 
 ---
 
