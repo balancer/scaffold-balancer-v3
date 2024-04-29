@@ -90,7 +90,7 @@ TODO @matt - Showcase the front end at a high level (showing, with a pool addres
 
 </details>
 
-## 🚨🚨 Checkpoint 1: 🌊 Create A Custom Pool - TODO @matt, we need to decide to keep this or not since we are mainly deploying through a factory now. 
+## 🚨🚨 Checkpoint 1: 🌊 Create A Custom Pool 
 
 Ultimately, this repo can be used to create custom pool factories,  custom pools from said factory, and register and initialize them so the pools can be interacted with using this repo's front end, all in a local environment. Before jumping into all of that, it is key that developers understand the general make-up of a custom pool.
 
