@@ -389,8 +389,13 @@ That said, this section outlines how one would use the debug tab to create a poo
 ## 🚨🚨 Checkpoint 3: Writing Typical Unit and Fuzz Tests for Custom Pool Example
 
 <!-- STEVE THIS IS WHERE YOU LEFT OFF -->
+At this point we've gone through how to make a simple custom pool and custom pool factory, and to simulate and/or deploy them on a testnet. Testing is of course needed, amongst many other security measures such as audits, for a custom pool implementation.
 
+We will now walk through the testing contract, provided as foundry tests, and typescript files. These testing files can be used as a testing template, similar to how the smart contracts and scripts so far could be used as references or templates for your own custom pool implementation.
 
+### `ConstantPricePoolTest.t.sol`
+
+<!-- TODO -->
 
 ## 🚨🚨 Checkpoint 4: Creating Your Own Custom Pool with the Template Files
 
