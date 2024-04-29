@@ -28,7 +28,7 @@ To expand on this, let's outline what this repo provides in more detail:
 
 In general, all smart contracts sections of this repo will already have `Example` smart contracts. These smart contract examples will be explained within this README.
 
-## Checkpoint 0: 📦 Environment 📚
+## 🚨🚨 Checkpoint 0: 📦 Environment 📚
 
 ### 0.1 Requirements
 
@@ -90,7 +90,7 @@ TODO @matt - Showcase the front end at a high level (showing, with a pool addres
 
 </details>
 
-## Checkpoint 1: 🌊 Create A Custom Pool - TODO @matt, we need to decide to keep this or not since we are mainly deploying through a factory now. 
+## 🚨🚨 Checkpoint 1: 🌊 Create A Custom Pool - TODO @matt, we need to decide to keep this or not since we are mainly deploying through a factory now. 
 
 Ultimately, this repo can be used to create custom pool factories,  custom pools from said factory, and register and initialize them so the pools can be interacted with using this repo's front end, all in a local environment. Before jumping into all of that, it is key that developers understand the general make-up of a custom pool.
 
@@ -226,7 +226,7 @@ Inside `ConstantPricePoolExample.sol`
 💡 Now we have walked through a basic custom pool construction, let's get into how the custom pool factory contracts work. 
 
 
-## Checkpoint 2: 🔧 Create a custom pool factory && Interact with Resultant Custom Pools
+## 🚨🚨 Checkpoint 2: 🔧 Create a custom pool factory && Interact with Resultant Custom Pools
 
 Now that you have created a custom pool, it is time to deploy the associated custom pool factory. For this repo, we've created a custom pool factory example and associated script to deploy it, and create a new pool using said factory.
 
@@ -296,7 +296,36 @@ Now that we have created the `CustomPoolFactoryExample.sol` contract, it is time
 
 `DeployCustomPoolFactoryAndNewPoolExample.s.sol` is the file that we will use as a template.
 
-<!-- TODO - STEVE THIS IS WHERE YOU LEFT OFF, walk through the script file with what each part means. -->
+For sake of simplicity, we will outline the core function of the script, and then explain specific gotchas with the script. The main one being the params involved with initialization.
+
+### Core Script Function
+
+The script, using the `.env` specified deployer wallet, deploys the custom pool factory (currently the constant price custom pool), creates a new pool with it, registers the new pool with the BalancerV3 Vault on sepolia, and initializes it. It does all of this so it is ready to use with the ScaffoldBalancer front end tool. The variables defined when calling Balancer functions, like `Router.intiialize()` are specific to the constant price custom pool setup, whereas if you are working with a more complicated pool setup you may want to adjust these params as necessary.
+
+### Key Gotchas
+
+- Specific to this repo, the script inherits `TestAddresses` and `HelperFunctions`.
+- Balancer integration with `initialize()` has a couple of arrays that must match in terms of token ERC20 we are using, and the amounts of said token.
+- Section incased in `/// Custom Pool Variables Subject to Change START ///` and `/// Custom Pool Variables Subject to Change END ///` are variables to be changed if you are changing the type of the custom pool being created.
+
+> It is key to understand that the script is calling `Router.initialize()` ultimately, and so understanding this function call and its params is crucial. See the BalancerV3 monorepo for more info. We touch on some of these params below, but the nat spec is also a great resource.
+
+- Some variables have comments on them to assist, such as the custom pool factory
+- This script uses FakeTestERC20 contracts to instantly mint 1000 of each test token to deployer wallet. 
+- The TokenConfig struct is defined within `VaultTypes.sol` in the v3 monorepo. It has a few gotchas:
+   - `TokenConfig.tokenType` is an enum: `STANDARD` OR `WITH_RATE`
+   - `TokenConfig.token` is the token address
+   - `TokenConfig.rateProvider` is the rate provider for the respective token. Rate Providers are not needed for `STANDARD` tokenTypes. These also are not yield bearing.
+   - `TokenConfig.payYieldFees` is a flag marking whether yield fees are charged on this token. As per BalancerV2, all yield bearing tokens had to have a yieldFee. 
+- Salt is typically the name of the respective pool. This way deployment of said pool can be the same across other networks too as per typical use of `CREATE2` and `CREATE3`.
+- `exactAmountsIn[]` are subject to the details of TokenConfig, specifically the `tokenType` and `rateProvider`
+- `userData` is for additional (optional) data required for adding initial liquidity.
+- Sender must approve transferrance/handling of its tokens with the router and vault
+- New pool must approve transferrance/handling of these specific tokens via router and vault.
+- New Custom Pool Factory address is console logged to be used with `DeployCustomPoolFromFactoryExample.s.sol`
+- As per the high-level BalancerV3 architecture, the `Router` is the main integration entrypoint to the Balancer system. Thus, `Router.initialize()` is called to subsequently call the vault to initialize a new pool within the system.
+
+Cool, now we have these gotcha's understood with the script. We can move on to simulating and deploying!
 
 **Simulating and Deploying the Script Finally!**
 
@@ -314,25 +343,40 @@ Next, we will actually deploy it so we can interact with it. Run the following C
 
 Now the pool factory has been deployed to the respective network (default is the testnet Sepolia). Once you click the transaction details (as shown within the screenshots below), you will see that a pool was deployed as well. You can also find this information within the deployment script return values.
 
+<!-- TODO - add screenshots for getting the factory address and inputting it into the appropriate script. -->
+
 Copy and paste this new pool address and input it into the ScaffoldBalancer front end tool. You can now interact with it exactly like in section 1!
 
 The beauty of the factory contract is that it inherits and abides by the Balancer Factory architecture. This means that pools created from a properly constructed factory contract will adhere to much easier integration for things like the BalancerV3 Subgraph.
 
-We will now run the script to call `create()` from the new custom pool factory contract that you just deployed. This script will also register and initialize the pool.
+We will now run the script to simulate calling `create()` from the new custom pool factory contract that you just deployed. This script will also register and initialize the pool. 
 
-TODO - create script
+> NOTE: You will need the address of the new custom pool factory that you have deployed on the respective network and input it into the appropriate variable seen in DeployCustomPoolFromFactoryExample.s.sol.
+
+```
+source .env && forge script scripts/DeployCustomPoolFromFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY
+```
+
+Next, we will actually deploy it so we can interact with it. Run the following CLI command to run the script to deploy a constant price custom pool factory.
+
+```
+source .env && forge script scripts/DeployCustomPoolFromFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow -broadcast
+```
 
 Copy and paste this new pool address and input it into the ScaffoldBalancer front end tool. You can now interact with it like the other pools!
 
-## TODO - Checkpoint 2.4: Interacting with the Testnet Custom Pool Factory via Debug Tab
+
+## TODO - Checkpoint 2.4: Interacting with the Testnet Custom Pool Factory via Debug Tab - @matt, I think we may need to delete this one for milestone 1, seeing as it is more imperative that pools are created via a script. I think having the debug tab show the factory contract still is cool, but the `create()` function sounds like it will be tricky to work with. wdyt?
 
 At this point, the factory has been deployed, and you have deployed at least one more pool from the factory using the scripts within this repo. 
+
+<!-- TODO - assess if this section is needed anymore since we are going with scripts. 
 
 Pools can also be created using the Debug Tab, theoretically. Currently SE-2 has some trouble with structs within the debug tab, and as such it is recommended to use scripts to work with any input params involving structs.
 
 That said, this section outlines how one would use the debug tab to create a pool using a factory contract.
 
-TODO
+  -->
 
 ### TODO - 2.5 Interact with your custom pool
 
@@ -342,11 +386,13 @@ TODO
 
 ---
 
-## Checkpoint 3: Writing Typical Unit and Fuzz Tests for Custom Pool Example
+## 🚨🚨 Checkpoint 3: Writing Typical Unit and Fuzz Tests for Custom Pool Example
 
-TODO
+<!-- STEVE THIS IS WHERE YOU LEFT OFF -->
 
-## Checkpoint 4: Creating Your Own Custom Pool with the Template Files
+
+
+## 🚨🚨 Checkpoint 4: Creating Your Own Custom Pool with the Template Files
 
 This is just a guide, so please use your own due diligence with your project before deploying any actual smart contracts of course. This section will walk you through key areas to look at updating if you are creating your own custom pool. Again, this is not the full extent that you should take to create your own custom pool, it is up to you and your team to carry out everything necessary (including but not limited to: testing, audits, etc.).
 
@@ -364,10 +410,10 @@ The next step is to reach out, if you haven't already, to the Balancer ecosystem
 2. [Balancer Grants](TODO - get the right link) if you've got an idea for a custom pool that you'd like to apply for a grant with.
 3. [BD team](TODO - Link to BD team)
 
-## Checkpoint 5: 🧭 Integrate pool with the Smart Order Router (SOR)
+## 🚨🚨 Checkpoint 5: 🧭 Integrate pool with the Smart Order Router (SOR)
 
 TBD
 
-## Checkpoint 6: 📡 Integrate pool with the Balancer v3 Subgraph
+## 🚨🚨 Checkpoint 6: 📡 Integrate pool with the Balancer v3 Subgraph
 
 TBD

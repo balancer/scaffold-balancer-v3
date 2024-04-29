@@ -23,9 +23,9 @@ contract DeployCustomPoolFactoryAndNewPoolExample is
 	HelperFunctions,
 	Script
 {
-	uint256 pauseWindowDuration = 365 days; // NOTE: placeholder pauseWindowDuration var
 
-	// Vars
+	/// Vars stated here to avoid stack too deep errors
+	uint256 pauseWindowDuration = 365 days; // NOTE: placeholder pauseWindowDuration var
 	address newPool;
 	IERC20[] tokens = new IERC20[](2); // Tokens used to seed the pool (must match the registered tokens)
 	uint256[] exactAmountsIn = new uint256[](2); // Tokens used to seed the pool (must match the registered tokens)
@@ -38,13 +38,11 @@ contract DeployCustomPoolFactoryAndNewPoolExample is
 		uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
 		vm.startBroadcast(deployerPrivateKey);
 
-		/// Deploy CustomPoolFactory
+		/// Custom Pool Variables Subject to Change START ///
 		CustomPoolFactoryExample customPoolFactory = new CustomPoolFactoryExample(
 				vault,
 				pauseWindowDuration
 			); // TODO - replace with your own custom pool factory and respective constructor params.
-
-		/// Vars specific to creating a pool from your custom pool factory on testnet.
 
 		FakeTestERC20 scUSD = new FakeTestERC20(
 			"Scaffold Balancer Test Token #1",
@@ -84,6 +82,9 @@ contract DeployCustomPoolFactoryAndNewPoolExample is
 		exactAmountsIn[1] = 1 ether;
 		minBptAmountOut = 1 ether;
 		userData = bytes("");
+
+		/// Custom Pool Variables Subject to Change END ///
+
 
 		{
 			approveForSender();
