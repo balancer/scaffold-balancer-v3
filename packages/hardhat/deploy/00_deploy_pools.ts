@@ -1,16 +1,16 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { networkConfig } from "../helper.config";
-
-// import { Contract } from "ethers";
 
 /**
- * Deploys a contract named "ConstantPricePool" using the deployer account and
- * constructor arguments set to the deployer address
- *
+ * Contracts deployed in this file
+ * 1. Will have their address & abi written to `nextjs/contracts/deployedContracts.ts` which is used by frontend for debug page and hooks
+ * 2. Will have easy to access deployment history with hre.ethers.getContract(<ContractName>)
+ */
+
+/**
  * @param hre HardhatRuntimeEnvironment object.
  */
-const deployConstantPricePool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   /*
     On localhost, the deployer account is the one that comes with Hardhat, which is already funded.
 
@@ -22,41 +22,12 @@ const deployConstantPricePool: DeployFunction = async function (hre: HardhatRunt
     You can run the `yarn account` command to check your balance in every network.
   */
   const { deployer } = await hre.getNamedAccounts();
-  const { deploy } = hre.deployments;
-  const chainId = Number(await hre.ethers.provider.getNetwork().then(network => network.chainId));
-
-  // Vault address is same for all pools
-  const { vaultAddr } = networkConfig[chainId].balancer;
-
-  // Deploy ConstantPricePool
-  const constantPoolName = "Balancer Constant Price Pool";
-  const constantPoolSymbol = "B-50DAI-50USDe";
-  const constantPoolArgs = [vaultAddr, constantPoolName, constantPoolSymbol];
-
-  await deploy("ConstantPricePool", {
-    from: deployer,
-    args: constantPoolArgs, // contract constructor arguments
-    log: true,
-  });
-
-  // Deploy DynamicPricePool
-  const dynamicPoolName = "Balancer Dynamic Price Pool";
-  const dynamicPoolSymbol = "weETH/ezETH/rswETH";
-  const dynamicPoolArgs = [vaultAddr, dynamicPoolName, dynamicPoolSymbol];
-
-  await deploy("DynamicPricePool", {
-    from: deployer,
-    args: dynamicPoolArgs, // contract constructor arguments
-    log: true,
-  });
-
-  // Get a deployed contract to interact with it after deploying.
-  // const yourContract = await hre.ethers.getContract<Contract>("ConstantPricePool", deployer);
-  // const poolTokens =  await ConstantPricePool.getPoolTokens());
+  // const { deploy } = hre.deployments;
+  console.log("Deploying YourContract with the account:", deployer);
 };
 
-export default deployConstantPricePool;
+export default deployYourContract;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags YourContract
-deployConstantPricePool.tags = ["all"];
+deployYourContract.tags = ["YourContract"];

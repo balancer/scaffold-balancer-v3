@@ -13,3 +13,4 @@ node_modules
 .vscode
 .idea
 .vercel
+.env
