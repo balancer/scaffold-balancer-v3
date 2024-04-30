@@ -5,16 +5,20 @@ import { useSearchParams } from "next/navigation";
 import { PoolActions, PoolAttributes, PoolComposition, PoolConfig, PoolSelector, UserLiquidity } from "./_components/";
 import type { NextPage } from "next";
 import { SkeletonLoader } from "~~/components/common";
-import deployedContractsData from "~~/contracts/deployedContracts";
 import { usePoolContract } from "~~/hooks/balancer";
-import scaffoldConfig from "~~/scaffold.config";
 
 /**
  * Page for viewing custom pool data and performing actions (swap, join, exit) on a pool
  */
 const Pools: NextPage = () => {
   const [selectedPoolAddress, setSelectedPoolAddress] = useState<string>("");
-  const { data: pool, isLoading, refetch: refetchPool, isFetchedAfterMount } = usePoolContract(selectedPoolAddress);
+  const {
+    data: pool,
+    isLoading,
+    refetch: refetchPool,
+    isFetchedAfterMount,
+    isError,
+  } = usePoolContract(selectedPoolAddress);
 
   const searchParams = useSearchParams();
   const poolAddress = searchParams.get("address");
@@ -25,18 +29,11 @@ const Pools: NextPage = () => {
     }
   }, [poolAddress]);
 
-  // Grab custom pool contract info for pools deployed through scaffold-eth
-  const scaffoldPoolsRawData = deployedContractsData[scaffoldConfig.targetNetworks[0].id];
-  const scaffoldPools = Object.entries(scaffoldPoolsRawData).map(([name, details]) => ({
-    name,
-    ...details,
-  }));
-
   return (
     <div className="flex-grow bg-base-300">
       <div className="max-w-screen-2xl mx-auto">
         <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
-          <div className="pb-7">
+          <div>
             <h1 className="text-3xl md:text-5xl font-bold my-7">🌊 Custom Pools</h1>
             <p className="text-xl my-0">
               Balancer is infinitely extensible to allow for any conceivable pool type with custom curves, logic,
@@ -45,13 +42,17 @@ const Pools: NextPage = () => {
             </p>
           </div>
 
-          <PoolSelector scaffoldPools={scaffoldPools} setSelectedPoolAddress={setSelectedPoolAddress} />
+          <PoolSelector setSelectedPoolAddress={setSelectedPoolAddress} />
+          {isError && (
+            <div className="text-red-500 text-xl">
+              Error fetching pool data. The provided contract address may be invalid
+            </div>
+          )}
 
           {!selectedPoolAddress && (
-            <p className="text-xl">
-              To get started, select one of your custom pools deployed through Scaffold Eth or search by contract
-              address
-            </p>
+            <div className="text-xl">
+              To get started, search by pool contract address or select a pool from the dropdown
+            </div>
           )}
 
           {isLoading ? (
