@@ -38,14 +38,15 @@ const Pools: NextPage = () => {
             <p className="text-xl my-0">
               Balancer is infinitely extensible to allow for any conceivable pool type with custom curves, logic,
               parameters, and more. Each pool deployed to balancer is its own smart contract. This tool allows you to
-              interact with any pool currently deployed (custom or existing).
+              interact with any v3 pool deployed on sepolia testnet.
             </p>
           </div>
 
           <PoolSelector setSelectedPoolAddress={setSelectedPoolAddress} />
           {isError && (
-            <div className="text-red-500 text-xl">
-              Error fetching pool data. The provided contract address may be invalid
+            <div className="text-red-500 text-xl text-center">
+              <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
+              <div>{selectedPoolAddress}</div>
             </div>
           )}
 

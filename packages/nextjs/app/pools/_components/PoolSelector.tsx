@@ -55,7 +55,7 @@ export const PoolSelector = ({ setSelectedPoolAddress }: { setSelectedPoolAddres
             className={`input input-bordered bg-base-200 text-center h-[52px] w-[355px] sm:w-[550px] ${
               inputValue && "pl-10 pr-14"
             }`}
-            placeholder="Search by contract addresss"
+            placeholder="Search by pool addresss"
           />
           <button
             className={`btn w-16 absolute top-0.5 right-0.5 text-white ${
