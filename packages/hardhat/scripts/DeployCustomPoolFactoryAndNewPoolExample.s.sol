@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.18;
 
-// import {Script, console} from "forge-std/Script.sol";
+import {Script, console} from "forge-std/Script.sol";
 import {IERC20} from "../contracts/interfaces/IVaultExtension.sol";
 import {LiquidityManagement, IRateProvider, PoolHooks, TokenConfig, TokenType} from "../contracts/interfaces/VaultTypes.sol";
 import {TestAddresses} from "../test/utils/TestAddresses.sol";
@@ -10,7 +10,6 @@ import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.so
 import {FakeTestERC20} from "../contracts/FakeTestERC20.sol";
 import {HelperFunctions} from "../test/utils/HelperFunctions.sol";
 import {IRouter} from "../contracts/interfaces/IRouter.sol";
-import "./DeployHelpers.s.sol";
 
 /**
  * @title DeployCustomPoolFactoryAndNewPoolExample Script
@@ -20,12 +19,10 @@ import "./DeployHelpers.s.sol";
  * @dev to run the actual script on Sepolia network, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFactoryAndNewPoolExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast`
  */
 contract DeployCustomPoolFactoryAndNewPoolExample is
-    ScaffoldETHDeploy,
     TestAddresses,
-    HelperFunctions
+    HelperFunctions,
+    Script
 {
-    error InvalidPrivateKey(string);
-
     /// Vars stated here to avoid stack too deep errors
     uint256 pauseWindowDuration = 365 days; // NOTE: placeholder pauseWindowDuration var
     address newPool;
@@ -34,15 +31,7 @@ contract DeployCustomPoolFactoryAndNewPoolExample is
     uint256 internal minBptAmountOut;
     bytes userData;
 
-    function run() external {
-        uint256 deployerPrivateKey = setupLocalhostEnv();
-        if (deployerPrivateKey == 0) {
-            revert InvalidPrivateKey(
-                "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"
-            );
-        }
-        vm.startBroadcast(deployerPrivateKey);
-
+    function runDeployCustomPoolFactoryAndNewPoolExample() internal {
         /// Custom Pool Variables Subject to Change START ///
         CustomPoolFactoryExample customPoolFactory = new CustomPoolFactoryExample(
                 vault,
@@ -61,21 +50,21 @@ contract DeployCustomPoolFactoryAndNewPoolExample is
         TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
 
         // make sure to have proper token order (alphanumeric)
-        tokenConfig[1] = TokenConfig({
+        tokenConfig[0] = TokenConfig({
             token: IERC20(address(scDAI)),
             tokenType: TokenType.STANDARD,
             rateProvider: IRateProvider(address(0)),
             yieldFeeExempt: false
         });
-        tokenConfig[0] = TokenConfig({
+        tokenConfig[1] = TokenConfig({
             token: IERC20(address(scUSD)),
             tokenType: TokenType.STANDARD,
             rateProvider: IRateProvider(address(0)),
             yieldFeeExempt: false
         });
 
-        string memory name = "Example Custom Balancer Constant Price Pool #4";
-        string memory symbol = "cBPT3";
+        string memory name = "Example Custom Constant Price Pool #1";
+        string memory symbol = "cBPT1";
         bytes32 salt = convertNameToBytes32(name);
 
         newPool = customPoolFactory.create(name, symbol, tokenConfig, salt);
@@ -105,15 +94,7 @@ contract DeployCustomPoolFactoryAndNewPoolExample is
         }
 
         console.log("Factory Address: %s", address(customPoolFactory)); // address generated to be used within `DeployCustomPoolFromFactoryExample.s.sol`
-
-        vm.stopBroadcast();
-
-        /**
-         * This function generates the file containing the contracts Abi definitions.
-         * These definitions are used to derive the types needed in the custom scaffold-eth hooks, for example.
-         * This function should be called last.
-         */
-        exportDeployments();
+        console.log("Pool Address: %s", address(newPool)); // search this address on frontend of scaffold balancer on the "Pools" explorer page
     }
 
     function approveForSender() internal {
