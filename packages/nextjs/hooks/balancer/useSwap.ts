@@ -22,6 +22,7 @@ type PoolSwapFunctions = {
   tokenInAllowance: bigint | undefined;
   tokenInBalance: bigint | undefined;
   refetchTokenInAllowance: () => void;
+  refetchTokenInBalance: () => void;
   approveAsync: () => Promise<WriteContractResult>;
 };
 
@@ -38,7 +39,8 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
   const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
   const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
 
-  const chainId = walletClient?.chain.id as number;
+  // const chainId = walletClient?.chain.id as number;
+  const chainId = 11155111; // hardcoding to sepolia because query requires chainId of forked network
   const rpcUrl = walletClient?.chain.rpcUrls.default.http[0] as string;
 
   const querySwap = async () => {
@@ -143,7 +145,7 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
     args: [walletClient?.account.address as `0x${string}`, pool.vaultAddress],
   });
 
-  const { data: tokenInBalance } = useContractRead({
+  const { data: tokenInBalance, refetch: refetchTokenInBalance } = useContractRead({
     address: tokenIn.address,
     abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
     functionName: "balanceOf" as any, // ???
@@ -157,5 +159,13 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
     args: [pool.vaultAddress, swapConfig.tokenIn.rawAmount],
   });
 
-  return { querySwap, swap, tokenInBalance, tokenInAllowance, refetchTokenInAllowance, approveAsync };
+  return {
+    querySwap,
+    swap,
+    tokenInBalance,
+    tokenInAllowance,
+    refetchTokenInAllowance,
+    refetchTokenInBalance,
+    approveAsync,
+  };
 };

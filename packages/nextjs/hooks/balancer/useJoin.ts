@@ -36,8 +36,9 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
   const queryJoin = async () => {
     try {
       // User defined (along with the queryJoin parameters)
-      const chainId = await publicClient.getChainId();
       const rpcUrl = publicClient?.chain.rpcUrls.default.http[0] as string;
+      // const chainId = await publicClient.getChainId();
+      const chainId = 111555111; // hardcoding to sepolia because query requires chainId of forked network
       const slippage = Slippage.fromPercentage("1"); // 1%
 
       const onchainProvider = new OnChainProvider(rpcUrl, chainId);

@@ -50,13 +50,13 @@ contract DeployCustomPoolFactoryAndNewPoolExample is
         TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
 
         // make sure to have proper token order (alphanumeric)
-        tokenConfig[0] = TokenConfig({
+        tokenConfig[1] = TokenConfig({
             token: IERC20(address(scDAI)),
             tokenType: TokenType.STANDARD,
             rateProvider: IRateProvider(address(0)),
             yieldFeeExempt: false
         });
-        tokenConfig[1] = TokenConfig({
+        tokenConfig[0] = TokenConfig({
             token: IERC20(address(scUSD)),
             tokenType: TokenType.STANDARD,
             rateProvider: IRateProvider(address(0)),

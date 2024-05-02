@@ -40,10 +40,15 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [isSwapping, setIsSwapping] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
 
-  const { querySwap, swap, tokenInAllowance, refetchTokenInAllowance, tokenInBalance, approveAsync } = useSwap(
-    pool,
-    swapConfig,
-  );
+  const {
+    querySwap,
+    swap,
+    tokenInAllowance,
+    refetchTokenInAllowance,
+    tokenInBalance,
+    refetchTokenInBalance,
+    approveAsync,
+  } = useSwap(pool, swapConfig);
   const writeTx = useTransactor();
 
   const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
@@ -166,6 +171,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       setSwapTxUrl(txHash);
       refetchPool();
       refetchTokenInAllowance();
+      refetchTokenInBalance();
     } catch (e) {
       console.error("error", e);
     } finally {

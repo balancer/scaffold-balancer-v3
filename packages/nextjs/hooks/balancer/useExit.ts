@@ -31,7 +31,8 @@ export const useExit = (pool: Pool): PoolExitFunctions => {
 
   const queryExit = async (rawAmount: bigint) => {
     try {
-      const chainId = await publicClient.getChainId();
+      // const chainId = await publicClient.getChainId();
+      const chainId = 111555111; // hardcoding to sepolia because query requires chainId of forked network
       const rpcUrl = publicClient?.chain.rpcUrls.default.http[0] as string;
       const slippage = Slippage.fromPercentage("1"); // 1%
 
