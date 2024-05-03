@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  ChainId,
   ExactInQueryOutput,
   ExactOutQueryOutput,
   Slippage,
@@ -12,13 +13,14 @@ import {
 import { WriteContractResult } from "@wagmi/core";
 import { parseAbi } from "viem";
 import { useContractRead, useContractWrite, useWalletClient } from "wagmi";
-import { Pool, PoolActionTxUrl, QuerySwapResponse, SwapConfig } from "~~/hooks/balancer/types";
+import { Pool, QuerySwapResponse, SwapConfig, TransactionHash } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
-import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
+
+// import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 type PoolSwapFunctions = {
   querySwap: () => Promise<QuerySwapResponse>;
-  swap: () => Promise<PoolActionTxUrl>;
+  swap: () => Promise<TransactionHash>;
   tokenInAllowance: bigint | undefined;
   tokenInBalance: bigint | undefined;
   refetchTokenInAllowance: () => void;
@@ -40,7 +42,7 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
   const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
 
   // const chainId = walletClient?.chain.id as number;
-  const chainId = 11155111; // hardcoding to sepolia because query requires chainId of forked network
+  const chainId = ChainId.SEPOLIA; // hardcoding to sepolia because query requires chainId of forked network, but SE-2 frontend needs chainId of 31337 to send tx to local node
   const rpcUrl = walletClient?.chain.rpcUrls.default.http[0] as string;
 
   const querySwap = async () => {
@@ -123,15 +125,12 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
           value: call.value,
         });
 
-      const hash = await writeTx(txHashPromise, { blockConfirmations: 1 });
+      const txHash = await writeTx(txHashPromise, { blockConfirmations: 1 });
 
-      if (!hash) {
+      if (!txHash) {
         throw new Error("Transaction failed");
       }
-
-      const chainId = await walletClient.getChainId();
-      const blockExplorerTxURL = getBlockExplorerTxLink(chainId, hash);
-      return blockExplorerTxURL;
+      return txHash;
     } catch (e) {
       console.error("error", e);
       return null;

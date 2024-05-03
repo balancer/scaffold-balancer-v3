@@ -3,8 +3,10 @@ import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrap
 import { PoolActionsProps } from "../PoolActions";
 import { SwapKind } from "@balancer/sdk";
 import { parseUnits } from "viem";
+import { useContractEvent } from "wagmi";
+import abis from "~~/contracts/abis";
 import { useSwap } from "~~/hooks/balancer/";
-import { PoolActionTxUrl, QueryPoolActionError, QuerySwapResponse, SwapConfig } from "~~/hooks/balancer/types";
+import { QueryPoolActionError, QuerySwapResponse, SwapConfig } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { formatToHuman } from "~~/utils/formatToHuman";
 
@@ -35,7 +37,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
   const [isTokenOutDropdownOpen, setTokenOutDropdownOpen] = useState(false);
   const [isTokenInDropdownOpen, setTokenInDropdownOpen] = useState(false);
-  const [swapTxUrl, setSwapTxUrl] = useState<PoolActionTxUrl>(null);
+  const [swapResults, setSwapResults] = useState<any>(null);
   const [isApproving, setIsApproving] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
@@ -61,7 +63,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
     // Clean up UI to prepare for new query
     setQueryResponse(null);
-    setSwapTxUrl(null);
+    setSwapResults(null);
     setQueryError(null);
     // Update the focused input amount with new value and reset the other input amount
     setSwapConfig(prevConfig => ({
@@ -80,11 +82,6 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   };
 
   const handleTokenSelection = (selectedSymbol: string, swapConfigKey: "tokenIn" | "tokenOut") => {
-    // Clean up UI to prepare for new query
-    setQueryResponse(null);
-    setSwapTxUrl(null);
-    setQueryError(null);
-
     const selectedIndex = pool.poolTokens.findIndex(token => token.symbol === selectedSymbol);
     const otherIndex = pool.poolTokens.length === 2 ? (selectedIndex === 0 ? 1 : 0) : -1;
 
@@ -167,17 +164,39 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const handleSwap = async () => {
     try {
       setIsSwapping(true);
-      const txHash = await swap();
-      setSwapTxUrl(txHash);
+      await swap();
       refetchPool();
       refetchTokenInAllowance();
       refetchTokenInBalance();
+      setSwapConfig(initialSwapConfig);
     } catch (e) {
       console.error("error", e);
     } finally {
       setIsSwapping(false);
     }
   };
+
+  useContractEvent({
+    address: pool.vaultAddress,
+    abi: abis.balancer.Vault,
+    eventName: "Swap",
+    listener(log: any[]) {
+      const result = {
+        transactionHash: log[0].transactionHash,
+        tokenIn: {
+          address: log[0].args.tokenIn,
+          amount: log[0].args.amountIn,
+          symbol: tokenIn.symbol,
+        },
+        tokenOut: {
+          address: log[0].args.tokenOut,
+          amount: log[0].args.amountOut,
+          symbol: tokenOut.symbol,
+        },
+      };
+      setSwapResults(result);
+    },
+  });
 
   const { expectedAmount, minOrMaxAmount } = queryResponse ?? {};
 
@@ -208,9 +227,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         isHighlighted={queryResponse?.swapKind === SwapKind.GivenOut}
       />
 
-      {swapTxUrl ? (
-        <ActionSuccessAlert transactionUrl={swapTxUrl} />
-      ) : !expectedAmount ? (
+      {!expectedAmount || (swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === "") ? (
         <PoolActionButton
           onClick={handleQuerySwap}
           isDisabled={isQuerying}
@@ -226,6 +243,24 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         <PoolActionButton isDisabled={isSwapping} onClick={handleSwap}>
           Swap
         </PoolActionButton>
+      )}
+
+      {swapResults && (
+        <ActionSuccessAlert
+          transactionHash={swapResults?.transactionHash}
+          rows={[
+            {
+              title: `${swapResults.tokenIn.symbol} In`,
+              rawAmount: swapResults.tokenIn.amount,
+              decimals: tokenIn.decimals,
+            },
+            {
+              title: `${swapResults.tokenOut.symbol} Out`,
+              rawAmount: swapResults.tokenOut.amount,
+              decimals: tokenOut.decimals,
+            },
+          ]}
+        />
       )}
 
       {expectedAmount && minOrMaxAmount && (

@@ -5,7 +5,7 @@ import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { useJoin } from "~~/hooks/balancer/";
-import { PoolActionTxUrl, QueryJoinResponse, QueryPoolActionError } from "~~/hooks/balancer/types";
+import { QueryJoinResponse, QueryPoolActionError } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { formatToHuman } from "~~/utils/formatToHuman";
 
@@ -26,7 +26,7 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [queryResponse, setQueryResponse] = useState<QueryJoinResponse | null>(null);
   const [sufficientAllowances, setSufficientAllowances] = useState(false);
   const [queryError, setQueryError] = useState<QueryPoolActionError>();
-  const [joinTxUrl, setJoinTxUrl] = useState<PoolActionTxUrl>();
+  const [joinTxUrl, setJoinTxUrl] = useState<string | null>(null);
   const [isApproving, setIsApproving] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
@@ -142,7 +142,7 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       </div>
 
       {joinTxUrl && expectedBptOut ? (
-        <ActionSuccessAlert transactionUrl={joinTxUrl} />
+        <ActionSuccessAlert transactionHash={joinTxUrl} rows={[{ title: "", rawAmount: 0n, decimals: 18 }]} />
       ) : !expectedBptOut ? (
         <PoolActionButton
           onClick={handleQueryJoin}

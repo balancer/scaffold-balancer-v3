@@ -3,7 +3,7 @@ import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrap
 import { PoolActionsProps } from "../PoolActions";
 import { parseUnits } from "viem";
 import { useExit } from "~~/hooks/balancer/";
-import { PoolActionTxUrl, QueryExitResponse, QueryPoolActionError } from "~~/hooks/balancer/types";
+import { QueryExitResponse, QueryPoolActionError } from "~~/hooks/balancer/types";
 import { formatToHuman } from "~~/utils/formatToHuman";
 
 const initialBptIn = {
@@ -18,7 +18,7 @@ const initialBptIn = {
 export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [queryResponse, setQueryResponse] = useState<QueryExitResponse | null>(null);
   const [queryError, setQueryError] = useState<QueryPoolActionError>(null);
-  const [exitTxUrl, setExitTxUrl] = useState<PoolActionTxUrl>(null);
+  const [exitTxUrl, setExitTxUrl] = useState<string | null>(null);
   const [isQuerying, setIsQuerying] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [bptIn, setBptIn] = useState(initialBptIn);
@@ -79,7 +79,7 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       />
 
       {exitTxUrl && expectedAmountsOut ? (
-        <ActionSuccessAlert transactionUrl={exitTxUrl} />
+        <ActionSuccessAlert transactionHash={exitTxUrl} rows={[{ title: "", rawAmount: 0n, decimals: 18 }]} />
       ) : !expectedAmountsOut ? (
         <PoolActionButton onClick={handleQueryExit} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
           Query

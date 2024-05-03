@@ -50,7 +50,7 @@ export type PoolConfig = {
 
 // Pool Actions
 export type QueryPoolActionError = { message: string } | null;
-export type PoolActionTxUrl = string | null;
+export type TransactionHash = string | null;
 
 export type SwapConfig = {
   tokenIn: {
