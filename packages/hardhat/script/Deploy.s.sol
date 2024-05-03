@@ -11,7 +11,7 @@ contract DeployScript is
     error InvalidPrivateKey(string);
 
     function run() external {
-        uint256 deployerPrivateKey = setupLocalhostEnv();
+        uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         if (deployerPrivateKey == 0) {
             revert InvalidPrivateKey(
                 "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"

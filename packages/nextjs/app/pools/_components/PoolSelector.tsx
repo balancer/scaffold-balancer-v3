@@ -5,6 +5,8 @@ import { blo } from "blo";
 import { type Address, isAddress } from "viem";
 import { ChevronDoubleDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
+// import { useScaffoldEventHistory } from "~~/hooks/scaffold-eth";
+
 const POOLS_QUERY = gql`
   query AllPools {
     pools {
@@ -26,6 +28,12 @@ export const PoolSelector = ({ setSelectedPoolAddress }: { setSelectedPoolAddres
   const router = useRouter();
   const pathname = usePathname();
   const isValidAddress = isAddress(inputValue);
+
+  // const { data: poolCreatedEvents } = useScaffoldEventHistory({
+  //   contractName: "CustomPoolFactoryExample",
+  //   eventName: "PoolCreated",
+  //   fromBlock: 5830942n,
+  // });
 
   return (
     <section className="flex justify-center flex-wrap gap-5 w-full items-center text-xl my-10">
@@ -84,6 +92,31 @@ export const PoolSelector = ({ setSelectedPoolAddress }: { setSelectedPoolAddres
               tabIndex={0}
               className="dropdown-content z-[1] menu p-4 shadow bg-base-200 rounded-box w-[633px] mt-3 border border-base-100"
             >
+              {/* <li className="text-xl">Your Pools</li>
+              {poolCreatedEvents &&
+                poolCreatedEvents.map((poolEvent, idx) => (
+                  <li
+                    key={idx}
+                    onClick={() => {
+                      setSelectedPoolAddress(poolEvent?.log.address);
+                      router.push(`${pathname}?address=${poolEvent.log.address}`);
+                      setIsOpen(false);
+                    }}
+                    className="cursor-pointer text-xl "
+                  >
+                    <div className="flex gap-5">
+                      <img
+                        alt=""
+                        className="!rounded-full"
+                        src={blo(poolEvent.log.address as `0x${string}`)}
+                        width="35"
+                        height="35"
+                      />
+                      <div>{poolEvent.log.address}</div>
+                    </div>
+                  </li>
+                ))}
+              <li className="text-xl">All Pools</li> */}
               {data?.pools &&
                 data.pools.map((pool: { address: Address; name: string; symbol: string }) => (
                   <li
