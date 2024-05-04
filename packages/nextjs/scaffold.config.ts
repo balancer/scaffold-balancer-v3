@@ -9,21 +9,9 @@ export type ScaffoldConfig = {
   walletAutoConnect: boolean;
 };
 
-// Tried this option but it forces metamask to use the network assocaited with chain id and ignores the rpcUrl
-// export const forkedNetwork = {
-//   id: 11155111,
-//   name: "Forked Sepolia",
-//   network: "f-sepolia",
-//   nativeCurrency: { name: "SEP", symbol: "ETH", decimals: 18 },
-//   rpcUrls: {
-//     default: { http: ["http://127.0.0.1:8545/"] },
-//     public: { http: ["http://127.0.0.1:8545/"] },
-//   },
-// } as const satisfies chains.Chain;
-
 const scaffoldConfig = {
   // The networks on which your DApp is live
-  targetNetworks: [chains.foundry, chains.sepolia], // local fork of sepolia
+  targetNetworks: [chains.foundry],
 
   // The interval at which your front-end polls the RPC servers for new data
   // it has no effect if you only target the local network (default is 4000)

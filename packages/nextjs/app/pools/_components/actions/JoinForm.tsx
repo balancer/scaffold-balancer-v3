@@ -73,7 +73,6 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const handleQueryJoin = async () => {
     setQueryResponse(null);
     setJoinReceipt(null);
-    console.log("here");
     setIsQuerying(true);
     const response = await queryJoin();
     if (response.error) {
@@ -182,7 +181,7 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         <TransactionReceiptAlert
           title="Actual BPT Out"
           transactionHash={joinReceipt.transactionHash}
-          data={joinReceipt.bptOut}
+          data={[joinReceipt.bptOut]}
         />
       )}
 

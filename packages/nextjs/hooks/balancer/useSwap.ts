@@ -16,8 +16,6 @@ import { useContractRead, useContractWrite, useWalletClient } from "wagmi";
 import { Pool, QuerySwapResponse, SwapConfig, TransactionHash } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 
-// import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
-
 type PoolSwapFunctions = {
   querySwap: () => Promise<QuerySwapResponse>;
   swap: () => Promise<TransactionHash>;

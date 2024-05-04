@@ -164,6 +164,9 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
 
   const handleSwap = async () => {
     try {
+      if (tokenInBalance === null || tokenInBalance === undefined || tokenInBalance < swapConfig.tokenIn.rawAmount) {
+        throw new Error("Insufficient user balance");
+      }
       setIsSwapping(true);
       await swap();
       refetchPool();
@@ -171,7 +174,13 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       refetchTokenInBalance();
       // setSwapConfig(initialSwapConfig);
     } catch (e) {
-      console.error("error", e);
+      if (e instanceof Error) {
+        console.error("error", e);
+        setQueryError({ message: e.message });
+      } else {
+        console.error("An unexpected error occurred", e);
+        setQueryError({ message: "An unexpected error occurred" });
+      }
     } finally {
       setIsSwapping(false);
     }
@@ -248,6 +257,8 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         </PoolActionButton>
       )}
 
+      {queryError && <QueryErrorAlert message={queryError.message} />}
+
       {swapReceipt && (
         <TransactionReceiptAlert
           title={`Transaction Receipt`}
@@ -273,8 +284,6 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
           ]}
         />
       )}
-
-      {queryError && <QueryErrorAlert message={queryError.message} />}
     </section>
   );
 };

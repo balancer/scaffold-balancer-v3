@@ -16,12 +16,11 @@ const Pools: NextPage = () => {
 
   const {
     data: pool,
-    isFetching,
     refetch: refetchPool,
     isLoading,
     isError,
     isSuccess,
-    isIdle,
+    // isIdle,
   } = usePoolContract(selectedPoolAddress);
 
   const searchParams = useSearchParams();
@@ -54,7 +53,7 @@ const Pools: NextPage = () => {
             </div>
           )}
 
-          {isFetching || isLoading || (poolAddress && isIdle) ? (
+          {isLoading ? (
             <PoolPageSkeleton />
           ) : isError ? (
             <div className="text-red-500 text-xl text-center">

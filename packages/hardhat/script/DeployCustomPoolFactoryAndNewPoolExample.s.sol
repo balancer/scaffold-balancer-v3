@@ -15,8 +15,8 @@ import {IRouter} from "../contracts/interfaces/IRouter.sol";
  * @title DeployCustomPoolFactoryAndNewPoolExample Script
  * @author BUIDL GUIDL (placeholder)
  * @notice The script, using the `.env` specified deployer wallet, deploys the custom pool factory (currently the constant price custom pool), creates a new pool with it, registers the new pool with the BalancerV3 Vault on sepolia, and initializes it. It does all of this so it is ready to use with the ScaffoldBalancer front end tool.
- * @dev to run sim for script, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFactoryAndNewPoolExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
- * @dev to run the actual script on Sepolia network, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFactoryAndNewPoolExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast`
+ * @dev to run sim for script, run the following CLI command: `yarn deploy`
+ * @dev to run the actual script on Sepolia network, run the following CLI command: `yarn deploy`
  */
 contract DeployCustomPoolFactoryAndNewPoolExample is
     TestAddresses,
@@ -50,21 +50,21 @@ contract DeployCustomPoolFactoryAndNewPoolExample is
         TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
 
         // make sure to have proper token order (alphanumeric)
-        tokenConfig[0] = TokenConfig({
+        tokenConfig[1] = TokenConfig({
             token: IERC20(address(scDAI)),
             tokenType: TokenType.STANDARD,
             rateProvider: IRateProvider(address(0)),
             yieldFeeExempt: false
         });
-        tokenConfig[1] = TokenConfig({
+        tokenConfig[0] = TokenConfig({
             token: IERC20(address(scUSD)),
             tokenType: TokenType.STANDARD,
             rateProvider: IRateProvider(address(0)),
             yieldFeeExempt: false
         });
 
-        string memory name = "Example Custom Constant Price Pool #1";
-        string memory symbol = "cBPT1";
+        string memory name = "Scaffold Balancer Constant Price Pool";
+        string memory symbol = "SB-50scDAI-50scUSD";
         bytes32 salt = convertNameToBytes32(name);
 
         newPool = customPoolFactory.create(name, symbol, tokenConfig, salt);
