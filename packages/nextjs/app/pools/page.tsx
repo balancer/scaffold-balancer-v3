@@ -4,6 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PoolActions, PoolAttributes, PoolComposition, PoolConfig, PoolSelector, UserLiquidity } from "./_components/";
 import type { NextPage } from "next";
+import { type Address } from "viem";
 import { SkeletonLoader } from "~~/components/common";
 import { usePoolContract } from "~~/hooks/balancer";
 
@@ -11,13 +12,16 @@ import { usePoolContract } from "~~/hooks/balancer";
  * Page for viewing custom pool data and performing actions (swap, join, exit) on a pool
  */
 const Pools: NextPage = () => {
-  const [selectedPoolAddress, setSelectedPoolAddress] = useState<string>("");
+  const [selectedPoolAddress, setSelectedPoolAddress] = useState<Address | null>(null);
+
   const {
     data: pool,
-    isLoading,
+    isFetching,
     refetch: refetchPool,
-    isFetchedAfterMount,
+    isLoading,
     isError,
+    isSuccess,
+    isIdle,
   } = usePoolContract(selectedPoolAddress);
 
   const searchParams = useSearchParams();
@@ -43,24 +47,23 @@ const Pools: NextPage = () => {
           </div>
 
           <PoolSelector setSelectedPoolAddress={setSelectedPoolAddress} />
-          {isError && (
-            <div className="text-red-500 text-xl text-center">
-              <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
-              <div>{selectedPoolAddress}</div>
-            </div>
-          )}
 
-          {!selectedPoolAddress && (
+          {!poolAddress && (
             <div className="text-xl">
               To get started, search by pool contract address or select a pool from the dropdown
             </div>
           )}
 
-          {isLoading ? (
+          {isFetching || isLoading || (poolAddress && isIdle) ? (
             <PoolPageSkeleton />
+          ) : isError ? (
+            <div className="text-red-500 text-xl text-center">
+              <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
+              <div>{selectedPoolAddress}</div>
+            </div>
           ) : (
-            pool &&
-            isFetchedAfterMount && (
+            isSuccess &&
+            pool && (
               <Fragment>
                 <div className="text-center mb-5 bg-base-200 p-3 w-full rounded-lg">
                   <h3 className="font-extrabold text-3xl my-2">{pool.name}</h3>

@@ -141,14 +141,17 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
     address: tokenIn.address,
     abi: parseAbi(["function allowance(address owner, address spender) returns (uint256)"]),
     functionName: "allowance" as any, // ???
-    args: [walletClient?.account.address as `0x${string}`, pool.vaultAddress],
+    args: [
+      (walletClient?.account.address as `0x${string}`) || "0x0000000000000000000000000000000000000000",
+      pool.vaultAddress,
+    ],
   });
 
   const { data: tokenInBalance, refetch: refetchTokenInBalance } = useContractRead({
     address: tokenIn.address,
     abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
     functionName: "balanceOf" as any, // ???
-    args: [walletClient?.account.address as `0x${string}`],
+    args: [(walletClient?.account.address as `0x${string}`) || "0x0000000000000000000000000000000000000000"],
   });
 
   const { writeAsync: approveAsync } = useContractWrite({

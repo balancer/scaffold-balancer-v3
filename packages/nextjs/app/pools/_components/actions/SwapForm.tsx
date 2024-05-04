@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from ".";
+import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
 import { SwapKind } from "@balancer/sdk";
 import { parseUnits } from "viem";
@@ -37,7 +37,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
   const [isTokenOutDropdownOpen, setTokenOutDropdownOpen] = useState(false);
   const [isTokenInDropdownOpen, setTokenInDropdownOpen] = useState(false);
-  const [swapResults, setSwapResults] = useState<any>(null);
+  const [swapReceipt, setSwapReceipt] = useState<any>(null);
   const [isApproving, setIsApproving] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
@@ -63,7 +63,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
     // Clean up UI to prepare for new query
     setQueryResponse(null);
-    setSwapResults(null);
+    setSwapReceipt(null);
     setQueryError(null);
     // Update the focused input amount with new value and reset the other input amount
     setSwapConfig(prevConfig => ({
@@ -107,13 +107,14 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   };
 
   const handleQuerySwap = async () => {
+    setQueryResponse(null);
+    setSwapReceipt(null);
     setIsQuerying(true);
     const response = await querySwap();
     if (response.error) {
       setQueryError(response.error);
     } else {
       const { swapKind, expectedAmount, minOrMaxAmount } = response;
-
       setQueryResponse({
         expectedAmount,
         minOrMaxAmount,
@@ -168,7 +169,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       refetchPool();
       refetchTokenInAllowance();
       refetchTokenInBalance();
-      setSwapConfig(initialSwapConfig);
+      // setSwapConfig(initialSwapConfig);
     } catch (e) {
       console.error("error", e);
     } finally {
@@ -181,20 +182,22 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
     abi: abis.balancer.Vault,
     eventName: "Swap",
     listener(log: any[]) {
-      const result = {
-        transactionHash: log[0].transactionHash,
-        tokenIn: {
-          address: log[0].args.tokenIn,
-          amount: log[0].args.amountIn,
-          symbol: tokenIn.symbol,
+      const data = [
+        {
+          decimals: tokenIn.decimals,
+          rawAmount: log[0].args.amountIn,
+          symbol: `${tokenIn.symbol} In`,
+          name: tokenIn.name,
         },
-        tokenOut: {
-          address: log[0].args.tokenOut,
-          amount: log[0].args.amountOut,
-          symbol: tokenOut.symbol,
+        {
+          decimals: tokenOut.decimals,
+          rawAmount: log[0].args.amountOut,
+          symbol: `${tokenOut.symbol} Out`,
+          name: tokenOut.name,
         },
-      };
-      setSwapResults(result);
+      ];
+
+      setSwapReceipt({ data, transactionHash: log[0].transactionHash });
     },
   });
 
@@ -227,7 +230,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         isHighlighted={queryResponse?.swapKind === SwapKind.GivenOut}
       />
 
-      {!expectedAmount || (swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === "") ? (
+      {!expectedAmount || (expectedAmount && swapReceipt) ? (
         <PoolActionButton
           onClick={handleQuerySwap}
           isDisabled={isQuerying}
@@ -245,44 +248,30 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         </PoolActionButton>
       )}
 
-      {swapResults && (
-        <ActionSuccessAlert
-          title={`Transaction Result`}
-          transactionHash={swapResults?.transactionHash}
-          rows={[
-            {
-              symbol: `${swapResults.tokenIn.symbol} In`,
-              name: tokenIn.name,
-              rawAmount: swapResults.tokenIn.amount,
-              decimals: tokenIn.decimals,
-            },
-            {
-              symbol: `${swapResults.tokenOut.symbol} Out`,
-              name: tokenOut.name,
-              rawAmount: swapResults.tokenOut.amount,
-              decimals: tokenOut.decimals,
-            },
-          ]}
+      {swapReceipt && (
+        <TransactionReceiptAlert
+          title={`Transaction Receipt`}
+          transactionHash={swapReceipt.transactionHash}
+          data={swapReceipt.data}
         />
       )}
 
       {expectedAmount && minOrMaxAmount && (
-        <QueryResultsWrapper title={`Amount ${queryResponse?.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}>
-          <div className="flex flex-wrap justify-between mb-3">
-            <div className="font-bold">Expected</div>
-            <div className="text-end">
-              <div className="font-bold">{formatToHuman(expectedAmount.amount, expectedAmount.token.decimals)}</div>
-              <div className="text-sm">{expectedAmount.amount.toString()}</div>
-            </div>
-          </div>
-          <div className="flex flex-wrap justify-between">
-            <div className="font-bold">{queryResponse?.swapKind === SwapKind.GivenIn ? "Minumum" : "Maximum"}</div>
-            <div className="text-end">
-              <div className="font-bold">{formatToHuman(minOrMaxAmount.amount, minOrMaxAmount.token.decimals)}</div>
-              <div className="text-sm">{minOrMaxAmount.amount.toString()}</div>
-            </div>
-          </div>
-        </QueryResultsWrapper>
+        <QueryResponseAlert
+          title={`Query Amount ${queryResponse?.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}
+          data={[
+            {
+              type: queryResponse?.swapKind === SwapKind.GivenIn ? "Expected" : "Minimum",
+              rawAmount: expectedAmount.amount,
+              decimals: expectedAmount.token.decimals,
+            },
+            {
+              type: queryResponse?.swapKind === SwapKind.GivenIn ? "Minimum" : "Maximum",
+              rawAmount: minOrMaxAmount.amount,
+              decimals: minOrMaxAmount.token.decimals,
+            },
+          ]}
+        />
       )}
 
       {queryError && <QueryErrorAlert message={queryError.message} />}

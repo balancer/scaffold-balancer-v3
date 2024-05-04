@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from ".";
+import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
 import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
@@ -29,7 +29,7 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [isApproving, setIsApproving] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
-  const [joinResult, setJoinResult] = useState<any>(null);
+  const [joinReceipt, setJoinReceipt] = useState<any>(null);
 
   const { queryJoin, joinPool, allowances, refetchAllowances, tokenBalances } = useJoin(pool, tokenInputs);
   const writeTx = useTransactor(); // scaffold hook for tx status toast notifications
@@ -60,7 +60,7 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const handleInputChange = (index: number, value: string) => {
     setQueryError(null);
     setQueryResponse(null);
-    setJoinResult(null);
+    setJoinReceipt(null);
     const updatedTokens = tokenInputs.map((token, idx) => {
       if (idx === index) {
         return { ...token, rawAmount: parseUnits(value, token.decimals) };
@@ -71,6 +71,9 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   };
 
   const handleQueryJoin = async () => {
+    setQueryResponse(null);
+    setJoinReceipt(null);
+    console.log("here");
     setIsQuerying(true);
     const response = await queryJoin();
     if (response.error) {
@@ -79,20 +82,6 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       setQueryResponse(response);
     }
     setIsQuerying(false);
-  };
-
-  const handleJoinPool = async () => {
-    try {
-      setIsJoining(true);
-      await joinPool();
-      refetchAllowances();
-      refetchPool();
-      setTokenInputs(initialTokenInputs);
-    } catch (e) {
-      console.error("error", e);
-    } finally {
-      setIsJoining(false);
-    }
   };
 
   const handleApprove = async () => {
@@ -122,17 +111,32 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
     });
   };
 
+  const handleJoinPool = async () => {
+    try {
+      setIsJoining(true);
+      await joinPool();
+      refetchAllowances();
+      refetchPool();
+    } catch (e) {
+      console.error("error", e);
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
   useContractEvent({
     address: pool.address,
     abi: abis.balancer.Pool,
     eventName: "Transfer",
     listener(log: any[]) {
-      console.log("Pool event", log);
-      const result = {
-        amount: log[0].args.value,
-        transactionHash: log[0].transactionHash,
+      const bptOut = {
+        symbol: pool.symbol,
+        name: pool.name,
+        decimals: pool.decimals,
+        rawAmount: log[0].args.value,
       };
-      setJoinResult(result);
+
+      setJoinReceipt({ bptOut, transactionHash: log[0].transactionHash });
     },
   });
 
@@ -156,7 +160,7 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         ))}
       </div>
 
-      {!expectedBptOut || tokenInputs.every(token => token.rawAmount === 0n) ? (
+      {!expectedBptOut || (expectedBptOut && joinReceipt) ? (
         <PoolActionButton
           onClick={handleQueryJoin}
           isDisabled={isQuerying}
@@ -174,31 +178,32 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         </PoolActionButton>
       )}
 
-      {joinResult && (
-        <ActionSuccessAlert
+      {joinReceipt && (
+        <TransactionReceiptAlert
           title="Actual BPT Out"
-          transactionHash={joinResult.transactionHash}
-          rows={[{ symbol: pool.symbol, name: pool.name, rawAmount: joinResult.amount, decimals: pool.decimals }]}
+          transactionHash={joinReceipt.transactionHash}
+          data={joinReceipt.bptOut}
         />
       )}
 
       {expectedBptOut && minBptOut && (
-        <QueryResultsWrapper title="BPT Out">
-          <div className="flex flex-wrap justify-between mb-3">
-            <div className="font-bold">Expected</div>
-            <div className="text-end">
-              <div className="font-bold">{formatToHuman(BigInt(expectedBptOut.amount), pool.decimals)}</div>
-              <div className="text-sm">{expectedBptOut.amount.toString()}</div>
-            </div>
-          </div>
-          <div className="flex flex-wrap justify-between">
-            <div className="font-bold">Minimum</div>
-            <div className="text-end">
-              <div className="font-bold">{formatToHuman(BigInt(minBptOut.amount), pool.decimals)}</div>
-              <div className="text-sm">{minBptOut.amount.toString()}</div>
-            </div>
-          </div>
-        </QueryResultsWrapper>
+        <QueryResponseAlert
+          title="BPT Out"
+          data={[
+            {
+              type: "Expected",
+              description: "Expected BPT Out",
+              rawAmount: expectedBptOut.amount,
+              decimals: pool.decimals,
+            },
+            {
+              type: "Minimum",
+              description: "Minimum BPT Out",
+              rawAmount: minBptOut.amount,
+              decimals: pool.decimals,
+            },
+          ]}
+        />
       )}
 
       {queryError && <QueryErrorAlert message={queryError.message} />}

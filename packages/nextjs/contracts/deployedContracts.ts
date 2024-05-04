@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     CustomPoolFactoryExample: {
-      address: "0x8F7abdB45B92Af9f384077C6e2d73195b27fA662",
+      address: "0x62706f4bbE7FA33EFE957cACa74F92273Cd64A1d",
       abi: [
         {
           type: "constructor",
@@ -272,7 +272,7 @@ const deployedContracts = {
       },
     },
     FakeTestERC20: {
-      address: "0xC7E3CA29a6d927Ac58762bd46785d18D09902698",
+      address: "0x8400A3A4CFdF3dDC12Ba45bA3DAE3381D206EC5e",
       abi: [
         {
           type: "constructor",

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from ".";
+import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
@@ -23,21 +23,22 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [isQuerying, setIsQuerying] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [bptIn, setBptIn] = useState(initialBptIn);
-  const [tokensOut, setTokensOut] = useState<any>(null);
-  const [poolEvent, setPoolEvent] = useState<any>(null);
-  const [transactionHash, setTransactionHash] = useState<string | null>(null);
+  const [exitReceipt, setExitReceipt] = useState<any>(null);
+  // const [poolEvent, setPoolEvent] = useState<any>(null);
 
   const { queryExit, exitPool } = useExit(pool);
 
   const handleAmountChange = (amount: string) => {
     setQueryError(null);
-    setTokensOut(null);
+    setExitReceipt(null);
     const rawAmount = parseUnits(amount, pool.decimals);
     setBptIn({ rawAmount, displayValue: amount });
     setQueryResponse(null);
   };
 
   const handleQueryExit = async () => {
+    setQueryError(null);
+    setExitReceipt(null);
     setIsQuerying(true);
     const response = await queryExit(bptIn.rawAmount);
     if (response.error) {
@@ -53,7 +54,6 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
     try {
       setIsExiting(true);
       await exitPool();
-      setBptIn(initialBptIn);
       refetchPool();
     } catch (error) {
       console.error("Error exiting pool", error);
@@ -72,20 +72,20 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
 
   const { expectedAmountsOut } = queryResponse ?? {};
 
-  useContractEvent({
-    address: pool.address,
-    abi: abis.balancer.Pool,
-    eventName: "Transfer",
-    listener(log: any[]) {
-      console.log("Pool event", log);
-      const result = {
-        bptInAmount: log[0].args.value,
-        transactionHash: log[0].transactionHash,
-      };
-      setPoolEvent(result);
-      setTransactionHash(log[0].transactionHash);
-    },
-  });
+  // useContractEvent({
+  //   address: pool.address,
+  //   abi: abis.balancer.Pool,
+  //   eventName: "Transfer",
+  //   listener(log: any[]) {
+  //     console.log("Pool event", log);
+  //     const result = {
+  //       bptInAmount: log[0].args.value,
+  //       transactionHash: log[0].transactionHash,
+  //     };
+  //     setPoolEvent(result);
+  //     setTransactionHash(log[0].transactionHash);
+  //   },
+  // });
 
   useContractEvent({
     address: pool.vaultAddress,
@@ -98,11 +98,9 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         rawAmount: -delta,
         decimals: pool.poolTokens[idx].decimals,
       }));
-      setTokensOut(tokensOut);
+      setExitReceipt({ tokensOut, transactionHash: log[0].transactionHash });
     },
   });
-
-  console.log("tokensOut", tokensOut);
 
   return (
     <section>
@@ -115,7 +113,7 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         setMaxAmount={setMaxAmount}
       />
 
-      {!expectedAmountsOut ? (
+      {!expectedAmountsOut || (expectedAmountsOut && exitReceipt) ? (
         <PoolActionButton onClick={handleQueryExit} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
           Query
         </PoolActionButton>
@@ -125,29 +123,24 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         </PoolActionButton>
       )}
 
-      {transactionHash && tokensOut && (
-        <ActionSuccessAlert title="Actual Tokens Out" transactionHash={poolEvent.transactionHash} rows={tokensOut} />
+      {exitReceipt && (
+        <TransactionReceiptAlert
+          title="Actual Tokens Out"
+          transactionHash={exitReceipt.transactionHash}
+          data={exitReceipt.tokensOut}
+        />
       )}
 
       {expectedAmountsOut && (
-        <QueryResultsWrapper title="Expected Tokens Out">
-          {pool.poolTokens.map((token, index) => (
-            <div key={token.address} className={`${index === 0 ? "mb-3" : ""} flex justify-between items-center`}>
-              <div>
-                <div className="font-bold">{token.symbol}</div>
-                <div className="text-sm">{token.name}</div>
-              </div>
-              <div>
-                {expectedAmountsOut && (
-                  <div>
-                    <div className="font-bold text-end">{expectedAmountsOut[index].toSignificant(4)}</div>
-                    <div className="text-sm">{expectedAmountsOut[index].amount.toString()}</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </QueryResultsWrapper>
+        <QueryResponseAlert
+          title="Expected Tokens Out"
+          data={pool.poolTokens.map((token, index) => ({
+            type: token.symbol,
+            description: token.name,
+            rawAmount: expectedAmountsOut[index].amount,
+            decimals: token.decimals,
+          }))}
+        />
       )}
 
       {queryError && <QueryErrorAlert message={queryError.message} />}
