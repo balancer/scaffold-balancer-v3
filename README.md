@@ -57,13 +57,11 @@ yarn install
 
 #### 0.2.3 Set Environment Variables
 
-- Set a `DEPLOYER_PRIVATE_KEY` at the path `packagages/hardhat/.env`
+Set a `DEPLOYER_PRIVATE_KEY` at the path `packagages/hardhat/.env`
 
 ```
 DEPLOYER_PRIVATE_KEY=0x...
 ```
-
-\*Note: contracts will be deployed and testnet tokens will be sent to this account
 
 #### 0.2.4 Start Local Anvil Fork
 
@@ -73,7 +71,12 @@ yarn fork
 
 #### 0.2.5 Deploy Contracts
 
-- The following command runs the script from `Deploy.s.sol` which first deploys a new pool factory, and then deploys a custom pool using the factory.
+The following command runs the script from `Deploy.s.sol`
+
+1. A pool factory is deployed
+2. Test tokens are deployed and sent to the `.env` PK
+3. New pool is created using the pool factory and the test tokens
+4. New pool is initialized using test tokens and BPT is sent to the `.env` PK
 
 ```
 yarn deploy --reset
@@ -87,13 +90,13 @@ yarn start
 
 #### 0.2.7 Select Your Pool
 
-- Navigate to http://localhost:3000/pools and click the dropdown to select the custom pool you just deployed to your local anvil node
+Navigate to http://localhost:3000/pools and click the dropdown to select the custom pool you just deployed to your local anvil node
 
 TODO @matt: GIF GOES HERE
 
 #### 0.2.8 Use Your Pool
 
-- Start splashing around in your pool with swaps, joins, and exits!
+Start splashing around in your pool with swaps, joins, and exits!
 
 TODO @matt - Showcase the front end at a high level (showing, with a pool address input already, the possible interactions you can do with it).
 
@@ -102,11 +105,20 @@ TODO @matt - Showcase the front end at a high level (showing, with a pool addres
 #### 0.3.1 Changing The Frontend Network Connection
 
 - The network the frontend points at is set via `targetNetworks` in the `scaffold.config.ts` file
-- To point the frontend at your local fork, use `chains.hardhat`
+- To point the frontend at your local fork, use `chains.foundry`
+
+```
+	targetNetworks: [chains.foundry],
+```
 
 #### 0.3.1 Changing The Forked Network
 
 - Modify the "fork" alias in the `packages/foundry/package.json` file, but do not change the chain id
+
+```
+	"fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
+```
+
 - `foundry.toml` comes preconfigured with a variety of `rpc_endpoints`
 
 ## 🚨🚨 Checkpoint 1: 🌊 Create A Custom Pool
