@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrapper, TokenField } from ".";
 import { PoolActionsProps } from "../PoolActions";
 import { parseUnits } from "viem";
+import { useContractEvent } from "wagmi";
+import abis from "~~/contracts/abis";
 import { useExit } from "~~/hooks/balancer/";
 import { QueryExitResponse, QueryPoolActionError } from "~~/hooks/balancer/types";
 import { formatToHuman } from "~~/utils/formatToHuman";
@@ -18,14 +20,18 @@ const initialBptIn = {
 export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [queryResponse, setQueryResponse] = useState<QueryExitResponse | null>(null);
   const [queryError, setQueryError] = useState<QueryPoolActionError>(null);
-  const [exitTxUrl, setExitTxUrl] = useState<string | null>(null);
   const [isQuerying, setIsQuerying] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [bptIn, setBptIn] = useState(initialBptIn);
+  const [tokensOut, setTokensOut] = useState<any>(null);
+  const [poolEvent, setPoolEvent] = useState<any>(null);
+  const [transactionHash, setTransactionHash] = useState<string | null>(null);
+
   const { queryExit, exitPool } = useExit(pool);
 
   const handleAmountChange = (amount: string) => {
     setQueryError(null);
+    setTokensOut(null);
     const rawAmount = parseUnits(amount, pool.decimals);
     setBptIn({ rawAmount, displayValue: amount });
     setQueryResponse(null);
@@ -46,8 +52,7 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const handleExitPool = async () => {
     try {
       setIsExiting(true);
-      const txUrl = await exitPool();
-      setExitTxUrl(txUrl);
+      await exitPool();
       setBptIn(initialBptIn);
       refetchPool();
     } catch (error) {
@@ -67,6 +72,38 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
 
   const { expectedAmountsOut } = queryResponse ?? {};
 
+  useContractEvent({
+    address: pool.address,
+    abi: abis.balancer.Pool,
+    eventName: "Transfer",
+    listener(log: any[]) {
+      console.log("Pool event", log);
+      const result = {
+        bptInAmount: log[0].args.value,
+        transactionHash: log[0].transactionHash,
+      };
+      setPoolEvent(result);
+      setTransactionHash(log[0].transactionHash);
+    },
+  });
+
+  useContractEvent({
+    address: pool.vaultAddress,
+    abi: abis.balancer.Vault,
+    eventName: "PoolBalanceChanged",
+    listener(log: any[]) {
+      const tokensOut = log[0].args.deltas.map((delta: bigint, idx: number) => ({
+        symbol: pool.poolTokens[idx].symbol,
+        name: pool.poolTokens[idx].name,
+        rawAmount: -delta,
+        decimals: pool.poolTokens[idx].decimals,
+      }));
+      setTokensOut(tokensOut);
+    },
+  });
+
+  console.log("tokensOut", tokensOut);
+
   return (
     <section>
       <TokenField
@@ -78,9 +115,7 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         setMaxAmount={setMaxAmount}
       />
 
-      {exitTxUrl && expectedAmountsOut ? (
-        <ActionSuccessAlert transactionHash={exitTxUrl} rows={[{ title: "", rawAmount: 0n, decimals: 18 }]} />
-      ) : !expectedAmountsOut ? (
+      {!expectedAmountsOut ? (
         <PoolActionButton onClick={handleQueryExit} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
           Query
         </PoolActionButton>
@@ -88,6 +123,10 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         <PoolActionButton isDisabled={isExiting} onClick={handleExitPool}>
           Exit
         </PoolActionButton>
+      )}
+
+      {transactionHash && tokensOut && (
+        <ActionSuccessAlert title="Actual Tokens Out" transactionHash={poolEvent.transactionHash} rows={tokensOut} />
       )}
 
       {expectedAmountsOut && (

@@ -11,6 +11,7 @@ contract DeployScript is
     error InvalidPrivateKey(string);
 
     function run() external {
+        // BPT and test tokens are sent to the deployer's wallet
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         if (deployerPrivateKey == 0) {
             revert InvalidPrivateKey(

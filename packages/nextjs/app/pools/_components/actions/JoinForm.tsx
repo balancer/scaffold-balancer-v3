@@ -3,7 +3,8 @@ import { ActionSuccessAlert, PoolActionButton, QueryErrorAlert, QueryResultsWrap
 import { PoolActionsProps } from "../PoolActions";
 import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
-import { useAccount, usePublicClient, useWalletClient } from "wagmi";
+import { useAccount, useContractEvent, usePublicClient, useWalletClient } from "wagmi";
+import abis from "~~/contracts/abis";
 import { useJoin } from "~~/hooks/balancer/";
 import { QueryJoinResponse, QueryPoolActionError } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
@@ -15,21 +16,20 @@ import { formatToHuman } from "~~/utils/formatToHuman";
  * 3. User sends transaction to join the pool
  */
 export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
+  const initialTokenInputs = pool.poolTokens.map(token => ({
+    address: token.address as `0x${string}`,
+    decimals: token.decimals,
+    rawAmount: 0n,
+  }));
   const [tokensToApprove, setTokensToApprove] = useState<InputAmount[]>([]);
-  const [tokenInputs, setTokenInputs] = useState<InputAmount[]>(
-    pool.poolTokens.map(token => ({
-      address: token.address as `0x${string}`,
-      decimals: token.decimals,
-      rawAmount: 0n,
-    })),
-  );
+  const [tokenInputs, setTokenInputs] = useState<InputAmount[]>(initialTokenInputs);
   const [queryResponse, setQueryResponse] = useState<QueryJoinResponse | null>(null);
   const [sufficientAllowances, setSufficientAllowances] = useState(false);
   const [queryError, setQueryError] = useState<QueryPoolActionError>();
-  const [joinTxUrl, setJoinTxUrl] = useState<string | null>(null);
   const [isApproving, setIsApproving] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+  const [joinResult, setJoinResult] = useState<any>(null);
 
   const { queryJoin, joinPool, allowances, refetchAllowances, tokenBalances } = useJoin(pool, tokenInputs);
   const writeTx = useTransactor(); // scaffold hook for tx status toast notifications
@@ -59,6 +59,8 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
 
   const handleInputChange = (index: number, value: string) => {
     setQueryError(null);
+    setQueryResponse(null);
+    setJoinResult(null);
     const updatedTokens = tokenInputs.map((token, idx) => {
       if (idx === index) {
         return { ...token, rawAmount: parseUnits(value, token.decimals) };
@@ -66,7 +68,6 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       return token;
     });
     setTokenInputs(updatedTokens);
-    setQueryResponse(null);
   };
 
   const handleQueryJoin = async () => {
@@ -83,10 +84,10 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const handleJoinPool = async () => {
     try {
       setIsJoining(true);
-      const txUrl = await joinPool();
-      setJoinTxUrl(txUrl);
+      await joinPool();
       refetchAllowances();
       refetchPool();
+      setTokenInputs(initialTokenInputs);
     } catch (e) {
       console.error("error", e);
     } finally {
@@ -121,6 +122,20 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
     });
   };
 
+  useContractEvent({
+    address: pool.address,
+    abi: abis.balancer.Pool,
+    eventName: "Transfer",
+    listener(log: any[]) {
+      console.log("Pool event", log);
+      const result = {
+        amount: log[0].args.value,
+        transactionHash: log[0].transactionHash,
+      };
+      setJoinResult(result);
+    },
+  });
+
   const { expectedBptOut, minBptOut } = queryResponse || {};
 
   return (
@@ -141,9 +156,7 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         ))}
       </div>
 
-      {joinTxUrl && expectedBptOut ? (
-        <ActionSuccessAlert transactionHash={joinTxUrl} rows={[{ title: "", rawAmount: 0n, decimals: 18 }]} />
-      ) : !expectedBptOut ? (
+      {!expectedBptOut || tokenInputs.every(token => token.rawAmount === 0n) ? (
         <PoolActionButton
           onClick={handleQueryJoin}
           isDisabled={isQuerying}
@@ -159,6 +172,14 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         <PoolActionButton isDisabled={isJoining} onClick={handleJoinPool}>
           Add Liquidity
         </PoolActionButton>
+      )}
+
+      {joinResult && (
+        <ActionSuccessAlert
+          title="Actual BPT Out"
+          transactionHash={joinResult.transactionHash}
+          rows={[{ symbol: pool.symbol, name: pool.name, rawAmount: joinResult.amount, decimals: pool.decimals }]}
+        />
       )}
 
       {expectedBptOut && minBptOut && (

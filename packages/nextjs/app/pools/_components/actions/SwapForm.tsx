@@ -247,15 +247,18 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
 
       {swapResults && (
         <ActionSuccessAlert
+          title={`Transaction Result`}
           transactionHash={swapResults?.transactionHash}
           rows={[
             {
-              title: `${swapResults.tokenIn.symbol} In`,
+              symbol: `${swapResults.tokenIn.symbol} In`,
+              name: tokenIn.name,
               rawAmount: swapResults.tokenIn.amount,
               decimals: tokenIn.decimals,
             },
             {
-              title: `${swapResults.tokenOut.symbol} Out`,
+              symbol: `${swapResults.tokenOut.symbol} Out`,
+              name: tokenOut.name,
               rawAmount: swapResults.tokenOut.amount,
               decimals: tokenOut.decimals,
             },

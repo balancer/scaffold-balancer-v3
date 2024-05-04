@@ -13,7 +13,7 @@ interface QueryResultsWrapperProps {
 export const QueryResultsWrapper: React.FC<QueryResultsWrapperProps> = ({ title, children }) => {
   return (
     <div>
-      <h5 className="mt-5 mb-1 ml-2">Query {title}</h5>
+      <h5 className="mt-5 mb-1 ml-2">{title}</h5>
       <div className="bg-[#FCD34D40] border border-amber-400 rounded-lg p-5">{children}</div>
     </div>
   );
@@ -35,17 +35,19 @@ export const QueryErrorAlert: React.FC<{ message: string }> = ({ message }) => {
 
 interface ActionSuccessAlertProps {
   transactionHash: string;
-  rows: row[];
-}
-type row = {
   title: string;
+  rows: tokenData[];
+}
+type tokenData = {
+  symbol: string;
+  name: string;
   rawAmount: bigint;
   decimals: number;
 };
 /**
  * Displays after successful pool operation transaction
  */
-export const ActionSuccessAlert: React.FC<ActionSuccessAlertProps> = ({ transactionHash, rows }) => {
+export const ActionSuccessAlert: React.FC<ActionSuccessAlertProps> = ({ title, transactionHash, rows }) => {
   const publicClient = usePublicClient();
   const chainId = publicClient?.chain.id as number;
   const transactionUrl = getBlockExplorerTxLink(chainId, transactionHash);
@@ -53,7 +55,7 @@ export const ActionSuccessAlert: React.FC<ActionSuccessAlertProps> = ({ transact
   return (
     <div className="mt-5">
       <div className="flex justify-between items-center mb-1">
-        <div className="ml-2">Transaction Result</div>
+        <div className="ml-2">{title}</div>
         {chainId !== 31337 && (
           <a
             rel="noopener"
@@ -71,7 +73,10 @@ export const ActionSuccessAlert: React.FC<ActionSuccessAlertProps> = ({ transact
           {rows &&
             rows.map((row, idx) => (
               <div key={idx} className={`flex justify-between ${idx !== rows.length - 1 ? "mb-3" : ""}`}>
-                <div className="font-bold">{row.title}</div>
+                <div>
+                  <div className="font-bold">{row.symbol}</div>
+                  <div className="text-sm">{row.name}</div>
+                </div>
                 <div className="text-end">
                   <div className="font-bold">{formatToHuman(row.rawAmount, row.decimals)}</div>
                   <div className="text-sm">{row.rawAmount.toString()}</div>
