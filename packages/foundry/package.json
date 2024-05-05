@@ -1,5 +1,5 @@
 {
-  "name": "@se-2/hardhat",
+  "name": "@se-2/foundry",
   "version": "0.0.1",
   "scripts": {
     "account": "node script/ListAccount.js",
@@ -15,17 +15,16 @@
     "test": "forge test",
     "verify": "forge build --build-info --build-info-path out/build-info/ && forge script script/VerifyAll.s.sol --ffi --rpc-url ${1:-default_network}"
   },
-  "devDependencies": {
-    "@types/prettier": "2",
-    "@types/qrcode": "1"
-  },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.0.0",
     "dotenv": "~16.3.1",
     "envfile": "~6.18.0",
     "ethers": "~5.7.1",
     "prettier": "~2.8.8",
     "qrcode": "~1.5.3",
     "toml": "~3.0.0"
+  },
+  "devDependencies": {
+    "@types/prettier": "2",
+    "@types/qrcode": "1"
   }
 }

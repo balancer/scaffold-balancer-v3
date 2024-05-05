@@ -43,29 +43,31 @@ Before you begin, you need to install the following tools:
 
 Speedrun deploying your first custom pool to get acquainted with our pool explorer
 
-#### 0.2.0 Clone the repo
+#### 0.2.0 Clone Repo
 
-```
+```bash
 git clone git@github.com:MattPereira/scaffold-balancer-v3.git
 ```
 
 #### 0.2.1 Install Dependencies
 
-```
+```bash
 yarn install
 ```
 
 #### 0.2.3 Set Environment Variables
 
-Set a `DEPLOYER_PRIVATE_KEY` at the path `packagages/hardhat/.env`
+Set a `DEPLOYER_PRIVATE_KEY`, `ALCHEMY_API_KEY`, and `ETHERSCAN_API_KEY` at the path `packagages/foundry/.env`
 
 ```
 DEPLOYER_PRIVATE_KEY=0x...
+ETHERSCAN_API_KEY=...
+ALCHEMY_API_KEY=...
 ```
 
 #### 0.2.4 Start Local Anvil Fork
 
-```
+```bash
 yarn fork
 ```
 
@@ -78,13 +80,13 @@ The following command runs the script from `Deploy.s.sol`
 3. New pool is created using the pool factory and the test tokens
 4. New pool is initialized using test tokens and BPT is sent to the `.env` PK
 
-```
+```bash
 yarn deploy --reset
 ```
 
 #### 0.2.6 Start Frontend
 
-```
+```bash
 yarn start
 ```
 
@@ -107,7 +109,7 @@ TODO @matt - Showcase the front end at a high level (showing, with a pool addres
 - The network the frontend points at is set via `targetNetworks` in the `scaffold.config.ts` file
 - To point the frontend at your local fork, use `chains.foundry`
 
-```
+```typescript
 	targetNetworks: [chains.foundry],
 ```
 
@@ -115,7 +117,7 @@ TODO @matt - Showcase the front end at a high level (showing, with a pool addres
 
 - Modify the "fork" alias in the `packages/foundry/package.json` file, but do not change the chain id
 
-```
+```json
 	"fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
 ```
 
