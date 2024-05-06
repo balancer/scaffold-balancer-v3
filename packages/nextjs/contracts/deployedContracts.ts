@@ -6,273 +6,8 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
   31337: {
-    CustomPoolFactoryExample: {
-      address: "0x62706f4bbE7FA33EFE957cACa74F92273Cd64A1d",
-      abi: [
-        {
-          type: "constructor",
-          inputs: [
-            {
-              name: "vault",
-              type: "address",
-              internalType: "contract IVault",
-            },
-            {
-              name: "pauseWindowDuration",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "create",
-          inputs: [
-            {
-              name: "name",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "symbol",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "tokens",
-              type: "tuple[]",
-              internalType: "struct TokenConfig[]",
-              components: [
-                {
-                  name: "token",
-                  type: "address",
-                  internalType: "contract IERC20",
-                },
-                {
-                  name: "tokenType",
-                  type: "uint8",
-                  internalType: "enum TokenType",
-                },
-                {
-                  name: "rateProvider",
-                  type: "address",
-                  internalType: "contract IRateProvider",
-                },
-                {
-                  name: "yieldFeeExempt",
-                  type: "bool",
-                  internalType: "bool",
-                },
-              ],
-            },
-            {
-              name: "salt",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          outputs: [
-            {
-              name: "pool",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "disable",
-          inputs: [],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "getActionId",
-          inputs: [
-            {
-              name: "selector",
-              type: "bytes4",
-              internalType: "bytes4",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getAuthorizer",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "contract IAuthorizer",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getDeploymentAddress",
-          inputs: [
-            {
-              name: "salt",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getNewPoolPauseWindowEndTime",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getOriginalPauseWindowEndTime",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getPauseWindowDuration",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getVault",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "contract IVault",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "isDisabled",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "isPoolFromFactory",
-          inputs: [
-            {
-              name: "pool",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "event",
-          name: "FactoryDisabled",
-          inputs: [],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "PoolCreated",
-          inputs: [
-            {
-              name: "pool",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "error",
-          name: "Disabled",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "PoolPauseWindowDurationOverflow",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "SenderNotAllowed",
-          inputs: [],
-        },
-      ],
-      inheritedFunctions: {
-        disable: "contracts/BasePoolFactory.sol",
-        getActionId: "contracts/BasePoolFactory.sol",
-        getAuthorizer: "contracts/BasePoolFactory.sol",
-        getDeploymentAddress: "contracts/BasePoolFactory.sol",
-        getNewPoolPauseWindowEndTime: "contracts/BasePoolFactory.sol",
-        getOriginalPauseWindowEndTime: "contracts/BasePoolFactory.sol",
-        getPauseWindowDuration: "contracts/BasePoolFactory.sol",
-        getVault: "contracts/BasePoolFactory.sol",
-        isDisabled: "contracts/BasePoolFactory.sol",
-        isPoolFromFactory: "contracts/BasePoolFactory.sol",
-      },
-    },
     FakeTestERC20: {
-      address: "0x8400A3A4CFdF3dDC12Ba45bA3DAE3381D206EC5e",
+      address: "0x63bD53efc26cdA2cA9d7101cDB26e8808bFE95a9",
       abi: [
         {
           type: "constructor",
@@ -609,6 +344,271 @@ const deployedContracts = {
         totalSupply: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
         transfer: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
         transferFrom: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+      },
+    },
+    CustomPoolFactoryExample: {
+      address: "0x8400A3A4CFdF3dDC12Ba45bA3DAE3381D206EC5e",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "vault",
+              type: "address",
+              internalType: "contract IVault",
+            },
+            {
+              name: "pauseWindowDuration",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "create",
+          inputs: [
+            {
+              name: "name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "symbol",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "tokens",
+              type: "tuple[]",
+              internalType: "struct TokenConfig[]",
+              components: [
+                {
+                  name: "token",
+                  type: "address",
+                  internalType: "contract IERC20",
+                },
+                {
+                  name: "tokenType",
+                  type: "uint8",
+                  internalType: "enum TokenType",
+                },
+                {
+                  name: "rateProvider",
+                  type: "address",
+                  internalType: "contract IRateProvider",
+                },
+                {
+                  name: "yieldFeeExempt",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "pool",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "disable",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getActionId",
+          inputs: [
+            {
+              name: "selector",
+              type: "bytes4",
+              internalType: "bytes4",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getAuthorizer",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract IAuthorizer",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getDeploymentAddress",
+          inputs: [
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getNewPoolPauseWindowEndTime",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getOriginalPauseWindowEndTime",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getPauseWindowDuration",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getVault",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract IVault",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "isDisabled",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "isPoolFromFactory",
+          inputs: [
+            {
+              name: "pool",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "FactoryDisabled",
+          inputs: [],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "PoolCreated",
+          inputs: [
+            {
+              name: "pool",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "Disabled",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "PoolPauseWindowDurationOverflow",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "SenderNotAllowed",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {
+        disable: "contracts/BasePoolFactory.sol",
+        getActionId: "contracts/BasePoolFactory.sol",
+        getAuthorizer: "contracts/BasePoolFactory.sol",
+        getDeploymentAddress: "contracts/BasePoolFactory.sol",
+        getNewPoolPauseWindowEndTime: "contracts/BasePoolFactory.sol",
+        getOriginalPauseWindowEndTime: "contracts/BasePoolFactory.sol",
+        getPauseWindowDuration: "contracts/BasePoolFactory.sol",
+        getVault: "contracts/BasePoolFactory.sol",
+        isDisabled: "contracts/BasePoolFactory.sol",
+        isPoolFromFactory: "contracts/BasePoolFactory.sol",
       },
     },
   },

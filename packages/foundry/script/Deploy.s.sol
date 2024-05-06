@@ -5,6 +5,8 @@ import {DeployPoolFactory} from "./DeployPoolFactory.s.sol";
 import {DeployPool} from "./DeployPool.s.sol";
 import "./DeployHelpers.s.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {TokenConfig} from "../contracts/interfaces/VaultTypes.sol";
+import {HelperConfig} from "./HelperConfig.s.sol";
 
 /**
  * @title DeployScript
@@ -18,59 +20,56 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 contract DeployScript is ScaffoldETHDeploy, DeployPoolFactory, DeployPool {
     error InvalidPrivateKey(string);
 
-    // Pool Factory Congig
-    uint256 pauseWindowDuration = 365 days; // All Pools created by this factory will share the same Pause Window end time, after which both old and new Pools will not be pausable.
-
-    // Pool Deployment Config (also requires review of TokenConfig in `deployPoolFromFactory` function in DeployPool.s.sol)
-    string name = "Scaffold Balancer Pool #1"; // Pool name
-    string symbol = "SB-50scUSD-50scDAI"; // BPT symbol
+    // Tokens for pool (also requires configuration of TokenConfig in `getPoolConfig` function of HelperConfig.s.sol)
     IERC20 token1; // Make sure to have proper token order (alphanumeric)
     IERC20 token2; // Make sure to have proper token order (alphanumeric)
 
-    // Pool Initialization Config
-    uint256[] exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
-    uint256 minBptAmountOut = 1 ether; // Minimum amount of pool tokens to be received
-    bool wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
-    bytes userData = bytes(""); // Additional (optional) data required for adding initial liquidity
-
-    constructor() {
-        exactAmountsIn[0] = 10 ether; // amount of token1 to send during pool initialization
-        exactAmountsIn[1] = 10 ether; // amount of token2 to send during pool initialization
-    }
-
-    function run() external override(DeployPool, DeployPoolFactory) {
+    function run() external override(DeployPoolFactory, DeployPool) {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         if (deployerPrivateKey == 0) {
             revert InvalidPrivateKey(
                 "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"
             );
         }
+
+        // Deploy mock tokens
         vm.startBroadcast(deployerPrivateKey);
+        (token1, token2) = deployMockTokens(); // remove this if using real tokens and set token addresses above in "Pool Deployment Configurations")
+        vm.stopBroadcast();
 
-        // Deploy Pool Factory
+        // Grab all configurations to deploy factory, pool, and initialize
+        HelperConfig helperConfig = new HelperConfig();
+        uint256 pauseWindowDuration = helperConfig.getFactoryConfig();
+        (
+            string memory name,
+            string memory symbol,
+            TokenConfig[] memory tokenConfig
+        ) = helperConfig.getPoolConfig(token1, token2);
+        (
+            IERC20[] memory tokens,
+            uint256[] memory exactAmountsIn,
+            uint256 minBptAmountOut,
+            bool wethIsEth,
+            bytes memory userData
+        ) = helperConfig.getInitializationConfig();
+
+        // Deploy factory and then deploy pool and then initialize pool
+        vm.startBroadcast(deployerPrivateKey);
         address poolFactoryAddress = deployPoolFactory(pauseWindowDuration);
-
-        // Create mock tokens (remove this if using real tokens and set token addresses above in "Pool Deployment Configurations")
-        (token1, token2) = deployMockTokens();
-
-        // Deploy pool from factory using values set above in "Pool Deployment Config" section
         address pool = deployPoolFromFactory(
             poolFactoryAddress,
             name,
             symbol,
-            token1,
-            token2
+            tokenConfig
         );
-
-        // Initialize pool using values set above in "Pool Initialization Configurations" section
         initializePool(
             pool,
+            tokens,
             exactAmountsIn,
             minBptAmountOut,
             wethIsEth,
             userData
         );
-
         vm.stopBroadcast();
 
         /**
