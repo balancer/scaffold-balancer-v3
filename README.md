@@ -73,16 +73,13 @@ yarn fork
 
 #### 0.2.5 Deploy Contracts
 
-The following command runs the script from `Deploy.s.sol`
-
-1. A pool factory is deployed
-2. Test tokens are deployed and sent to the `.env` PK
-3. New pool is created using the pool factory and the test tokens
-4. New pool is initialized using test tokens and BPT is sent to the `.env` PK
+The following command runs the script from `Deploy.s.sol` which deploys a pool factory, deploys test tokens, deploys a new pool using the factory, and finally initializes the pool using the test tokens\*
 
 ```bash
 yarn deploy:all
 ```
+
+\*Test tokens and BPT are sent to the PK specified in the `foundry/.env` file
 
 #### 0.2.6 Start Frontend
 
@@ -102,11 +99,11 @@ https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/cc3
 
 </details>
 
-
-
 #### 0.2.8 Use Your Pool
 
-Start splashing around in your pool with swaps, joins, and exits!
+Connect the account you specified in the `.env` file using your favorite wallet extension and start splashing around in your pool with swaps, joins, and exits!
+
+⚠️ You may need to add a local development network with rpc url `http://127.0.0.1:8545/` and chain id `31337`. Also, you may need to reset the nonce data for your wallet exension if it gets out of sync.
 
 TODO @matt - Showcase the front end at a high level (showing, with a pool address input already, the possible interactions you can do with it).
 

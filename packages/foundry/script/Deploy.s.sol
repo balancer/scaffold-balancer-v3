@@ -3,8 +3,8 @@ pragma solidity ^0.8.18;
 
 import {DeployPoolFactory} from "./DeployPoolFactory.s.sol";
 import {DeployPool} from "./DeployPool.s.sol";
-import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "./DeployHelpers.s.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 /**
  * @title DeployScript
@@ -12,8 +12,8 @@ import "./DeployHelpers.s.sol";
  * @notice Contracts deployed by this script will have their info saved into the frontend for hot reload
  * @notice This script deploys a new pool factory, deploys a new pool from that factory, and initializes the pool with mock tokens
  * @notice Mock tokens and BPT will be sent to the PK set in the .env file
- * @dev set the pool factory, pool deployment, and pool initialization configurations below
- * @dev then run this script with `yarn deploy:all`
+ * @dev Set the pool factory, pool deployment, and pool initialization configurations below
+ * @dev Then run this script with `yarn deploy:all`
  */
 contract DeployScript is ScaffoldETHDeploy, DeployPoolFactory, DeployPool {
     error InvalidPrivateKey(string);
@@ -21,7 +21,7 @@ contract DeployScript is ScaffoldETHDeploy, DeployPoolFactory, DeployPool {
     // Pool Factory Congig
     uint256 pauseWindowDuration = 365 days; // All Pools created by this factory will share the same Pause Window end time, after which both old and new Pools will not be pausable.
 
-    // Pool Deployment Config
+    // Pool Deployment Config (also requires review of TokenConfig in `deployPoolFromFactory` function in DeployPool.s.sol)
     string name = "Scaffold Balancer Pool #1"; // Pool name
     string symbol = "SB-50scUSD-50scDAI"; // BPT symbol
     IERC20 token1; // Make sure to have proper token order (alphanumeric)

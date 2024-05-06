@@ -2,11 +2,12 @@
 
 pragma solidity ^0.8.18;
 
+// Internal
 import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
 import {FakeTestERC20} from "../contracts/FakeTestERC20.sol";
 import {HelperFunctions} from "../utils/HelperFunctions.sol";
 import {HelperConfig} from "../utils/HelperConfig.sol";
-
+// External
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IRateProvider, TokenConfig, TokenType} from "../contracts/interfaces/VaultTypes.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
@@ -15,17 +16,19 @@ import {Script, console} from "forge-std/Script.sol";
 /**
  * @title DeployPool Script
  * @author BuidlGuidl Labs
- * @notice The script, using the `.env` specified deployer wallet, creates new pools from a pre-existing custom pool factory (adhering to the Constant Price Pool example by default).
- * @dev You need to assign the appropriate custom pool factory address (and associated dependencies / params requirements). This script is to be used after DeployCustomPoolFactoryAndNewPoolExample.s.sol.  It does all of this so the new pool is ready to use with the ScaffoldBalancer front end tool.
- * @dev to run sim for script, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFromFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
+ * @notice This script uses the PK specified in the .env file to create a new pool using the most recently deployed pool factory
+ * @notice This script is inhereted by Deploy.s.sol but can be run directly with `yarn deploy:pool`
+ * @dev if running directly, set the pool deployment and initialization configurations in the `run()` function below
  */
 contract DeployPool is HelperConfig, HelperFunctions, Script {
     IERC20[] tokens = new IERC20[](2); // Array of tokens to be used in the pool
 
     /**
+     * @notice Deploys a pool using a pool factory
+     * @dev Be sure to review the TokenConfig since only specific sequences of tokenType, rateProvider, and yieldFeeExempt are allowed
      * @param factoryAddress the address of the pool factory
-     * @param name of the pool
-     * @param symbol of the pool
+     * @param name for the pool
+     * @param symbol for the pool
      * @param token1 for the pool
      * @param token2 for the pool
      */
@@ -69,9 +72,13 @@ contract DeployPool is HelperConfig, HelperFunctions, Script {
     }
 
     /**
-     * Initilizes a pool using the router contract by adding liquidity
-     * The resulting BPT tokens are sent to the deployer wallet
+     * @notice Initilizes a pool using the router contract
+     * @dev The resulting BPT tokens are sent to the deployer wallet set in the .env file
      * @param pool address of the pool to be initialized
+     * @param exactAmountsIn amounts of tokens to be added, sorted in token alphanumeric order
+     * @param minBptAmountOut minimum amount of pool tokens to be received
+     * @param wethIsEth if true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
+     * @param userData additional (optional) data required for adding initial liquidity
      */
     function initializePool(
         address pool,
@@ -80,8 +87,7 @@ contract DeployPool is HelperConfig, HelperFunctions, Script {
         bool wethIsEth,
         bytes memory userData
     ) internal {
-        // Approve the vault to spend the tokens that are sent to the pool
-        maxApproveVault();
+        maxApproveVault(); // Must approve the vault to spend tokens before adding liquidity
 
         router.initialize(
             pool,
@@ -93,7 +99,9 @@ contract DeployPool is HelperConfig, HelperFunctions, Script {
         );
     }
 
-    // Only need to approve the vault since only vault handles possession of tokens
+    /**
+     * @notice Only need to approve the vault since only vault handles possession of tokens
+     */
     function maxApproveVault() internal {
         for (uint256 i = 0; i < tokens.length; ++i) {
             tokens[i].approve(address(vault), type(uint256).max);
@@ -118,13 +126,15 @@ contract DeployPool is HelperConfig, HelperFunctions, Script {
     }
 
     /**
-     * Deploy only the pool factory with CLI command `yarn deploy:pool`
-     * Set your pool deployment and initialization configurations here
+     * @dev Deploy only the pool with the CLI command `yarn deploy:pool`
+     * @dev Set your pool deployment and initialization configurations below
      */
     function run() external virtual {
-        // Pool Deployment Config
+        // Pool Deployment Config (also requires review of TokenConfig in `deployPoolFromFactory` function)
         string memory name = "Scaffold Balancer Pool #2";
         string memory symbol = "SB-50scDAI-50scUSD";
+        IERC20 token1; // Make sure to have proper token order (alphanumeric)
+        IERC20 token2; // Make sure to have proper token order (alphanumeric)
         address poolFactoryAddress = DevOpsTools.get_most_recent_deployment(
             "CustomPoolFactoryExample", // Must match the factory contract name
             block.chainid
@@ -141,7 +151,7 @@ contract DeployPool is HelperConfig, HelperFunctions, Script {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (IERC20 token1, IERC20 token2) = deployMockTokens();
+        (token1, token2) = deployMockTokens();
 
         address pool = deployPoolFromFactory(
             poolFactoryAddress,
