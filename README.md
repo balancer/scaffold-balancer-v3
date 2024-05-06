@@ -81,10 +81,12 @@ The following command runs the script from `Deploy.s.sol`
 4. New pool is initialized using test tokens and BPT is sent to the `.env` PK
 
 ```bash
-yarn deploy --reset
+yarn deploy:all
 ```
 
 #### 0.2.6 Start Frontend
+
+Execute the following command and then navigate to http://localhost:3000/pools
 
 ```bash
 yarn start
@@ -92,7 +94,7 @@ yarn start
 
 #### 0.2.7 Select Your Pool
 
-Navigate to http://localhost:3000/pools and click the dropdown to select the custom pool you just deployed to your local anvil node
+On the "Pools" page, click the dropdown to select the custom pool you just deployed to your local anvil node
 
 TODO @matt: GIF GOES HERE
 
@@ -108,19 +110,19 @@ TODO @matt - Showcase the front end at a high level (showing, with a pool addres
 
 > SE-2 is setup to hot reload the frontend with contracts that are directly deployed via the `Deploy.s.sol` script. This means our frontend captures the pool factory and mock token contracts, but not the pool contract because it is deployed by calling a method on the factory.
 
-This command runs `Deploy.s.sol` which deploys a pool factory and a pool using the factory. The **factory** contract info will be written to the frontend and the contract can be interacted with via the "Debug" page. The pool contract address will print in the terminal but can also be selected from the dropdown on the "Pools" page.
+This command runs `Deploy.s.sol` which deploys a pool factory, deploys mock tokens, deploys a pool, and initializes the pool. The factory contract and mock tokens will show on the "Debug" page. The pool contract address will print in the terminal, but can also be selected from the dropdown on the "Pools" page. All configuration options are specified at the top of the `DeployPool` contract.
 
 ```bash
-yarn deploy
+yarn deploy:all
 ```
 
-This command runs `DeployFactory.s.sol` which deploys only a new pool factory. The contract info will not be written to the frontend
+This command runs `DeployFactory.s.sol` which deploys only a new pool factory. The contract info will not be written to the frontend. The `pauseWindowDuration` is specified in the `run()` function of the script.
 
 ```bash
 yarn deploy:factory
 ```
 
-This command runs `DeployPool.s.sol` using the last factory address you deployed. The contract info will not be written to the frontend, but you can copy and paste the address from terminal or refresh the pool explorer page and select it from the dropdown.
+This command runs `DeployPool.s.sol` using the last factory address you deployed. The contract info will not be written to the frontend, but you can copy and paste the address from terminal or refresh the pool explorer page and select it from the dropdown. All configuration options are specified in the `run()` function
 
 ```bash
 yarn deploy:pool

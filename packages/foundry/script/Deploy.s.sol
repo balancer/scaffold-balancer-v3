@@ -3,6 +3,7 @@ pragma solidity ^0.8.18;
 
 import {DeployPoolFactory} from "./DeployPoolFactory.s.sol";
 import {DeployPool} from "./DeployPool.s.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "./DeployHelpers.s.sol";
 
 /**
@@ -11,6 +12,8 @@ import "./DeployHelpers.s.sol";
  * @notice Contracts deployed by this script will have their info saved into the frontend for hot reload
  * @notice This script deploys a new pool factory, deploys a new pool from that factory, and initializes the pool with mock tokens
  * @notice Mock tokens and BPT will be sent to the PK set in the .env file
+ * @dev set the pool factory, pool deployment, and pool initialization configurations below
+ * @dev then run this script with `yarn deploy:all`
  */
 contract DeployScript is ScaffoldETHDeploy, DeployPoolFactory, DeployPool {
     error InvalidPrivateKey(string);
@@ -21,14 +24,14 @@ contract DeployScript is ScaffoldETHDeploy, DeployPoolFactory, DeployPool {
     // Pool Deployment Config
     string name = "Scaffold Balancer Pool #1"; // Pool name
     string symbol = "SB-50scUSD-50scDAI"; // BPT symbol
-    address token1; // Make sure to have proper token order (alphanumeric)
-    address token2; // Make sure to have proper token order (alphanumeric)
+    IERC20 token1; // Make sure to have proper token order (alphanumeric)
+    IERC20 token2; // Make sure to have proper token order (alphanumeric)
 
     // Pool Initialization Config
     uint256[] exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
     uint256 minBptAmountOut = 1 ether; // Minimum amount of pool tokens to be received
     bool wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
-    bytes userData = bytes("");
+    bytes userData = bytes(""); // Additional (optional) data required for adding initial liquidity
 
     constructor() {
         exactAmountsIn[0] = 10 ether; // amount of token1 to send during pool initialization

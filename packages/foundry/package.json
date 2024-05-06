@@ -5,7 +5,7 @@
     "account": "node script/ListAccount.js",
     "chain": "anvil --config-out localhost.json",
     "compile": "forge compile",
-    "deploy": "forge build --build-info --build-info-path out/build-info/ && forge script script/Deploy.s.sol --rpc-url ${1:-default_network} --broadcast --legacy && node script/generateTsAbis.js",
+    "deploy:all": "forge build --build-info --build-info-path out/build-info/ && forge script script/Deploy.s.sol --rpc-url ${1:-default_network} --broadcast --legacy && node script/generateTsAbis.js",
     "deploy:factory": "forge build --build-info --build-info-path out/build-info/ && forge script script/DeployPoolFactory.s.sol --rpc-url ${1:-default_network} --broadcast",
     "deploy:pool": "forge build --build-info --build-info-path out/build-info/ && forge script script/DeployPool.s.sol --rpc-url ${1:-default_network} --broadcast",
     "deploy:verify": "forge build --build-info --build-info-path out/build-info/ && forge script script/Deploy.s.sol --rpc-url ${1:-default_network} --broadcast --legacy --verify ; node script/generateTsAbis.js",

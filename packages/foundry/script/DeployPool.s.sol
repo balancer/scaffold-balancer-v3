@@ -4,11 +4,11 @@ pragma solidity ^0.8.18;
 
 import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
 import {FakeTestERC20} from "../contracts/FakeTestERC20.sol";
-
-import {IERC20} from "../contracts/interfaces/IVaultExtension.sol";
-import {LiquidityManagement, IRateProvider, PoolHooks, TokenConfig, TokenType} from "../contracts/interfaces/VaultTypes.sol";
 import {HelperFunctions} from "../utils/HelperFunctions.sol";
 import {HelperConfig} from "../utils/HelperConfig.sol";
+
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {IRateProvider, TokenConfig, TokenType} from "../contracts/interfaces/VaultTypes.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {Script, console} from "forge-std/Script.sol";
 
@@ -20,7 +20,7 @@ import {Script, console} from "forge-std/Script.sol";
  * @dev to run sim for script, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFromFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
  */
 contract DeployPool is HelperConfig, HelperFunctions, Script {
-    IERC20[] tokens = new IERC20[](2); // Tokens used to seed the pool (must match the registered tokens)
+    IERC20[] tokens = new IERC20[](2); // Array of tokens to be used in the pool
 
     /**
      * @param factoryAddress the address of the pool factory
@@ -33,8 +33,8 @@ contract DeployPool is HelperConfig, HelperFunctions, Script {
         address factoryAddress,
         string memory name,
         string memory symbol,
-        address token1,
-        address token2
+        IERC20 token1,
+        IERC20 token2
     ) internal returns (address) {
         CustomPoolFactoryExample poolFactory = CustomPoolFactoryExample(
             factoryAddress
@@ -44,13 +44,13 @@ contract DeployPool is HelperConfig, HelperFunctions, Script {
 
         // make sure to have proper token order (alphanumeric)
         tokenConfig[0] = TokenConfig({
-            token: IERC20(address(token1)),
+            token: token1,
             tokenType: TokenType.STANDARD,
             rateProvider: IRateProvider(address(0)),
             yieldFeeExempt: false
         });
         tokenConfig[1] = TokenConfig({
-            token: IERC20(address(token2)),
+            token: token2,
             tokenType: TokenType.STANDARD,
             rateProvider: IRateProvider(address(0)),
             yieldFeeExempt: false
@@ -69,7 +69,7 @@ contract DeployPool is HelperConfig, HelperFunctions, Script {
     }
 
     /**
-     * Initilizes a pool with the router by adding liquidity
+     * Initilizes a pool using the router contract by adding liquidity
      * The resulting BPT tokens are sent to the deployer wallet
      * @param pool address of the pool to be initialized
      */
@@ -104,7 +104,7 @@ contract DeployPool is HelperConfig, HelperFunctions, Script {
      * Create mock tokens for the pool and mint 1000 of each to the deployer wallet
      * @return addresses of the mock tokens
      */
-    function deployMockTokens() internal returns (address, address) {
+    function deployMockTokens() internal returns (IERC20, IERC20) {
         FakeTestERC20 scUSD = new FakeTestERC20(
             "Scaffold Balancer Test Token #1",
             "scUSD"
@@ -114,12 +114,15 @@ contract DeployPool is HelperConfig, HelperFunctions, Script {
             "scDAI"
         );
 
-        return (address(scUSD), address(scDAI));
+        return (scUSD, scDAI);
     }
 
-    // Deploy only the pool factory with CLI command `yarn deploy:pool`
+    /**
+     * Deploy only the pool factory with CLI command `yarn deploy:pool`
+     * Set your pool deployment and initialization configurations here
+     */
     function run() external virtual {
-        // Pool deployment configurations
+        // Pool Deployment Config
         string memory name = "Scaffold Balancer Pool #2";
         string memory symbol = "SB-50scDAI-50scUSD";
         address poolFactoryAddress = DevOpsTools.get_most_recent_deployment(
@@ -127,18 +130,18 @@ contract DeployPool is HelperConfig, HelperFunctions, Script {
             block.chainid
         ); // Get the most recently deployed address of the pool factory
 
-        // Pool initialization configurations
-        uint256[] memory exactAmountsIn = new uint256[](2); // Tokens used to seed the pool (must match the registered tokens)
-        exactAmountsIn[0] = 10 ether;
-        exactAmountsIn[1] = 10 ether;
-        uint256 minBptAmountOut = 1 ether;
-        bool wethIsEth = false;
-        bytes memory userData = bytes("");
+        // Pool Initialization Config
+        uint256[] memory exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
+        exactAmountsIn[0] = 10 ether; // amount for first token
+        exactAmountsIn[1] = 10 ether; // amount for second token
+        uint256 minBptAmountOut = 1 ether; // Minimum amount of pool tokens to be received
+        bool wethIsEth = false; // 	If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
+        bytes memory userData = bytes(""); // Additional (optional) data required for adding initial liquidity
 
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address token1, address token2) = deployMockTokens();
+        (IERC20 token1, IERC20 token2) = deployMockTokens();
 
         address pool = deployPoolFromFactory(
             poolFactoryAddress,
