@@ -2,17 +2,30 @@
 
 pragma solidity ^0.8.4;
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+// import { IBasePoolFactory } from "./interfaces/IBasePoolFactory.sol";
+// import { IVault } from "./interfaces/IVault.sol";
+// import { TokenConfig } from "./interfaces/VaultTypes.sol";
+// import {
+//     SingletonAuthentication
+// } from "./v3-solidity-utils/SingletonAuthentication.sol";
+// import { CREATE3 } from "./v3-solidity-utils/solmate/CREATE3.sol";
+// import { FactoryWidePauseWindow } from "./FactoryWidePauseWindow.sol";
 
-import { IBasePoolFactory } from "./interfaces/IBasePoolFactory.sol";
-import { IVault } from "./interfaces/IVault.sol";
-import { TokenConfig } from "./interfaces/VaultTypes.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
+import "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+// import { TokenConfig, PoolConfig } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import {
     SingletonAuthentication
-} from "./v3-solidity-utils/SingletonAuthentication.sol";
-import { CREATE3 } from "./v3-solidity-utils/solmate/CREATE3.sol";
+} from "@balancer-labs/v3-solidity-utils/contracts/helpers/SingletonAuthentication.sol";
+import {
+    CREATE3
+} from "@balancer-labs/v3-solidity-utils/contracts/solmate/CREATE3.sol";
+import { FactoryWidePauseWindow } from "@balancer-labs/v3-vault/contracts/factories/FactoryWidePauseWindow.sol";
 
-import { FactoryWidePauseWindow } from "./FactoryWidePauseWindow.sol";
+
+
 
 /**
  * @notice Base contract for Pool factories.

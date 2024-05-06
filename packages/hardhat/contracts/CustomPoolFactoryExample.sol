@@ -3,14 +3,22 @@
 pragma solidity ^0.8.4;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import { IVault } from "./interfaces/IVault.sol";
-import { IRateProvider } from "./interfaces/IRateProvider.sol";
-import "./interfaces/VaultTypes.sol";
-
-import { BasePoolFactory } from "./BasePoolFactory.sol";
-
+// import { IVault } from "./interfaces/IVault.sol";
+// import { IRateProvider } from "./interfaces/IRateProvider.sol";
+// import "./interfaces/VaultTypes.sol";
+// import { BasePoolFactory } from "./BasePoolFactory.sol";
 import {ConstantPricePool} from "./ConstantPricePool.sol";
+// import { TokenConfig } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+
+import "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
+// import { TokenConfig } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { BasePoolFactory } from "@balancer-labs/v3-vault/contracts/factories/BasePoolFactory.sol";
+
+
+
+
 
 /**
  * @title Example Custom Pool Factory Using Constant Price Invariant

@@ -5,10 +5,13 @@ import { console } from "forge-std/Test.sol";
 import { BaseVaultTest } from "@test/vault/test/foundry/utils/BaseVaultTest.sol";
 import { ConstantPricePool } from "../contracts/ConstantPricePool.sol";
 import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.sol";
-import { LiquidityManagement, IRateProvider, PoolHooks, TokenConfig, TokenType } from "../contracts/interfaces/VaultTypes.sol";
-import { IERC20 } from "../contracts/interfaces/IVaultExtension.sol";
-// import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"; TODO We can use these imports now?
-import { IVault } from "../contracts/interfaces/IVault.sol";
+// import { LiquidityManagement, IRateProvider, PoolHooks, TokenConfig, TokenType } from "../contracts/interfaces/VaultTypes.sol";
+// import { IERC20 } from "../contracts/interfaces/IVaultExtension.sol";
+// import { IVault } from "../contracts/interfaces/IVault.sol";
+import "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 
 /**
  * @title Template Custom Pool Test
@@ -21,6 +24,7 @@ contract ConstantPricePoolTest is  BaseVaultTest {
 	uint256 constant DEFAULT_SWAP_FEE = 1e16; // 1%
 	CustomPoolFactoryExample factory;
 	ConstantPricePool internal constantPricePool;
+
 	/**
 	 * Test setup includes:
 	 * 1. 
