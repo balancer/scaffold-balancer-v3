@@ -96,7 +96,13 @@ yarn start
 
 On the "Pools" page, click the dropdown to select the custom pool you just deployed to your local anvil node
 
-TODO @matt: GIF GOES HERE
+<details><summary> 👀 See Demo GIF</summary>
+	
+https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/cc358227-3bf6-4b02-8dc5-36577c0cbdcd
+
+</details>
+
+
 
 #### 0.2.8 Use Your Pool
 
