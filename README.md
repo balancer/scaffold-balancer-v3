@@ -113,19 +113,19 @@ TODO @matt - Showcase the front end at a high level (showing, with a pool addres
 
 > SE-2 is setup to hot reload the frontend with contracts that are directly deployed via the `Deploy.s.sol` script. This means our frontend captures the pool factory and mock token contracts, but not the pool contract because it is deployed by calling a method on the factory.
 
-This command runs `Deploy.s.sol` which deploys a pool factory, deploys mock tokens, deploys a pool, and initializes the pool. The factory contract and mock tokens will show on the "Debug" page. The pool contract address will print in the terminal, but can also be selected from the dropdown on the "Pools" page. All configuration options are specified at the top of the `DeployPool` contract.
+This command runs `Deploy.s.sol` which deploys a pool factory, deploys mock tokens, deploys a pool, and initializes the pool. The factory contract and mock tokens will show on the "Debug" page. The pool contract address will print in the terminal, but can also be selected from the dropdown on the "Pools" page. Configuration options are specified in `HelperConfig.s.sol`
 
 ```bash
 yarn deploy:all
 ```
 
-This command runs `DeployFactory.s.sol` which deploys only a new pool factory. The contract info will not be written to the frontend. The `pauseWindowDuration` is specified in the `run()` function of the script.
+This command runs `DeployPoolFactory.s.sol` which deploys only a new pool factory. The contract info will not be written to the frontend.
 
 ```bash
 yarn deploy:factory
 ```
 
-This command runs `DeployPool.s.sol` using the last factory address you deployed. The contract info will not be written to the frontend, but you can copy and paste the address from terminal or refresh the pool explorer page and select it from the dropdown. All configuration options are specified in the `run()` function
+This command runs `DeployPool.s.sol` using the last pool factory you deployed. The contract info will not be written to the frontend, but you can copy and paste the address from terminal or refresh the pool explorer page and select it from the dropdown.
 
 ```bash
 yarn deploy:pool

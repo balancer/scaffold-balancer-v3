@@ -14,13 +14,13 @@ import {HelperConfig} from "./HelperConfig.s.sol";
  * @notice Contracts deployed by this script will have their info saved into the frontend for hot reload
  * @notice This script deploys a new pool factory, deploys a new pool from that factory, and initializes the pool with mock tokens
  * @notice Mock tokens and BPT will be sent to the PK set in the .env file
- * @dev Set the pool factory, pool deployment, and pool initialization configurations below
+ * @dev Set the pool factory, pool deployment, and pool initialization configurations in `HelperConfig.s.sol`
  * @dev Then run this script with `yarn deploy:all`
  */
 contract DeployScript is ScaffoldETHDeploy, DeployPoolFactory, DeployPool {
     error InvalidPrivateKey(string);
 
-    // Tokens for pool (also requires configuration of TokenConfig in `getPoolConfig` function of HelperConfig.s.sol)
+    // Tokens for pool (also requires configuration of `TokenConfig` in `getPoolConfig` function of HelperConfig.s.sol)
     IERC20 token1; // Make sure to have proper token order (alphanumeric)
     IERC20 token2; // Make sure to have proper token order (alphanumeric)
 
@@ -32,12 +32,12 @@ contract DeployScript is ScaffoldETHDeploy, DeployPoolFactory, DeployPool {
             );
         }
 
-        // Deploy mock tokens
+        // Deploy mock tokens. Remove this if using already deployed tokens and instead set the tokens above
         vm.startBroadcast(deployerPrivateKey);
-        (token1, token2) = deployMockTokens(); // remove this if using real tokens and set token addresses above in "Pool Deployment Configurations")
+        (token1, token2) = deployMockTokens();
         vm.stopBroadcast();
 
-        // Grab all configurations to deploy factory, pool, and initialize
+        // Look up configuration options from `HelperConfig.s.sol`
         HelperConfig helperConfig = new HelperConfig();
         uint256 pauseWindowDuration = helperConfig.getFactoryConfig();
         (
@@ -51,7 +51,7 @@ contract DeployScript is ScaffoldETHDeploy, DeployPoolFactory, DeployPool {
             uint256 minBptAmountOut,
             bool wethIsEth,
             bytes memory userData
-        ) = helperConfig.getInitializationConfig();
+        ) = helperConfig.getInitializationConfig(tokenConfig);
 
         // Deploy factory and then deploy pool and then initialize pool
         vm.startBroadcast(deployerPrivateKey);

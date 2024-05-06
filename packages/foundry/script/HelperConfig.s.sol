@@ -18,7 +18,6 @@ contract HelperConfig {
     // BalancerV3 Sepolia addresses
     IVault public vault = IVault(0x1FC7F1F84CFE61a04224AC8D3F87f56214FeC08c);
     IRouter public router = IRouter(0xA0De078cd5cFa7088821B83e0bD7545ccfb7c883);
-    IERC20[] tokens = new IERC20[](2); // Array of tokens to be used in the pool (set in the getPoolConfig function)
 
     /**
      * @dev Set the pause window duration for the pool factory here
@@ -30,31 +29,27 @@ contract HelperConfig {
 
     /**
      * @dev Set the name, symbol, and token configuration for the pool here
-     * @notice Also sets the tokens array that will be used for the pool initialization
      */
     function getPoolConfig(
         IERC20 token1,
         IERC20 token2
-    ) public returns (string memory, string memory, TokenConfig[] memory) {
+    ) public pure returns (string memory, string memory, TokenConfig[] memory) {
         string memory name = "Scaffold Balancer Pool #1";
         string memory symbol = "SB-50scUSD-50scDAI";
 
         TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
-        tokenConfig[0] = TokenConfig({
+        tokenConfig[0] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
             token: token1,
             tokenType: TokenType.STANDARD,
             rateProvider: IRateProvider(address(0)),
             yieldFeeExempt: false
         });
-        tokenConfig[1] = TokenConfig({
+        tokenConfig[1] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
             token: token2,
             tokenType: TokenType.STANDARD,
             rateProvider: IRateProvider(address(0)),
             yieldFeeExempt: false
         });
-
-        tokens[0] = tokenConfig[0].token;
-        tokens[1] = tokenConfig[1].token;
 
         return (name, symbol, tokenConfig);
     }
@@ -62,11 +57,16 @@ contract HelperConfig {
     /**
      * @dev Set the tokens, exactAmountsIn, minBptAmountOut, wethIsEth, and userData here
      */
-    function getInitializationConfig()
+    function getInitializationConfig(
+        TokenConfig[] memory tokenConfig
+    )
         public
-        view
+        pure
         returns (IERC20[] memory, uint256[] memory, uint256, bool, bytes memory)
     {
+        IERC20[] memory tokens = new IERC20[](2); // Array of tokens to be used in the pool
+        tokens[0] = tokenConfig[0].token;
+        tokens[1] = tokenConfig[1].token;
         uint256[] memory exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
         exactAmountsIn[0] = 10 ether; // amount of token1 to send during pool initialization
         exactAmountsIn[1] = 10 ether; // amount of token2 to send during pool initialization

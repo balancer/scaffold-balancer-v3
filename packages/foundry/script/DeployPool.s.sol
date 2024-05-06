@@ -13,11 +13,14 @@ import {Script, console} from "forge-std/Script.sol";
 /**
  * @title DeployPool Script
  * @author BuidlGuidl Labs
- * @notice This script uses the PK specified in the .env file to create a new pool using the most recently deployed pool factory
- * @notice This script is inhereted by Deploy.s.sol but can be run directly with `yarn deploy:pool`
- * @dev if running directly, set the pool deployment and initialization configurations in the `run()` function below
+ * @notice This script creates a new pool using the most recently deployed pool factory and then initializes it
+ * @dev Set the pool deployment and pool initialization configurations in `HelperConfig.s.sol`
+ * @dev Then run this script with `yarn deploy:pool`
  */
 contract DeployPool is HelperFunctions, HelperConfig, Script {
+    /**
+     * @notice Uses the pool name to generate a salt for the pool deployment
+     */
     function deployPoolFromFactory(
         address poolFactoryAddress,
         string memory name,
@@ -83,6 +86,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         (token1, token2) = deployMockTokens();
         vm.stopBroadcast();
 
+        // Look up configuration options from `HelperConfig.s.sol`
         HelperConfig helperConfig = new HelperConfig();
         (
             string memory name,
@@ -95,21 +99,20 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
             uint256 minBptAmountOut,
             bool wethIsEth,
             bytes memory userData
-        ) = helperConfig.getInitializationConfig();
+        ) = helperConfig.getInitializationConfig(tokenConfig);
         address poolFactoryAddress = DevOpsTools.get_most_recent_deployment(
             "CustomPoolFactoryExample", // Must match the pool factory contract name
             block.chainid
         ); // Get the most recently deployed address of the pool factory
 
+        // Deploy pool and then initialize it
         vm.startBroadcast(deployerPrivateKey);
-
         address pool = deployPoolFromFactory(
             poolFactoryAddress,
             name,
             symbol,
             tokenConfig
         );
-
         initializePool(
             pool,
             tokens,

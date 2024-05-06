@@ -11,8 +11,8 @@ import {Script, console} from "forge-std/Script.sol";
  * @title DeployPoolFactory Script
  * @author BuidlGuidl Labs
  * @notice This script uses the PK specified in `.env` to deploy a new pool factory
- * @notice This script can be run directly with `yarn deploy:factory`
- * @dev if running directly, set the pool deployment and initialization configurations in the `run()` function below
+ * @dev Set the factory deployment configurations in `HelperConfig.s.sol`
+ * @dev Then run this script with `yarn deploy:factory`
  */
 contract DeployPoolFactory is HelperConfig, Script {
     function deployPoolFactory(
@@ -32,7 +32,7 @@ contract DeployPoolFactory is HelperConfig, Script {
     }
 
     /**
-     * @dev Set your factory deployment onfiguration in `HelperConfig.s.sol`
+     * @dev Set your factory deployment configuration in `HelperConfig.s.sol`
      * @dev Deploy only the factory contract with the CLI command `yarn deploy:factory`
      */
     function run() external virtual {
