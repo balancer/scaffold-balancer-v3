@@ -102,26 +102,43 @@ Start splashing around in your pool with swaps, joins, and exits!
 
 TODO @matt - Showcase the front end at a high level (showing, with a pool address input already, the possible interactions you can do with it).
 
-### 0.3 Scaffold ETH 2 Tips
+### 0.3 Scaffold ETH 2 Guide
 
-#### 0.3.1 Changing The Frontend Network Connection
+#### 0.3.1 Deployment Options
 
-- The network the frontend points at is set via `targetNetworks` in the `scaffold.config.ts` file
-- To point the frontend at your local fork, use `chains.foundry`
+> SE-2 is setup to hot reload the frontend with contracts that are directly deployed via the `Deploy.s.sol` script. This means our frontend captures the pool factory and mock token contracts, but not the pool contract because it is deployed by calling a method on the factory.
 
-```typescript
-	targetNetworks: [chains.foundry],
+This command runs `Deploy.s.sol` which deploys a pool factory and a pool using the factory. The **factory** contract info will be written to the frontend and the contract can be interacted with via the "Debug" page. The pool contract address will print in the terminal but can also be selected from the dropdown on the "Pools" page.
+
+```bash
+yarn deploy
 ```
 
-#### 0.3.1 Changing The Forked Network
+This command runs `DeployFactory.s.sol` which deploys only a new pool factory. The contract info will not be written to the frontend
 
-- Modify the "fork" alias in the `packages/foundry/package.json` file, but do not change the chain id
+```bash
+yarn deploy:factory
+```
+
+This command runs `DeployPool.s.sol` using the last factory address you deployed. The contract info will not be written to the frontend, but you can copy and paste the address from terminal or refresh the pool explorer page and select it from the dropdown.
+
+```bash
+yarn deploy:pool
+```
+
+#### 0.3.2 Changing The Frontend Network Connection
+
+The network the frontend points at is set via `targetNetworks` in the `scaffold.config.ts` file
+
+#### 0.3.3 Changing The Forked Network
+
+Modify the "fork" alias in the `packages/foundry/package.json` file, but do not change the chain id
 
 ```json
 	"fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
 ```
 
-- `foundry.toml` comes preconfigured with a variety of `rpc_endpoints`
+🧠 Tip: `foundry.toml` comes preconfigured with a variety of aliases for `rpc_endpoints`
 
 ## 🚨🚨 Checkpoint 1: 🌊 Create A Custom Pool
 
