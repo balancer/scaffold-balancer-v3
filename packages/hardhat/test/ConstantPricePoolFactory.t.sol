@@ -39,86 +39,81 @@ contract ConstantPricePoolFactoryTest is Test {
         assertEq(pauseWindowDuration, 365 days);
     }
 
-    // function testPoolCreation__Fuzz(bytes32 salt) public {
-    //     vm.assume(salt > 0);
+    function testPoolCreation__Fuzz(bytes32 salt) public {
+        vm.assume(salt > 0);
 
-    //     TokenConfig[] memory tokens = new TokenConfig[](2);
-    //     tokens[0].token = tokenA;
-    //     tokens[1].token = tokenB;
-    //     uint256 highWeightIdx = tokenA > tokenB ? 1 : 0;
-    //     uint256 lowWeightIdx = highWeightIdx == 0 ? 1 : 0;
+        TokenConfig[] memory tokens = new TokenConfig[](2);
 
-    //     ConstantPricePool pool = ConstantPricePool(
-    //         factory.create("Balancer 80/20 Pool", "Pool8020", tokens[0], tokens[1], bytes32(0))
-    //     );
+        // assign tokens in alphanumeric order - FYI in ConstantPool.t.sol, they are sorted via a helper
+        tokens[0].token = tokenB;
+        tokens[1].token = tokenA;
+                
+        ConstantPricePool pool = ConstantPricePool(
+            factory.create("New Custom Pool #2", "CP2", tokens, bytes32(0))
+        );
 
-    //     uint256[] memory poolWeights = pool.getNormalizedWeights();
-    //     assertEq(poolWeights[highWeightIdx], 8e17, "Higher weight token is not 80%");
-    //     assertEq(poolWeights[lowWeightIdx], 2e17, "Lower weight token is not 20%");
-    //     assertEq(pool.symbol(), "Pool8020", "Wrong pool symbol");
-    // }
+        // TODO - specific tests to Constant Price Pool Invariant?
+        assertEq(pool.symbol(), "CP2", "Wrong pool symbol");
+    }
 
-    // function testPoolSalt__Fuzz(bytes32 salt) public {
-    //     vm.assume(salt > 0);
+    function testPoolSalt__Fuzz(bytes32 salt) public {
+        vm.assume(salt > 0);
 
-    //     TokenConfig[] memory tokens = new TokenConfig[](2);
-    //     tokens[0].token = tokenA;
-    //     tokens[1].token = tokenB;
-    //     tokens[0].rateProvider = rateProvider;
+        TokenConfig[] memory tokens = new TokenConfig[](2);
+        tokens[0].token = tokenB;
+        tokens[1].token = tokenA;
 
-    //     ConstantPricePool pool = ConstantPricePool(
-    //         factory.create("Balancer 80/20 Pool", "Pool8020", tokens[0], tokens[1], bytes32(0))
-    //     );
-    //     address expectedPoolAddress = factory.getDeploymentAddress(salt);
+        ConstantPricePool pool = ConstantPricePool(
+            factory.create("New Custom Pool #2", "CP2", tokens, bytes32(0))
+        );
+        address expectedPoolAddress = factory.getDeploymentAddress(salt);
 
-    //     ConstantPricePool secondPool = ConstantPricePool(
-    //         factory.create("Balancer 80/20 Pool", "Pool8020", tokens[0], tokens[1], salt)
-    //     );
+        ConstantPricePool secondPool = ConstantPricePool(
+            factory.create("New Custom Pool #2", "CP2", tokens, salt)
+        );
 
-    //     assertFalse(address(pool) == address(secondPool), "Two deployed pool addresses are equal");
-    //     assertEq(address(secondPool), expectedPoolAddress, "Unexpected pool address");
-    // }
+        assertFalse(address(pool) == address(secondPool), "Two deployed pool addresses are equal");
+        assertEq(address(secondPool), expectedPoolAddress, "Unexpected pool address");
+    }
 
-    // function testPoolSender__Fuzz(bytes32 salt) public {
-    //     vm.assume(salt > 0);
-    //     address expectedPoolAddress = factory.getDeploymentAddress(salt);
+    function testPoolSender__Fuzz(bytes32 salt) public {
+        vm.assume(salt > 0);
+        address expectedPoolAddress = factory.getDeploymentAddress(salt);
 
-    //     TokenConfig[] memory tokens = new TokenConfig[](2);
-    //     tokens[0].token = tokenA;
-    //     tokens[1].token = tokenB;
-    //     tokens[0].rateProvider = rateProvider;
+        TokenConfig[] memory tokens = new TokenConfig[](2);
+        tokens[0].token = tokenB;
+        tokens[1].token = tokenA;
 
-    //     // Different sender should change the address of the pool, given the same salt value
-    //     vm.prank(alice);
-    //     ConstantPricePool pool = ConstantPricePool(factory.create("Balancer 80/20 Pool", "Pool8020", tokens[0], tokens[1], salt));
-    //     assertFalse(address(pool) == expectedPoolAddress, "Unexpected pool address");
+        // Different sender should change the address of the pool, given the same salt value
+        vm.prank(alice);
+        ConstantPricePool pool = ConstantPricePool(factory.create("New Custom Pool #2", "CP2", tokens, salt));
+        assertFalse(address(pool) == expectedPoolAddress, "Unexpected pool address");
 
-    //     vm.prank(alice);
-    //     address aliceExpectedPoolAddress = factory.getDeploymentAddress(salt);
-    //     assertTrue(address(pool) == aliceExpectedPoolAddress, "Unexpected pool address");
-    // }
+        vm.prank(alice);
+        address aliceExpectedPoolAddress = factory.getDeploymentAddress(salt);
+        assertTrue(address(pool) == aliceExpectedPoolAddress, "Unexpected pool address");
+    }
 
-    // function testPoolCrossChainProtection__Fuzz(bytes32 salt, uint16 chainId) public {
-    //     vm.assume(chainId > 1);
+    function testPoolCrossChainProtection__Fuzz(bytes32 salt, uint16 chainId) public {
+        vm.assume(chainId > 1);
 
-    //     TokenConfig[] memory tokens = new TokenConfig[](2);
-    //     tokens[0].token = tokenA;
-    //     tokens[1].token = tokenB;
-    //     tokens[0].rateProvider = rateProvider;
+        TokenConfig[] memory tokens = new TokenConfig[](2);
+        tokens[0].token = tokenB;
+        tokens[1].token = tokenA;
 
-    //     vm.prank(alice);
-    //     ConstantPricePool poolMainnet = ConstantPricePool(
-    //         factory.create("Balancer 80/20 Pool", "Pool8020", tokens[0], tokens[1], salt)
-    //     );
+        vm.prank(alice);
+        ConstantPricePool poolMainnet = ConstantPricePool(
+            factory.create("New Custom Pool #2", "CP2", tokens, salt)
+        );
 
-    //     vm.chainId(chainId);
+        vm.chainId(chainId);
 
-    //     vm.prank(alice);
-    //     ConstantPricePool poolL2 = ConstantPricePool(
-    //         factory.create("Balancer 80/20 Pool", "Pool8020", tokens[0], tokens[1], salt)
-    //     );
+        vm.prank(alice);
+        ConstantPricePool poolL2 = ConstantPricePool(
+            factory.create("New Custom Pool #2", "CP2", tokens, salt)
+        );
 
-    //     // Same sender and salt, should still be different because of the chainId.
-    //     assertFalse(address(poolL2) == address(poolMainnet), "L2 and mainnet pool addresses are equal");
-    // }
+        // Same sender and salt, should still be different because of the chainId.
+        assertFalse(address(poolL2) == address(poolMainnet), "L2 and mainnet pool addresses are equal");
+    }
 }
