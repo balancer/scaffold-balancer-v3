@@ -16,10 +16,6 @@ import "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 import "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { BasePoolFactory } from "@balancer-labs/v3-vault/contracts/factories/BasePoolFactory.sol";
 
-
-
-
-
 /**
  * @title Example Custom Pool Factory Using Constant Price Invariant
  * @author BUIDL GUIDL

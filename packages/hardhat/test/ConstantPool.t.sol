@@ -1,44 +1,46 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.4;
 
 import "forge-std/Test.sol";
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import { IERC20Errors } from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 
 import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+// import { IVault } from "../contracts/interfaces/IVault.sol";
+
 import { IVaultAdmin } from "@balancer-labs/v3-interfaces/contracts/vault/IVaultAdmin.sol";
 import { IVaultMain } from "@balancer-labs/v3-interfaces/contracts/vault/IVaultMain.sol";
-import { IVaultErrors } from "@balancer-labs/v3-interfaces/contracts/vault/IVaultErrors.sol";
 import { TokenConfig, PoolConfig } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { IBasePool } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
 import { IWETH } from "@balancer-labs/v3-interfaces/contracts/solidity-utils/misc/IWETH.sol";
-import { IMinimumSwapFee } from "@balancer-labs/v3-interfaces/contracts/vault/IMinimumSwapFee.sol";
-import { PoolRoleAccounts } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 
 import { ArrayHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/ArrayHelpers.sol";
 import { BasicAuthorizerMock } from "@balancer-labs/v3-solidity-utils/contracts/test/BasicAuthorizerMock.sol";
 import { ERC20TestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
+import { WETHTestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/WETHTestToken.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import { Vault } from "@balancer-labs/v3-vault/contracts/Vault.sol";
 import { Router } from "@balancer-labs/v3-vault/contracts/Router.sol";
 import { VaultMock } from "@balancer-labs/v3-vault/contracts/test/VaultMock.sol";
 import { PoolConfigBits, PoolConfigLib } from "@balancer-labs/v3-vault/contracts/lib/PoolConfigLib.sol";
 
-import { WeightedPoolFactory } from "../../contracts/WeightedPoolFactory.sol";
-import { WeightedPool } from "../../contracts/WeightedPool.sol";
+import { BaseVaultTest } from "@test/vault/test/foundry/utils/BaseVaultTest.sol";
+import { ConstantPricePool } from "../contracts/ConstantPricePool.sol";
+import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.sol";
 
-import { BaseVaultTest } from "@balancer-labs/v3-vault/test/foundry/utils/BaseVaultTest.sol";
-
-contract WeightedPoolTest is BaseVaultTest {
+/**
+ * @title Constant Price Pool Test Example
+ * @author BUIDL GUIDL
+ * @notice This is an example custom pool test written for the Example Constant Price Pool showcased within the ScaffoldBalancer repo. It should not be used in production as is. It is simply an example for developers to reference when creating their own custom pool, custom pool factory, etc. with BalancerV3. These tests roughly mirror the typical testing cases that are found in the BalancerV3 monorepo for weighted pool tests. The idea is that as "ScaffoldBalancer" serves as a starting point for developers creating custom pools with BalancerV3. As a reference tool, it only makes sense to have tests that, at the very least, roughly mirror how weighted pools are tested within BalancerV3 monorepo. OF COURSE, THIS DOES NOT MEAN THAT THESE TESTS, THE COVERAGE OF THEM, ETC. ARE COMPLETE AND DEVELOPERS MAKING THEIR OWN CUSTOM POOLS MUST WRITE THEIR OWN TEST COVERAGE, CARRY OUT AUDITS, ETC. AS THEY SEE FIT.
+ */
+contract ConstantPoolTest is BaseVaultTest {
     using ArrayHelpers for *;
 
-    uint256 constant DEFAULT_SWAP_FEE = 1e16; // 1%
-
-    WeightedPoolFactory factory;
+    CustomPoolFactoryExample factory;
+	ConstantPricePool internal constantPricePool;
 
     uint256 constant USDC_AMOUNT = 1e3 * 1e18;
     uint256 constant DAI_AMOUNT = 1e3 * 1e18;
@@ -46,47 +48,45 @@ contract WeightedPoolTest is BaseVaultTest {
     uint256 constant DAI_AMOUNT_IN = 1 * 1e18;
     uint256 constant USDC_AMOUNT_OUT = 1 * 1e18;
 
-    uint256 constant DELTA = 1e9;
+    uint256 constant DELTA = 1e9; // TODO - For WeightedPool.t.sol, this was 1e9. I hypothesize that this was because...  
 
-    WeightedPool internal weightedPool;
     uint256 internal bptAmountOut;
 
     function setUp() public virtual override {
         BaseVaultTest.setUp();
-        weightedPool = WeightedPool(pool);
     }
 
-    function _createPool(address[] memory tokens, string memory label) internal virtual override returns (address) {
-        factory = new WeightedPoolFactory(IVault(address(vault)), 365 days);
-        WeightedPool newPool = WeightedPool(
+
+    // TODO - STEVE this is where you left off. Just debugging what works and what doesn't in this first test, then you're going to go through each test and get it working accordingly. Take down notes on what needs to be changed for each one, so you can make an easy testing template and pair it with the README.
+    function createPool() internal override returns (address) {
+        factory = new CustomPoolFactoryExample(IVault(address(vault)), 365 days);
+        TokenConfig[] memory tokens = new TokenConfig[](2);
+        tokens[0].token = IERC20(usdc);
+        tokens[1].token = IERC20(dai);
+
+        constantPricePool = ConstantPricePool(
             factory.create(
                 "ERC20 Pool",
                 "ERC20POOL",
-                vault.buildTokenConfig(tokens.asIERC20()),
-                [uint256(0.50e18), uint256(0.50e18)].toMemoryArray(),
-                PoolRoleAccounts({ pauseManager: address(0), swapFeeManager: address(0), poolCreator: address(0) }),
-                DEFAULT_SWAP_FEE,
-                ZERO_BYTES32
+                tokens,
+                keccak256(abi.encode("TEST"))
             )
         );
-        vm.label(address(newPool), label);
-        return address(newPool);
+        return address(constantPricePool);
     }
 
     function initPool() internal override {
-        vm.startPrank(lp);
-        bptAmountOut = _initPool(
+        uint256[] memory amountsIn = [uint256(DAI_AMOUNT), uint256(USDC_AMOUNT)].toMemoryArray();
+        vm.prank(lp);
+        bptAmountOut = router.initialize(
             pool,
-            [uint256(DAI_AMOUNT), uint256(USDC_AMOUNT)].toMemoryArray(),
+            InputHelpers.sortTokens([address(dai), address(usdc)].toMemoryArray().asIERC20()),
+            amountsIn, // 1000 of each
             // Account for the precision loss
-            DAI_AMOUNT - DELTA - 1e6
+            DAI_AMOUNT - DELTA - 1e6, // 1 - 1e9 -1e6
+            false,
+            bytes("")
         );
-        vm.stopPrank();
-    }
-
-    function testPoolAddress() public {
-        address calculatedPoolAddress = factory.getDeploymentAddress(ZERO_BYTES32);
-        assertEq(address(weightedPool), calculatedPoolAddress);
     }
 
     function testPoolPausedState() public {
@@ -94,12 +94,13 @@ contract WeightedPoolTest is BaseVaultTest {
             address(pool)
         );
 
-        assertFalse(paused, "Vault should not be paused initially");
-        assertApproxEqAbs(pauseWindow, START_TIMESTAMP + 365 days, 1, "Pause window period mismatch");
-        assertApproxEqAbs(bufferPeriod, START_TIMESTAMP + 365 days + 30 days, 1, "Pause buffer period mismatch");
-        assertEq(pauseManager, address(0), "Pause manager should be 0");
+        assertFalse(paused);
+        assertApproxEqAbs(pauseWindow, START_TIMESTAMP + 365 days, 1);
+        assertApproxEqAbs(bufferPeriod, START_TIMESTAMP + 365 days + 30 days, 1);
+        assertEq(pauseManager, address(0));
     }
 
+    // TODO - see question in issue #28
     function testInitialize() public {
         // Tokens are transferred from lp
         assertEq(defaultBalance - usdc.balanceOf(lp), USDC_AMOUNT, "LP: Wrong USDC balance");
@@ -110,16 +111,17 @@ contract WeightedPoolTest is BaseVaultTest {
         assertEq(dai.balanceOf(address(vault)), DAI_AMOUNT, "Vault: Wrong DAI balance");
 
         // Tokens are deposited to the pool
-        (, uint256[] memory balances, ) = vault.getPoolTokenInfo(address(pool));
+        (, , uint256[] memory balances, , ) = vault.getPoolTokenInfo(address(pool));
         assertEq(balances[0], DAI_AMOUNT, "Pool: Wrong DAI balance");
         assertEq(balances[1], USDC_AMOUNT, "Pool: Wrong USDC balance");
 
         // should mint correct amount of BPT tokens
         // Account for the precision loss
-        assertApproxEqAbs(weightedPool.balanceOf(lp), bptAmountOut, DELTA, "LP: Wrong bptAmountOut");
-        assertApproxEqAbs(bptAmountOut, DAI_AMOUNT, DELTA, "Wrong bptAmountOut");
+        assertApproxEqAbs(constantPricePool.balanceOf(lp), bptAmountOut, DELTA, "LP: Wrong bptAmountOut");
+        assertApproxEqAbs(bptAmountOut, 2 * DAI_AMOUNT, DELTA, "Wrong bptAmountOut");
     }
 
+    // @dev TODO - see questions in issue #28
     function testAddLiquidity() public {
         uint256[] memory amountsIn = [uint256(DAI_AMOUNT), uint256(USDC_AMOUNT)].toMemoryArray();
         vm.prank(bob);
@@ -134,13 +136,13 @@ contract WeightedPoolTest is BaseVaultTest {
         assertEq(dai.balanceOf(address(vault)), DAI_AMOUNT * 2, "Vault: Wrong DAI balance");
 
         // Tokens are deposited to the pool
-        (, uint256[] memory balances, ) = vault.getPoolTokenInfo(address(pool));
+        (, , uint256[] memory balances, , ) = vault.getPoolTokenInfo(address(pool));
         assertEq(balances[0], DAI_AMOUNT * 2, "Pool: Wrong DAI balance");
         assertEq(balances[1], USDC_AMOUNT * 2, "Pool: Wrong USDC balance");
 
         // should mint correct amount of BPT tokens
-        assertApproxEqAbs(weightedPool.balanceOf(bob), bptAmountOut, DELTA, "LP: Wrong bptAmountOut");
-        assertApproxEqAbs(bptAmountOut, DAI_AMOUNT, DELTA, "Wrong bptAmountOut");
+        assertApproxEqAbs(constantPricePool.balanceOf(bob), bptAmountOut, DELTA, "LP: Wrong bptAmountOut");
+        assertApproxEqAbs(bptAmountOut, 2 * DAI_AMOUNT, DELTA, "Wrong bptAmountOut");
     }
 
     function testRemoveLiquidity() public {
@@ -153,9 +155,9 @@ contract WeightedPoolTest is BaseVaultTest {
             bytes("")
         );
 
-        weightedPool.approve(address(vault), MAX_UINT256);
+        constantPricePool.approve(address(vault), type(uint256).max);
 
-        uint256 bobBptBalance = weightedPool.balanceOf(bob);
+        uint256 bobBptBalance = constantPricePool.balanceOf(bob);
         uint256 bptAmountIn = bobBptBalance;
 
         uint256[] memory amountsOut = router.removeLiquidityProportional(
@@ -177,7 +179,7 @@ contract WeightedPoolTest is BaseVaultTest {
         assertApproxEqAbs(dai.balanceOf(address(vault)), DAI_AMOUNT, DELTA, "Vault: Wrong DAI balance");
 
         // Tokens are deposited to the pool
-        (, uint256[] memory balances, ) = vault.getPoolTokenInfo(address(pool));
+        (, , uint256[] memory balances, , ) = vault.getPoolTokenInfo(address(pool));
         assertApproxEqAbs(balances[0], DAI_AMOUNT, DELTA, "Pool: Wrong DAI balance");
         assertApproxEqAbs(balances[1], USDC_AMOUNT, DELTA, "Pool: Wrong USDC balance");
 
@@ -186,14 +188,11 @@ contract WeightedPoolTest is BaseVaultTest {
         assertApproxEqAbs(amountsOut[1], USDC_AMOUNT, DELTA, "Wrong USDC AmountOut");
 
         // should mint correct amount of BPT tokens
-        assertEq(weightedPool.balanceOf(bob), 0, "LP: Wrong BPT balance");
+        assertEq(constantPricePool.balanceOf(bob), 0, "LP: Wrong BPT balance");
         assertEq(bobBptBalance, bptAmountIn, "LP: Wrong bptAmountIn");
     }
 
     function testSwap() public {
-        // Set swap fee to zero for this test.
-        vault.manuallySetSwapFee(pool, 0);
-
         vm.prank(bob);
         uint256 amountCalculated = router.swapSingleTokenExactIn(
             address(pool),
@@ -201,7 +200,7 @@ contract WeightedPoolTest is BaseVaultTest {
             usdc,
             DAI_AMOUNT_IN,
             less(USDC_AMOUNT_OUT, 1e3),
-            MAX_UINT256,
+            type(uint256).max,
             false,
             bytes("")
         );
@@ -214,7 +213,7 @@ contract WeightedPoolTest is BaseVaultTest {
         assertEq(usdc.balanceOf(address(vault)), USDC_AMOUNT - amountCalculated, "Vault: Wrong USDC balance");
         assertEq(dai.balanceOf(address(vault)), DAI_AMOUNT + DAI_AMOUNT_IN, "Vault: Wrong DAI balance");
 
-        (, uint256[] memory balances, ) = vault.getPoolTokenInfo(address(pool));
+        (, , uint256[] memory balances, , ) = vault.getPoolTokenInfo(address(pool));
 
         (uint256 daiIdx, uint256 usdcIdx) = getSortedIndexes(address(dai), address(usdc));
 
@@ -237,41 +236,4 @@ contract WeightedPoolTest is BaseVaultTest {
         router.addLiquidityUnbalanced(address(pool), amountsIn, 0, false, bytes(""));
     }
 
-    function testSupportsIERC165() public {
-        assertTrue(weightedPool.supportsInterface(type(IERC165).interfaceId), "Pool does not support IERC165");
-        assertTrue(
-            weightedPool.supportsInterface(type(IMinimumSwapFee).interfaceId),
-            "Pool does not support IMinimumSwapFee"
-        );
-    }
-
-    function testMinimumSwapFee() public {
-        assertEq(weightedPool.getMinimumSwapFeePercentage(), MIN_SWAP_FEE, "Minimum swap fee mismatch");
-    }
-
-    function testFailSwapFeeTooLow() public {
-        TokenConfig[] memory tokens = new TokenConfig[](2);
-        tokens[0].token = IERC20(dai);
-        tokens[1].token = IERC20(usdc);
-
-        address lowFeeWeightedPool = factory.create(
-            "ERC20 Pool",
-            "ERC20POOL",
-            tokens,
-            [uint256(0.50e18), uint256(0.50e18)].toMemoryArray(),
-            PoolRoleAccounts({ pauseManager: address(0), swapFeeManager: address(0), poolCreator: address(0) }),
-            MIN_SWAP_FEE - 1, // Swap fee too low
-            ZERO_BYTES32
-        );
-
-        factoryMock.registerTestPool(lowFeeWeightedPool, tokens, address(0));
-    }
-
-    function testSetSwapFeeTooLow() public {
-        authorizer.grantRole(vault.getActionId(IVaultAdmin.setStaticSwapFeePercentage.selector), alice);
-        vm.prank(alice);
-
-        vm.expectRevert(abi.encodeWithSelector(IVaultErrors.SwapFeePercentageTooLow.selector));
-        vault.setStaticSwapFeePercentage(address(pool), MIN_SWAP_FEE - 1);
-    }
 }
