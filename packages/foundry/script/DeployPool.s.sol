@@ -6,6 +6,7 @@ import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.so
 import {HelperFunctions} from "../utils/HelperFunctions.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {FakeTestERC20} from "../contracts/FakeTestERC20.sol";
 import {TokenConfig} from "../contracts/interfaces/VaultTypes.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {Script, console} from "forge-std/Script.sol";
@@ -48,7 +49,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         bool wethIsEth,
         bytes memory userData
     ) internal {
-        maxApproveVault(tokens);
+        maxApproveTokens(address(vault), tokens);
 
         router.initialize(
             pool,
@@ -61,13 +62,19 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
     }
 
     /**
-     * @notice Max approving vault to speed up UX on frontend
-     * @param tokens Array of tokens to approve the vault to spend
+     * @notice Creates mock tokens for the pool and mints 1000 of each to the deployer wallet
      */
-    function maxApproveVault(IERC20[] memory tokens) internal {
-        for (uint256 i = 0; i < tokens.length; ++i) {
-            tokens[i].approve(address(vault), type(uint256).max);
-        }
+    function deployMockTokens() internal returns (IERC20, IERC20) {
+        FakeTestERC20 scUSD = new FakeTestERC20(
+            "Scaffold Balancer Test Token #1",
+            "scUSD"
+        );
+        FakeTestERC20 scDAI = new FakeTestERC20(
+            "Scaffold Balancer Test Token #2",
+            "scDAI"
+        );
+
+        return (scUSD, scDAI);
     }
 
     /**
@@ -86,7 +93,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         (token1, token2) = deployMockTokens();
         vm.stopBroadcast();
 
-        // Look up configuration options from `HelperConfig.s.sol`
+        // Look up configurations from `HelperConfig.s.sol`
         HelperConfig helperConfig = new HelperConfig();
         (
             string memory name,
@@ -105,7 +112,6 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
             block.chainid
         ); // Get the most recently deployed address of the pool factory
 
-        // Deploy pool and then initialize it
         vm.startBroadcast(deployerPrivateKey);
         address pool = deployPoolFromFactory(
             poolFactoryAddress,

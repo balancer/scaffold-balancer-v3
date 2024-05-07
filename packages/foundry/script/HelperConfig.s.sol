@@ -3,7 +3,6 @@ pragma solidity ^0.8.18;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IRateProvider, TokenConfig, TokenType} from "../contracts/interfaces/VaultTypes.sol";
-import {FakeTestERC20} from "../contracts/FakeTestERC20.sol";
 import {IVault} from "../contracts/interfaces/IVault.sol";
 import {IRouter} from "../contracts/interfaces/IRouter.sol";
 import {Script} from "forge-std/Script.sol";
@@ -22,9 +21,12 @@ contract HelperConfig {
     /**
      * @dev Set the pause window duration for the pool factory here
      */
-    function getFactoryConfig() public pure returns (uint256) {
-        uint256 pauseWindowDuration = 365 days;
-        return pauseWindowDuration;
+    function getFactoryConfig()
+        public
+        pure
+        returns (uint256 pauseWindowDuration)
+    {
+        pauseWindowDuration = 365 days;
     }
 
     /**
@@ -75,22 +77,5 @@ contract HelperConfig {
         bytes memory userData = bytes(""); // Additional (optional) data required for adding initial liquidity
 
         return (tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData);
-    }
-
-    /**
-     * @notice Creates mock tokens for the pool and mints 1000 of each to the deployer wallet
-     * @return addresses of the mock tokens
-     */
-    function deployMockTokens() internal returns (IERC20, IERC20) {
-        FakeTestERC20 scUSD = new FakeTestERC20(
-            "Scaffold Balancer Test Token #1",
-            "scUSD"
-        );
-        FakeTestERC20 scDAI = new FakeTestERC20(
-            "Scaffold Balancer Test Token #2",
-            "scDAI"
-        );
-
-        return (scUSD, scDAI);
     }
 }

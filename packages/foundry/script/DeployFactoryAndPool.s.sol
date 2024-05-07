@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {DeployPoolFactory} from "./DeployPoolFactory.s.sol";
+import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
 import {DeployPool} from "./DeployPool.s.sol";
 import "./DeployHelpers.s.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
@@ -9,22 +9,22 @@ import {TokenConfig} from "../contracts/interfaces/VaultTypes.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
 /**
- * @title DeployScript
+ * @title DeployFactoryAndPool
  * @author BuidlGuidl Labs
  * @notice Contracts deployed by this script will have their info saved into the frontend for hot reload
- * @notice This script deploys a new pool factory, deploys a new pool from that factory, and initializes the pool with mock tokens
+ * @notice This script deploys a pool factory, deploys a pool using the factory, and then initializes the pool with mock tokens
  * @notice Mock tokens and BPT will be sent to the PK set in the .env file
  * @dev Set the pool factory, pool deployment, and pool initialization configurations in `HelperConfig.s.sol`
  * @dev Then run this script with `yarn deploy:all`
  */
-contract DeployScript is ScaffoldETHDeploy, DeployPoolFactory, DeployPool {
+contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
     error InvalidPrivateKey(string);
 
     // Tokens for pool (also requires configuration of `TokenConfig` in `getPoolConfig` function of HelperConfig.s.sol)
     IERC20 token1; // Make sure to have proper token order (alphanumeric)
     IERC20 token2; // Make sure to have proper token order (alphanumeric)
 
-    function run() external override(DeployPoolFactory, DeployPool) {
+    function run() external override {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         if (deployerPrivateKey == 0) {
             revert InvalidPrivateKey(
@@ -53,15 +53,20 @@ contract DeployScript is ScaffoldETHDeploy, DeployPoolFactory, DeployPool {
             bytes memory userData
         ) = helperConfig.getInitializationConfig(tokenConfig);
 
-        // Deploy factory and then deploy pool and then initialize pool
         vm.startBroadcast(deployerPrivateKey);
-        address poolFactoryAddress = deployPoolFactory(pauseWindowDuration);
+        CustomPoolFactoryExample customPoolFactory = new CustomPoolFactoryExample(
+                vault,
+                pauseWindowDuration
+            );
+        console.log("Deployed Factory Address: %s", address(customPoolFactory));
+
         address pool = deployPoolFromFactory(
-            poolFactoryAddress,
+            address(customPoolFactory),
             name,
             symbol,
             tokenConfig
         );
+
         initializePool(
             pool,
             tokens,
