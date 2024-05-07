@@ -34,7 +34,10 @@ import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.
 /**
  * @title Constant Price Pool Test Example
  * @author BUIDL GUIDL
- * @notice This is an example custom pool test written for the Example Constant Price Pool showcased within the ScaffoldBalancer repo. It should not be used in production as is. It is simply an example for developers to reference when creating their own custom pool, custom pool factory, etc. with BalancerV3. These tests roughly mirror the typical testing cases that are found in the BalancerV3 monorepo for weighted pool tests. The idea is that as "ScaffoldBalancer" serves as a starting point for developers creating custom pools with BalancerV3. As a reference tool, it only makes sense to have tests that, at the very least, roughly mirror how weighted pools are tested within BalancerV3 monorepo. OF COURSE, THIS DOES NOT MEAN THAT THESE TESTS, THE COVERAGE OF THEM, ETC. ARE COMPLETE AND DEVELOPERS MAKING THEIR OWN CUSTOM POOLS MUST WRITE THEIR OWN TEST COVERAGE, CARRY OUT AUDITS, ETC. AS THEY SEE FIT.
+ * @notice This test file serves as an example of some areas one needs to focus on when writing their own custom BalancerV3 pool. This is not production ready, and it is the developers responsibility to carry out proper testing and auditing for their pool.
+ * These tests roughly mirror the typical testing cases that are found in the BalancerV3 monorepo for weighted pool tests.  As a reference tool, it only makes sense to have tests that, at the very least, roughly mirror how weighted pools are tested within BalancerV3 monorepo. 
+ * @dev This test is written for the Constant Price Custom Pool. Developers may duplicate this as a starting template for their own custom pool test file. 
+ * When creating your own custom pool, developers are expected to: create their own custom pool file, test file, script file. They simply can just duplicate or override the files that are here marked as "example" within their title.
  */
 contract ConstantPoolTest is BaseVaultTest {
     using ArrayHelpers for *;
