@@ -1,7 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
+import {CustomPoolFactoryExample} from
+    "../contracts/CustomPoolFactoryExample.sol";
 import {DeployPool} from "./DeployPool.s.sol";
 import "./DeployHelpers.s.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
@@ -54,26 +55,16 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
         ) = helperConfig.getInitializationConfig(tokenConfig);
 
         vm.startBroadcast(deployerPrivateKey);
-        CustomPoolFactoryExample customPoolFactory = new CustomPoolFactoryExample(
-                vault,
-                pauseWindowDuration
-            );
+        CustomPoolFactoryExample customPoolFactory =
+            new CustomPoolFactoryExample(vault, pauseWindowDuration);
         console.log("Deployed Factory Address: %s", address(customPoolFactory));
 
         address pool = deployPoolFromFactory(
-            address(customPoolFactory),
-            name,
-            symbol,
-            tokenConfig
+            address(customPoolFactory), name, symbol, tokenConfig
         );
 
         initializePool(
-            pool,
-            tokens,
-            exactAmountsIn,
-            minBptAmountOut,
-            wethIsEth,
-            userData
+            pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData
         );
         vm.stopBroadcast();
 

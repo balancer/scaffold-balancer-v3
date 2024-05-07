@@ -2,13 +2,15 @@
 
 pragma solidity ^0.8.4;
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @dev Errors are namespaced inside an interface to improve DX with Typechain.
 interface IVaultErrors {
-    /*******************************************************************************
-                            Registration and Initialization
-    *******************************************************************************/
+    /**
+     *
+     *                         Registration and Initialization
+     *
+     */
 
     /**
      * @dev A pool has already been registered. `registerPool` may only be called once.
@@ -61,11 +63,15 @@ interface IVaultErrors {
      * @param expectedToken The correct token at a given index in the pool
      * @param actualToken The actual token found at that index
      */
-    error TokensMismatch(address pool, address expectedToken, address actualToken);
+    error TokensMismatch(
+        address pool, address expectedToken, address actualToken
+    );
 
-    /*******************************************************************************
-                                 Transient Accounting
-    *******************************************************************************/
+    /**
+     *
+     *                              Transient Accounting
+     *
+     */
 
     /// @dev A transient accounting operation completed with outstanding token deltas.
     error BalanceNotSettled();
@@ -114,9 +120,11 @@ interface IVaultErrors {
     /// @dev An unauthorized Router tried to call a permissioned function (i.e., using the Vault's token allowance).
     error RouterNotTrusted();
 
-    /*******************************************************************************
-                                        Swaps
-    *******************************************************************************/
+    /**
+     *
+     *                                     Swaps
+     *
+     */
 
     /// @dev The user tried to swap zero tokens.
     error AmountGivenZero();
@@ -130,9 +138,11 @@ interface IVaultErrors {
     /// @dev An amount in or out has exceeded the limit specified in the swap request.
     error SwapLimit(uint256 amount, uint256 limit);
 
-    /*******************************************************************************
-                                    Add Liquidity
-    *******************************************************************************/
+    /**
+     *
+     *                                 Add Liquidity
+     *
+     */
 
     /// @dev Add liquidity kind not supported.
     error InvalidAddLiquidityKind();
@@ -146,9 +156,11 @@ interface IVaultErrors {
     /// @dev Pool does not support adding liquidity with a customized input.
     error DoesNotSupportAddLiquidityCustom();
 
-    /*******************************************************************************
-                                    Remove Liquidity
-    *******************************************************************************/
+    /**
+     *
+     *                                 Remove Liquidity
+     *
+     */
 
     /// @dev Remove liquidity kind not supported.
     error InvalidRemoveLiquidityKind();
@@ -162,9 +174,11 @@ interface IVaultErrors {
     /// @dev Pool does not support removing liquidity with a customized input.
     error DoesNotSupportRemoveLiquidityCustom();
 
-    /*******************************************************************************
-                                     Fees
-    *******************************************************************************/
+    /**
+     *
+     *                                  Fees
+     *
+     */
 
     /// @dev Error raised when the protocol swap fee percentage exceeds the maximum allowed value.
     error ProtocolSwapFeePercentageTooHigh();
@@ -175,16 +189,20 @@ interface IVaultErrors {
     /// @dev Error raised when the swap fee percentage exceeds the maximum allowed value.
     error SwapFeePercentageTooHigh();
 
-    /*******************************************************************************
-                                    Queries
-    *******************************************************************************/
+    /**
+     *
+     *                                 Queries
+     *
+     */
 
     /// @dev A user tried to execute a query operation when they were disabled.
     error QueriesDisabled();
 
-    /*******************************************************************************
-                                Recovery Mode
-    *******************************************************************************/
+    /**
+     *
+     *                             Recovery Mode
+     *
+     */
 
     /**
      * @dev Cannot enable recovery mode when already enabled.
@@ -198,9 +216,11 @@ interface IVaultErrors {
      */
     error PoolNotInRecoveryMode(address pool);
 
-    /*******************************************************************************
-                                Authentication
-    *******************************************************************************/
+    /**
+     *
+     *                             Authentication
+     *
+     */
 
     /**
      * @dev Error indicating the sender is not the Vault (e.g., someone is trying to call a permissioned function).
@@ -208,9 +228,11 @@ interface IVaultErrors {
      */
     error SenderIsNotVault(address sender);
 
-    /*******************************************************************************
-                                        Pausing
-    *******************************************************************************/
+    /**
+     *
+     *                                     Pausing
+     *
+     */
 
     /// @dev The caller specified a pause window period longer than the maximum.
     error VaultPauseWindowDurationTooLarge();
@@ -251,9 +273,11 @@ interface IVaultErrors {
      */
     error SenderIsNotPauseManager(address pool);
 
-    /*******************************************************************************
-                                    Miscellaneous
-    *******************************************************************************/
+    /**
+     *
+     *                                 Miscellaneous
+     *
+     */
 
     /// @dev Optional User Data should be empty in the current add / remove liquidity kind.
     error UserDataNotSupported();

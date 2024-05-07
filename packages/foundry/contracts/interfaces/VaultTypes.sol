@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.4;
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IRateProvider } from "./IRateProvider.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IRateProvider} from "./IRateProvider.sol";
 
 /// @dev Represents a pool's hooks.
 struct PoolHooks {
@@ -86,10 +86,11 @@ enum Rounding {
     ROUND_DOWN
 }
 
-/*******************************************************************************
-                                    Swaps
-*******************************************************************************/
-
+/**
+ *
+ *                                     Swaps
+ *
+ */
 enum SwapKind {
     EXACT_IN,
     EXACT_OUT
@@ -115,10 +116,11 @@ struct SwapParams {
     bytes userData;
 }
 
-/*******************************************************************************
-                                Add liquidity
-*******************************************************************************/
-
+/**
+ *
+ *                                 Add liquidity
+ *
+ */
 enum AddLiquidityKind {
     UNBALANCED,
     SINGLE_TOKEN_EXACT_OUT,
@@ -143,10 +145,11 @@ struct AddLiquidityParams {
     bytes userData;
 }
 
-/*******************************************************************************
-                                Remove liquidity
-*******************************************************************************/
-
+/**
+ *
+ *                                 Remove liquidity
+ *
+ */
 enum RemoveLiquidityKind {
     PROPORTIONAL,
     SINGLE_TOKEN_EXACT_IN,

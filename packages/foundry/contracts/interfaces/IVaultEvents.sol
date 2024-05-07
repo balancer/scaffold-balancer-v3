@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.4;
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import { IAuthorizer } from "./IAuthorizer.sol";
-import { LiquidityManagement, PoolHooks, TokenConfig } from "./VaultTypes.sol";
+import {IAuthorizer} from "./IAuthorizer.sol";
+import {LiquidityManagement, PoolHooks, TokenConfig} from "./VaultTypes.sol";
 
 interface IVaultEvents {
     /**
@@ -40,7 +40,12 @@ interface IVaultEvents {
      * @param tokens The pool's tokens
      * @param deltas The amount each token changed
      */
-    event PoolBalanceChanged(address indexed pool, address indexed liquidityProvider, IERC20[] tokens, int256[] deltas);
+    event PoolBalanceChanged(
+        address indexed pool,
+        address indexed liquidityProvider,
+        IERC20[] tokens,
+        int256[] deltas
+    );
 
     /**
      * @dev The Vault's pause status has changed.
@@ -85,7 +90,9 @@ interface IVaultEvents {
      * @param token The token whose protocol fee balance increased
      * @param amount The amount of the protocol fee
      */
-    event ProtocolSwapFeeCharged(address indexed pool, address indexed token, uint256 amount);
+    event ProtocolSwapFeeCharged(
+        address indexed pool, address indexed token, uint256 amount
+    );
 
     /**
      * @notice Emitted when a protocol swap fee is incurred.
@@ -98,7 +105,9 @@ interface IVaultEvents {
      * @param token The token whose protocol fee balance increased
      * @param amount The amount of the protocol fee
      */
-    event ProtocolYieldFeeCharged(address indexed pool, address indexed token, uint256 amount);
+    event ProtocolYieldFeeCharged(
+        address indexed pool, address indexed token, uint256 amount
+    );
 
     /**
      * @dev Recovery mode has been enabled or disabled for a pool.

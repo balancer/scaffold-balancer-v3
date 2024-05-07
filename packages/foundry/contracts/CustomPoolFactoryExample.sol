@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.4;
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import { IVault } from "./interfaces/IVault.sol";
-import { IRateProvider } from "./interfaces/IRateProvider.sol";
+import {IVault} from "./interfaces/IVault.sol";
+import {IRateProvider} from "./interfaces/IRateProvider.sol";
 import "./interfaces/VaultTypes.sol";
 
-import { BasePoolFactory } from "./BasePoolFactory.sol";
+import {BasePoolFactory} from "./BasePoolFactory.sol";
 
 import {ConstantPricePool} from "./ConstantPricePool.sol";
 
@@ -23,7 +23,13 @@ contract CustomPoolFactoryExample is BasePoolFactory {
     constructor(
         IVault vault,
         uint256 pauseWindowDuration
-    ) BasePoolFactory(vault, pauseWindowDuration, type(ConstantPricePool).creationCode) {
+    )
+        BasePoolFactory(
+            vault,
+            pauseWindowDuration,
+            type(ConstantPricePool).creationCode
+        )
+    {
         // solhint-disable-previous-line no-empty-blocks
     }
 
@@ -40,14 +46,7 @@ contract CustomPoolFactoryExample is BasePoolFactory {
         TokenConfig[] memory tokens,
         bytes32 salt
     ) external returns (address pool) {
-        pool = _create(
-            abi.encode(
-                getVault(),
-                name,
-                symbol
-            ),
-            salt
-        );
+        pool = _create(abi.encode(getVault(), name, symbol), salt);
 
         // Call registerPool from the vault. See `IVaultExtension.sol` for details on `registerPool()`
         getVault().registerPool(
@@ -65,7 +64,10 @@ contract CustomPoolFactoryExample is BasePoolFactory {
                 shouldCallBeforeSwap: false,
                 shouldCallAfterSwap: false
             }),
-            LiquidityManagement({ supportsAddLiquidityCustom: false, supportsRemoveLiquidityCustom: false })
+            LiquidityManagement({
+                supportsAddLiquidityCustom: false,
+                supportsRemoveLiquidityCustom: false
+            })
         );
 
         _registerPoolWithFactory(pool); // register pool with respective factory (example facotry that was created in a previous tx, if using this repo it would've likely been from `DeployCustomPoolFactoryAndNewPoolExample.s.sol` script being ran).

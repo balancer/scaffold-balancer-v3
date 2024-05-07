@@ -2,7 +2,8 @@
 
 pragma solidity ^0.8.18;
 
-import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
+import {CustomPoolFactoryExample} from
+    "../contracts/CustomPoolFactoryExample.sol";
 import {HelperFunctions} from "../utils/HelperFunctions.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
@@ -28,9 +29,8 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         string memory symbol,
         TokenConfig[] memory tokenConfig
     ) internal returns (address) {
-        CustomPoolFactoryExample poolFactory = CustomPoolFactoryExample(
-            poolFactoryAddress
-        );
+        CustomPoolFactoryExample poolFactory =
+            CustomPoolFactoryExample(poolFactoryAddress);
 
         bytes32 salt = convertNameToBytes32(name);
         address newPool = poolFactory.create(name, symbol, tokenConfig, salt);
@@ -52,12 +52,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         maxApproveTokens(address(vault), tokens);
 
         router.initialize(
-            pool,
-            tokens,
-            exactAmountsIn,
-            minBptAmountOut,
-            wethIsEth,
-            userData
+            pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData
         );
     }
 
@@ -65,14 +60,10 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
      * @notice Creates mock tokens for the pool and mints 1000 of each to the deployer wallet
      */
     function deployMockTokens() internal returns (IERC20, IERC20) {
-        FakeTestERC20 scUSD = new FakeTestERC20(
-            "Scaffold Balancer Test Token #1",
-            "scUSD"
-        );
-        FakeTestERC20 scDAI = new FakeTestERC20(
-            "Scaffold Balancer Test Token #2",
-            "scDAI"
-        );
+        FakeTestERC20 scUSD =
+            new FakeTestERC20("Scaffold Balancer Test Token #1", "scUSD");
+        FakeTestERC20 scDAI =
+            new FakeTestERC20("Scaffold Balancer Test Token #2", "scDAI");
 
         return (scUSD, scDAI);
     }
@@ -113,19 +104,10 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         ); // Get the most recently deployed address of the pool factory
 
         vm.startBroadcast(deployerPrivateKey);
-        address pool = deployPoolFromFactory(
-            poolFactoryAddress,
-            name,
-            symbol,
-            tokenConfig
-        );
+        address pool =
+            deployPoolFromFactory(poolFactoryAddress, name, symbol, tokenConfig);
         initializePool(
-            pool,
-            tokens,
-            exactAmountsIn,
-            minBptAmountOut,
-            wethIsEth,
-            userData
+            pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData
         );
 
         vm.stopBroadcast();

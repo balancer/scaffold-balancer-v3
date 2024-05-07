@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.4;
 
-import { IVault } from "../interfaces/IVault.sol";
-import { IAuthorizer } from "../interfaces/IAuthorizer.sol";
+import {IVault} from "../interfaces/IVault.sol";
+import {IAuthorizer} from "../interfaces/IAuthorizer.sol";
 
 import "./Authentication.sol";
 
@@ -11,7 +11,9 @@ abstract contract SingletonAuthentication is Authentication {
     IVault private immutable _vault;
 
     // Use the contract's own address to disambiguate action identifiers
-    constructor(IVault vault) Authentication(bytes32(uint256(uint160(address(this))))) {
+    constructor(IVault vault)
+        Authentication(bytes32(uint256(uint160(address(this)))))
+    {
         _vault = vault;
     }
 
@@ -31,11 +33,18 @@ abstract contract SingletonAuthentication is Authentication {
         return getVault().getAuthorizer();
     }
 
-    function _canPerform(bytes32 actionId, address account) internal view override returns (bool) {
+    function _canPerform(
+        bytes32 actionId,
+        address account
+    ) internal view override returns (bool) {
         return getAuthorizer().canPerform(actionId, account, address(this));
     }
 
-    function _canPerform(bytes32 actionId, address account, address where) internal view returns (bool) {
+    function _canPerform(
+        bytes32 actionId,
+        address account,
+        address where
+    ) internal view returns (bool) {
         return getAuthorizer().canPerform(actionId, account, where);
     }
 }

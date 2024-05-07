@@ -63,6 +63,8 @@ contract FactoryWidePauseWindow {
      * @return The resolved pause window end time (0 indicating it's no longer pausable)
      */
     function getNewPoolPauseWindowEndTime() public view returns (uint256) {
-        return block.timestamp < _poolsPauseWindowEndTime ? _poolsPauseWindowEndTime : 0;
+        return block.timestamp < _poolsPauseWindowEndTime
+            ? _poolsPauseWindowEndTime
+            : 0;
     }
 }

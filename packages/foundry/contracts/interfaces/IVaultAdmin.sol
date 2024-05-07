@@ -2,16 +2,18 @@
 
 pragma solidity ^0.8.4;
 
-import { IAuthorizer } from "./IAuthorizer.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IERC4626 } from "@openzeppelin/contracts/interfaces/IERC4626.sol";
+import {IAuthorizer} from "./IAuthorizer.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
-import { IVault } from "./IVault.sol";
+import {IVault} from "./IVault.sol";
 
 interface IVaultAdmin {
-    /*******************************************************************************
-                              Constants and immutables
-    *******************************************************************************/
+    /**
+     *
+     *                           Constants and immutables
+     *
+     */
 
     /**
      * @notice Returns Vault's pause window end time.
@@ -47,9 +49,11 @@ interface IVaultAdmin {
     /// @dev Returns the main Vault address.
     function vault() external view returns (IVault);
 
-    /*******************************************************************************
-                                    Pool Information
-    *******************************************************************************/
+    /**
+     *
+     *                                 Pool Information
+     *
+     */
 
     /**
      * @notice Retrieve the scaling factors from a pool's rate providers.
@@ -57,11 +61,16 @@ interface IVaultAdmin {
      * effectively preventing retrieval of basic pool parameters. Tokens without rate providers will always return
      * FixedPoint.ONE (1e18).
      */
-    function getPoolTokenRates(address pool) external view returns (uint256[] memory);
+    function getPoolTokenRates(address pool)
+        external
+        view
+        returns (uint256[] memory);
 
-    /*******************************************************************************
-                                    Vault Pausing
-    *******************************************************************************/
+    /**
+     *
+     *                                 Vault Pausing
+     *
+     */
 
     /**
      * @notice Indicates whether the Vault is paused.
@@ -75,7 +84,10 @@ interface IVaultAdmin {
      * @return vaultPauseWindowEndTime The timestamp of the end of the Vault's pause window
      * @return vaultBufferPeriodEndTime The timestamp of the end of the Vault's buffer period
      */
-    function getVaultPausedState() external view returns (bool, uint256, uint256);
+    function getVaultPausedState()
+        external
+        view
+        returns (bool, uint256, uint256);
 
     /**
      * @notice Pause the Vault: an emergency action which disables all operational state-changing functions.
@@ -90,9 +102,11 @@ interface IVaultAdmin {
      */
     function unpauseVault() external;
 
-    /*******************************************************************************
-                                    Pool Pausing
-    *******************************************************************************/
+    /**
+     *
+     *                                 Pool Pausing
+     *
+     */
 
     /**
      * @notice Pause the Pool: an emergency action which disables all pool functions.
@@ -108,34 +122,43 @@ interface IVaultAdmin {
      */
     function unpausePool(address pool) external;
 
-    /*******************************************************************************
-                                   Fees
-    *******************************************************************************/
+    /**
+     *
+     *                                Fees
+     *
+     */
 
     /**
      * @notice Sets a new swap fee percentage for the protocol.
      * @param newSwapFeePercentage The new swap fee percentage to be set
      */
-    function setProtocolSwapFeePercentage(uint256 newSwapFeePercentage) external;
+    function setProtocolSwapFeePercentage(uint256 newSwapFeePercentage)
+        external;
 
     /**
      * @notice Sets a new yield fee percentage for the protocol.
      * @param newYieldFeePercentage The new swap fee percentage to be set
      */
-    function setProtocolYieldFeePercentage(uint256 newYieldFeePercentage) external;
+    function setProtocolYieldFeePercentage(uint256 newYieldFeePercentage)
+        external;
 
     /**
      * @notice Assigns a new static swap fee percentage to the specified pool.
      * @param pool The address of the pool for which the static swap fee will be changed
      * @param swapFeePercentage The new swap fee percentage to apply to the pool
      */
-    function setStaticSwapFeePercentage(address pool, uint256 swapFeePercentage) external;
+    function setStaticSwapFeePercentage(
+        address pool,
+        uint256 swapFeePercentage
+    ) external;
 
     /**
      * @notice Emitted when the swap fee percentage of a pool is updated.
      * @param swapFeePercentage The new swap fee percentage for the pool
      */
-    event SwapFeePercentageChanged(address indexed pool, uint256 indexed swapFeePercentage);
+    event SwapFeePercentageChanged(
+        address indexed pool, uint256 indexed swapFeePercentage
+    );
 
     /**
      * @notice Collects accumulated protocol fees for the specified array of tokens.
@@ -144,9 +167,11 @@ interface IVaultAdmin {
      */
     function collectProtocolFees(IERC20[] calldata tokens) external;
 
-    /*******************************************************************************
-                                    Recovery Mode
-    *******************************************************************************/
+    /**
+     *
+     *                                 Recovery Mode
+     *
+     */
 
     /**
      * @notice Enable recovery mode for a pool.
@@ -162,16 +187,20 @@ interface IVaultAdmin {
      */
     function disableRecoveryMode(address pool) external;
 
-    /*******************************************************************************
-                                    Queries
-    *******************************************************************************/
+    /**
+     *
+     *                                 Queries
+     *
+     */
 
     /// @notice Disables queries functionality on the Vault. Can be called only by governance.
     function disableQuery() external;
 
-    /*******************************************************************************
-                                Authentication
-    *******************************************************************************/
+    /**
+     *
+     *                             Authentication
+     *
+     */
 
     /**
      * @notice Sets a new Authorizer for the Vault.

@@ -2,17 +2,16 @@
 
 pragma solidity ^0.8.4;
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import { IBasePoolFactory } from "./interfaces/IBasePoolFactory.sol";
-import { IVault } from "./interfaces/IVault.sol";
-import { TokenConfig } from "./interfaces/VaultTypes.sol";
-import {
-    SingletonAuthentication
-} from "./v3-solidity-utils/SingletonAuthentication.sol";
-import { CREATE3 } from "./v3-solidity-utils/solmate/CREATE3.sol";
+import {IBasePoolFactory} from "./interfaces/IBasePoolFactory.sol";
+import {IVault} from "./interfaces/IVault.sol";
+import {TokenConfig} from "./interfaces/VaultTypes.sol";
+import {SingletonAuthentication} from
+    "./v3-solidity-utils/SingletonAuthentication.sol";
+import {CREATE3} from "./v3-solidity-utils/solmate/CREATE3.sol";
 
-import { FactoryWidePauseWindow } from "./FactoryWidePauseWindow.sol";
+import {FactoryWidePauseWindow} from "./FactoryWidePauseWindow.sol";
 
 /**
  * @notice Base contract for Pool factories.
@@ -25,7 +24,11 @@ import { FactoryWidePauseWindow } from "./FactoryWidePauseWindow.sol";
  * become increasingly important. Governance can deprecate a factory by calling `disable`, which will permanently
  * prevent the creation of any future pools from the factory.
  */
-abstract contract BasePoolFactory is IBasePoolFactory, SingletonAuthentication, FactoryWidePauseWindow {
+abstract contract BasePoolFactory is
+    IBasePoolFactory,
+    SingletonAuthentication,
+    FactoryWidePauseWindow
+{
     mapping(address => bool) private _isPoolFromFactory;
     bool private _disabled;
 
@@ -36,7 +39,10 @@ abstract contract BasePoolFactory is IBasePoolFactory, SingletonAuthentication, 
         IVault vault,
         uint256 pauseWindowDuration,
         bytes memory creationCode
-    ) SingletonAuthentication(vault) FactoryWidePauseWindow(pauseWindowDuration) {
+    )
+        SingletonAuthentication(vault)
+        FactoryWidePauseWindow(pauseWindowDuration)
+    {
         _creationCode = creationCode;
     }
 
@@ -78,7 +84,12 @@ abstract contract BasePoolFactory is IBasePoolFactory, SingletonAuthentication, 
         emit PoolCreated(pool);
     }
 
-    function _create(bytes memory constructorArgs, bytes32 salt) internal returns (address) {
-        return CREATE3.deploy(salt, abi.encodePacked(_creationCode, constructorArgs), 0);
+    function _create(
+        bytes memory constructorArgs,
+        bytes32 salt
+    ) internal returns (address) {
+        return CREATE3.deploy(
+            salt, abi.encodePacked(_creationCode, constructorArgs), 0
+        );
     }
 }

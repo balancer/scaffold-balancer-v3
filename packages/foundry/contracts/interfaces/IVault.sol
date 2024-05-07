@@ -2,23 +2,23 @@
 
 pragma solidity ^0.8.4;
 
-import { IVaultAdmin } from "./IVaultAdmin.sol";
-import { IVaultExtension } from "./IVaultExtension.sol";
-import { IVaultMain } from "./IVaultMain.sol";
-import { IVaultErrors } from "./IVaultErrors.sol";
-import { IVaultEvents } from "./IVaultEvents.sol";
+import {IVaultAdmin} from "./IVaultAdmin.sol";
+import {IVaultExtension} from "./IVaultExtension.sol";
+import {IVaultMain} from "./IVaultMain.sol";
+import {IVaultErrors} from "./IVaultErrors.sol";
+import {IVaultEvents} from "./IVaultEvents.sol";
 
 interface IVault is
-	IVaultMain,
-	IVaultExtension,
-	IVaultAdmin,
-	IVaultErrors,
-	IVaultEvents
+    IVaultMain,
+    IVaultExtension,
+    IVaultAdmin,
+    IVaultErrors,
+    IVaultEvents
 {
-	/// @dev Returns the main Vault address.
-	function vault()
-		external
-		view
-		override(IVaultAdmin, IVaultExtension)
-		returns (IVault);
+    /// @dev Returns the main Vault address.
+    function vault()
+        external
+        view
+        override(IVaultAdmin, IVaultExtension)
+        returns (IVault);
 }

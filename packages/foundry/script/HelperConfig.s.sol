@@ -2,7 +2,11 @@
 pragma solidity ^0.8.18;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {IRateProvider, TokenConfig, TokenType} from "../contracts/interfaces/VaultTypes.sol";
+import {
+    IRateProvider,
+    TokenConfig,
+    TokenType
+} from "../contracts/interfaces/VaultTypes.sol";
 import {IVault} from "../contracts/interfaces/IVault.sol";
 import {IRouter} from "../contracts/interfaces/IRouter.sol";
 import {Script} from "forge-std/Script.sol";
@@ -35,47 +39,55 @@ contract HelperConfig {
     function getPoolConfig(
         IERC20 token1,
         IERC20 token2
-    ) public pure returns (string memory, string memory, TokenConfig[] memory) {
-        string memory name = "Scaffold Balancer Pool #1";
-        string memory symbol = "SB-50scUSD-50scDAI";
+    )
+        public
+        pure
+        returns (
+            string memory name,
+            string memory symbol,
+            TokenConfig[] memory tokenConfig
+        )
+    {
+        name = "Scaffold Balancer Pool #2"; // name for the pool
+        symbol = "SB-50scUSD-50scDAI"; // symbol for the BPT
 
-        TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
+        tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
         tokenConfig[0] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
             token: token1,
-            tokenType: TokenType.STANDARD,
-            rateProvider: IRateProvider(address(0)),
-            yieldFeeExempt: false
+            tokenType: TokenType.STANDARD, // STANDARD, WITH_RATE, or ERC4626
+            rateProvider: IRateProvider(address(0)), // The rate provider for a token
+            yieldFeeExempt: false // Flag indicating whether yield fees should be charged on this token
         });
         tokenConfig[1] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
             token: token2,
-            tokenType: TokenType.STANDARD,
-            rateProvider: IRateProvider(address(0)),
-            yieldFeeExempt: false
+            tokenType: TokenType.STANDARD, // STANDARD, WITH_RATE, or ERC4626
+            rateProvider: IRateProvider(address(0)), // The rate provider for a token
+            yieldFeeExempt: false // Flag indicating whether yield fees should be charged on this token
         });
-
-        return (name, symbol, tokenConfig);
     }
 
     /**
      * @dev Set the tokens, exactAmountsIn, minBptAmountOut, wethIsEth, and userData here
      */
-    function getInitializationConfig(
-        TokenConfig[] memory tokenConfig
-    )
+    function getInitializationConfig(TokenConfig[] memory tokenConfig)
         public
         pure
-        returns (IERC20[] memory, uint256[] memory, uint256, bool, bytes memory)
+        returns (
+            IERC20[] memory tokens,
+            uint256[] memory exactAmountsIn,
+            uint256 minBptAmountOut,
+            bool wethIsEth,
+            bytes memory userData
+        )
     {
-        IERC20[] memory tokens = new IERC20[](2); // Array of tokens to be used in the pool
+        tokens = new IERC20[](2); // Array of tokens to be used in the pool
         tokens[0] = tokenConfig[0].token;
         tokens[1] = tokenConfig[1].token;
-        uint256[] memory exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
+        exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
         exactAmountsIn[0] = 10 ether; // amount of token1 to send during pool initialization
         exactAmountsIn[1] = 10 ether; // amount of token2 to send during pool initialization
-        uint256 minBptAmountOut = 1 ether; // Minimum amount of pool tokens to be received
-        bool wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
-        bytes memory userData = bytes(""); // Additional (optional) data required for adding initial liquidity
-
-        return (tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData);
+        minBptAmountOut = 1 ether; // Minimum amount of pool tokens to be received
+        wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
+        userData = bytes(""); // Additional (optional) data required for adding initial liquidity
     }
 }

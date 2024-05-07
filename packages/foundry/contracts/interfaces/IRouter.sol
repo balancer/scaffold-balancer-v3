@@ -2,16 +2,20 @@
 
 pragma solidity ^0.8.24;
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import { AddLiquidityKind, RemoveLiquidityKind, SwapKind } from "./VaultTypes.sol";
-import { IBasePool } from "./IBasePool.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {
+    AddLiquidityKind, RemoveLiquidityKind, SwapKind
+} from "./VaultTypes.sol";
+import {IBasePool} from "./IBasePool.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IRouter {
-    /***************************************************************************
-                               Pool Initialization
-    ***************************************************************************/
+    /**
+     *
+     *                            Pool Initialization
+     *
+     */
 
     /**
      * @dev Data for the pool initialization hook
@@ -52,9 +56,11 @@ interface IRouter {
         bytes memory userData
     ) external payable returns (uint256 bptAmountOut);
 
-    /***************************************************************************
-                                   Add Liquidity
-    ***************************************************************************/
+    /**
+     *
+     *                                Add Liquidity
+     *
+     */
 
     /**
      * @dev Data for the add liquidity hook.
@@ -148,11 +154,20 @@ interface IRouter {
         uint256 minBptAmountOut,
         bool wethIsEth,
         bytes memory userData
-    ) external payable returns (uint256[] memory amountsIn, uint256 bptAmountOut, bytes memory returnData);
+    )
+        external
+        payable
+        returns (
+            uint256[] memory amountsIn,
+            uint256 bptAmountOut,
+            bytes memory returnData
+        );
 
-    /***************************************************************************
-                                 Remove Liquidity
-    ***************************************************************************/
+    /**
+     *
+     *                              Remove Liquidity
+     *
+     */
 
     /**
      * @dev Data for the remove liquidity hook.
@@ -251,7 +266,13 @@ interface IRouter {
         uint256[] memory minAmountsOut,
         bool wethIsEth,
         bytes memory userData
-    ) external returns (uint256 bptAmountIn, uint256[] memory amountsOut, bytes memory returnData);
+    )
+        external
+        returns (
+            uint256 bptAmountIn,
+            uint256[] memory amountsOut,
+            bytes memory returnData
+        );
 
     /**
      * @notice Removes liquidity proportionally, burning an exact pool token amount. Only available in Recovery Mode.
@@ -264,9 +285,11 @@ interface IRouter {
         uint256 exactBptAmountIn
     ) external returns (uint256[] memory amountsOut);
 
-    /***************************************************************************
-                                       Swaps
-    ***************************************************************************/
+    /**
+     *
+     *                                    Swaps
+     *
+     */
 
     /**
      * @dev Data for the swap hook.
@@ -340,9 +363,11 @@ interface IRouter {
         bytes calldata userData
     ) external payable returns (uint256 amountIn);
 
-    /***************************************************************************
-                                     Queries
-    ***************************************************************************/
+    /**
+     *
+     *                                  Queries
+     *
+     */
 
     /**
      * @notice Queries an `addLiquidityProportional` operation without actually executing it.
@@ -402,7 +427,13 @@ interface IRouter {
         uint256[] memory maxAmountsIn,
         uint256 minBptAmountOut,
         bytes memory userData
-    ) external returns (uint256[] memory amountsIn, uint256 bptAmountOut, bytes memory returnData);
+    )
+        external
+        returns (
+            uint256[] memory amountsIn,
+            uint256 bptAmountOut,
+            bytes memory returnData
+        );
 
     /**
      * @notice Queries `removeLiquidityProportional` operation without actually executing it.
@@ -462,7 +493,13 @@ interface IRouter {
         uint256 maxBptAmountIn,
         uint256[] memory minAmountsOut,
         bytes memory userData
-    ) external returns (uint256 bptAmountIn, uint256[] memory amountsOut, bytes memory returnData);
+    )
+        external
+        returns (
+            uint256 bptAmountIn,
+            uint256[] memory amountsOut,
+            bytes memory returnData
+        );
 
     /**
      * @notice Queries `removeLiquidityRecovery` operation without actually executing it.
@@ -509,9 +546,11 @@ interface IRouter {
         bytes calldata userData
     ) external returns (uint256 amountIn);
 
-    /*******************************************************************************
-                                    Utils
-    *******************************************************************************/
+    /**
+     *
+     *                                 Utils
+     *
+     */
 
     /**
      */
@@ -529,5 +568,7 @@ interface IRouter {
      * @param data Encoded function calls to be executed in the batch.
      * @return results Array of bytes arrays, each representing the return data from each function call executed.
      */
-    function multicall(bytes[] calldata data) external returns (bytes[] memory results);
+    function multicall(bytes[] calldata data)
+        external
+        returns (bytes[] memory results);
 }
