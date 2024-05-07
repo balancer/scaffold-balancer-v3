@@ -46,7 +46,7 @@ Speedrun deploying your first custom pool to get acquainted with our pool explor
 #### 0.2.0 Clone Repo
 
 ```bash
-git clone git@github.com:MattPereira/scaffold-balancer-v3.git
+git clone https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3.git
 ```
 
 #### 0.2.1 Install Dependencies
@@ -65,7 +65,7 @@ ETHERSCAN_API_KEY=...
 ALCHEMY_API_KEY=...
 ```
 
-#### 0.2.4 Start Local Anvil Fork
+#### 0.2.4 Start Local Fork
 
 ```bash
 yarn fork
@@ -109,7 +109,7 @@ TODO @matt - Showcase the front end at a high level (showing, with a pool addres
 
 ### 0.3 Scaffold ETH 2 Guide
 
-#### 0.3.1 Deployment Options
+#### 0.3.1 Deployment
 
 > SE-2 is setup to hot reload the frontend with contracts that are directly deployed via the `DeployFactoryAndPool.s.sol` script. This means our frontend captures the pool factory and mock token contracts, but not the pool contract because it is deployed by calling a method on the factory.
 
@@ -119,7 +119,7 @@ This command runs `DeployFactoryAndPool.s.sol` which deploys a pool factory, dep
 yarn deploy:all
 ```
 
-This command runs `DeployPool.s.sol` using the last pool factory you deployed. The contract info will not be written to the frontend, but you can copy and paste the address from terminal or refresh the pool explorer page and select it from the dropdown.
+This command runs `DeployPool.s.sol` using the last pool factory you deployed. You can copy and paste the address from terminal or refresh the pool explorer page and select it from the dropdown. Configuration options are specified in `HelperConfig.s.sol`
 
 ```bash
 yarn deploy:pool
