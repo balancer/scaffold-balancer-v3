@@ -31,14 +31,14 @@ import { ConstantPricePool } from "../contracts/ConstantPricePool.sol";
 import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.sol";
 
 /**
- * @title Constant Price Pool Test Example
+ * @title Custom Pool Starter Test Template
  * @author BUIDL GUIDL
- * @notice This test file serves as an example of some areas one needs to focus on when writing their own custom BalancerV3 pool. This is not production ready, and it is the developers responsibility to carry out proper testing and auditing for their pool.
+ * @notice This test file serves as a starting template that developers can use when creating their own BalancerV3 custom pool tests. Paired with the README, this template has comments marked "TODO" that help guide devlopers to address starting test aspects. This is not production ready, and it is the developers responsibility to carry out proper testing and auditing for their pool.
  * These tests roughly mirror the typical testing cases that are found in the BalancerV3 monorepo for weighted pool tests.  As a reference tool, it only makes sense to have tests that, at the very least, roughly mirror how weighted pools are tested within BalancerV3 monorepo. 
- * @dev This test is written for the Constant Price Custom Pool. Developers may duplicate this as a starting template for their own custom pool test file. 
+ * @dev This template is written for the Constant Price Custom Pool.
  * When creating your own custom pool, developers are expected to: create their own custom pool file, test file, script file. They simply can just duplicate or override the files that are here marked as "example" within their title.
  */
-contract ConstantPoolTest is BaseVaultTest {
+contract CustomPoolTemplateTest is BaseVaultTest {
     using ArrayHelpers for *;
 
     CustomPoolFactoryExample factory;
@@ -58,6 +58,10 @@ contract ConstantPoolTest is BaseVaultTest {
         BaseVaultTest.setUp();
     }
 
+    /**
+     * @notice test to ensure that pool pause state and associated details are correct (bool pause, pauseWindow duration, bufferPeriod duration, and pauseManager)
+     * @dev TODO - STEVE this is where you left off. You were looking into the specifications of vars like bufferPeriod, and if/where/how they are adjustable. They are within the VaultStorage.sol that is inherited by the BaseVaultTest.sol. I'll have to check if they are discussed within the docs at all, if they aren't then we ought to make a note that they are specific to the vault and the status of the pool in said vault.
+     */
     function testPoolPausedState() public {
         (bool paused, uint256 pauseWindow, uint256 bufferPeriod, address pauseManager) = vault.getPoolPausedState(
             address(pool)
