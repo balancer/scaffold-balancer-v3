@@ -3,14 +3,10 @@
 pragma solidity ^0.8.18;
 
 import { Script, console } from "forge-std/Script.sol";
-// import { IERC20 } from "../contracts/interfaces/IVaultExtension.sol";
-// import { LiquidityManagement, IRateProvider, PoolHooks, TokenConfig, TokenType } from "../contracts/interfaces/VaultTypes.sol";
 import { TestAddresses } from "../test/utils/TestAddresses.sol";
 import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.sol";
 import { FakeTestERC20 } from "../contracts/FakeTestERC20.sol";
 import { HelperFunctions } from "../test/utils/HelperFunctions.sol";
-// import { IRouter } from "../contracts/interfaces/IRouter.sol";
-
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";

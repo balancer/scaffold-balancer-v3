@@ -9,7 +9,6 @@ import { IERC20Errors } from "@openzeppelin/contracts/interfaces/draft-IERC6093.
 
 import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-// import { IVault } from "../contracts/interfaces/IVault.sol";
 
 import { IVaultAdmin } from "@balancer-labs/v3-interfaces/contracts/vault/IVaultAdmin.sol";
 import { IVaultMain } from "@balancer-labs/v3-interfaces/contracts/vault/IVaultMain.sol";
