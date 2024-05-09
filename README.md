@@ -400,7 +400,7 @@ We will now walk through the testing contract, provided as foundry test files. T
 The v3 monorepo has pool tests inheriting a base setup implemented within `BaseVaultTest.sol` & `BaseTest.sol`.
 
 `BaseTest.sol` (Inherited by `BaseVaultTest.sol`)
-- Creates test ERC20s (DAI, USDC, WETH, wstETH), test users (`admin`, `lp`, `alice`, `bob`, `hacker`, broke)
+- Creates test ERC20s (DAI, USDC, WETH, wstETH), test users (`admin`, `lp`, `alice`, `bob`, `hacker`, `broke`)
 - Users created are dealt 1 million of each test ERC20
 - Each test ERC20 has 18 decimals (compared to actual implementations such as USDC with 6 decimals)
 
@@ -413,28 +413,13 @@ The v3 monorepo has pool tests inheriting a base setup implemented within `BaseV
 
 Now that we understand the base `BaseVaultTest.setUp()` call made within the `CustomPoolTemplate.t.sol`, we can get into the actual template files.
 
-Each test has comments added to them to help guide the developer with this starter test template.
-
-**`testPoolPausedState`**
-
-**`testInitialize`**
-
-**`testAddLiquidity`**
-
-**`testRemoveLiquidity`**
-
-**`testSwap`**
-
-**`testAddLiquidityUnbalanced`**
+Each test has comments added to them to help guide the developer with this starter test template. There are "TODO" comments added on several lines to assist users in creating their own custom pool tests for their own custom pool types they are working on. Of course, one has to update dependencies and other aspects as needed for their purposes.
 
 ### 3.2 `CustomPoolFactoryTemplate.t.sol`
 
 Unlike the `CustomPoolTemplate.t.sol`, the `CustomPoolFactoryTemplate.t.sol` has a simpler setup where a mock vault, a custom pool factory (specific to the one that is being tested), and two test tokens are deployed.
 
-
-
-
-<!-- TODO -->
+Similar to the `CustomPoolTemplate.t.sol` file, the `CustomPoolFactoryTemplate.t.sol` file has "TODOs" to guide users in creating their own appropriate tests once they have a custom pool factory type of their own that they need to test.
 
 ## 🚨🚨 Checkpoint 4: Creating Your Own Custom Pool with the Template Files
 

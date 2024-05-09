@@ -36,7 +36,7 @@ import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.
  * @notice This test file serves as a starting template that developers can use when creating their own BalancerV3 custom pool tests. Paired with the README, this template has comments marked "TODO" that help guide devlopers to address starting test aspects. This is not production ready, and it is the developers responsibility to carry out proper testing and auditing for their pool.
  * These tests roughly mirror the typical testing cases that are found in the BalancerV3 monorepo for weighted pool tests.  As a reference tool, it only makes sense to have tests that, at the very least, roughly mirror how weighted pools are tested within BalancerV3 monorepo. 
  * @dev This template is written for the Constant Price Custom Pool.
- * When creating your own custom pool, developers are expected to: create their own custom pool file, test file, script file. They simply can just duplicate or override the files that are here marked as "example" within their title.
+ * When creating your own custom pool, developers are expected to: create their own custom pool file, test file, script file, and of course update dependencies as needed. They simply can just duplicate or override the files that are in this repo marked as "example" within their title.
  */
 contract CustomPoolTemplateTest is BaseVaultTest {
     using ArrayHelpers for *;
@@ -60,7 +60,7 @@ contract CustomPoolTemplateTest is BaseVaultTest {
     }
 
     /**
-     * @dev test to ensure that pool pause state and associated details are correct (bool pause, pauseWindow duration, bufferPeriod duration, and pauseManager) - recall that these are specified within your custom pool factory contract.
+     * @dev Tests to ensure that pool pause state and associated details are correct (bool pause, pauseWindow duration, bufferPeriod duration, and pauseManager) - recall that these are specified within your custom pool factory contract.
      * For further information, see `FactoryWidePauseWindow.sol` that is inherited by `BasePoolFactory.sol`, which is inherited by the custom pool factory (`CustomPoolFactoryExample.sol`) used in these tests.
      */
     function testPoolPausedState() public {
