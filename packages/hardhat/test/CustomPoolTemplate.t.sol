@@ -41,8 +41,8 @@ import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.
 contract CustomPoolTemplateTest is BaseVaultTest {
     using ArrayHelpers for *;
 
-    CustomPoolFactoryExample factory;
-	ConstantPricePool internal constantPricePool;
+    CustomPoolFactoryExample factory; // TODO - use your own custom pool factory when working with your own custom pool type.
+	ConstantPricePool internal constantPricePool; // TODO - use your own custom pool type of course.
 
     uint256 constant USDC_AMOUNT = 1e3 * 1e18;
     uint256 constant DAI_AMOUNT = 1e3 * 1e18;
@@ -50,17 +50,18 @@ contract CustomPoolTemplateTest is BaseVaultTest {
     uint256 constant DAI_AMOUNT_IN = 1 * 1e18;
     uint256 constant USDC_AMOUNT_OUT = 1 * 1e18;
 
-    uint256 constant DELTA = 1e9; // TODO - For WeightedPool.t.sol, this was 1e9. I hypothesize that this was because...  
+    uint256 constant DELTA = 1e9;  
 
     uint256 internal bptAmountOut;
 
+    // TODO - setup may require further details depending on your custom pool specifications. This is just a basic setup as per the README. 
     function setUp() public virtual override {
         BaseVaultTest.setUp();
     }
 
     /**
-     * @notice test to ensure that pool pause state and associated details are correct (bool pause, pauseWindow duration, bufferPeriod duration, and pauseManager)
-     * @dev TODO - STEVE this is where you left off. You were looking into the specifications of vars like bufferPeriod, and if/where/how they are adjustable. They are within the VaultStorage.sol that is inherited by the BaseVaultTest.sol. I'll have to check if they are discussed within the docs at all, if they aren't then we ought to make a note that they are specific to the vault and the status of the pool in said vault.
+     * @dev test to ensure that pool pause state and associated details are correct (bool pause, pauseWindow duration, bufferPeriod duration, and pauseManager) - recall that these are specified within your custom pool factory contract.
+     * For further information, see `FactoryWidePauseWindow.sol` that is inherited by `BasePoolFactory.sol`, which is inherited by the custom pool factory (`CustomPoolFactoryExample.sol`) used in these tests.
      */
     function testPoolPausedState() public {
         (bool paused, uint256 pauseWindow, uint256 bufferPeriod, address pauseManager) = vault.getPoolPausedState(
@@ -73,7 +74,12 @@ contract CustomPoolTemplateTest is BaseVaultTest {
         assertEq(pauseManager, address(0));
     }
 
-    // TODO - see question in issue #28
+    /**
+     * @dev Checks status of lp, vault, and pool after initialization, by doing the following:
+     * - Checks LP balance of pool’s underlying ERC20 tokens and that it has transferred ERC20
+     * - Checks that vault has the correct underlying ERC20 balances newly transferred from lp
+     * - Checks the vault’s internal accounting for the respective pool; recall that the vault has all of the ERC20s and does internal accounting for respective pools. Aka the pools don’t hold the respective underlying ERC20s, the vault does.
+     */    
     function testInitialize() public {
         // Tokens are transferred from lp
         assertEq(defaultBalance - usdc.balanceOf(lp), USDC_AMOUNT, "LP: Wrong USDC balance");
@@ -91,10 +97,17 @@ contract CustomPoolTemplateTest is BaseVaultTest {
         // should mint correct amount of BPT tokens
         // Account for the precision loss
         assertApproxEqAbs(constantPricePool.balanceOf(lp), bptAmountOut, DELTA, "LP: Wrong bptAmountOut");
-        assertApproxEqAbs(bptAmountOut, 2 * DAI_AMOUNT, DELTA, "Wrong bptAmountOut");
+        assertApproxEqAbs(bptAmountOut, 2 * DAI_AMOUNT, DELTA, "Wrong bptAmountOut"); // TODO - "2 * DAI_AMOUNT" is the amount expected with this type of custom pool. This may differ for your pool type and its invariant.
     }
 
-    // @dev TODO - see questions in issue #28
+    /**
+     * @dev Checks status of Bob, vault, and pool after adding liquidity via `addLiquidityUnbalanced()`, by doing the following:
+     * - Adds liquidity to pool via calling `addLiquidityUnbalanced()` from the Router - see `IRouter.sol` natspec for function.
+     * - Checks Bob's balance of pool’s underlying ERC20 tokens and that they have transferred ERC20
+     * - Checks that vault has the correct underlying ERC20 balances newly transferred from Bob
+     * - Checks the vault’s internal accounting for the respective pool; recall that the vault has all of the ERC20s and does internal accounting for respective pools. Aka the pools don’t hold the respective underlying ERC20s, the vault does.
+     * - Checks that Bob has the correct amount of BPTs from the tx.
+     */
     function testAddLiquidity() public {
         uint256[] memory amountsIn = [uint256(DAI_AMOUNT), uint256(USDC_AMOUNT)].toMemoryArray();
         vm.prank(bob);
@@ -115,9 +128,19 @@ contract CustomPoolTemplateTest is BaseVaultTest {
 
         // should mint correct amount of BPT tokens
         assertApproxEqAbs(constantPricePool.balanceOf(bob), bptAmountOut, DELTA, "LP: Wrong bptAmountOut");
-        assertApproxEqAbs(bptAmountOut, 2 * DAI_AMOUNT, DELTA, "Wrong bptAmountOut");
+        assertApproxEqAbs(bptAmountOut, 2 * DAI_AMOUNT, DELTA, "Wrong bptAmountOut"); // TODO - "2 * DAI_AMOUNT" is the amount expected with this type of custom pool. This may differ for your pool type and its invariant.
     }
 
+    /**
+     * @dev Checks status of lp, vault, and pool after removing liquidity via `removeLiquidityProportional()`, by doing the following:
+     * - Adds liquidity to pool via calling `addLiquidityUnbalanced()` from the Router - see `IRouter.sol` natspec for function.
+     * - Removes liquidity via calling `removeLiquidityProportional()` from the Router - see `IRouter.sol` natspec for function.
+     * - Checks Bob's balance of pool’s underlying ERC20 tokens and that they have received their initial ERC20 transfer back from vault.
+     * - Checks that vault has the correct underlying ERC20 balances, which was the amount initialized by user 'lp'.
+     * - Checks the vault’s internal accounting for the respective pool; recall that the vault has all of the ERC20s and does internal accounting for respective pools. Aka the pools don’t hold the respective underlying ERC20s, the vault does.
+     * - Checks that the return value from calling `removeLiquidityProportional()` is correct and equals to amount specified in param `minAmountsOut` for function.
+     * - Checks that Bob no longer has any BPT, and that the amount he had before calling `removeLiquidityProportional()` was the same as the amount requested of BPT to be redeemed.
+     */
     function testRemoveLiquidity() public {
         vm.startPrank(bob);
         router.addLiquidityUnbalanced(
@@ -165,6 +188,13 @@ contract CustomPoolTemplateTest is BaseVaultTest {
         assertEq(bobBptBalance, bptAmountIn, "LP: Wrong bptAmountIn");
     }
 
+    /**
+     * @dev Checks status of the user (Bob), vault, and pool after carrying out a swap tx with the pool (swap DAI for USDC) by doing the following:
+     * - Bob swaps DAI for USDC with pool by calling `swapSingleTokenExactIn()` from router - see `IRouter.sol` natspec for function.
+     * - Checks Bob's balance of pool’s underlying ERC20 tokens and that they have received at least the amount of USDC requested in swap. Also checks amount of DAI Bob has and that his balance is reduced as expected from the swap.
+     * - Checks that vault has the correct underlying ERC20 balances, which should be an increased amount of DAI, and lessened amount of USDC from swap tx.
+     * - Checks the vault’s internal accounting for the respective pool. It does this by grabbing the appropriate token indices to use when checking `balances` array from `getPoolTokenInfo(address(pool))` from the vault. Of course the USDC should be lessened and the DAI should be increased from the swap tx.
+     */
     function testSwap() public {
         vm.prank(bob);
         uint256 amountCalculated = router.swapSingleTokenExactIn(
@@ -194,6 +224,10 @@ contract CustomPoolTemplateTest is BaseVaultTest {
         assertEq(balances[usdcIdx], USDC_AMOUNT - amountCalculated, "Pool: Wrong USDC balance");
     }
 
+    /**
+     * @dev Grants user (Alice) role enabling her to call `setStaticSwapFeePercentage()` on the vault, then user (Bob) carries out a `addLiquidityUnbalanced()` call on pool.
+     * Question: This test could have further asserts added on, but it looks like monorepo doesn't have that. It would be testing for the fee to be correcetly adjusted no?
+     */
     function testAddLiquidityUnbalanced() public {
         authorizer.grantRole(vault.getActionId(IVaultAdmin.setStaticSwapFeePercentage.selector), alice);
         vm.prank(alice);
