@@ -3,13 +3,13 @@
 pragma solidity ^0.8.18;
 
 import { Script, console } from "forge-std/Script.sol";
-import { IERC20 } from "../contracts/interfaces/IVaultExtension.sol";
-import { LiquidityManagement, IRateProvider, PoolHooks, TokenConfig, TokenType } from "../contracts/interfaces/VaultTypes.sol";
 import { TestAddresses } from "../test/utils/TestAddresses.sol";
 import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.sol";
 import { FakeTestERC20 } from "../contracts/FakeTestERC20.sol";
 import { HelperFunctions } from "../test/utils/HelperFunctions.sol";
-import { IRouter } from "../contracts/interfaces/IRouter.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
 
 /**
  * @title DeployCustomPoolFromFactoryExample Script
@@ -17,6 +17,7 @@ import { IRouter } from "../contracts/interfaces/IRouter.sol";
  * @notice The script, using the `.env` specified deployer wallet, creates new pools from a pre-existing custom pool factory (adhering to the Constant Price Pool example by default). 
  * @dev You need to assign the appropriate custom pool factory address (and associated dependencies / params requirements). This script is to be used after DeployCustomPoolFactoryAndNewPoolExample.s.sol.  It does all of this so the new pool is ready to use with the ScaffoldBalancer front end tool.
  * @dev to run sim for script, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFromFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY`
+ * @dev to run the actual script on Sepolia network, run the following CLI command: `source .env && forge script scripts/DeployCustomPoolFromFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast`
  */
 contract DeployCustomPoolFromFactoryExample is
 	TestAddresses,

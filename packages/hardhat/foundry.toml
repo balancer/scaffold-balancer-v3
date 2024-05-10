@@ -3,7 +3,21 @@ src = 'contracts'
 out = 'out'
 libs = ['node_modules', 'lib']
 test = 'test'
+ffi = true
 cache_path  = 'cache_forge'
+allow_paths = ['../../node_modules/']
+remappings=[
+    '@test/=../../node_modules/@balancer-labs/v3-monorepo/pkg/',
+    '@balancer-labs/v3-solidity-utils/=../../node_modules/@balancer-labs/v3-monorepo/pkg/solidity-utils/',
+    '@balancer-labs/v3-interfaces/=../../node_modules/@balancer-labs/v3-monorepo/pkg/interfaces/',
+    '@balancer-labs/v3-vault/=../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/',
+    'permit2/=../../node_modules/permit2/',
+    'forge-gas-snapshot/=../../node_modules/forge-gas-snapshot/src/'
+]
+solc_version = '0.8.24'
+auto_detect_solc = false
+evm_version = 'cancun'
+ignored_error_codes = [2394] # Transient storage
 
 
 [rpc_endpoints]
