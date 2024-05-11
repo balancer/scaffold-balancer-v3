@@ -91,7 +91,9 @@ interface IVaultEvents {
      * @param amount The amount of the protocol fee
      */
     event ProtocolSwapFeeCharged(
-        address indexed pool, address indexed token, uint256 amount
+        address indexed pool,
+        address indexed token,
+        uint256 amount
     );
 
     /**
@@ -106,7 +108,9 @@ interface IVaultEvents {
      * @param amount The amount of the protocol fee
      */
     event ProtocolYieldFeeCharged(
-        address indexed pool, address indexed token, uint256 amount
+        address indexed pool,
+        address indexed token,
+        uint256 amount
     );
 
     /**

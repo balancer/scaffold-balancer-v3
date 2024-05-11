@@ -23,10 +23,9 @@ interface IVaultMain {
      * @param data Contains function signature and args to be passed to the msg.sender
      * @return result Resulting data from the call
      */
-    function lock(bytes calldata data)
-        external
-        payable
-        returns (bytes memory result);
+    function lock(
+        bytes calldata data
+    ) external payable returns (bytes memory result);
 
     /**
      * @notice Settles deltas for a token; must be successful for the current lock to be released.
@@ -76,7 +75,9 @@ interface IVaultMain {
      * @return bptAmountOut Output pool token amount
      * @return returnData Arbitrary (optional) data with encoded response from the pool
      */
-    function addLiquidity(AddLiquidityParams memory params)
+    function addLiquidity(
+        AddLiquidityParams memory params
+    )
         external
         returns (
             uint256[] memory amountsIn,
@@ -101,7 +102,9 @@ interface IVaultMain {
      * @return amountsOut Actual amounts of output tokens
      * @return returnData Arbitrary (optional) data with encoded response from the pool
      */
-    function removeLiquidity(RemoveLiquidityParams memory params)
+    function removeLiquidity(
+        RemoveLiquidityParams memory params
+    )
         external
         returns (
             uint256 bptAmountIn,
@@ -141,7 +144,9 @@ interface IVaultMain {
      * @return amountInRaw Amount of input tokens for the swap
      * @return amountOutRaw Amount of output tokens from the swap
      */
-    function swap(SwapParams memory params)
+    function swap(
+        SwapParams memory params
+    )
         external
         returns (
             uint256 amountCalculatedRaw,

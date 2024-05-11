@@ -49,15 +49,17 @@ library CREATE3 {
         assembly {
             // Deploy a new contract with our pre-made bytecode via CREATE2.
             // We start 32 bytes into the code to avoid copying the byte length.
-            proxy :=
-                create2(
-                    0, add(proxyChildBytecode, 32), mload(proxyChildBytecode), salt
-                )
+            proxy := create2(
+                0,
+                add(proxyChildBytecode, 32),
+                mload(proxyChildBytecode),
+                salt
+            )
         }
         require(proxy != address(0), "DEPLOYMENT_FAILED");
 
         deployed = getDeployed(salt);
-        (bool success,) = proxy.call{value: value}(creationCode);
+        (bool success, ) = proxy.call{value: value}(creationCode);
         require(success && deployed.code.length != 0, "INITIALIZATION_FAILED");
     }
 
@@ -71,16 +73,16 @@ library CREATE3 {
     ) internal pure returns (address) {
         address proxy = keccak256(
             abi.encodePacked(bytes1(0xFF), creator, salt, _PROXY_BYTECODE_HASH)
-        )
-            // Prefix:
-            // Creator:
-            // Salt:
-            // Bytecode hash:
-            .fromLast20Bytes();
+        ).fromLast20Bytes();
+        // Prefix:
+        // Creator:
+        // Salt:
+        // Bytecode hash:
 
-        return keccak256(abi.encodePacked(hex"d694", proxy, hex"01")) // Nonce of the proxy contract (1)
+        return
+            keccak256(abi.encodePacked(hex"d694", proxy, hex"01")) // Nonce of the proxy contract (1)
             // 0xd6 = 0xc0 (short RLP prefix) + 0x16 (length of: 0x94 ++ proxy ++ 0x01)
             // 0x94 = 0x80 + 0x14 (0x14 = the length of an address, 20 bytes, in hex)
-            .fromLast20Bytes();
+                .fromLast20Bytes();
     }
 }

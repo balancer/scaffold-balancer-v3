@@ -11,9 +11,9 @@ abstract contract SingletonAuthentication is Authentication {
     IVault private immutable _vault;
 
     // Use the contract's own address to disambiguate action identifiers
-    constructor(IVault vault)
-        Authentication(bytes32(uint256(uint160(address(this)))))
-    {
+    constructor(
+        IVault vault
+    ) Authentication(bytes32(uint256(uint160(address(this))))) {
         _vault = vault;
     }
 

@@ -143,10 +143,9 @@ interface IVaultExtension {
      * @param pool Address of the pool
      * @return tokens List of tokens in the pool
      */
-    function getPoolTokens(address pool)
-        external
-        view
-        returns (IERC20[] memory);
+    function getPoolTokens(
+        address pool
+    ) external view returns (IERC20[] memory);
 
     /**
      * @notice Gets the raw data for a pool: tokens, raw balances, scaling factors.
@@ -156,7 +155,9 @@ interface IVaultExtension {
      * @return scalingFactors Corresponding scalingFactors of the tokens
      * @return rateProviders Corresponding rateProviders of the tokens (or zero for tokens with no rates)
      */
-    function getPoolTokenInfo(address pool)
+    function getPoolTokenInfo(
+        address pool
+    )
         external
         view
         returns (
@@ -172,10 +173,9 @@ interface IVaultExtension {
      * @param pool Address of the pool
      * @return Pool configuration
      */
-    function getPoolConfig(address pool)
-        external
-        view
-        returns (PoolConfig memory);
+    function getPoolConfig(
+        address pool
+    ) external view returns (PoolConfig memory);
 
     /**
      *
@@ -288,10 +288,9 @@ interface IVaultExtension {
      * @return poolBufferPeriodEndTime The timestamp after which the Pool unpauses itself (if paused)
      * @return pauseManager The pause manager, or the zero address
      */
-    function getPoolPausedState(address pool)
-        external
-        view
-        returns (bool, uint256, uint256, address);
+    function getPoolPausedState(
+        address pool
+    ) external view returns (bool, uint256, uint256, address);
 
     /**
      *
@@ -323,10 +322,9 @@ interface IVaultExtension {
      * @param pool The address of the pool whose static swap fee percentage is being queried
      * @return The current static swap fee percentage for the specified pool
      */
-    function getStaticSwapFeePercentage(address pool)
-        external
-        view
-        returns (uint256);
+    function getStaticSwapFeePercentage(
+        address pool
+    ) external view returns (uint256);
 
     /**
      *
@@ -377,10 +375,9 @@ interface IVaultExtension {
      * @param data Contains function signature and args to be passed to the msg.sender
      * @return result Resulting data from the call
      */
-    function quote(bytes calldata data)
-        external
-        payable
-        returns (bytes memory result);
+    function quote(
+        bytes calldata data
+    ) external payable returns (bytes memory result);
 
     /**
      * @notice Checks if the queries enabled on the Vault.

@@ -28,10 +28,7 @@ interface IBasePoolFactory is IAuthentication {
      * @notice Return the address where a new pool will be deployed, based on the factory address and salt.
      * @param salt The salt used to deploy the pool
      */
-    function getDeploymentAddress(bytes32 salt)
-        external
-        view
-        returns (address);
+    function getDeploymentAddress(bytes32 salt) external view returns (address);
 
     /**
      * @notice Check whether this factory has been disabled by governance.

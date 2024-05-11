@@ -4,9 +4,7 @@ pragma solidity ^0.8.24;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {
-    AddLiquidityKind, RemoveLiquidityKind, SwapKind
-} from "./VaultTypes.sol";
+import {AddLiquidityKind, RemoveLiquidityKind, SwapKind} from "./VaultTypes.sol";
 import {IBasePool} from "./IBasePool.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -568,7 +566,7 @@ interface IRouter {
      * @param data Encoded function calls to be executed in the batch.
      * @return results Array of bytes arrays, each representing the return data from each function call executed.
      */
-    function multicall(bytes[] calldata data)
-        external
-        returns (bytes[] memory results);
+    function multicall(
+        bytes[] calldata data
+    ) external returns (bytes[] memory results);
 }

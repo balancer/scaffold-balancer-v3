@@ -7,8 +7,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IBasePoolFactory} from "./interfaces/IBasePoolFactory.sol";
 import {IVault} from "./interfaces/IVault.sol";
 import {TokenConfig} from "./interfaces/VaultTypes.sol";
-import {SingletonAuthentication} from
-    "./v3-solidity-utils/SingletonAuthentication.sol";
+import {SingletonAuthentication} from "./v3-solidity-utils/SingletonAuthentication.sol";
 import {CREATE3} from "./v3-solidity-utils/solmate/CREATE3.sol";
 
 import {FactoryWidePauseWindow} from "./FactoryWidePauseWindow.sol";
@@ -88,8 +87,11 @@ abstract contract BasePoolFactory is
         bytes memory constructorArgs,
         bytes32 salt
     ) internal returns (address) {
-        return CREATE3.deploy(
-            salt, abi.encodePacked(_creationCode, constructorArgs), 0
-        );
+        return
+            CREATE3.deploy(
+                salt,
+                abi.encodePacked(_creationCode, constructorArgs),
+                0
+            );
     }
 }

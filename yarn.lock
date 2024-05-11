@@ -214,7 +214,14 @@ __metadata:
     "@babel/helper-string-parser": ^7.24.1
     "@babel/helper-validator-identifier": ^7.24.5
     to-fast-properties: ^2.0.0
-  checksum: 8eeeacd996593b176e649ee49d8dc3f26f9bb6aa1e3b592030e61a0e58ea010fb018dccc51e5314c8139409ea6cbab02e29b33e674e1f6962d8e24c52da6375b
+  checksum: 4b574a37d490f621470ff36a5afaac6deca5546edcb9b5e316d39acbb20998e9c2be42f3fc0bf2b55906fc49ff2a5a6a097e8f5a726ee3f708a0b0ca93aed807
+  languageName: node
+  linkType: hard
+
+"@balancer-labs/v3-monorepo@https://github.com/balancer/balancer-v3-monorepo#head=scaffold-package-setup-deploy3":
+  version: 0.0.0
+  resolution: "@balancer-labs/v3-monorepo@https://github.com/balancer/balancer-v3-monorepo.git#commit=83616c0bb6d9b0f8386fbf6fe95bc345a30d8673"
+  checksum: 203920debbbeb62f72184517dee4ddcb6a1754161e55aaa7ab0ce87016268db179d94d48b0aee1acefe452e8f21a47657dab81bbf58bb813bfb97c17521a5929
   languageName: node
   linkType: hard
 
@@ -5563,6 +5570,49 @@ __metadata:
   languageName: node
   linkType: hard
 
+"forge-gas-snapshot@https://github.com/ylv-io/forge-gas-snapshot":
+  version: 0.1.4
+  resolution: "forge-gas-snapshot@https://github.com/ylv-io/forge-gas-snapshot.git#commit=ee8e1f02009785ab81a5058a18c75d5d3b7a894d"
+  checksum: 3be1581ae11f159e86cacd8f156813f3fadb4d341e97bee1cbfd3c0caef058cc023e376cfc91353aafedb1fa4397c9e0d957428ab82bc7ab3bd90e1d41f83724
+  languageName: node
+  linkType: hard
+
+"form-data@npm:^2.2.0":
+  version: 2.5.1
+  resolution: "form-data@npm:2.5.1"
+  dependencies:
+    asynckit: ^0.4.0
+    combined-stream: ^1.0.6
+    mime-types: ^2.1.12
+  checksum: 5134ada56cc246b293a1ac7678dba6830000603a3979cf83ff7b2f21f2e3725202237cfb89e32bcb38a1d35727efbd3c3a22e65b42321e8ade8eec01ce755d08
+  languageName: node
+  linkType: hard
+
+"form-data@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "form-data@npm:4.0.0"
+  dependencies:
+    asynckit: ^0.4.0
+    combined-stream: ^1.0.8
+    mime-types: ^2.1.12
+  checksum: 01135bf8675f9d5c61ff18e2e2932f719ca4de964e3be90ef4c36aacfc7b9cb2fceb5eca0b7e0190e3383fe51c5b37f4cb80b62ca06a99aaabfcfd6ac7c9328c
+  languageName: node
+  linkType: hard
+
+"fp-ts@npm:1.19.3":
+  version: 1.19.3
+  resolution: "fp-ts@npm:1.19.3"
+  checksum: eb0d4766ad561e9c5c01bfdd3d0ae589af135556921c733d26cf5289aad9f400110defdd93e6ac1d71f626697bb44d9d95ed2879c53dfd868f7cac3cf5c5553c
+  languageName: node
+  linkType: hard
+
+"fp-ts@npm:^1.0.0":
+  version: 1.19.5
+  resolution: "fp-ts@npm:1.19.5"
+  checksum: 67d2d9c3855d211ca2592b1ef805f98b618157e7681791a776d9d0f7f3e52fcca2122ebf5bc215908c9099fad69756d40e37210cf46cb4075dae1b61efe69e40
+  languageName: node
+  linkType: hard
+
 "fraction.js@npm:^4.3.7":
   version: 4.3.7
   resolution: "fraction.js@npm:4.3.7"
@@ -8127,6 +8177,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"permit2@https://github.com/Uniswap/permit2.git#cc56ad0f3439c502c246fc5cfcc3db92bb8b7219":
+  version: 1.0.0
+  resolution: "permit2@https://github.com/Uniswap/permit2.git#commit=cc56ad0f3439c502c246fc5cfcc3db92bb8b7219"
+  checksum: 2f395ac06c43a9a4343ad5ad5fbcb98d4315c443adcfec8c6449c9b306ceb33b4201756fefe48bf048a4fb912e1eb1f217b2f617b22e9a54335dbed8b49de03f
+  languageName: node
+  linkType: hard
+
 "picocolors@npm:1.0.0, picocolors@npm:^1, picocolors@npm:^1.0.0":
   version: 1.0.0
   resolution: "picocolors@npm:1.0.0"
@@ -8957,9 +9014,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "se-2@workspace:."
   dependencies:
+    "@balancer-labs/v3-monorepo": "https://github.com/balancer/balancer-v3-monorepo#head=scaffold-package-setup-deploy3"
+    forge-gas-snapshot: "https://github.com/ylv-io/forge-gas-snapshot"
     husky: ^8.0.1
     lint-staged: ^13.0.3
     next: ^14.0.4
+    permit2: "https://github.com/Uniswap/permit2.git#cc56ad0f3439c502c246fc5cfcc3db92bb8b7219"
     vercel: ^32.4.1
   languageName: unknown
   linkType: soft

@@ -64,7 +64,9 @@ interface IVaultErrors {
      * @param actualToken The actual token found at that index
      */
     error TokensMismatch(
-        address pool, address expectedToken, address actualToken
+        address pool,
+        address expectedToken,
+        address actualToken
     );
 
     /**

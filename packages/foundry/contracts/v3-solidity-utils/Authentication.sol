@@ -45,12 +45,9 @@ abstract contract Authentication is IAuthentication {
     }
 
     /// @inheritdoc IAuthentication
-    function getActionId(bytes4 selector)
-        public
-        view
-        override
-        returns (bytes32)
-    {
+    function getActionId(
+        bytes4 selector
+    ) public view override returns (bytes32) {
         // Each external function is dynamically assigned an action identifier as the hash of the disambiguator and the
         // chain id + function selector. Disambiguation is necessary to avoid potential collisions in the function
         // selectors of multiple contracts.

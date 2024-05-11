@@ -27,10 +27,9 @@ interface IBasePool {
      * @param balancesLiveScaled18 Array of current pool balances for each token in the pool, scaled to 18 decimals
      * @return invariant The calculated invariant of the pool, represented as a uint256
      */
-    function computeInvariant(uint256[] memory balancesLiveScaled18)
-        external
-        view
-        returns (uint256 invariant);
+    function computeInvariant(
+        uint256[] memory balancesLiveScaled18
+    ) external view returns (uint256 invariant);
 
     /**
      * @dev Computes the new balance of a token after an operation, given the invariant growth ratio and all other
@@ -78,7 +77,7 @@ interface IBasePool {
      * @param params Swap parameters (see above for struct definition)
      * @return amountCalculatedScaled18 Calculated amount for the swap
      */
-    function onSwap(SwapParams calldata params)
-        external
-        returns (uint256 amountCalculatedScaled18);
+    function onSwap(
+        SwapParams calldata params
+    ) external returns (uint256 amountCalculatedScaled18);
 }

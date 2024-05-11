@@ -61,10 +61,9 @@ interface IVaultAdmin {
      * effectively preventing retrieval of basic pool parameters. Tokens without rate providers will always return
      * FixedPoint.ONE (1e18).
      */
-    function getPoolTokenRates(address pool)
-        external
-        view
-        returns (uint256[] memory);
+    function getPoolTokenRates(
+        address pool
+    ) external view returns (uint256[] memory);
 
     /**
      *
@@ -132,15 +131,17 @@ interface IVaultAdmin {
      * @notice Sets a new swap fee percentage for the protocol.
      * @param newSwapFeePercentage The new swap fee percentage to be set
      */
-    function setProtocolSwapFeePercentage(uint256 newSwapFeePercentage)
-        external;
+    function setProtocolSwapFeePercentage(
+        uint256 newSwapFeePercentage
+    ) external;
 
     /**
      * @notice Sets a new yield fee percentage for the protocol.
      * @param newYieldFeePercentage The new swap fee percentage to be set
      */
-    function setProtocolYieldFeePercentage(uint256 newYieldFeePercentage)
-        external;
+    function setProtocolYieldFeePercentage(
+        uint256 newYieldFeePercentage
+    ) external;
 
     /**
      * @notice Assigns a new static swap fee percentage to the specified pool.
@@ -157,7 +158,8 @@ interface IVaultAdmin {
      * @param swapFeePercentage The new swap fee percentage for the pool
      */
     event SwapFeePercentageChanged(
-        address indexed pool, uint256 indexed swapFeePercentage
+        address indexed pool,
+        uint256 indexed swapFeePercentage
     );
 
     /**
