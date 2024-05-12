@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     FakeTestERC20: {
-      address: "0x63bD53efc26cdA2cA9d7101cDB26e8808bFE95a9",
+      address: "0x8400A3A4CFdF3dDC12Ba45bA3DAE3381D206EC5e",
       abi: [
         {
           type: "constructor",
@@ -91,6 +91,13 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "brrr",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
         },
         {
           type: "function",
@@ -347,7 +354,7 @@ const deployedContracts = {
       },
     },
     CustomPoolFactoryExample: {
-      address: "0x8400A3A4CFdF3dDC12Ba45bA3DAE3381D206EC5e",
+      address: "0xA253c3212628FE3E380a042Cc2Ac57c0bdebadd4",
       abi: [
         {
           type: "constructor",
@@ -598,18 +605,7 @@ const deployedContracts = {
           inputs: [],
         },
       ],
-      inheritedFunctions: {
-        disable: "contracts/BasePoolFactory.sol",
-        getActionId: "contracts/BasePoolFactory.sol",
-        getAuthorizer: "contracts/BasePoolFactory.sol",
-        getDeploymentAddress: "contracts/BasePoolFactory.sol",
-        getNewPoolPauseWindowEndTime: "contracts/BasePoolFactory.sol",
-        getOriginalPauseWindowEndTime: "contracts/BasePoolFactory.sol",
-        getPauseWindowDuration: "contracts/BasePoolFactory.sol",
-        getVault: "contracts/BasePoolFactory.sol",
-        isDisabled: "contracts/BasePoolFactory.sol",
-        isPoolFromFactory: "contracts/BasePoolFactory.sol",
-      },
+      inheritedFunctions: {},
     },
   },
 } as const;

@@ -45,7 +45,9 @@ contract ScaffoldETHDeploy is Script {
 
         for (uint256 i = 0; i < len; i++) {
             vm.serializeString(
-                jsonWrite, vm.toString(deployments[i].addr), deployments[i].name
+                jsonWrite,
+                vm.toString(deployments[i].addr),
+                deployments[i].name
             );
         }
 

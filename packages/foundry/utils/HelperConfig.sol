@@ -2,14 +2,9 @@
 pragma solidity ^0.8.18;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {
-    IRateProvider,
-    TokenConfig,
-    TokenType
-} from "../contracts/interfaces/VaultTypes.sol";
-import {IVault} from "../contracts/interfaces/IVault.sol";
-import {IRouter} from "../contracts/interfaces/IRouter.sol";
-import {Script} from "forge-std/Script.sol";
+import "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
+import "@balancer-labs/v3-interfaces/contracts/vault/IVaultExtension.sol";
 
 /**
  * @title HelperConfig Script
@@ -48,7 +43,7 @@ contract HelperConfig {
             TokenConfig[] memory tokenConfig
         )
     {
-        name = "Scaffold Balancer Pool #2"; // name for the pool
+        name = "Scaffold Balancer Pool #1"; // name for the pool
         symbol = "SB-50scUSD-50scDAI"; // symbol for the BPT
 
         tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
@@ -69,7 +64,9 @@ contract HelperConfig {
     /**
      * @dev Set the tokens, exactAmountsIn, minBptAmountOut, wethIsEth, and userData here
      */
-    function getInitializationConfig(TokenConfig[] memory tokenConfig)
+    function getInitializationConfig(
+        TokenConfig[] memory tokenConfig
+    )
         public
         pure
         returns (

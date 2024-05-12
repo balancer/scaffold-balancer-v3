@@ -1,9 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "./interfaces/IVault.sol";
-import "./interfaces/IBasePool.sol";
-import "./vault/BalancerPoolToken.sol";
+import "@balancer-labs/v3-vault/contracts/BalancerPoolToken.sol";
+import "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
+import "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
 /**
  * @title Example Custom Pool Implementation Using Constant Price Invariant

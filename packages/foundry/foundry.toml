@@ -1,13 +1,20 @@
 [profile.default]
 src = 'contracts'
 out = 'out'
-libs = ['lib', 'node_modules']
-fs_permissions = [{ access = "read-write", path = "./"}]
+libs = ['node_modules', 'lib']
+test = 'test'
+ffi = true
+allow_paths = ['../../node_modules/']
+solc_version = '0.8.24'
+auto_detect_solc = false
+evm_version = 'cancun'
+ignored_error_codes = [2394] # Transient storage
+fs_permissions = [{ access = "read-write", path = "./"}] # SE-2 default to allow script to write contract info from /foundry to /nextjs
+
 
 [rpc_endpoints]
 default_network = "http://127.0.0.1:8545"
 localhost = "http://127.0.0.1:8545"
-
 mainnet = "https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}"
 sepolia = "https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
 arbitrum = "https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
@@ -28,6 +35,7 @@ zkSync = "https://mainnet.era.zksync.io"
 scrollSepolia = "https://sepolia-rpc.scroll.io"
 scroll = "https://rpc.scroll.io"
 
+
 [etherscan]
 polygonMumbai = { key = "${ETHERSCAN_API_KEY}" }
 sepolia = { key = "${ETHERSCAN_API_KEY}" }
@@ -38,3 +46,4 @@ line_length = 80
 multiline_func_header = "params_first"
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
+

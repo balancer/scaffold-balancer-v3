@@ -13,4 +13,11 @@ contract FakeTestERC20 is ERC20 {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {
         _mint(msg.sender, 1000 ether); // mints 1000 scBAL! Precision is 18 decimals.
     }
+
+    /**
+     * @notice this is used for frontend faucet so any wallet can get tokens
+     */
+    function brrr() external {
+        _mint(msg.sender, 100 ether);
+    }
 }
