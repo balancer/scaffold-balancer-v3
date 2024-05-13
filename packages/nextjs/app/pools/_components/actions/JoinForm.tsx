@@ -3,7 +3,7 @@ import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, Tran
 import { PoolActionsProps } from "../PoolActions";
 import { InputAmount } from "@balancer/sdk";
 import { formatUnits, parseAbi, parseUnits } from "viem";
-import { useAccount, useContractEvent, usePublicClient, useWalletClient } from "wagmi";
+import { useContractEvent, usePublicClient, useWalletClient } from "wagmi";
 import abis from "~~/contracts/abis";
 import { useJoin } from "~~/hooks/balancer/";
 import { QueryJoinResponse, QueryPoolActionError } from "~~/hooks/balancer/types";
@@ -35,7 +35,6 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const writeTx = useTransactor(); // scaffold hook for tx status toast notifications
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
-  const account = useAccount();
 
   useEffect(() => {
     // Determine which tokens need to be approved
@@ -85,6 +84,7 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
 
   const handleApprove = async () => {
     if (!walletClient) return;
+
     tokensToApprove.forEach(async token => {
       try {
         setIsApproving(true);
@@ -92,7 +92,7 @@ export const JoinForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
           address: token.address,
           abi: parseAbi(["function approve(address spender, uint256 amount) returns (bool)"]),
           functionName: "approve",
-          account: account.address,
+          account: walletClient.account,
           args: [pool.vaultAddress, token.rawAmount],
         });
 

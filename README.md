@@ -364,7 +364,7 @@ The script, using the `.env` specified deployer wallet, deploys the custom pool 
 > It is key to understand that the script is calling `Router.initialize()` ultimately, and so understanding this function call and its params is crucial. See the BalancerV3 monorepo for more info. We touch on some of these params below, but the nat spec is also a great resource.
 
 - Some variables have comments on them to assist, such as the custom pool factory
-- This script uses FakeTestERC20 contracts to instantly mint 1000 of each test token to deployer wallet.
+- This script uses MockToken contracts to instantly mint 1000 of each test token to deployer wallet.
 - The TokenConfig struct is defined within `VaultTypes.sol` in the v3 monorepo. It has a few gotchas:
   - `TokenConfig.tokenType` is an enum: `STANDARD` OR `WITH_RATE`
   - `TokenConfig.token` is the token address
@@ -453,11 +453,13 @@ We will now walk through the testing contract, provided as foundry test files. T
 The v3 monorepo has pool tests inheriting a base setup implemented within `BaseVaultTest.sol` & `BaseTest.sol`.
 
 `BaseTest.sol` (Inherited by `BaseVaultTest.sol`)
+
 - Creates test ERC20s (DAI, USDC, WETH, wstETH), test users (`admin`, `lp`, `alice`, `bob`, `hacker`, `broke`)
 - Users created are dealt 1 million of each test ERC20
 - Each test ERC20 has 18 decimals (compared to actual implementations such as USDC with 6 decimals)
 
 `BaseVaultTest.sol`:
+
 - Creates core architecture in a test environment: vault, vaultExtension, router, authorizer, pool, rateProvider
 - Creates a mock pool with the vault
 - Initializes pool with user `lp`

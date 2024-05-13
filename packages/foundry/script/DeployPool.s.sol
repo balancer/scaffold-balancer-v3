@@ -6,7 +6,8 @@ import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.so
 import {HelperFunctions} from "../utils/HelperFunctions.sol";
 import {HelperConfig} from "../utils/HelperConfig.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {FakeTestERC20} from "../contracts/FakeTestERC20.sol";
+import {MockToken1} from "../contracts/MockToken1.sol";
+import {MockToken2} from "../contracts/MockToken2.sol";
 import {TokenConfig} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {Script, console} from "forge-std/Script.sol";
@@ -118,14 +119,8 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
      * @notice Creates mock tokens for the pool and mints 1000 of each to the deployer wallet
      */
     function deployMockTokens() internal returns (IERC20, IERC20) {
-        FakeTestERC20 scUSD = new FakeTestERC20(
-            "Scaffold Balancer Test Token #1",
-            "scUSD"
-        );
-        FakeTestERC20 scDAI = new FakeTestERC20(
-            "Scaffold Balancer Test Token #2",
-            "scDAI"
-        );
+        MockToken1 scUSD = new MockToken1("Scaffold USD", "scUSD");
+        MockToken2 scDAI = new MockToken2("Scaffold DAI", "scDAI");
 
         return (scUSD, scDAI);
     }
