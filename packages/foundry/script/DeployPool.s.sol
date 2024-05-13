@@ -20,7 +20,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
     error InvalidPrivateKey(string);
 
     /**
-     * @dev Set your pool deployment and initialization configurations in `HelperConfig.s.sol`
+     * @dev Set your pool deployment and initialization configurations in `HelperConfig.sol`
      * @dev Deploy only the pool with the CLI command `yarn deploy:pool`
      */
     function run() external virtual {
@@ -36,7 +36,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         (IERC20 token1, IERC20 token2) = deployMockTokens();
         vm.stopBroadcast();
 
-        // Look up configurations from `HelperConfig.s.sol`
+        // Look up configurations from `HelperConfig.sol`
         HelperConfig helperConfig = new HelperConfig();
         (
             string memory name,
@@ -55,6 +55,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
             block.chainid
         ); // Get the most recently deployed address of the pool factory
 
+        // Deploy a pool using the factory contract and then initialize it
         vm.startBroadcast(deployerPrivateKey);
         address pool = deployPoolFromFactory(
             poolFactoryAddress,
@@ -70,7 +71,6 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
             wethIsEth,
             userData
         );
-
         vm.stopBroadcast();
     }
 

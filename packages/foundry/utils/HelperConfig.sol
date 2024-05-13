@@ -34,7 +34,7 @@ contract HelperConfig {
         MockToken1 scUSD = new MockToken1("Scaffold USD", "scUSD");
         MockToken2 scDAI = new MockToken2("Scaffold DAI", "scDAI");
 
-        return (scUSD, scDAI);
+        return (scDAI, scUSD);
     }
 
     /**
@@ -63,7 +63,7 @@ contract HelperConfig {
             TokenConfig[] memory tokenConfig
         )
     {
-        name = "Scaffold Balancer Pool #1"; // name for the pool
+        name = "Scaffold Balancer Constant Price Pool #1"; // name for the pool
         symbol = "SB-50scUSD-50scDAI"; // symbol for the BPT
 
         tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
