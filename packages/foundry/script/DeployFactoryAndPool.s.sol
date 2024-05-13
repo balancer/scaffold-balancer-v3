@@ -14,7 +14,7 @@ import {HelperConfig} from "../utils/HelperConfig.sol";
  * @notice Contracts deployed by this script will have their info saved into the frontend for hot reload
  * @notice This script deploys a pool factory, deploys a pool using the factory, and then initializes the pool with mock tokens
  * @notice Mock tokens and BPT will be sent to the PK set in the .env file
- * @dev Set the pool factory, pool deployment, and pool initialization configurations in `HelperConfig.s.sol`
+ * @dev Set the pool factory, pool deployment, and pool initialization configurations in `HelperConfig.sol`
  * @dev Then run this script with `yarn deploy:all`
  */
 contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
@@ -31,7 +31,7 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
         (IERC20 token1, IERC20 token2) = deployMockTokens();
         vm.stopBroadcast();
 
-        // Look up configuration options from `HelperConfig.s.sol`
+        // Look up configuration options from `HelperConfig.sol`
         HelperConfig helperConfig = new HelperConfig();
         uint256 pauseWindowDuration = helperConfig.getFactoryConfig();
         (
@@ -47,20 +47,19 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
             bytes memory userData
         ) = helperConfig.getInitializationConfig(tokenConfig);
 
+        // Deploy the pool factory and then deploy a pool using the factory and then initialize the pool
         vm.startBroadcast(deployerPrivateKey);
         CustomPoolFactoryExample customPoolFactory = new CustomPoolFactoryExample(
                 vault,
                 pauseWindowDuration
             );
         console.log("Deployed Factory Address: %s", address(customPoolFactory));
-
         address pool = deployPoolFromFactory(
             address(customPoolFactory),
             name,
             symbol,
             tokenConfig
         );
-
         initializePool(
             pool,
             tokens,
