@@ -4,6 +4,8 @@
 
 🛠️ This repo is a series of guides and internal prototyping tools for creating custom pools that integrate with Balancer v3. 
 
+📚📖 PRE-REQs: It is highly recommended to read through the (BalancerV3 docs](TODO GET LINK) before using this repo. Custom pools are built upon the architecture outlined within these docs. If you cannot find what you are looking for in the docs, and it is not in this README, please refer to the (BalancerV3 monorepo](TODO GET LINK) and/or reachout on the (Balancer Discord](TODO GET LINK).
+
 It walks through example contracts for a custom pool, custom pool factory, test files, and deployment scripts. These files are used to deploy an example BalancerV3 custom pool that can be interacted with using a test, local front-end, on a test network (by default it is a foundry fork of Sepolia). The repo also provides a starting point for developers to create their own custom pools and factories.
 
 > When users clone this repo "off-the-shelf" they simply have to follow the environment setup instructions, run a few commands, and then they will have an example custom pool factory, and custom pools that they can interact with in a local front end. 
@@ -25,7 +27,7 @@ Here's a video showcasing the front end tool with this repo, and how one can exp
 ✏️ The Table of Contents of this README is listed below. Links are provided below in case you would like to jump to a certain topic.
 
 0. **[Checkpoint 0](#🚨🚨-checkpoint-0-📦-environment-📚)** - 📚 Setup of the environment
-1. **[Checkpoint 1](#🚨🚨-checkpoint-0-📦-environment-📚)** - 📚 Showcase of the front end actions w/ the repo off-the-shelf
+1. **[Checkpoint 1](#🚨🚨-checkpoint-1-🏊🏻‍♀️-showcase-of-the-pool-explorer-with-se-2-tech-stack)** - 📚 Showcase of the front end actions w/ the repo off-the-shelf
 1. **[Checkpoint 2](#🚨🚨-checkpoint-2-🌊-create-a-custom-pool)** - 🌊 Creating a custom pool smart contract.
 2. **[Checkpoint 3](#🚨🚨-checkpoint-3-🔧-create-a-custom-pool-factory--interact-with-resultant-custom-pools)** - 🔧 Creating a custom pool factory, deploying it, and generating said pool from it that you can interact with using the front end in your local host.
 3. **[Checkpoint 3](#🚨🚨-checkpoint-4-writing-typical-unit-and-fuzz-tests-for-custom-pool-example)** - 🧪 An Example of Writing Typical Unit and Fuzz Tests for a Custom Pool and Custom Pool Factory
@@ -66,7 +68,7 @@ yarn install
 
 #### 0.2.2 Set Environment Variables
 
-Set a `DEPLOYER_PRIVATE_KEY`, `ALCHEMY_API_KEY`, and `ETHERSCAN_API_KEY` at the path `packagages/foundry/.env`
+Set a `DEPLOYER_PRIVATE_KEY`, referred to as 'DEPLOYER' throughout this README, `ALCHEMY_API_KEY`, and `ETHERSCAN_API_KEY` at the path `packagages/foundry/.env`
 
 ```
 DEPLOYER_PRIVATE_KEY=0x...
@@ -82,13 +84,11 @@ yarn fork
 
 #### 0.2.4 Deploy Contracts
 
-The following command runs the script from `DeployFactoryAndPool.s.sol` which deploys a pool factory, deploys mock tokens, deploys a new pool using the factory, and finally initializes the pool using the mock tokens\*
+The following command runs the script from `DeployFactoryAndPool.s.sol` which deploys a pool factory, deploys mock tokens, deploys a new pool using the factory, and finally initializes the pool using the mock tokens. This is all done from the DEPLOYER wallet associated to the `DEPLOYER_PRIVATE_KEY` specified in the `.env`. It receives mock tokens, deploys the pool factory, and initializes the newly created pool with the some mock tokens. It carries these deployments out on an anvil local fork of the Sepolia test network.
 
 ```bash
 yarn deploy:all
 ```
-
-\*Mock tokens and BPT are sent to the PK specified in the `foundry/.env` file
 
 #### 0.2.5 Start Frontend
 
@@ -98,11 +98,21 @@ Execute the following command and then navigate to http://localhost:3000/pools
 yarn start
 ```
 
-<!-- #### 0.2.6 Understand Wallet Connection Options
+You now should have a local, testnet fork with newly deployed smart contracts and a local front end communicating with said smart contracts. You can start interacting with the newly deployed pools and other smart contracts, but first let's talk about wallets and this tool.
+
+### 0.3 Wallet Connection Options, and Key Gotchas with Scaffold ETH 2
+
+#### 0.3.1 Understand Wallet Connection Options
+
+This repo has a number of wallet configurations to help a developer.
 
 ##### Burner Wallet (Preferred)
 
-When connecting to a local node, SE-2 frontend randomly generates a burner wallet and saves the PK to your browser's local storage. When using the burner wallet, transactions will be instantly signed. To force the use of burner wallet, disable your browsers wallet extensions and refresh the page. Note that the burner wallet comes with 0 ETH to pay for gas so you will need to click the faucet button in top right corner. Also the mock tokens for the pool are minted to your deployer account set in `.env` so you will want to navigate to the "Debug Contracts" page to mint your burner wallet some mock tokens to use with the pool.
+If you do not have a wallet already connected to your web browser and thus your local host, then you will automatically use a burner wallet. First, what is a burner wallet?
+
+When connecting to a local node, SE-2 frontend randomly generates a burner wallet and saves the PK to your browser's local storage. When using the burner wallet, transactions will be instantly signed. This is useful for quick iterative development.
+
+To force the use of burner wallet, disable your browsers wallet extensions and refresh the page. Note that the burner wallet comes with 0 ETH to pay for gas so you will need to click the faucet button in top right corner. Also the mock tokens for the pool are minted to your deployer account set in `.env` so you will want to navigate to the "Debug Contracts" page to mint your burner wallet some mock tokens to use with the pool.
 
 <!-- TODO - Matt show screenshot/gif of debug tab doing the mint -->
 
@@ -110,9 +120,45 @@ When connecting to a local node, SE-2 frontend randomly generates a burner walle
 
 To use your preferred browser extension wallet, ensure that the account you are using matches the PK you previously provided in the `foundry/.env` file. As a convenience, the foundry deploy scripts max approve the vault contract to spend tokens.
 
-⚠️ You may need to add a local development network with rpc url `http://127.0.0.1:8545/` and chain id `31337`. Also, you may need to reset the nonce data for your wallet exension if it gets out of sync. -->
+⚠️ You may need to add a local development network with rpc url `http://127.0.0.1:8545/` and chain id `31337`. Also, you may need to reset the nonce data for your wallet exension if it gets out of sync.
 
-## 🚨🚨 Checkpoint 1: 🏊🏻‍♀️ Showcase of the Pool Explorer with SE-2 Tech Stack - TODO Matt
+<!-- TODO - ENHANCEMENT: add in screenshots of this troubleshooting -->
+
+With the wallet configurations understood and setup, we will touch on some SE-2 details before fully exploring the newly deployed local-test pool smart contracts.
+
+#### 0.3.2 Deployment
+
+> SE-2 is setup to hot reload the frontend with contracts that are directly deployed via the `DeployFactoryAndPool.s.sol` script. This means our frontend captures the pool factory and mock token contracts, but not the pool contract because it is deployed by calling a method on the factory.
+
+This command runs `DeployFactoryAndPool.s.sol` which deploys a pool factory, deploys mock tokens, deploys a pool, and initializes the pool. The factory contract and mock tokens will show on the "Debug" page. The pool contract address will print in the terminal, but can also be selected from the dropdown on the "Pools" page. All deployment configuration options are specified in `HelperConfig.s.sol`
+
+```bash
+yarn deploy:all
+```
+
+This command runs `DeployPool.s.sol` using the last pool factory you deployed. You can copy and paste the address from terminal or refresh the pool explorer page and select it from the dropdown. All deployment configuration options are specified in `HelperConfig.s.sol`
+
+```bash
+yarn deploy:pool
+```
+
+#### 0.3.3 Changing The Frontend Network Connection
+
+The network the frontend points at is set via `targetNetworks` in the `scaffold.config.ts` file
+
+#### 0.3.4 Changing The Forked Network
+
+Modify the "fork" alias in the `packages/foundry/package.json` file, but do not change the chain id
+
+```json
+	"fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
+```
+
+🧠 Tip: `foundry.toml` comes preconfigured with a variety of aliases for `rpc_endpoints`
+
+** 😮‍💨PHEW, with the quick start deployments done, we can get into the fun stuff and show what can be done with this tool!**
+
+## 🚨🚨 Checkpoint 1: 🏊🏻‍♀️ Showcase of the Pool Explorer with SE-2 Tech Stack
 
 You now should have a local front end started and test contracts deployed on a foundry test fork of the Sepolia network. This section simply highlights some of the actions you can take with the local front end.
 
@@ -120,7 +166,7 @@ You now should have a local front end started and test contracts deployed on a f
 
 ### 1.1 Select Your Pool
 
-On the "Pools" page, click the dropdown to select the custom pool you just deployed to your local anvil node
+On the "Pools" page, click the dropdown to select the custom pool you just deployed to your local anvil node.
 
 <details><summary> 👀 See Demo GIF</summary>
 	
@@ -140,43 +186,11 @@ Using the SE-2 toolkit, developers can troubleshoot with their smart contracts u
 
 <!-- TODO - Matt show screenshot/gif of debug tab doing the mint again -->
 
-At this point, you have now seen the capabilities of this repo and how it helps a developer (or team) onboard in building custom pools in BalancerV3. The local front end environment helps developers test interactions in a way that is similar (but not the same) as the interactions with the BalancerV3 front end. 
+At this point, you have now seen the capabilities of this repo and how it helps a developer (or team) onboard in building custom pools in BalancerV3. The local front end environment helps developers test interactions in a way that is similar (but not the same) as the interactions with the BalancerV3 front end. 🎉🎉
 
 <!-- TODO - Steve, not sure about last bit in the above line re: the BalancerV3 front end. -->
 
-Let's look under the hood, where we will start with understanding the example custom pool used within this repo., the `ConstantPricePool`.
-
-<!-- ### 0.3 Scaffold ETH 2 Guide
-
-#### 0.3.1 Deployment
-
-> SE-2 is setup to hot reload the frontend with contracts that are directly deployed via the `DeployFactoryAndPool.s.sol` script. This means our frontend captures the pool factory and mock token contracts, but not the pool contract because it is deployed by calling a method on the factory.
-
-This command runs `DeployFactoryAndPool.s.sol` which deploys a pool factory, deploys mock tokens, deploys a pool, and initializes the pool. The factory contract and mock tokens will show on the "Debug" page. The pool contract address will print in the terminal, but can also be selected from the dropdown on the "Pools" page. All deployment configuration options are specified in `HelperConfig.s.sol`
-
-```bash
-yarn deploy:all
-```
-
-This command runs `DeployPool.s.sol` using the last pool factory you deployed. You can copy and paste the address from terminal or refresh the pool explorer page and select it from the dropdown. All deployment configuration options are specified in `HelperConfig.s.sol`
-
-```bash
-yarn deploy:pool
-```
-
-#### 0.3.2 Changing The Frontend Network Connection
-
-The network the frontend points at is set via `targetNetworks` in the `scaffold.config.ts` file
-
-#### 0.3.3 Changing The Forked Network
-
-Modify the "fork" alias in the `packages/foundry/package.json` file, but do not change the chain id
-
-```json
-	"fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
-```
-
-🧠 Tip: `foundry.toml` comes preconfigured with a variety of aliases for `rpc_endpoints` -->
+🏎 Let's look under the hood, where we will start with understanding the example custom pool used within this repo., the `ConstantPricePool`.
 
 ## 🚨🚨 Checkpoint 2: 🌊 Create A Custom Pool
 
@@ -186,25 +200,21 @@ Therefore, this checkpoint focuses on writing the smart contract for a custom po
 
 ### 2.1 Write a Custom Pool Contract
 
-- All custom pool contracts must inherit from `IBasePool` and `BalancerPoolToken` and implement the three required functions: `onSwap`, `computeInvariant`, and `computeBalance`
+As a refresher, make sure to check out the [docs on creating custom pools as well](https://docs-v3.balancer.fi/concepts/guides/create-custom-amm-with-novel-invariant.html#build-your-custom-amm).
 
-- Begin your journey by reading the [docs on creating a custom pool](https://docs-v3.balancer.fi/concepts/guides/create-custom-amm-with-novel-invariant.html#build-your-custom-amm).
-
-- TODO --> input more details
+All custom pool contracts must inherit from `IBasePool` and `BalancerPoolToken` and implement the three required functions: `onSwap`, `computeInvariant`, and `computeBalance`.
 
 Let's walk through each function in `ConstantPricePoolExample.sol`
 
 #### 2.1.1 `onSwap()` Implementation - TODO
 
-- Looking at monorepo, one sees that `onSwap()` is ultimately called to return a value that ...
+Looking at monorepo, one sees that `onSwap()` is ultimately called within a `swap()` call in the [`Vault.sol`](https://github.com/balancer/balancer-v3-monorepo/blob/9bc5618d7717dfbafd3cfbf025e7d3317ad7cacb/pkg/vault/contracts/Vault.sol#L327).
 
-- In the case of the Constant Price Pool example, you can see that the amountCalculatedScaled18 is simply the amountGivenScaled18.
+Essentially, the `onSwap()` call carries the custom pool logic that the vault queries to understand how much of the requested token the swap should return. 
 
-> **Recall the architecture of BalancerV3, and how each custom pool function is called throughout the typical transactions carried out within the protocol.**
+This step can vary between custom pool variations. To paint a contrast, a simple implementation can be seen within this `ConstantPricePool` example, where the amount swapped in is simply the amount swapped out (see toggle below).
 
----
-
-<details markdown='1'><summary>👩🏽‍🏫 Solution Code for `onSwap` functions </summary>
+<details markdown='1'><summary>👩🏽‍🏫 Code for `onSwap` functions </summary>
 Inside `ConstantPricePoolExample.sol`
 
 ```
@@ -223,6 +233,10 @@ Inside `ConstantPricePoolExample.sol`
 
 </details>
 
+Whereas you can begin to see the endless possibilities that exist when you take a look at the [WeightedPool implementation](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/contracts/WeightedPool.sol#L100-L126).
+
+There you can see that the return value is dependent on the `SwapKind` and ultimately uses the `WeightedMath` functions to respect the invariant and other details for WeightedPools.
+
 ---
 
 #### 🥅 ** `onSwap()` Goals / Checks**
@@ -231,7 +245,7 @@ Inside `ConstantPricePoolExample.sol`
 
 ---
 
-#### 2.1.2 `computeInvariant()` Implementation TODO
+#### 2.1.2 `computeInvariant()` Implementation TODO - steve where you left off
 
 - Looking at monorepo, one sees that `computeInvariant()` is ultimately called to return the new invariant resulting from the specific details influencing the respective pool.
 - In this case, it is constant sum invariant that we simply need to create.
