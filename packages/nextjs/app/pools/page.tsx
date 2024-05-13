@@ -39,7 +39,7 @@ const Pools: NextPage = () => {
       <div className="max-w-screen-2xl mx-auto">
         <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
           <div>
-            <h1 className="text-3xl md:text-5xl font-bold my-7">🌊 Custom Pools</h1>
+            <h1 className="text-3xl md:text-5xl font-semibold my-7">🌊 Custom Pools</h1>
             <p className="text-xl my-0">
               Balancer is infinitely extensible to allow for any conceivable pool type with custom curves, logic,
               parameters, and more. Each pool deployed to balancer is its own smart contract. This tool allows you to
@@ -107,7 +107,7 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
         </Alert>
       )}
       <div className="text-center mb-5 bg-base-200 p-3 w-full rounded-lg">
-        <h3 className="font-extrabold text-3xl my-2">{pool.name}</h3>
+        <h3 className="font-semibold text-3xl my-2">{pool.name}</h3>
         <h5 className="text-sm md:text-lg xl:text-xl">{pool.address}</h5>
       </div>
 

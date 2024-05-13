@@ -43,6 +43,8 @@ Before you begin, you need to install the following tools:
 
 Speedrun deploying your first custom pool to get acquainted with our pool explorer
 
+TODO @matt - Showcase the front end at a high level (showing, with a pool address input already, the possible interactions you can do with it).
+
 #### 0.2.0 Clone Repo
 
 ```bash
@@ -55,7 +57,7 @@ git clone https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3.git
 yarn install
 ```
 
-#### 0.2.3 Set Environment Variables
+#### 0.2.2 Set Environment Variables
 
 Set a `DEPLOYER_PRIVATE_KEY`, `ALCHEMY_API_KEY`, and `ETHERSCAN_API_KEY` at the path `packagages/foundry/.env`
 
@@ -65,13 +67,13 @@ ETHERSCAN_API_KEY=...
 ALCHEMY_API_KEY=...
 ```
 
-#### 0.2.4 Start Local Fork
+#### 0.2.3 Start Local Fork
 
 ```bash
 yarn fork
 ```
 
-#### 0.2.5 Deploy Contracts
+#### 0.2.4 Deploy Contracts
 
 The following command runs the script from `DeployFactoryAndPool.s.sol` which deploys a pool factory, deploys mock tokens, deploys a new pool using the factory, and finally initializes the pool using the mock tokens\*
 
@@ -81,13 +83,25 @@ yarn deploy:all
 
 \*Mock tokens and BPT are sent to the PK specified in the `foundry/.env` file
 
-#### 0.2.6 Start Frontend
+#### 0.2.5 Start Frontend
 
 Execute the following command and then navigate to http://localhost:3000/pools
 
 ```bash
 yarn start
 ```
+
+#### 0.2.6 Understand Wallet Connection Options
+
+##### Burner Wallet (Preferred)
+
+When connecting to a local node, SE-2 frontend randomly generates a burner wallet and saves the PK to your browser's local storage. When using the burner wallet, transactions will be instantly signed. To force the use of burner wallet, disable your browsers wallet extensions and refresh the page. Note that the burner wallet comes with 0 ETH to pay for gas so you will need to click the faucet button in top right corner. Also the mock tokens for the pool are minted to your deployer account set in `.env` so you will want to navigate to the "Debug Contracts" page to mint your burner wallet some mock tokens to use with the pool.
+
+##### Browser Extension Wallet
+
+To use your preferred browser extension wallet, ensure that the account you are using matches the PK you previously provided in the `foundry/.env` file. As a convenience, the foundry deploy scripts max approve the vault contract to spend tokens.
+
+⚠️ You may need to add a local development network with rpc url `http://127.0.0.1:8545/` and chain id `31337`. Also, you may need to reset the nonce data for your wallet exension if it gets out of sync.
 
 #### 0.2.7 Select Your Pool
 
@@ -103,23 +117,19 @@ https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/cc3
 
 Connect the account you specified in the `.env` file using your favorite wallet extension and start splashing around in your pool with swaps, joins, and exits!
 
-⚠️ You may need to add a local development network with rpc url `http://127.0.0.1:8545/` and chain id `31337`. Also, you may need to reset the nonce data for your wallet exension if it gets out of sync.
-
-TODO @matt - Showcase the front end at a high level (showing, with a pool address input already, the possible interactions you can do with it).
-
 ### 0.3 Scaffold ETH 2 Guide
 
 #### 0.3.1 Deployment
 
 > SE-2 is setup to hot reload the frontend with contracts that are directly deployed via the `DeployFactoryAndPool.s.sol` script. This means our frontend captures the pool factory and mock token contracts, but not the pool contract because it is deployed by calling a method on the factory.
 
-This command runs `DeployFactoryAndPool.s.sol` which deploys a pool factory, deploys mock tokens, deploys a pool, and initializes the pool. The factory contract and mock tokens will show on the "Debug" page. The pool contract address will print in the terminal, but can also be selected from the dropdown on the "Pools" page. Configuration options are specified in `HelperConfig.s.sol`
+This command runs `DeployFactoryAndPool.s.sol` which deploys a pool factory, deploys mock tokens, deploys a pool, and initializes the pool. The factory contract and mock tokens will show on the "Debug" page. The pool contract address will print in the terminal, but can also be selected from the dropdown on the "Pools" page. All deployment configuration options are specified in `HelperConfig.s.sol`
 
 ```bash
 yarn deploy:all
 ```
 
-This command runs `DeployPool.s.sol` using the last pool factory you deployed. You can copy and paste the address from terminal or refresh the pool explorer page and select it from the dropdown. Configuration options are specified in `HelperConfig.s.sol`
+This command runs `DeployPool.s.sol` using the last pool factory you deployed. You can copy and paste the address from terminal or refresh the pool explorer page and select it from the dropdown. All deployment configuration options are specified in `HelperConfig.s.sol`
 
 ```bash
 yarn deploy:pool

@@ -18,12 +18,6 @@ import {HelperConfig} from "../utils/HelperConfig.sol";
  * @dev Then run this script with `yarn deploy:all`
  */
 contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
-    error InvalidPrivateKey(string);
-
-    // Tokens for pool (also requires configuration of `TokenConfig` in `getPoolConfig` function of HelperConfig.s.sol)
-    IERC20 token1; // Make sure to have proper token order (alphanumeric)
-    IERC20 token2; // Make sure to have proper token order (alphanumeric)
-
     function run() external override {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         if (deployerPrivateKey == 0) {
@@ -34,7 +28,7 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
 
         // Deploy mock tokens. Remove this if using already deployed tokens and instead set the tokens above
         vm.startBroadcast(deployerPrivateKey);
-        (token1, token2) = deployMockTokens();
+        (IERC20 token1, IERC20 token2) = deployMockTokens();
         vm.stopBroadcast();
 
         // Look up configuration options from `HelperConfig.s.sol`

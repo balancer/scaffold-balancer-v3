@@ -31,7 +31,7 @@ const Subgraph: NextPage = () => {
                 href="https://api.studio.thegraph.com/proxy/31386/balancer-v3-sepolia/version/latest/graphql?query=query+AllPools+%7B%0A++pools+%7B%0A++++address%0A++++isInitialized%0A++++totalShares%0A++++tokens+%7B%0A++++++address%0A++++++balance%0A++++++name%0A++++++symbol%0A++++%7D%0A++%7D%0A%7D"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-accent rounded-lg"
+                className="btn text-white bg-gradient-to-tr from-indigo-700 from-15% to-fuchsia-600 hover:from-indigo-700 hover:to-fuchsia-700 rounded-lg"
               >
                 Explore Subgraph
               </a>

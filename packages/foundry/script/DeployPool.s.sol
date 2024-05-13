@@ -6,8 +6,6 @@ import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.so
 import {HelperFunctions} from "../utils/HelperFunctions.sol";
 import {HelperConfig} from "../utils/HelperConfig.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {MockToken1} from "../contracts/MockToken1.sol";
-import {MockToken2} from "../contracts/MockToken2.sol";
 import {TokenConfig} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {Script, console} from "forge-std/Script.sol";
@@ -19,20 +17,23 @@ import {Script, console} from "forge-std/Script.sol";
  * @notice This script can be run directly, but is also inherited by the `DeployFactoryAndPool.s.sol` script
  */
 contract DeployPool is HelperFunctions, HelperConfig, Script {
+    error InvalidPrivateKey(string);
+
     /**
      * @dev Set your pool deployment and initialization configurations in `HelperConfig.s.sol`
      * @dev Deploy only the pool with the CLI command `yarn deploy:pool`
      */
     function run() external virtual {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
-
-        // Tokens for pool (also requires attention to TokenConfig in `getPoolConfig` function of HelperConfig.s.sol)
-        IERC20 token1; // Make sure to have proper token order (alphanumeric)
-        IERC20 token2; // Make sure to have proper token order (alphanumeric)
+        if (deployerPrivateKey == 0) {
+            revert InvalidPrivateKey(
+                "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"
+            );
+        }
 
         // Deploy mock tokens to use in the pool
         vm.startBroadcast(deployerPrivateKey);
-        (token1, token2) = deployMockTokens();
+        (IERC20 token1, IERC20 token2) = deployMockTokens();
         vm.stopBroadcast();
 
         // Look up configurations from `HelperConfig.s.sol`
@@ -113,16 +114,6 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
             wethIsEth,
             userData
         );
-    }
-
-    /**
-     * @notice Creates mock tokens for the pool and mints 1000 of each to the deployer wallet
-     */
-    function deployMockTokens() internal returns (IERC20, IERC20) {
-        MockToken1 scUSD = new MockToken1("Scaffold USD", "scUSD");
-        MockToken2 scDAI = new MockToken2("Scaffold DAI", "scDAI");
-
-        return (scUSD, scDAI);
     }
 
     /**

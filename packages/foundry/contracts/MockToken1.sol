@@ -14,9 +14,9 @@ contract MockToken1 is ERC20 {
     }
 
     /**
-     * @notice allows any user to mint tokens to any wallet to enable frontend pool action testing
+     * @notice allows any user to mint any amount of tokens to their wallet for frontend pool action testing
      */
-    function mint() external {
-        _mint(msg.sender, 100 ether);
+    function mint(uint256 amount) external {
+        _mint(msg.sender, amount);
     }
 }
