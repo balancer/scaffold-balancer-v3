@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  ChainId,
   InputAmount,
   OnChainProvider,
   PoolState,
@@ -9,13 +10,13 @@ import {
   Slippage,
 } from "@balancer/sdk";
 import { usePublicClient, useWalletClient } from "wagmi";
-import { Pool, PoolActionTxUrl, QueryExitResponse } from "~~/hooks/balancer/types";
+import { Pool, QueryExitResponse, TransactionHash } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 type PoolExitFunctions = {
   queryExit: (rawAmount: bigint) => Promise<QueryExitResponse>;
-  exitPool: () => Promise<PoolActionTxUrl>;
+  exitPool: () => Promise<TransactionHash>;
 };
 
 /**
@@ -31,8 +32,12 @@ export const useExit = (pool: Pool): PoolExitFunctions => {
 
   const queryExit = async (rawAmount: bigint) => {
     try {
-      const chainId = await publicClient.getChainId();
-      const rpcUrl = publicClient?.chain.rpcUrls.default.http[0] as string;
+      if (!publicClient) {
+        throw new Error("public client is undefined");
+      }
+      // const chainId = await publicClient.getChainId();
+      const chainId = ChainId.SEPOLIA; // hardcoding to sepolia because query requires chainId of forked network, but SE-2 frontend needs chainId of 31337 to send tx to local node
+      const rpcUrl = publicClient.chain.rpcUrls.default.http[0] as string;
       const slippage = Slippage.fromPercentage("1"); // 1%
 
       const onchainProvider = new OnChainProvider(rpcUrl, chainId);

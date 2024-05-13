@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  ChainId,
   ExactInQueryOutput,
   ExactOutQueryOutput,
   Slippage,
@@ -12,16 +13,16 @@ import {
 import { WriteContractResult } from "@wagmi/core";
 import { parseAbi } from "viem";
 import { useContractRead, useContractWrite, useWalletClient } from "wagmi";
-import { Pool, PoolActionTxUrl, QuerySwapResponse, SwapConfig } from "~~/hooks/balancer/types";
+import { Pool, QuerySwapResponse, SwapConfig, TransactionHash } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
-import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 type PoolSwapFunctions = {
   querySwap: () => Promise<QuerySwapResponse>;
-  swap: () => Promise<PoolActionTxUrl>;
+  swap: () => Promise<TransactionHash>;
   tokenInAllowance: bigint | undefined;
   tokenInBalance: bigint | undefined;
   refetchTokenInAllowance: () => void;
+  refetchTokenInBalance: () => void;
   approveAsync: () => Promise<WriteContractResult>;
 };
 
@@ -38,7 +39,8 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
   const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
   const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
 
-  const chainId = walletClient?.chain.id as number;
+  // const chainId = walletClient?.chain.id as number;
+  const chainId = ChainId.SEPOLIA; // hardcoding to sepolia because query requires chainId of forked network, but SE-2 frontend needs chainId of 31337 to send tx to local node
   const rpcUrl = walletClient?.chain.rpcUrls.default.http[0] as string;
 
   const querySwap = async () => {
@@ -121,15 +123,12 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
           value: call.value,
         });
 
-      const hash = await writeTx(txHashPromise, { blockConfirmations: 1 });
+      const txHash = await writeTx(txHashPromise, { blockConfirmations: 1 });
 
-      if (!hash) {
+      if (!txHash) {
         throw new Error("Transaction failed");
       }
-
-      const chainId = await walletClient.getChainId();
-      const blockExplorerTxURL = getBlockExplorerTxLink(chainId, hash);
-      return blockExplorerTxURL;
+      return txHash;
     } catch (e) {
       console.error("error", e);
       return null;
@@ -140,14 +139,17 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
     address: tokenIn.address,
     abi: parseAbi(["function allowance(address owner, address spender) returns (uint256)"]),
     functionName: "allowance" as any, // ???
-    args: [walletClient?.account.address as `0x${string}`, pool.vaultAddress],
+    args: [
+      (walletClient?.account.address as `0x${string}`) || "0x0000000000000000000000000000000000000000",
+      pool.vaultAddress,
+    ],
   });
 
-  const { data: tokenInBalance } = useContractRead({
+  const { data: tokenInBalance, refetch: refetchTokenInBalance } = useContractRead({
     address: tokenIn.address,
     abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
     functionName: "balanceOf" as any, // ???
-    args: [walletClient?.account.address as `0x${string}`],
+    args: [(walletClient?.account.address as `0x${string}`) || "0x0000000000000000000000000000000000000000"],
   });
 
   const { writeAsync: approveAsync } = useContractWrite({
@@ -157,5 +159,13 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
     args: [pool.vaultAddress, swapConfig.tokenIn.rawAmount],
   });
 
-  return { querySwap, swap, tokenInBalance, tokenInAllowance, refetchTokenInAllowance, approveAsync };
+  return {
+    querySwap,
+    swap,
+    tokenInBalance,
+    tokenInAllowance,
+    refetchTokenInAllowance,
+    refetchTokenInBalance,
+    approveAsync,
+  };
 };

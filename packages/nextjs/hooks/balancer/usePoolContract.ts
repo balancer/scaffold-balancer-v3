@@ -1,54 +1,57 @@
-import { PoolAbi } from "./PoolAbi";
 import type { Pool } from "./types";
 import { type Address } from "viem";
 import { erc20ABI, usePublicClient, useQuery, useWalletClient } from "wagmi";
+import abis from "~~/contracts/abis";
 import externalContracts from "~~/contracts/externalContracts";
 
 /**
  * Fetch all relevant details for a pool
  */
-export const usePoolContract = (pool: Address) => {
+export const usePoolContract = (pool: Address | null) => {
   const client = usePublicClient();
   const { data: walletClient } = useWalletClient();
   const chainId = client.chain.id;
   const { Vault } = externalContracts[chainId as keyof typeof externalContracts];
 
   const connectedAddress = walletClient?.account?.address;
+  const poolAbi = abis.balancer.Pool;
 
   return useQuery<Pool>(
     ["PoolContract", { pool, vaultAddress: Vault.address, connectedAddress }],
     async () => {
+      if (!pool) throw new Error("Pool address is required");
+
       const [name, symbol, totalSupply, decimals, vaultAddress, userBalance, isRegistered, poolTokenInfo, poolConfig] =
         await Promise.all([
           // fetch data about BPT from pool contract
           client.readContract({
-            abi: PoolAbi,
+            abi: poolAbi,
             address: pool,
             functionName: "name",
           }) as Promise<string>,
           client.readContract({
-            abi: PoolAbi,
+            abi: poolAbi,
             address: pool,
             functionName: "symbol",
           }) as Promise<string>,
           client.readContract({
-            abi: PoolAbi,
+            abi: poolAbi,
             address: pool,
             functionName: "totalSupply",
           }) as Promise<bigint>,
           client.readContract({
-            abi: PoolAbi,
+            abi: poolAbi,
             address: pool,
             functionName: "decimals",
           }) as Promise<number>,
           client.readContract({
-            abi: PoolAbi,
+            abi: poolAbi,
             address: pool,
             functionName: "getVault",
           }) as Promise<string>,
           client
             .readContract({
-              abi: PoolAbi,
+              abi: poolAbi,
               address: pool,
               functionName: "balanceOf",
               args: [connectedAddress],
@@ -127,7 +130,7 @@ export const usePoolContract = (pool: Address) => {
         poolConfig,
       };
     },
-    { enabled: pool !== "" },
+    { enabled: !!pool },
   );
 };
 

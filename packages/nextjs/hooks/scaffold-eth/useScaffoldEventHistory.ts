@@ -108,7 +108,10 @@ export const useScaffoldEventHistory = <
         setError(undefined);
       }
     } catch (e: any) {
-      console.error(e);
+      // Temporary fix to screen out inconsequential error
+      if (e.message !== "Contract not found") {
+        console.error(e);
+      }
       setEvents(undefined);
       setError(e);
     } finally {

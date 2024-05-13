@@ -3,6 +3,7 @@ import {
   AddLiquidity,
   AddLiquidityInput,
   AddLiquidityKind,
+  ChainId,
   InputAmount,
   OnChainProvider,
   PoolState,
@@ -10,13 +11,13 @@ import {
 } from "@balancer/sdk";
 import { parseAbi } from "viem";
 import { useContractReads, usePublicClient, useWalletClient } from "wagmi";
-import { Pool, PoolActionTxUrl, QueryJoinResponse } from "~~/hooks/balancer/types";
+import { Pool, QueryJoinResponse, TransactionHash } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 type JoinPoolFunctions = {
   queryJoin: () => Promise<QueryJoinResponse>;
-  joinPool: () => Promise<PoolActionTxUrl>;
+  joinPool: () => Promise<TransactionHash>;
   allowances: any[] | undefined;
   refetchAllowances: () => void;
   tokenBalances: any[] | undefined;
@@ -35,9 +36,12 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
 
   const queryJoin = async () => {
     try {
-      // User defined (along with the queryJoin parameters)
-      const chainId = await publicClient.getChainId();
-      const rpcUrl = publicClient?.chain.rpcUrls.default.http[0] as string;
+      if (!publicClient) {
+        throw new Error("public client is undefined");
+      }
+      // const chainId = await publicClient.getChainId();
+      const chainId = ChainId.SEPOLIA; // hardcoding to sepolia because query requires chainId of forked network, but SE-2 frontend needs chainId of 31337 to send tx to local node
+      const rpcUrl = publicClient.chain.rpcUrls.default.http[0] as string;
       const slippage = Slippage.fromPercentage("1"); // 1%
 
       const onchainProvider = new OnChainProvider(rpcUrl, chainId);
