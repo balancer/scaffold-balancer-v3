@@ -2,33 +2,42 @@
 
 ⚖️ Balancer is a decentralized automated market maker (AMM) protocol built on Ethereum that represents a flexible building block for programmable liquidity.
 
-🛠️ This repo is a series of guides and a prototyping tools for creating custom pools that integrate with Balancer v3.
+🛠️ This repo is a series of guides and internal prototyping tools for creating custom pools that integrate with Balancer v3. 
 
-It uses example contracts for a custom pool, custom pool factory, test files, and deployment scripts. The core idea is to help educate developers with creating custom pools and integrating with BalancerV3, and to provide a starting point for developers to create their own custom pools and factories.
+It walks through example contracts for a custom pool, custom pool factory, test files, and deployment scripts. These files are used to deploy an example BalancerV3 custom pool that can be interacted with using a test, local front-end, on a test network (by default it is a foundry fork of Sepolia). The repo also provides a starting point for developers to create their own custom pools and factories.
 
-When users clone this repo "off-the-shelf" they simply have to follow the environment setup instructions, run a few commands, and then they will have an example custom pool factory, and custom pools that they can interact with in a local front end. This README walks a user through the ins and outs of these example custom pool contracts. Once a user has gone through these example contracts, they can then use them as starting templates to create their own custom pool factories and pools.
+> When users clone this repo "off-the-shelf" they simply have to follow the environment setup instructions, run a few commands, and then they will have an example custom pool factory, and custom pools that they can interact with in a local front end. 
 
-The ability to interact with your own custom pool in a local front end is powerful as the front end is based on the same SDK and APIs / Subgraphs that Balancer as a protocol uses.
+Let's outline what this repo provides in more detail:
 
-To expand on this, let's outline what this repo provides in more detail:
-
-1. A README to walk a dev through using the different functionalities of the repo.
+1. A README to walk a dev through using the different functionalities of the repo. 
 2. A front-end prototyping tool, example smart contracts and scripts, to help showcase simple integrations with Balancer's core architecture.
 3. Use of the same front-end framework with your own custom pools, and walking you through how to do so using the example smart contracts and scripts to start.
 
-✏️ The agenda of this README is listed below:
+## Demo
 
-0. **Checkpoint 0** - 📚 Setup of the environment.
-1. **Checkpoint 1** - 🌊 Creating a custom pool smart contract.
-2. **Checkpoint 2** - 🔧 Creating a custom pool factory, deploying it, and generating said pool from it that you can interact with using the front end in your local host.
-3. **Checkpoint 3** - 🧪 Writing Typical Unit and Fuzz Tests for Custom Pool Example
-4. **Checkpoint 4** - 🎨 Creating Your Own Custom Pool with the Template Files
-5. **Checkpoint 5** - 📡 Integrate pool with the Balancer v3 Subgraph
-6. **Checkpoint 6** - 🧭 Integrate pool with the Smart Order Router (SOR)
+Here's a video showcasing the front end tool with this repo, and how one can explore pool actions (Swaps, joins, exits, etc.) with the pool explorer off-the-shelf.
+
+<!-- TODO - MATT ADD IN VIDEO HERE -->
+
+## Table of Contents
+
+✏️ The Table of Contents of this README is listed below. Links are provided below in case you would like to jump to a certain topic.
+
+0. **[Checkpoint 0](#🚨🚨-checkpoint-0-📦-environment-📚)** - 📚 Setup of the environment
+1. **[Checkpoint 1](#🚨🚨-checkpoint-0-📦-environment-📚)** - 📚 Showcase of the front end actions w/ the repo off-the-shelf
+1. **[Checkpoint 2](#🚨🚨-checkpoint-2-🌊-create-a-custom-pool)** - 🌊 Creating a custom pool smart contract.
+2. **[Checkpoint 3](#🚨🚨-checkpoint-3-🔧-create-a-custom-pool-factory--interact-with-resultant-custom-pools)** - 🔧 Creating a custom pool factory, deploying it, and generating said pool from it that you can interact with using the front end in your local host.
+3. **[Checkpoint 3](#🚨🚨-checkpoint-4-writing-typical-unit-and-fuzz-tests-for-custom-pool-example)** - 🧪 An Example of Writing Typical Unit and Fuzz Tests for a Custom Pool and Custom Pool Factory
+4. **[Checkpoint 4](#🚨🚨-checkpoint-5-creating-your-own-custom-pool-with-the-template-files)** - 🎨 Creating Your Own Custom Pool with the Template Files
+5. **[Checkpoint 5](#🚨🚨-checkpoint-6-🧭-integrate-pool-with-the-smart-order-router-sor)** - 📡 Integrate pool with the Balancer v3 Subgraph
+6. **[Checkpoint 6](#🚨🚨-checkpoint-7-📡-integrate-pool-with-the-balancer-v3-subgraph)** - 🧭 Integrate pool with the Smart Order Router (SOR)
 
 In general, all smart contracts sections of this repo will already have `Example` smart contracts. These smart contract examples will be explained within this README.
 
 ## 🚨🚨 Checkpoint 0: 📦 Environment 📚
+
+This section walks you through the set up of the repo environment so that you have a local front end with a foundry test fork off of Sepolia. The test fork will have deployed contracts to showcase how you can interact with custom pools in a test environment using the local pool explorer tab.
 
 ### 0.1 Requirements
 
@@ -41,9 +50,7 @@ Before you begin, you need to install the following tools:
 
 ### 0.2 Quickstart
 
-Speedrun deploying your first custom pool to get acquainted with our pool explorer
-
-TODO @matt - Showcase the front end at a high level (showing, with a pool address input already, the possible interactions you can do with it).
+Next, we will run the following bash commands in your terminal to clone the repo and set up the repo accordingly.
 
 #### 0.2.0 Clone Repo
 
@@ -91,19 +98,27 @@ Execute the following command and then navigate to http://localhost:3000/pools
 yarn start
 ```
 
-#### 0.2.6 Understand Wallet Connection Options
+<!-- #### 0.2.6 Understand Wallet Connection Options
 
 ##### Burner Wallet (Preferred)
 
 When connecting to a local node, SE-2 frontend randomly generates a burner wallet and saves the PK to your browser's local storage. When using the burner wallet, transactions will be instantly signed. To force the use of burner wallet, disable your browsers wallet extensions and refresh the page. Note that the burner wallet comes with 0 ETH to pay for gas so you will need to click the faucet button in top right corner. Also the mock tokens for the pool are minted to your deployer account set in `.env` so you will want to navigate to the "Debug Contracts" page to mint your burner wallet some mock tokens to use with the pool.
 
+<!-- TODO - Matt show screenshot/gif of debug tab doing the mint -->
+
 ##### Browser Extension Wallet
 
 To use your preferred browser extension wallet, ensure that the account you are using matches the PK you previously provided in the `foundry/.env` file. As a convenience, the foundry deploy scripts max approve the vault contract to spend tokens.
 
-⚠️ You may need to add a local development network with rpc url `http://127.0.0.1:8545/` and chain id `31337`. Also, you may need to reset the nonce data for your wallet exension if it gets out of sync.
+⚠️ You may need to add a local development network with rpc url `http://127.0.0.1:8545/` and chain id `31337`. Also, you may need to reset the nonce data for your wallet exension if it gets out of sync. -->
 
-#### 0.2.7 Select Your Pool
+## 🚨🚨 Checkpoint 1: 🏊🏻‍♀️ Showcase of the Pool Explorer with SE-2 Tech Stack - TODO Matt
+
+You now should have a local front end started and test contracts deployed on a foundry test fork of the Sepolia network. This section simply highlights some of the actions you can take with the local front end.
+
+<!-- TODO @matt - Showcase the front end at a high level (showing, with a pool address input already, the possible interactions you can do with it). -->
+
+### 1.1 Select Your Pool
 
 On the "Pools" page, click the dropdown to select the custom pool you just deployed to your local anvil node
 
@@ -113,11 +128,25 @@ https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/cc3
 
 </details>
 
-#### 0.2.8 Use Your Pool
+### 1.2 Use Your Pool
 
 Connect the account you specified in the `.env` file using your favorite wallet extension and start splashing around in your pool with swaps, joins, and exits!
 
-### 0.3 Scaffold ETH 2 Guide
+<!-- TODO - Matt showcase with screenshots and gifs here all the things that can be done with pool explorer -->
+
+### 1.3 Troubleshoot with the Debug Tab
+
+Using the SE-2 toolkit, developers can troubleshoot with their smart contracts using the "Debug Tab" where they can see getter and setter functions in a local front end UI. As you saw earlier, we use this handy setup to mint `mockERC20` tokens to any connected wallet to our local host (it could be a foundry wallet, a burner wallet, your `.env` wallet, etc.). 
+
+<!-- TODO - Matt show screenshot/gif of debug tab doing the mint again -->
+
+At this point, you have now seen the capabilities of this repo and how it helps a developer (or team) onboard in building custom pools in BalancerV3. The local front end environment helps developers test interactions in a way that is similar (but not the same) as the interactions with the BalancerV3 front end. 
+
+<!-- TODO - Steve, not sure about last bit in the above line re: the BalancerV3 front end. -->
+
+Let's look under the hood, where we will start with understanding the example custom pool used within this repo., the `ConstantPricePool`.
+
+<!-- ### 0.3 Scaffold ETH 2 Guide
 
 #### 0.3.1 Deployment
 
@@ -147,15 +176,15 @@ Modify the "fork" alias in the `packages/foundry/package.json` file, but do not 
 	"fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
 ```
 
-🧠 Tip: `foundry.toml` comes preconfigured with a variety of aliases for `rpc_endpoints`
+🧠 Tip: `foundry.toml` comes preconfigured with a variety of aliases for `rpc_endpoints` -->
 
-## 🚨🚨 Checkpoint 1: 🌊 Create A Custom Pool
+## 🚨🚨 Checkpoint 2: 🌊 Create A Custom Pool
 
 Ultimately, this repo can be used to create custom pool factories, custom pools from said factory, and register and initialize them so the pools can be interacted with using this repo's front end, all in a local environment. Before jumping into all of that, it is key that developers understand the general make-up of a custom pool.
 
 Therefore, this checkpoint focuses on writing the smart contract for a custom pool (without a factory). We will walk through the `ConstantPricePoolExample.sol` found within `packages/hardhat/contracts/ConstantPricePoolExample.sol`.
 
-### 1.1 Write a Custom Pool Contract
+### 2.1 Write a Custom Pool Contract
 
 - All custom pool contracts must inherit from `IBasePool` and `BalancerPoolToken` and implement the three required functions: `onSwap`, `computeInvariant`, and `computeBalance`
 
@@ -165,7 +194,7 @@ Therefore, this checkpoint focuses on writing the smart contract for a custom po
 
 Let's walk through each function in `ConstantPricePoolExample.sol`
 
-#### 1.1.1 `onSwap()` Implementation - TODO
+#### 2.1.1 `onSwap()` Implementation - TODO
 
 - Looking at monorepo, one sees that `onSwap()` is ultimately called to return a value that ...
 
@@ -202,7 +231,7 @@ Inside `ConstantPricePoolExample.sol`
 
 ---
 
-#### 1.1.2 `computeInvariant()` Implementation TODO
+#### 2.1.2 `computeInvariant()` Implementation TODO
 
 - Looking at monorepo, one sees that `computeInvariant()` is ultimately called to return the new invariant resulting from the specific details influencing the respective pool.
 - In this case, it is constant sum invariant that we simply need to create.
@@ -239,7 +268,7 @@ Inside `ConstantPricePoolExample.sol`
 
 ---
 
-#### 1.1.2 `computeBalance()` Implementation TODO
+#### 2.1.3 `computeBalance()` Implementation TODO
 
 - Looking at monorepo, one sees that `computeBalance()` is ultimately called to return the new balance of a token after an operation, given the invariant growth ratio and all other balances.
 - In this case, it is constant sum invariant that we simply need to create.
@@ -288,7 +317,7 @@ Inside `ConstantPricePoolExample.sol`
 
 💡 Now we have walked through a basic custom pool construction, let's get into how the custom pool factory contracts work.
 
-## 🚨🚨 Checkpoint 2: 🔧 Create a custom pool factory && Interact with Resultant Custom Pools
+## 🚨🚨 Checkpoint 3: 🔧 Create a custom pool factory && Interact with Resultant Custom Pools
 
 Now that you have created a custom pool, it is time to deploy the associated custom pool factory. For this repo, we've created a custom pool factory example and associated script to deploy it, and create a new pool using said factory.
 
@@ -302,7 +331,7 @@ This section will walk you through:
 - Running the script to deploy more pools from said custom pool factory.
 - Interacting with the pool factory within the ScaffoldBalancer UI with the Debug Tab.
 
-## Checkpoint 2.1: Creating the Custom Pool Factory
+## 3.1: Creating the Custom Pool Factory
 
 Balancer architecture pushes for pool creation from a pool factory for a number of reasons, one including being picked up by the Balancer subgraph easily.
 
@@ -329,7 +358,7 @@ constructor(
 
 Moving on to the next part, the `create()` function is used to create new pools from the custom pool factory, adhering to the specific type of pools for said factory. In this case, that's the `ConstantPricePool`.
 
-### 2.1.1 `create()` Function
+### 3.1.1 `create()` Function
 
 The `create()` function, in this simple example pool factory, simply calls the `_create()` function within the `BasePoolFactory.sol`. The `_create()` function uses `CREATE3`, similar to `CREATE2` to deploy a pool that has a pre-determined address based on its salt, and encoded creation code & args.
 
@@ -343,7 +372,7 @@ function _create(bytes memory constructorArgs, bytes32 salt) internal returns (a
 
 Within the function `create()` we call `_create()` with appropriate params, which will be touched on later within our scripts. For now, we move onto the next aspect of the `create()` call, which is to `registerPool()` with the BalancerV3 vault.
 
-### 2.1.2 Calling `registerPool()`
+### 3.1.2 Calling `registerPool()`
 
 New pools need to be registered to the BalancerV3 vault to operate within the BalancerV3 architecture.
 
@@ -353,7 +382,7 @@ TODO - Finally, the `create()` function ends by calling `_registerPoolWithFactor
 
 > NOTE: like all other contracts and scripts within this repo, one must adjust aspects within this smart contract when creating their own type of custom pool.
 
-## Checkpoint 2.2: Deploying the Custom Pool Factory
+## 3.2: Deploying the Custom Pool Factory
 
 Now that we have created the `CustomPoolFactoryExample.sol` contract, it is time to write the deployment scripts. We've provided example deployment scripts to reference as you create your own, and will walk through key gotcha's when writing your own deployment scripts. As always, test on your own before deploying!
 
@@ -361,11 +390,11 @@ Now that we have created the `CustomPoolFactoryExample.sol` contract, it is time
 
 For sake of simplicity, we will outline the core function of the script, and then explain specific gotchas with the script. The main one being the params involved with initialization.
 
-### Core Script Function
+### 3.2.1 Core Script Function
 
 The script, using the `.env` specified deployer wallet, deploys the custom pool factory (currently the constant price custom pool), creates a new pool with it, registers the new pool with the BalancerV3 Vault on sepolia, and initializes it. It does all of this so it is ready to use with the ScaffoldBalancer front end tool. The variables defined when calling Balancer functions, like `Router.intiialize()` are specific to the constant price custom pool setup, whereas if you are working with a more complicated pool setup you may want to adjust these params as necessary.
 
-### Key Gotchas
+### 3.2.2 Key Gotchas
 
 - Specific to this repo, the script inherits `TestAddresses` and `HelperFunctions`.
 - Balancer integration with `initialize()` has a couple of arrays that must match in terms of token ERC20 we are using, and the amounts of said token.
@@ -402,7 +431,7 @@ Next, we will actually deploy it so we can interact with it. Run the following C
 
 `source .env && forge script scripts/DeployCustomPoolFactoryExample.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --slow --broadcast`
 
-## Checkpoint 2.3: Interacting with the Testnet Custom Pool Factory via Scripts
+## 3.3: Interacting with the Testnet Custom Pool Factory via Scripts
 
 Now the pool factory has been deployed to the respective network (default is the testnet Sepolia). Once you click the transaction details (as shown within the screenshots below), you will see that a pool was deployed as well. You can also find this information within the deployment script return values.
 
@@ -428,7 +457,7 @@ source .env && forge script scripts/DeployCustomPoolFromFactoryExample.s.sol --r
 
 Copy and paste this new pool address and input it into the ScaffoldBalancer front end tool. You can now interact with it like the other pools!
 
-## TODO - Checkpoint 2.4: Interacting with the Testnet Custom Pool Factory via Debug Tab - @matt, I think we may need to delete this one for milestone 1, seeing as it is more imperative that pools are created via a script. I think having the debug tab show the factory contract still is cool, but the `create()` function sounds like it will be tricky to work with. wdyt?
+## TODO 3.4: Interacting with the Testnet Custom Pool Factory via Debug Tab - @matt, I think we may need to delete this one for milestone 1, seeing as it is more imperative that pools are created via a script. I think having the debug tab show the factory contract still is cool, but the `create()` function sounds like it will be tricky to work with. wdyt?
 
 At this point, the factory has been deployed, and you have deployed at least one more pool from the factory using the scripts within this repo.
 
@@ -440,7 +469,7 @@ That said, this section outlines how one would use the debug tab to create a poo
 
   -->
 
-### TODO - 2.5 Interact with your custom pool
+### TODO - 3.5 Interact with your custom pool
 
 - On the `localhost:3000/pools` page, select your custom pool from the dropdown
 - Review the pool details and composition post pool initialization
@@ -448,7 +477,7 @@ That said, this section outlines how one would use the debug tab to create a poo
 
 ---
 
-## 🚨🚨 Checkpoint 3: Writing Typical Unit and Fuzz Tests for Custom Pool Example
+## 🚨🚨 Checkpoint 44: Writing Typical Unit and Fuzz Tests for Custom Pool Example
 
 <!-- STEVE THIS IS WHERE YOU LEFT OFF -->
 
@@ -456,9 +485,9 @@ At this point we've gone through how to make a simple custom pool and custom poo
 
 We will now walk through the testing contract, provided as foundry test files. These testing files can be used as a testing template, similar to how the smart contracts and scripts so far could be used as references or templates for your own custom pool implementation.
 
-### 3.1 `CustomPoolTemplate.t.sol`
+### 4.1 `CustomPoolTemplate.t.sol`
 
-#### 3.1.1 Inherited Context for `CustomPoolTemplate.t.sol` (`BaseVaultTest.sol` & `BaseTest.sol`)
+#### 4.1.1 Inherited Context for `CustomPoolTemplate.t.sol` (`BaseVaultTest.sol` & `BaseTest.sol`)
 
 The v3 monorepo has pool tests inheriting a base setup implemented within `BaseVaultTest.sol` & `BaseTest.sol`.
 
@@ -474,19 +503,19 @@ The v3 monorepo has pool tests inheriting a base setup implemented within `BaseV
 - Creates a mock pool with the vault
 - Initializes pool with user `lp`
 
-#### 3.1.2 Walking Through the `CustomPoolTemplate.t.sol`
+#### 4.1.2 Walking Through the `CustomPoolTemplate.t.sol`
 
 Now that we understand the base `BaseVaultTest.setUp()` call made within the `CustomPoolTemplate.t.sol`, we can get into the actual template files.
 
 Each test has comments added to them to help guide the developer with this starter test template. There are "TODO" comments added on several lines to assist users in creating their own custom pool tests for their own custom pool types they are working on. Of course, one has to update dependencies and other aspects as needed for their purposes.
 
-### 3.2 `CustomPoolFactoryTemplate.t.sol`
+### 4.2 `CustomPoolFactoryTemplate.t.sol`
 
 Unlike the `CustomPoolTemplate.t.sol`, the `CustomPoolFactoryTemplate.t.sol` has a simpler setup where a mock vault, a custom pool factory (specific to the one that is being tested), and two test tokens are deployed.
 
 Similar to the `CustomPoolTemplate.t.sol` file, the `CustomPoolFactoryTemplate.t.sol` file has "TODOs" to guide users in creating their own appropriate tests once they have a custom pool factory type of their own that they need to test.
 
-## 🚨🚨 Checkpoint 4: Creating Your Own Custom Pool with the Template Files
+## 🚨🚨 Checkpoint 5: Creating Your Own Custom Pool with the Template Files
 
 This is just a guide, so please use your own due diligence with your project before deploying any actual smart contracts of course. This section will walk you through key areas to look at updating if you are creating your own custom pool. Again, this is not the full extent that you should take to create your own custom pool, it is up to you and your team to carry out everything necessary (including but not limited to: testing, audits, etc.).
 
@@ -504,10 +533,10 @@ The next step is to reach out, if you haven't already, to the Balancer ecosystem
 2. [Balancer Grants](TODO - get the right link) if you've got an idea for a custom pool that you'd like to apply for a grant with.
 3. [BD team](TODO - Link to BD team)
 
-## 🚨🚨 Checkpoint 5: 🧭 Integrate pool with the Smart Order Router (SOR)
+## 🚨🚨 Checkpoint 6: 🧭 Integrate pool with the Smart Order Router (SOR)
 
 TBD
 
-## 🚨🚨 Checkpoint 6: 📡 Integrate pool with the Balancer v3 Subgraph
+## 🚨🚨 Checkpoint 7: 📡 Integrate pool with the Balancer v3 Subgraph
 
 TBD
