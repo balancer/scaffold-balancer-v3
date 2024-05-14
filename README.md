@@ -6,7 +6,7 @@
 
 > 📚📖 PRE-REQs: It is highly recommended to read through the (BalancerV3 docs](https://docs-v3.balancer.fi/) before using this repo. Custom pools are built upon the architecture outlined within these docs. If you cannot find what you are looking for in the docs, and it is not in this README, please refer to the (BalancerV3 monorepo](https://github.com/balancer/balancer-v3-monorepo/tree/main) and/or reachout on the (Balancer Discord](TODO GET LINK).
 
-It walks through example contracts for a custom pool, custom pool factory, test files, and deployment scripts. These files are used to deploy an example BalancerV3 custom pool that can be interacted with using a test, local front-end, on a test network (by default it is a foundry fork of Sepolia). The repo also provides a starting point for developers to create their own custom pools and factories.
+🧑‍🏫 This guide walks through example contracts for a custom pool, custom pool factory, test files, and deployment scripts. These files are used to deploy an example BalancerV3 custom pool that can be interacted with using a test, local front-end, on a test network (by default it is a foundry fork of Sepolia). The repo also provides a starting point for developers to create their own custom pools and factories.
 
 > When users clone this repo "off-the-shelf" they simply have to follow the environment setup instructions, run a few commands, and then they will have an example custom pool factory, and custom pools that they can interact with in a local front end. 
 
@@ -18,9 +18,7 @@ Let's outline what this repo provides in more detail:
 
 ## 🎥 Demo
 
-Here's a video showcasing the front end tool with this repo, and how one can explore pool actions (Swaps, joins, exits, etc.) with the pool explorer off-the-shelf.
-
-[🎥 Quickstart Video](https://www.loom.com/share/31cabf0568a845abadcbdbb0df416b20?sid=9b1176c7-5ee4-4feb-8b6e-c971721440a0)
+[👀 Watch this video](https://www.loom.com/share/31cabf0568a845abadcbdbb0df416b20?sid=9b1176c7-5ee4-4feb-8b6e-c971721440a0) to get a sense of the full stack dev environment where foundry is used to deploy a custom pool contract to a local fork and the nextjs frontend offers the opportunity to visualize the effects of swaps, joins, and exits with the pool.
 
 ## 👨🏻‍🏫 Table of Contents
 
@@ -35,6 +33,7 @@ Here's a video showcasing the front end tool with this repo, and how one can exp
 
 In general, all smart contracts sections of this repo will already have `Example` smart contracts. These smart contract examples will be explained within this README.
 
+---
 ## 🚨🚨 Checkpoint 0: 📦 Environment 📚
 
 This section walks you through the set up of the repo environment so that you have a local front end with a foundry test fork off of Sepolia. The test fork will have deployed contracts to showcase how you can interact with custom pools in a test environment using the local pool explorer tab.
@@ -100,13 +99,12 @@ yarn start
 
 You now should have a local, testnet fork with newly deployed smart contracts and a local front end communicating with said smart contracts. You can start interacting with the newly deployed pools and other smart contracts, but first let's talk about wallets and this tool.
 
+---
 ### 🏦 0.3 Wallet Connection Options, and Key Gotchas with Scaffold ETH 2
 
-#### 0.3.1 Understand Wallet Connection Options
+SE-2 offers a variety of full stack configuration options for connecting an account, choosing a network, and deploying contracts.
 
-This repo has a number of wallet configurations to help a developer.
-
-##### Burner Wallet (Preferred)
+##### 0.3.1 Burner Wallet
 
 If you do not have a wallet already connected to your web browser and thus your local host, then you will automatically use a burner wallet. First, what is a burner wallet?
 
@@ -118,7 +116,7 @@ To force the use of burner wallet, disable your browsers wallet extensions and r
 
 ![Debug Tab Mint](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/fbb53772-8f6d-454d-a153-0e7a2925ef9f)
 
-##### Browser Extension Wallet
+##### 0.3.2 Browser Extension Wallet
 
 To use your preferred browser extension wallet, ensure that the account you are using matches the PK you previously provided in the `foundry/.env` file. As a convenience, the foundry deploy scripts max approve the vault contract to spend tokens.
 
@@ -146,30 +144,36 @@ yarn deploy:pool
 
 #### 0.3.3 Changing The Frontend Network Connection
 
-The network the frontend points at is set via `targetNetworks` in the `scaffold.config.ts` file
+The network the frontend points at is set via `targetNetworks` in the `scaffold.config.ts` file using `chains` from viem. By default, the frontend runs on a local node at `http://127.0.0.1:8545`
+
+```typescript
+const scaffoldConfig = {
+  targetNetworks: [chains.foundry],
+```
 
 #### 0.3.4 Changing The Forked Network
 
-Modify the "fork" alias in the `packages/foundry/package.json` file, but do not change the chain id
+You can modify the `"fork"` alias in the `packages/foundry/package.json` file, but do not change the chain id. By default, the `yarn fork` command uses sepolia, but any of the network aliases from the `[rpc_endpoints]` of `foundry.toml` can be used
 
 ```json
 	"fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
 ```
 
-🧠 Tip: `foundry.toml` comes preconfigured with a variety of aliases for `rpc_endpoints`
-
 > ** 😮‍💨PHEW, with the quick start deployments done, we can get into the fun stuff and show what can be done with this tool!**
 
+---
 ## 🚨🚨 Checkpoint 1: 🏊🏻‍♀️ Showcase of the Pool Explorer with SE-2 Tech Stack
 
 You now should have a local front end started and test contracts deployed on a foundry test fork of the Sepolia network. This section simply highlights some of the actions you can take with the local front end.
 
-### 💧 1.1 Select Your Pool
+---
+### 🔍 1.1 Select Your Pool
 
 On the "Pools" page, click the dropdown to select the custom pool you just deployed to your local anvil node.
 	
 https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/cc358227-3bf6-4b02-8dc5-36577c0cbdcd
 
+---
 ### 🚰 1.2 Use Your Pool
 
 Connect the account you specified in the `.env` file using your favorite wallet extension and start splashing around in your pool with swaps, joins, and exits!
@@ -180,7 +184,7 @@ Connect the account you specified in the `.env` file using your favorite wallet 
 
 ![Exit](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/3604dbfb-fea2-414f-8e62-c01dc12cc691)
 
-
+---
 ### 🐛🙅🏻‍♂️ 1.3 Troubleshoot with the Debug Tab
 
 Using the SE-2 toolkit, developers can troubleshoot with their smart contracts using the "Debug Tab" where they can see getter and setter functions in a local front end UI. As you saw earlier, we use this handy setup to mint `mockERC20` tokens to any connected wallet to our local host (it could be a foundry wallet, a burner wallet, your `.env` wallet, etc.). 
