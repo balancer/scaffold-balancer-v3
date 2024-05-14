@@ -3,7 +3,7 @@ pragma solidity ^0.8.18;
 
 import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
 import {DeployPool} from "./DeployPool.s.sol";
-import "./DeployHelpers.s.sol";
+import "./ScaffoldETHDeploy.s.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {TokenConfig} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import {HelperConfig} from "../utils/HelperConfig.sol";

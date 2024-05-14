@@ -13,6 +13,7 @@ import "@balancer-labs/v3-interfaces/contracts/vault/IVaultExtension.sol";
  * @author BuidlGuidl Labs
  * @dev This is where all configurations are set for mock token deployment, factory deployment, pool deployment, and pool initialization
  * @dev Each pool deployed must have a unique name
+ * @dev If using this and the associated deployment scripts to help troubleshoot your own custom pool type, then it is advised to use this HelperConfig to outline the appropriate details of your custom pool to use the already written example scripts within this repo.
  */
 contract HelperConfig {
     // BalancerV3 Sepolia addresses
