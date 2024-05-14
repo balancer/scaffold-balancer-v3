@@ -90,7 +90,7 @@ export const PoolSelector = ({ setSelectedPoolAddress }: { setSelectedPoolAddres
           </button>
         </div>
 
-        {createdPools && (
+        {createdPools.length > 0 && (
           <div className="dropdown dropdown-end">
             <div
               onClick={() => setIsOpen(!isOpen)}
