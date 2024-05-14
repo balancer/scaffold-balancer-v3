@@ -50,7 +50,7 @@ contract ConstantPoolTest is BaseVaultTest {
     uint256 constant DAI_AMOUNT_IN = 1 * 1e18;
     uint256 constant USDC_AMOUNT_OUT = 1 * 1e18;
 
-    uint256 constant DELTA = 1e9; // TODO - For WeightedPool.t.sol, this was 1e9. I hypothesize that this was because...
+    uint256 constant DELTA = 1e9;
 
     uint256 internal bptAmountOut;
 
