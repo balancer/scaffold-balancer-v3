@@ -245,16 +245,17 @@ There you can see that the return value is dependent on the `SwapKind` and ultim
 
 ---
 
-#### 2.1.2 `computeInvariant()` Implementation TODO - steve where you left off
+#### 2.1.2 `computeInvariant()` Implementation
 
-- Looking at monorepo, one sees that `computeInvariant()` is ultimately called to return the new invariant resulting from the specific details influencing the respective pool.
-- In this case, it is constant sum invariant that we simply need to create.
+This function is called throughout a number of sequences within the BalancerV3 architecture. Let's walk through one at a high-level.
 
-> **Recall the architecture of BalancerV3, and how each custom pool function is called throughout the typical treansactions carried out within the protocol.**
+By simply searching within the v3 monorepo, we can see that it is used within the `Vault.sol` and other contracts relying on `BasePoolMath.sol`. Functions like `computeRemoveLiquiditySingleTokenExactOut()` are inside `BasePoolMath.sol`. They call `computeInvariant()` to calculate the bptAmounts to be used within a respective transaction as well as the fees involved. Other primary contracts that rely on this function are: `VaultExtension.sol`, where it is used to calculate the bpt amounts involved when initializing a new pool.
 
----
+Essentially, the invariant is used at different points of the transaction to ensure its mathematical logic is upheld within the respective pool. These of course can vary vastly based on the design that is taken. The most well-known invariant is the constant product invariant, as discussed within the BalancerV3 docs [here](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html#build-your-custom-amm:~:text=%23-,Compute%20Invariant,-Custom%20AMMs%20built) briefly. 
 
-<details markdown='1'><summary>👩🏽‍🏫 Solution Code for `computeInvariant()` function </summary>
+For this example, the invariant is simply a constant sum invariant. Thus we have the below code blob:
+
+<details markdown='1'><summary>👩🏽‍🏫 Code for `computeInvariant()` function </summary>
 Inside `ConstantPricePoolExample.sol`
 
 ```
@@ -278,7 +279,7 @@ Inside `ConstantPricePoolExample.sol`
 
 #### 🥅 ** `computeInvariant()` Goals / Checks**
 
-- [ ] ❓ Can you describe how `computeInvariant()` works within the Balancer V3 monorepo architecture and thus how custom pools must accomodate said architecture?
+- [ ] ❓ Can you describe how `computeInvariant()` works within the Balancer V3 monorepo architecture with the `Vault.sol`, `BasePoolMath.sol`, `VaultExtension.sol` and thus how custom pools must accomodate said architecture?
 
 ---
 
@@ -287,7 +288,11 @@ Inside `ConstantPricePoolExample.sol`
 - Looking at monorepo, one sees that `computeBalance()` is ultimately called to return the new balance of a token after an operation, given the invariant growth ratio and all other balances.
 - In this case, it is constant sum invariant that we simply need to create.
 
-> **Recall the architecture of BalancerV3, and how each custom pool function is called throughout the typical transactions carried out within the protocol.**
+The docs outline how `computeBalance()` is used to return the needed balance of a pool token for a specific invariant change. So basically it is used to calculate an amount of a pool token when the resuiltant invariant is known. This can be seen in function calls within the v3 monorepo where expected balances are used to calculate the invariant ratio for luqidity operations such as []`AddLiquidityKind.SINGLE_TOKEN_EXACT_OUT`](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/Vault.sol#L582-L594) and []`RemoveLiquidityKind.SINGLE_TOKEN_EXACT_IN`](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/Vault.sol#L788-L800).
+
+To elaborate on things a bit further, within `Vault.sol`, two main internal functions use `computeBalance()`. These are: `_addLiquidity()` which calls upon , and `_removeLiquidity()` which calls upon `computeAddLiquiditySingleTokenExactOut()`, and `computeRemoveLiquiditySingleTokenExactIn()`, respectively. Within both of these sequences, the `computeBalance()` return value is used in calculating the eventual amount to debit (tokens marked as debt for the user as seen in  `_takeDebt()` in the `VaultCommon.sol`) or credit (tokens marked as credit for the user as seen in  `supplyCredit()` in the `VaultCommon.sol`) for the respective function call.
+
+For the simple constant price pool example, we have a standard calculation of newBalance using the invariantRatio and current invariant.
 
 ---
 
