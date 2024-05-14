@@ -20,7 +20,7 @@ Let's outline what this repo provides in more detail:
 
 Here's a video showcasing the front end tool with this repo, and how one can explore pool actions (Swaps, joins, exits, etc.) with the pool explorer off-the-shelf.
 
-<!-- TODO - MATT ADD IN VIDEO HERE -->
+[🎥 Quickstart Video](https://www.loom.com/share/31cabf0568a845abadcbdbb0df416b20?sid=9b1176c7-5ee4-4feb-8b6e-c971721440a0)
 
 ## Table of Contents
 
@@ -112,7 +112,9 @@ When connecting to a local node, SE-2 frontend randomly generates a burner walle
 
 To force the use of burner wallet, disable your browsers wallet extensions and refresh the page. Note that the burner wallet comes with 0 ETH to pay for gas so you will need to click the faucet button in top right corner. Also the mock tokens for the pool are minted to your deployer account set in `.env` so you will want to navigate to the "Debug Contracts" page to mint your burner wallet some mock tokens to use with the pool.
 
-<!-- TODO - Matt show screenshot/gif of debug tab doing the mint -->
+![Burner Wallet](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/0a1f3456-f22a-46b5-9e05-0ef5cd17cce7)
+
+![Debug Tab Mint](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/fbb53772-8f6d-454d-a153-0e7a2925ef9f)
 
 ##### Browser Extension Wallet
 
@@ -160,29 +162,29 @@ Modify the "fork" alias in the `packages/foundry/package.json` file, but do not 
 
 You now should have a local front end started and test contracts deployed on a foundry test fork of the Sepolia network. This section simply highlights some of the actions you can take with the local front end.
 
-<!-- TODO @matt - Showcase the front end at a high level (showing, with a pool address input already, the possible interactions you can do with it). -->
-
 ### 1.1 Select Your Pool
 
 On the "Pools" page, click the dropdown to select the custom pool you just deployed to your local anvil node.
-
-<details><summary> 👀 See Demo GIF</summary>
 	
 https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/cc358227-3bf6-4b02-8dc5-36577c0cbdcd
-
-</details>
 
 ### 1.2 Use Your Pool
 
 Connect the account you specified in the `.env` file using your favorite wallet extension and start splashing around in your pool with swaps, joins, and exits!
 
-<!-- TODO - Matt showcase with screenshots and gifs here all the things that can be done with pool explorer -->
+![Swap](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/64629016-5bb5-40ce-a3bd-2e421000b33d)
+
+![Join](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/cf8dc531-d98b-49fa-9195-ec86d7018e09)
+
+![Exit](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/3604dbfb-fea2-414f-8e62-c01dc12cc691)
+
+
 
 ### 1.3 Troubleshoot with the Debug Tab
 
 Using the SE-2 toolkit, developers can troubleshoot with their smart contracts using the "Debug Tab" where they can see getter and setter functions in a local front end UI. As you saw earlier, we use this handy setup to mint `mockERC20` tokens to any connected wallet to our local host (it could be a foundry wallet, a burner wallet, your `.env` wallet, etc.). 
 
-<!-- TODO - Matt show screenshot/gif of debug tab doing the mint again -->
+![Debug Tab Mint](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/fbb53772-8f6d-454d-a153-0e7a2925ef9f)
 
 At this point, you have now seen the capabilities of this repo and how it helps a developer (or team) onboard in building custom pools in BalancerV3. The local front end environment helps developers test interactions in a way that is similar (but not the same) as the interactions with the BalancerV3 front end. 🎉🎉
 
@@ -478,41 +480,50 @@ The script, using the `.env` specified deployer wallet, deploys the custom pool 
 
 Cool, now we have these gotcha's understood with the script. We can move on to simulating and deploying!
 
-**Simulating and Deploying the Script Finally!**
+### 3.2.3: Interacting with the Custom Pool Factory via Scripts
 
 As seen in the beginning of this [README](#032-deployment), this repo comes with bash commands to deploy the discussed smart contracts on a local anvil fork of the Sepolia test network. For quick reference, here are the commands again:
 
+> If you would like to change the network the local node is forking, [review this section](#033-changing-the-frontend-network-connection)
+
+To simulate deployment transactions on your local fork
+```bash
+forge script script/DeployFactoryAndPool.s.sol --rpc-url localhost
+```
+
+To send the deployment transaction to your local fork:
 ```bash
 yarn deploy:all
 ```
 
-Of course, a developer can use whatever commands they want to simulate and deploy scripts. That said, this repo has required scripts to be ran in order to have the Front End work with the associated smart contracts. Therefore it is recommended to edit the network as outlined in [this section](#033-changing-the-frontend-network-connection), and to run the following command appropriately to simulate deployment on a local anvil fork of the respective network.
+To simulate deployment transactions on sepolia testnet:
+```bash
+forge script script/DeployFactoryAndPool.s.sol --rpc-url sepolia
+```
 
+To send the deployment transactions to sepolia testnet:
+```bash
+ yarn deploy:all —network sepolia
 ```
- yarn deploy:all —network {enter-network-alias-from-foundry-toml-file}
-```
-
-If you want to deploy it to the appropriate network (and not simulate it), then simply run the following command with this repo:
-
-```
- yarn deploy:all —network {enter-network-alias-from-foundry-toml-file}
-```
+*To simulate or deploy to a different network, swap out `sepolia` for any of the `[rpc_endpoints]` aliases listed in `foundry.toml`
 
 > Of course, as stated numerous times in this repo, deployments and use of real in production smart contracts are the developer's responsibility and not the creators of this repo. Developers must use their own due diligence in creating extra tests, getting external audits, bug bounties, working with teams, etc.
 
-## 3.3: Interacting with the Testnet Custom Pool Factory via Scripts
+## 3.3: Deploying Only A Pool
 
-Now the pool factory has been deployed to the respective network (default is the testnet Sepolia). Once you click the transaction details (as shown within the screenshots below), you will see that a pool was deployed as well. You can also find this information within the deployment script return values.
+Now that the pool factory has been deployed to the local fork, we have the option to deploy just a new pool by calling the `create()` function on the previously deployed pool. Notice that the `DeployPool.s.sol` script also registers and initializes the pool.
 
-<!-- TODO - STEVE add screenshots of sterminal txs with links as examples -->
+> NOTE: that the pool name will have to be different than that of the initial pool made within the `DeployFactoryAndPool.s.sol` commands.
 
-We will now run the script to simulate calling `create()` from the new custom pool factory contract that you just deployed. This script will also register and initialize the pool. Simply run the following command:
+To simulate the pool deployment on your local fork:
+```bash
+forge script script/DeployPool.s.sol --rpc-url localhost
+```
 
+To send the pool deployment transaction to your local fork:
 ```bash
 yarn deploy:pool
 ```
-
-> NOTE: that the pool name will have to be different than that of the initial pool made within the `DeployFactoryAndPool.s.sol` commands.
 
 At this point, the factory has been deployed, and you have deployed at least one more pool from the factory using the scripts within this repo. Again, if you want to specify a different network, reference the instructions outlined before.
 
