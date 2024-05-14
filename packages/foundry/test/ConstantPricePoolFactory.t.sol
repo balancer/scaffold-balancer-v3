@@ -55,7 +55,6 @@ contract ConstantPricePoolFactoryTest is Test {
             factory.create("New Custom Pool #2", "CP2", tokens, bytes32(0))
         );
 
-        // TODO - specific tests to Constant Price Pool Invariant?
         assertEq(pool.symbol(), "CP2", "Wrong pool symbol");
     }
 
