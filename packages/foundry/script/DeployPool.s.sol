@@ -37,7 +37,14 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
 
         // Deploy mock tokens to use in the pool
         vm.startBroadcast(deployerPrivateKey);
-        (IERC20 token1, IERC20 token2) = deployMockTokens();
+        (IERC20 token1, IERC20 token2) = (IERC20(DevOpsTools.get_most_recent_deployment(
+            "MockToken1", // Must match the pool factory contract name
+            block.chainid
+        )),IERC20(DevOpsTools.get_most_recent_deployment(
+            "MockToken2", // Must match the pool factory contract name
+            block.chainid
+        ))); // Get the most recently deployed address of the pool factory)
+
         vm.stopBroadcast();
 
         // Look up configurations from `HelperConfig.sol`
