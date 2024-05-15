@@ -7,6 +7,8 @@ import "./ScaffoldETHDeploy.s.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {TokenConfig} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import {HelperConfig} from "../utils/HelperConfig.sol";
+import {ArrayHelpers} from "@balancer-labs/v3-solidity-utils/contracts/helpers/ArrayHelpers.sol";
+import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 
 /**
  * @title DeployFactoryAndPool
@@ -58,8 +60,10 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
             address(customPoolFactory),
             name,
             symbol,
-            tokenConfig
+            helperConfig.sortTokenConfig(tokenConfig)
         );
+
+        tokens = InputHelpers.sortTokens(tokens);
         initializePool(
             pool,
             tokens,
@@ -77,4 +81,5 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
          */
         exportDeployments();
     }
+
 }

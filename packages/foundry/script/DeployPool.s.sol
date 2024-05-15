@@ -61,8 +61,9 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
             poolFactoryAddress,
             name,
             symbol,
-            tokenConfig
+            helperConfig.sortTokenConfig(tokenConfig)
         );
+        tokens = InputHelpers.sortTokens(tokens);
         initializePool(
             pool,
             tokens,
