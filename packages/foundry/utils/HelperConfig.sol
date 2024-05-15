@@ -108,4 +108,17 @@ contract HelperConfig {
         wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
         userData = bytes(""); // Additional (optional) data required for adding initial liquidity
     }
+
+    function sortTokenConfig(TokenConfig[] memory tokenConfig) public pure returns (TokenConfig[] memory) {
+        for (uint256 i = 0; i < tokenConfig.length - 1; i++) {
+            for (uint256 j = 0; j < tokenConfig.length - i - 1; j++) {
+                if (tokenConfig[j].token > tokenConfig[j + 1].token) {
+                    // Swap if they're out of order.
+                    (tokenConfig[j], tokenConfig[j + 1]) = (tokenConfig[j + 1], tokenConfig[j]);
+                }
+            }
+        }
+
+        return tokenConfig;
+    }
 }

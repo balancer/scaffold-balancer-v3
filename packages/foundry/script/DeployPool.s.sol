@@ -9,6 +9,8 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {TokenConfig} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {Script, console} from "forge-std/Script.sol";
+import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
+import {HelperConfig} from "../utils/HelperConfig.sol";
 
 /**
  * @title DeployPool Script
@@ -18,6 +20,8 @@ import {Script, console} from "forge-std/Script.sol";
  */
 contract DeployPool is HelperFunctions, HelperConfig, Script {
     error InvalidPrivateKey(string);
+    string name = "Scaffold Balancer Constant Price Pool #2"; // name for the pool
+    string symbol = "POOL2-SB-50scUSD-50scDAI"; // symbol for the BPT
 
     /**
      * @dev Set your pool deployment and initialization configurations in `HelperConfig.sol`
@@ -39,8 +43,8 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         // Look up configurations from `HelperConfig.sol`
         HelperConfig helperConfig = new HelperConfig();
         (
-            string memory name,
-            string memory symbol,
+            ,
+            ,
             TokenConfig[] memory tokenConfig
         ) = helperConfig.getPoolConfig(token1, token2);
         (
