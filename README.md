@@ -4,7 +4,7 @@
 
 🛠️ This repo is a series of guides and internal prototyping tools for creating custom pools that integrate with Balancer v3. It is based off of commit hash 4bc7978d8b8c4ac8e42c5a4adf233663b8390678 from the BalancerV3 monorepo. This repo is to be updated once the monorepo is fully public.
 
-> 📚📖 PRE-REQs: It is highly recommended to read through the (BalancerV3 docs](https://docs-v3.balancer.fi/) before using this repo. Custom pools are built upon the architecture outlined within these docs. If you cannot find what you are looking for in the docs, and it is not in this README, please refer to the (BalancerV3 monorepo](https://github.com/balancer/balancer-v3-monorepo/tree/main) and/or reachout on the (Balancer Discord](TODO GET LINK).
+> 📚📖 PRE-REQs: It is highly recommended to read through the (BalancerV3 docs](https://docs-v3.balancer.fi/) before using this repo. Custom pools are built upon the architecture outlined within these docs. If you cannot find what you are looking for in the docs, and it is not in this README, please refer to the (BalancerV3 monorepo](https://github.com/balancer/balancer-v3-monorepo/tree/main) and/or reachout on the (Balancer Discord](https://discord.balancer.fi/).
 
 🧑‍🏫 This guide walks through example contracts for a custom pool, custom pool factory, test files, and deployment scripts. These files are used to deploy an example BalancerV3 custom pool that can be interacted with using a test, local front-end, on a test network (by default it is a foundry fork of Sepolia). The repo also provides a starting point for developers to create their own custom pools and factories.
 
@@ -126,11 +126,9 @@ To use your preferred browser extension wallet, ensure that the account you are 
 
 With the wallet configurations understood and setup, we will touch on some SE-2 details before fully exploring the newly deployed local-test pool smart contracts.
 
-#### 0.3.2 Deployment
+#### 0.3.3 Deployment Details
 
-> SE-2 is setup to hot reload the frontend with contracts that are directly deployed via the `DeployFactoryAndPool.s.sol` script. This means our frontend captures the pool factory and mock token contracts, but not the pool contract because it is deployed by calling a method on the factory.
-
-This command runs `DeployFactoryAndPool.s.sol` which deploys a pool factory, deploys mock tokens, deploys a pool, and initializes the pool. The factory contract and mock tokens will show on the "Debug" page. The pool contract address will print in the terminal, but can also be selected from the dropdown on the "Pools" page. All deployment configuration options are specified in `HelperConfig.s.sol`
+This command runs `DeployFactoryAndPool.s.sol` which deploys a pool factory, deploys mock tokens, deploys a pool, and initializes the pool. The factory contract and mock tokens will show on the "Debug" page. The pool contract address will print in the terminal, but can also be selected from the dropdown on the "Pools" page. All deployment configuration options are specified in `HelperConfig.s.sol`. You may need to refresh your front end in your local host after running the below command.
 
 ```bash
 yarn deploy:all
@@ -142,7 +140,9 @@ This command runs `DeployPool.s.sol` using the last pool factory you deployed. Y
 yarn deploy:pool
 ```
 
-#### 0.3.3 Changing The Frontend Network Connection
+> 🚗 Under the hood of SE-2: SE-2 is setup to hot reload the frontend with contracts that are directly deployed via the `DeployFactoryAndPool.s.sol` script. This means our frontend captures the pool factory and mock token contracts, but not the pool contract because it is deployed by calling a method on the factory.
+
+#### 0.3.4 Changing The Frontend Network Connection
 
 The network the frontend points at is set via `targetNetworks` in the `scaffold.config.ts` file using `chains` from viem. By default, the frontend runs on a local node at `http://127.0.0.1:8545`
 
@@ -151,7 +151,7 @@ const scaffoldConfig = {
   targetNetworks: [chains.foundry],
 ```
 
-#### 0.3.4 Changing The Forked Network
+#### 0.3.5 Changing The Forked Network
 
 You can modify the `"fork"` alias in the `packages/foundry/package.json` file, but do not change the chain id. By default, the `yarn fork` command uses sepolia, but any of the network aliases from the `[rpc_endpoints]` of `foundry.toml` can be used
 
@@ -291,7 +291,7 @@ Inside `ConstantPricePoolExample.sol`
 - Looking at monorepo, one sees that `computeBalance()` is ultimately called to return the new balance of a token after an operation, given the invariant growth ratio and all other balances.
 - In this case, it is constant sum invariant that we simply need to create.
 
-The docs outline how `computeBalance()` is used to return the needed balance of a pool token for a specific invariant change. So basically it is used to calculate an amount of a pool token when the resuiltant invariant is known. This can be seen in function calls within the v3 monorepo where expected balances are used to calculate the invariant ratio for luqidity operations such as []`AddLiquidityKind.SINGLE_TOKEN_EXACT_OUT`](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/Vault.sol#L582-L594) and []`RemoveLiquidityKind.SINGLE_TOKEN_EXACT_IN`](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/Vault.sol#L788-L800).
+The docs outline how `computeBalance()` is used to return the needed balance of a pool token for a specific invariant change. So basically it is used to calculate an amount of a pool token when the resultant invariant is known. This can be seen in function calls within the v3 monorepo where expected balances are used to calculate the invariant ratio for liquidity operations such as that seen in functions [`_addLiquidity()`](https://github.com/balancer/balancer-v3-monorepo/blob/c009aa9217070e88ed3a39bda97d83c14342f39b/pkg/vault/contracts/Vault.sol#L630C1-L638C19) and [`_removeLiquidity()_`](https://github.com/balancer/balancer-v3-monorepo/blob/c009aa9217070e88ed3a39bda97d83c14342f39b/pkg/vault/contracts/Vault.sol#L850C13-L858C19).
 
 To elaborate on things a bit further, within `Vault.sol`, two main internal functions use `computeBalance()`. These are: `_addLiquidity()` which calls upon , and `_removeLiquidity()` which calls upon `computeAddLiquiditySingleTokenExactOut()`, and `computeRemoveLiquiditySingleTokenExactIn()`, respectively. Within both of these sequences, the `computeBalance()` return value is used in calculating the eventual amount to debit (tokens marked as debt for the user as seen in  `_takeDebt()` in the `VaultCommon.sol`) or credit (tokens marked as credit for the user as seen in  `supplyCredit()` in the `VaultCommon.sol`) for the respective function call.
 
@@ -541,7 +541,27 @@ At this point, the factory has been deployed, and you have deployed at least one
 
 At this point we've gone through how to make a simple custom pool and custom pool factory, and to simulate and/or deploy them on a testnet. Testing is of course needed, amongst many other security measures such as audits, for a custom pool implementation.
 
-We will now walk through the testing contract, provided as foundry test files. These testing files can be used as a testing template, similar to how the smart contracts and scripts so far could be used as references or templates for your own custom pool implementation.
+We will now walk through the testing contracts, provided as foundry test files. They are written for the Constant Price Custom Pool we use throughout this repo as an example.
+
+> 🧠 These test files roughly mirror the typical testing cases that are found in the BalancerV3 monorepo for weighted pool factory tests. As a reference tool, it only makes sense to have tests that, at the very least, roughly mirror how weighted pool factories are tested within BalancerV3 monorepo.
+
+> If you are unfamiliar with writing tests with foundry please check out their docs [here](https://book.getfoundry.sh/). Within the test files with this repo, we use fuzz testing, that the BalancerV3 monorepo also uses. Foundry docs on fuzz testing can be found [here](https://book.getfoundry.sh/forge/fuzz-testing).
+
+To start, make sure you make your way to the proper path: `packages/foundry`. Run the following command to run the tests with this repo "off-the-shelf."
+
+```
+forge test
+```
+
+You should see the following test results in your terminal window.
+
+![alt text](image.png)
+
+These testing files can be used as a testing template, similar to how the smart contracts and scripts so far could be used as references or templates for your own custom pool implementation.
+
+The tests that you see running are found in the following subdirectory / path: `packages/foundry/test`. There you will find test files, and template test files. The template files are simply copies of the test files but with comments outlining the details of each test, and marking variables to change out if you are using them as a starting template for your own tests. 
+
+> 🚨🚨 These files are not production ready, and it is the developer's responsibility to carry out proper testing and auditing for their pool.
 
 ---
 ### 🎨 4.1 `CustomPoolTemplate.t.sol`
@@ -591,6 +611,5 @@ This is just a guide, so please use your own due diligence with your project bef
 
 The next step is to reach out, if you haven't already, to the Balancer ecosystem via:
 
-1. [Discord](TODO - get the right link)
-2. [Balancer Grants](TODO - get the right link) if you've got an idea for a custom pool that you'd like to apply for a grant with.
-3. [BD team](TODO - Link to BD team)
+1. [Discord](https://discord.balancer.fi/)
+2. [Balancer Grants](https://www.notion.so/Balancer-Grants-938f1b979810427f8d903a904315da41) if you've got an idea for a custom pool that you'd like to apply for a grant with.
