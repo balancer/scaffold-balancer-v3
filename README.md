@@ -20,6 +20,8 @@ Let's outline what this repo provides in more detail:
 
 [👀 Watch this video](https://www.loom.com/share/31cabf0568a845abadcbdbb0df416b20?sid=9b1176c7-5ee4-4feb-8b6e-c971721440a0) to get a sense of the full stack dev environment where foundry is used to deploy a custom pool contract to a local fork and the nextjs frontend offers the opportunity to visualize the effects of swaps, joins, and exits with the pool.
 
+[👀 Watch this video for a layout of the smart contracts side of things.](INSERT VIDEO)
+
 ## 👨🏻‍🏫 Table of Contents
 
 ✏️ The Table of Contents of this README is listed below. Links are provided below in case you would like to jump to a certain topic.
