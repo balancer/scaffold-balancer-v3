@@ -18,9 +18,13 @@ Let's outline what this repo provides in more detail:
 
 ## 🎥 Demo
 
-[👀 Watch this video](https://www.loom.com/share/31cabf0568a845abadcbdbb0df416b20?sid=9b1176c7-5ee4-4feb-8b6e-c971721440a0) to get a sense of the full stack dev environment where foundry is used to deploy a custom pool contract to a local fork and the nextjs frontend offers the opportunity to visualize the effects of swaps, joins, and exits with the pool.
+👀 Watch this video to quickly get started with the full stack development environment 👇
 
-[👀 Watch this video for a layout of the smart contracts side of things.](https://drive.google.com/file/d/1x5IgDzKE2fQnpZdsfuLvb10c1OUAOH_z/view?usp=drive_link)
+[![Getting Started Demo](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/ad988ac7-67a6-4dd4-8e12-18c2be2773ea)](https://www.loom.com/share/31cabf0568a845abadcbdbb0df416b20?sid=9b1176c7-5ee4-4feb-8b6e-c971721440a0) 
+
+👀 Watch this video to get better acquainted with the smart contracts 👇
+
+[![Smart Contracts Demo](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/ad588a6d-2442-421b-8fbf-4667d29df81f)](https://drive.google.com/file/d/1x5IgDzKE2fQnpZdsfuLvb10c1OUAOH_z/view?usp=drive_link)
 
 ## 👨🏻‍🏫 Table of Contents
 
