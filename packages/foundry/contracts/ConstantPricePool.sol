@@ -67,7 +67,7 @@ contract ConstantPricePool is IBasePool, BalancerPoolToken {
     /**
      * @notice Gets the tokens registered to a pool.
      * @dev Delegated to the Vault; added here as a convenience, mainly for off-chain processes.
-     * @dev TODO - left blank for now, but for finished example w/ scaffoldBalancer we need to implement this correctly.
+     * @dev TODO - left blank for now, but for post milestone 1 w/ scaffoldBalancer it'd be good to implement.
      * @return tokens List of tokens in the pool
      */
     function getPoolTokens() external view returns (IERC20[] memory tokens) {}
