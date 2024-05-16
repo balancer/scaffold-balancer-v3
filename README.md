@@ -236,7 +236,7 @@ At this point, you have now seen the capabilities of this repo and how it helps 
 
 Ultimately, this repo can be used to create custom pool factories, custom pools from said factory, and register and initialize them so the pools can be interacted with using this repo's front end, all in a local environment. Before jumping into all of that, it is key that developers understand the general make-up of a custom pool.
 
-Therefore, this checkpoint focuses on writing the smart contract for a custom pool (without a factory). We will walk through the `ConstantPricePoolExample.sol` found within `packages/foundry/contracts/ConstantPricePoolExample.sol`.
+Therefore, this checkpoint focuses on writing the smart contract for a custom pool (without a factory). We will walk through the `ConstantPricePool.sol` found within `packages/foundry/contracts/ConstantPricePool.sol`.
 
 ---
 
@@ -246,20 +246,16 @@ As a refresher, make sure to check out the [docs on creating custom pools as wel
 
 All custom pool contracts must inherit from `IBasePool` and `BalancerPoolToken` and implement the three required functions: `onSwap`, `computeInvariant`, and `computeBalance`.
 
-Let's walk through each function in `ConstantPricePoolExample.sol`
+Let's walk through each function in `ConstantPricePool.sol`
 
 ---
 
 #### 2.1.1 `onSwap()` Implementation
 
-Looking at monorepo, one sees that `onSwap()` is ultimately called within a `swap()` call in the [`Vault.sol`](https://github.com/balancer/balancer-v3-monorepo/blob/9bc5618d7717dfbafd3cfbf025e7d3317ad7cacb/pkg/vault/contracts/Vault.sol#L327).
-
-Essentially, the `onSwap()` call carries the custom pool logic that the vault queries to understand how much of the requested token the swap should return.
-
-This step can vary between custom pool variations. To paint a contrast, a simple implementation can be seen within this `ConstantPricePool` example, where the amount swapped in is simply the amount swapped out (see toggle below).
+Listed here for easy reference, the function discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/ConstantPricePool.sol#L25C1-L26C1).
 
 <details markdown='1'><summary>👩🏽‍🏫 Code for `onSwap` functions </summary>
-Inside `ConstantPricePoolExample.sol`
+Inside `ConstantPricePool.sol`
 
 ```
    /**
@@ -277,6 +273,12 @@ Inside `ConstantPricePoolExample.sol`
 
 </details>
 
+Looking at monorepo, one sees that `onSwap()` is ultimately called within a `swap()` call in the [`Vault.sol`](https://github.com/balancer/balancer-v3-monorepo/blob/9bc5618d7717dfbafd3cfbf025e7d3317ad7cacb/pkg/vault/contracts/Vault.sol#L327).
+
+Essentially, the `onSwap()` call carries the custom pool logic that the vault queries to understand how much of the requested token the swap should return.
+
+This step can vary between custom pool variations. To paint a contrast, a simple implementation can be seen within this `ConstantPricePool` example, where the amount swapped in is simply the amount swapped out (see toggle below).
+
 Whereas you can begin to see the endless possibilities that exist when you take a look at the [WeightedPool implementation](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/contracts/WeightedPool.sol#L100-L126).
 
 There you can see that the return value is dependent on the `SwapKind` and ultimately uses the `WeightedMath` functions to respect the invariant and other details for WeightedPools.
@@ -289,16 +291,10 @@ There you can see that the return value is dependent on the `SwapKind` and ultim
 
 #### 2.1.2 `computeInvariant()` Implementation
 
-This function is called throughout a number of sequences within the BalancerV3 architecture. Let's walk through one at a high-level.
-
-By simply searching within the v3 monorepo, we can see that it is used within the [`Vault.sol`](https://github.com/balancer/balancer-v3-monorepo/blob/fd288fef56cbb20284d34c9b2b1d4227285922dc/pkg/vault/contracts/Vault.sol#L864) and other contracts relying on `BasePoolMath.sol`. Functions like [`computeRemoveLiquiditySingleTokenExactOut()`](https://github.com/balancer/balancer-v3-monorepo/blob/fd288fef56cbb20284d34c9b2b1d4227285922dc/pkg/solidity-utils/contracts/math/BasePoolMath.sol#L261) are inside `BasePoolMath.sol`. They call `computeInvariant()` to calculate the bptAmounts to be used within a respective transaction as well as the fees involved. Other primary contracts that rely on this function are: `VaultExtension.sol`, where it is used to calculate the bpt amounts involved when initializing a new pool.
-
-Essentially, the invariant is used at different points of the transaction to ensure its mathematical logic is upheld within the respective pool. These of course can vary vastly based on the design that is taken. The most well-known invariant is the constant product invariant, as discussed within the BalancerV3 docs [here](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html#build-your-custom-amm:~:text=%23-,Compute%20Invariant,-Custom%20AMMs%20built) briefly.
-
-For this example, the invariant is simply a constant sum invariant. Thus we have the below code blob:
+Listed here for easy reference, the function discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/ConstantPricePool.sol#L39).
 
 <details markdown='1'><summary>👩🏽‍🏫 Code for `computeInvariant()` function </summary>
-Inside `ConstantPricePoolExample.sol`
+Inside `ConstantPricePool.sol`
 
 ```
   /**
@@ -317,6 +313,14 @@ Inside `ConstantPricePoolExample.sol`
 
 </details>
 
+This function is called throughout a number of sequences within the BalancerV3 architecture. Let's walk through one at a high-level.
+
+By simply searching within the v3 monorepo, we can see that it is used within the [`Vault.sol`](https://github.com/balancer/balancer-v3-monorepo/blob/fd288fef56cbb20284d34c9b2b1d4227285922dc/pkg/vault/contracts/Vault.sol#L864) and other contracts relying on `BasePoolMath.sol`. Functions like [`computeRemoveLiquiditySingleTokenExactOut()`](https://github.com/balancer/balancer-v3-monorepo/blob/fd288fef56cbb20284d34c9b2b1d4227285922dc/pkg/solidity-utils/contracts/math/BasePoolMath.sol#L261) are inside `BasePoolMath.sol`. They call `computeInvariant()` to calculate the bptAmounts to be used within a respective transaction as well as the fees involved. Other primary contracts that rely on this function are: `VaultExtension.sol`, where it is used to calculate the bpt amounts involved when initializing a new pool.
+
+Essentially, the invariant is used at different points of the transaction to ensure its mathematical logic is upheld within the respective pool. These of course can vary vastly based on the design that is taken. The most well-known invariant is the constant product invariant, as discussed within the BalancerV3 docs [here](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html#build-your-custom-amm:~:text=%23-,Compute%20Invariant,-Custom%20AMMs%20built) briefly.
+
+For this example, the invariant is simply a constant sum invariant.
+
 #### 🥅 ** `computeInvariant()` Goals / Checks**
 
 - [ ] ❓ Can you describe how `computeInvariant()` works within the Balancer V3 monorepo architecture with the `Vault.sol`, `BasePoolMath.sol`, `VaultExtension.sol` and thus how custom pools must accomodate said architecture?
@@ -325,19 +329,10 @@ Inside `ConstantPricePoolExample.sol`
 
 #### 2.1.3 `computeBalance()` Implementation
 
-- Looking at monorepo, one sees that `computeBalance()` is ultimately called to return the new balance of a token after an operation, given the invariant growth ratio and all other balances.
-- In this case, it is constant sum invariant that we simply need to create.
-
-The docs outline how `computeBalance()` is used to return the needed balance of a pool token for a specific invariant change. So basically it is used to calculate an amount of a pool token when the resultant invariant is known. This can be seen in function calls within the v3 monorepo where expected balances are used to calculate the invariant ratio for liquidity operations such as that seen in functions [`_addLiquidity()`](https://github.com/balancer/balancer-v3-monorepo/blob/c009aa9217070e88ed3a39bda97d83c14342f39b/pkg/vault/contracts/Vault.sol#L630C1-L638C19) and [`_removeLiquidity()_`](https://github.com/balancer/balancer-v3-monorepo/blob/c009aa9217070e88ed3a39bda97d83c14342f39b/pkg/vault/contracts/Vault.sol#L850C13-L858C19).
-
-To elaborate on things a bit further, within `Vault.sol`, two main internal functions use `computeBalance()`. These are: `_addLiquidity()` which calls upon , and `_removeLiquidity()` which calls upon `computeAddLiquiditySingleTokenExactOut()`, and `computeRemoveLiquiditySingleTokenExactIn()`, respectively. Within both of these sequences, the `computeBalance()` return value is used in calculating the eventual amount to debit (tokens marked as debt for the user as seen in `_takeDebt()` in the `VaultCommon.sol`) or credit (tokens marked as credit for the user as seen in `supplyCredit()` in the `VaultCommon.sol`) for the respective function call.
-
-For the simple constant price pool example, we have a standard calculation of newBalance using the invariantRatio and current invariant.
-
----
+Listed here for easy reference, the function discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/ConstantPricePool.sol#L55).
 
 <details markdown='1'><summary>👩🏽‍🏫 Code for `computeBalance()` function </summary>
-Inside `ConstantPricePoolExample.sol`
+Inside `ConstantPricePool.sol`
 
 ```
   /**
@@ -366,6 +361,15 @@ Inside `ConstantPricePoolExample.sol`
 
 </details>
 
+Looking at monorepo, one sees that `computeBalance()` is ultimately called to return the new balance of a token after an operation, given the invariant growth ratio and all other balances.
+In this case, it is constant sum invariant that we simply need to create.
+
+The docs outline how `computeBalance()` is used to return the needed balance of a pool token for a specific invariant change. So basically it is used to calculate an amount of a pool token when the resultant invariant is known. This can be seen in function calls within the v3 monorepo where expected balances are used to calculate the invariant ratio for liquidity operations such as that seen in functions [`_addLiquidity()`](https://github.com/balancer/balancer-v3-monorepo/blob/c009aa9217070e88ed3a39bda97d83c14342f39b/pkg/vault/contracts/Vault.sol#L630C1-L638C19) and [`_removeLiquidity()_`](https://github.com/balancer/balancer-v3-monorepo/blob/c009aa9217070e88ed3a39bda97d83c14342f39b/pkg/vault/contracts/Vault.sol#L850C13-L858C19).
+
+To elaborate on things a bit further, within `Vault.sol`, two main internal functions use `computeBalance()`. These are: `_addLiquidity()` which calls upon , and `_removeLiquidity()` which calls upon `computeAddLiquiditySingleTokenExactOut()`, and `computeRemoveLiquiditySingleTokenExactIn()`, respectively. Within both of these sequences, the `computeBalance()` return value is used in calculating the eventual amount to debit (tokens marked as debt for the user as seen in `_takeDebt()` in the `VaultCommon.sol`) or credit (tokens marked as credit for the user as seen in `supplyCredit()` in the `VaultCommon.sol`) for the respective function call.
+
+For the simple constant price pool example, we have a standard calculation of newBalance using the invariantRatio and current invariant.
+
 #### 🥅 ** `computeBalance()` Goals / Checks**
 
 - [ ] ❓ Can you describe how `computeBalance()` works within the Balancer V3 monorepo architecture and thus how custom pools must accomodate said architecture?
@@ -391,15 +395,12 @@ This section will walk you through:
 
 ## 🏭 3.1: Creating the Custom Pool Factory
 
-We will focus on creating the `CustomPoolFactoryExample.sol` contract. It is used to deploy the `ConstantPricePool.sol` example custom pool we walked through earlier. It inherits the `BasePoolFactory.sol` from BalancerV3's monorepo.
+We will focus on creating the `CustomPoolFactoryExample.sol` contract. Let's focus on the constructor first. 
 
-For a factory associated to the `ConstantPricePool.sol` we do not need any extra implementation within the constructor. Thus, all we need to do is write the constructor with the appropriate params as described below for `BasePoolFactory.sol`.
+Listed here for easy reference, the constructor discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/CustomPoolFactoryExample.sol#L22).
 
-1. `IVault vault` - The BalancerV3 vault on the respective network.
-2. `uint256 pauseWindowDuration` - The pause window that will be used for all pools created from this factory. It is the timeframe that a newly created pool can be paused before its buffer endtime. Once a pool is paused, it will remain paused til the end of the pause window, and subsequently will wait til the vault's buffer period ends. When the buffer period expires, it will unpause automatically, and remain permissionless forever after.
-3. `bytes memory creationCode` - The creation code that is used within the `_create()` internal function call when creating new pools. This is associated to the respective custom pool that you are looking to create.
-
-Thus the constructor code will be:
+<details markdown='1'><summary>👩🏽‍🏫 Code for `constructor()` </summary>
+Inside `CustomPoolFactoryExample.sol`
 
 ```
 constructor(
@@ -409,6 +410,16 @@ constructor(
         // solhint-disable-previous-line no-empty-blocks
     }
 ```
+
+</details>
+
+It is used to deploy the `ConstantPricePool.sol` example custom pool we walked through earlier. It inherits the `BasePoolFactory.sol` from BalancerV3's monorepo.
+
+For a factory associated to the `ConstantPricePool.sol` we do not need any extra implementation within the constructor. Thus, all we need to do is write the constructor with the appropriate params as described below for `BasePoolFactory.sol`.
+
+1. `IVault vault` - The BalancerV3 vault on the respective network.
+2. `uint256 pauseWindowDuration` - The pause window that will be used for all pools created from this factory. It is the timeframe that a newly created pool can be paused before its buffer endtime. Once a pool is paused, it will remain paused til the end of the pause window, and subsequently will wait til the vault's buffer period ends. When the buffer period expires, it will unpause automatically, and remain permissionless forever after.
+3. `bytes memory creationCode` - The creation code that is used within the `_create()` internal function call when creating new pools. This is associated to the respective custom pool that you are looking to create.
 
 > NOTE: more implementation can be input for the constructor for your own custom pool of course, but for this example we are keeping things simple. Even pools such as [WeightedPools](https://github.com/balancer/balancer-v3-monorepo/blob/9bc5618d7717dfbafd3cfbf025e7d3317ad7cacb/pkg/pool-weighted/contracts/WeightedPool8020Factory.sol#L21) and [StablePools](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-stable/contracts/StablePoolFactory.sol) can have simple constructor setups as seen in the v3 monorepo.
 
@@ -420,7 +431,10 @@ Moving on to the next part, the `create()` function is used to create new pools 
 
 The `create()` function, in this simple example pool factory, simply calls the `_create()` function within the `BasePoolFactory.sol`. The `_create()` function uses `CREATE3`, similar to `CREATE2` to deploy a pool that has a pre-determined address based on its salt, and encoded creation code & args.
 
-Below is the `create()` function used within our example:
+Listed here for easy reference, the the `create()` function discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/CustomPoolFactoryExample.sol#L42).
+
+<details markdown='1'><summary>👩🏽‍🏫 Code for `create()` function </summary>
+Inside `CustomPoolFactoryExample.sol`
 
 ```
 /**
@@ -464,13 +478,20 @@ Below is the `create()` function used within our example:
     }
 ```
 
-Here is the `_create()` internal function for reference:
+</details>
+
+Here is the `_create()` internal function for reference (it can also be found [here](https://github.com/balancer/balancer-v3-monorepo/blob/c009aa9217070e88ed3a39bda97d83c14342f39b/pkg/vault/contracts/factories/BasePoolFactory.sol#L86)):
+
+<details markdown='1'><summary>👩🏽‍🏫 Code for `_create()` function </summary>
+Inside `CustomPoolFactoryExample.sol`
 
 ```
 function _create(bytes memory constructorArgs, bytes32 salt) internal returns (address) {
         return CREATE3.deploy(salt, abi.encodePacked(_creationCode, constructorArgs), 0);
     }
 ```
+
+</details>
 
 Within the function `create()` we call `_create()` with appropriate params, which will be touched on later within our scripts. For now, we move onto the next aspect of the `create()` call, which is to `registerPool()` with the BalancerV3 vault.
 
@@ -482,7 +503,7 @@ New pools need to be registered to the BalancerV3 vault to operate within the Ba
 
 For the example factory contract we are working with, we have no pause manager, no hooks, and do not support "custom" liquidity provision or removal.
 
-Finally, the `create()` function ends by calling `_registerPoolWithFactory(newPool)` which registers the new pool with the respective factory. This is done for accounting purposes, amongst other reasons.
+Finally, the `create()` function ends by calling `_registerPoolWithFactory(newPool)` (as seen [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/CustomPoolFactoryExample.sol#L72)) which registers the new pool with the respective factory. This is done for accounting purposes, amongst other reasons.
 
 > NOTE: like all other contracts and scripts within this repo, one must adjust aspects within this smart contract when creating their own type of custom pool.
 
@@ -492,7 +513,7 @@ Finally, the `create()` function ends by calling `_registerPoolWithFactory(newPo
 
 Now that we have created the `CustomPoolFactoryExample.sol` contract, it is time to write the deployment scripts. We've provided example deployment scripts to reference as you create your own, and will walk through key gotcha's when writing your own deployment scripts. As always, test on your own before deploying!
 
-`DeployFactoryAndPool.s.sol` is the file that we will use as a template.
+`DeployFactoryAndPool.s.sol` is the file that we will use as a template, it can be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/script/DeployFactoryAndPool.s.sol).
 
 For sake of simplicity, we will outline the core function of the script, and then explain specific gotchas with the script. The main one being the params involved with initialization.
 
@@ -506,15 +527,15 @@ The script, using the `.env` specified deployer wallet, deploys the custom pool 
 
 ### 💡 3.2.2 Key Gotchas
 
-- Specific to this repo, the script `DeployFactoryAndPool.s.sol` inherits `ScaffoldETHDeploy.s.sol`, `DeployPool.s.sol`, `HelperConfig`, and `HelperFunctions`.
+- Specific to this repo, the script `DeployFactoryAndPool.s.sol` inherits [`ScaffoldETHDeploy.s.sol`](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/script/ScaffoldETHDeploy.s.sol), /1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/script/DeployPool.s.sol, [`HelperConfig`](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/utils/HelperConfig.sol), and [`HelperFunctions`](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/utils/HelperFunctions.sol).
 - If using this and the associated deployment scripts to help troubleshoot your own custom pool type, then it is advised to use the `HelperConfig.sol` located at: `packages/foundry/utils/HelperConfig.sol`, to outline the appropriate details of your custom pool to use the already written example scripts within this repo.
 - Balancer integration with `initialize()` has a couple of arrays that must match in terms of token ERC20 we are using, and the amounts of said token.
 
-> It is key to understand that the script is calling `Router.initialize()` ultimately, and so understanding this function call and its params is crucial. See the BalancerV3 monorepo for more info. We touch on some of these params below, but the nat spec is also a great resource.
+> It is key to understand that the script is calling [`Router.initialize()`](https://github.com/balancer/balancer-v3-monorepo/blob/c009aa9217070e88ed3a39bda97d83c14342f39b/pkg/interfaces/contracts/vault/IRouter.sol#L39C5-L56C55) ultimately, and so understanding this function call and its params is crucial. See the BalancerV3 monorepo for more info. We touch on some of these params below, but the nat spec is also a great resource.
 
 - Some variables have comments on them to assist, such as the custom pool factory
 - This script uses MockToken contracts to instantly mint 1000 of each test token to deployer wallet.
-- The TokenConfig struct is defined within `VaultTypes.sol` in the v3 monorepo. It has a few gotchas:
+- The TokenConfig struct is defined within [`VaultTypes.sol`](https://github.com/balancer/balancer-v3-monorepo/blob/c009aa9217070e88ed3a39bda97d83c14342f39b/pkg/interfaces/contracts/vault/VaultTypes.sol#L128) in the v3 monorepo. It has a few gotchas:
   - `TokenConfig.tokenType` is an enum: `STANDARD` OR `WITH_RATE`
   - `TokenConfig.token` is the token address
   - `TokenConfig.rateProvider` is the rate provider for the respective token. Rate Providers are not needed for `STANDARD` tokenTypes. These also are not yield bearing.
@@ -569,7 +590,7 @@ To send the deployment transactions to sepolia testnet:
 
 ## 🌊 3.3: Deploying Only A Pool
 
-Now that the pool factory has been deployed to the local fork, we have the option to deploy just a new pool by calling the `create()` function on the previously deployed pool. Notice that the `DeployPool.s.sol` script also registers and initializes the pool.
+Now that the pool factory has been deployed to the local fork, we have the option to deploy just a new pool by calling the `create()` function on the previously deployed pool. Notice that the [`DeployPool.s.sol`](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/script/DeployPool.s.sol) script also registers and initializes the pool.
 
 > NOTE: that the pool name will have to be different than that of the initial pool made within the `DeployFactoryAndPool.s.sol` commands.
 
@@ -619,9 +640,9 @@ The tests that you see running are found in the following subdirectory / path: `
 
 ---
 
-### 🎨 4.1 `CustomPoolTemplate.t.sol`
+### 🎨 4.1 [`CustomPoolTemplate.t.sol`](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/test/CustomPoolTemplate.t.sol)
 
-#### 4.1.1 Inherited Context for `CustomPoolTemplate.t.sol` (`BaseVaultTest.sol` & `BaseTest.sol`)
+#### 4.1.1 Inherited Context for `CustomPoolTemplate.t.sol` ([`BaseVaultTest.sol`](https://github.com/balancer/balancer-v3-monorepo/blob/c009aa9217070e88ed3a39bda97d83c14342f39b/pkg/vault/test/foundry/utils/BaseVaultTest.sol#L4) & [`BaseTest.sol`](https://github.com/balancer/balancer-v3-monorepo/blob/c009aa9217070e88ed3a39bda97d83c14342f39b/pkg/solidity-utils/test/foundry/utils/BaseTest.sol#L4))
 
 The v3 monorepo has pool tests inheriting a base setup implemented within `BaseVaultTest.sol` & `BaseTest.sol`.
 
@@ -647,7 +668,7 @@ Each test has comments added to them to help guide the developer with this start
 
 ---
 
-### 🖼 4.2 `CustomPoolFactoryTemplate.t.sol`
+### 🖼 4.2 [`CustomPoolFactoryTemplate.t.sol`](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/test/CustomPoolFactoryTemplate.t.sol)
 
 Unlike the `CustomPoolTemplate.t.sol`, the `CustomPoolFactoryTemplate.t.sol` has a simpler setup where a mock vault, a custom pool factory (specific to the one that is being tested), and two test tokens are deployed.
 
