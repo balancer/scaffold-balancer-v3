@@ -7,6 +7,8 @@ import "./ScaffoldETHDeploy.s.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {TokenConfig} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import {HelperConfig} from "../utils/HelperConfig.sol";
+import {ArrayHelpers} from "@balancer-labs/v3-solidity-utils/contracts/helpers/ArrayHelpers.sol";
+import {InputHelpers} from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 
 /**
  * @title DeployFactoryAndPool
@@ -28,7 +30,7 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
 
         // Deploy mock tokens. Remove this if using already deployed tokens and instead set the tokens above
         vm.startBroadcast(deployerPrivateKey);
-        (IERC20 token1, IERC20 token2) = deployMockTokens();
+        (address mockToken1, address mockToken2) = deployMockTokens();
         vm.stopBroadcast();
 
         // Look up configuration options from `HelperConfig.sol`
@@ -38,7 +40,7 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
             string memory name,
             string memory symbol,
             TokenConfig[] memory tokenConfig
-        ) = helperConfig.getPoolConfig(token1, token2);
+        ) = helperConfig.getPoolConfig(mockToken1, mockToken2);
         (
             IERC20[] memory tokens,
             uint256[] memory exactAmountsIn,
@@ -58,8 +60,10 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
             address(customPoolFactory),
             name,
             symbol,
-            tokenConfig
+            helperConfig.sortTokenConfig(tokenConfig)
         );
+
+        tokens = InputHelpers.sortTokens(tokens);
         initializePool(
             pool,
             tokens,

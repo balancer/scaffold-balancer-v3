@@ -9,6 +9,8 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {TokenConfig} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {Script, console} from "forge-std/Script.sol";
+import {InputHelpers} from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
+import {HelperConfig} from "../utils/HelperConfig.sol";
 
 /**
  * @title DeployPool Script
@@ -18,6 +20,8 @@ import {Script, console} from "forge-std/Script.sol";
  */
 contract DeployPool is HelperFunctions, HelperConfig, Script {
     error InvalidPrivateKey(string);
+    string name = "Scaffold Balancer Constant Price Pool #2"; // name for the pool
+    string symbol = "POOL2-SB-50scUSD-50scDAI"; // symbol for the BPT
 
     /**
      * @dev Set your pool deployment and initialization configurations in `HelperConfig.sol`
@@ -31,18 +35,21 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
             );
         }
 
-        // Deploy mock tokens to use in the pool
-        vm.startBroadcast(deployerPrivateKey);
-        (IERC20 token1, IERC20 token2) = deployMockTokens();
-        vm.stopBroadcast();
+        address mockToken1 = DevOpsTools.get_most_recent_deployment(
+            "MockToken1", // Must match the mock token contract name
+            block.chainid
+        );
+        address mockToken2 = DevOpsTools.get_most_recent_deployment(
+            "MockToken2", // Must match the mock token contract name
+            block.chainid
+        );
 
         // Look up configurations from `HelperConfig.sol`
         HelperConfig helperConfig = new HelperConfig();
-        (
-            string memory name,
-            string memory symbol,
-            TokenConfig[] memory tokenConfig
-        ) = helperConfig.getPoolConfig(token1, token2);
+        (, , TokenConfig[] memory tokenConfig) = helperConfig.getPoolConfig(
+            mockToken1,
+            mockToken2
+        );
         (
             IERC20[] memory tokens,
             uint256[] memory exactAmountsIn,
@@ -61,8 +68,9 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
             poolFactoryAddress,
             name,
             symbol,
-            tokenConfig
+            helperConfig.sortTokenConfig(tokenConfig)
         );
+        tokens = InputHelpers.sortTokens(tokens);
         initializePool(
             pool,
             tokens,
