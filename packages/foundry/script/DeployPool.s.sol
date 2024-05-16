@@ -9,7 +9,7 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {TokenConfig} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {Script, console} from "forge-std/Script.sol";
-import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
+import {InputHelpers} from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import {HelperConfig} from "../utils/HelperConfig.sol";
 
 /**
@@ -35,25 +35,21 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
             );
         }
 
-        // Deploy mock tokens to use in the pool
-        vm.startBroadcast(deployerPrivateKey);
-        (IERC20 token1, IERC20 token2) = (IERC20(DevOpsTools.get_most_recent_deployment(
-            "MockToken1", // Must match the pool factory contract name
+        address mockToken1 = DevOpsTools.get_most_recent_deployment(
+            "MockToken1", // Must match the mock token contract name
             block.chainid
-        )),IERC20(DevOpsTools.get_most_recent_deployment(
-            "MockToken2", // Must match the pool factory contract name
+        );
+        address mockToken2 = DevOpsTools.get_most_recent_deployment(
+            "MockToken2", // Must match the mock token contract name
             block.chainid
-        ))); // Get the most recently deployed address of the pool factory)
-
-        vm.stopBroadcast();
+        );
 
         // Look up configurations from `HelperConfig.sol`
         HelperConfig helperConfig = new HelperConfig();
-        (
-            ,
-            ,
-            TokenConfig[] memory tokenConfig
-        ) = helperConfig.getPoolConfig(token1, token2);
+        (, , TokenConfig[] memory tokenConfig) = helperConfig.getPoolConfig(
+            mockToken1,
+            mockToken2
+        );
         (
             IERC20[] memory tokens,
             uint256[] memory exactAmountsIn,

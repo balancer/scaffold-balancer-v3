@@ -21,21 +21,13 @@ contract HelperConfig {
     IRouter public router = IRouter(0xA0De078cd5cFa7088821B83e0bD7545ccfb7c883);
 
     /**
-     * @dev Tokens for pool (also requires configuration of `TokenConfig` in the `getPoolConfig` function)
-     * @dev If using already deployed tokens, set the addresses here and remove the args for `getPoolConfig` function
-     * @notice the args for `getPoolConfig` enable the use of mock tokens that are not yet deployed
-     */
-    IERC20 mockToken1; // Make sure to have proper token order (alphanumeric)
-    IERC20 mockToken2; // Make sure to have proper token order (alphanumeric)
-
-    /**
      * @notice Creates mock tokens for the pool and mints 1000 of each to the deployer wallet
      */
-    function deployMockTokens() internal returns (IERC20, IERC20) {
+    function deployMockTokens() internal returns (address, address) {
         MockToken1 scUSD = new MockToken1("Scaffold USD", "scUSD");
         MockToken2 scDAI = new MockToken2("Scaffold DAI", "scDAI");
 
-        return (scDAI, scUSD);
+        return (address(scDAI), address(scUSD));
     }
 
     /**
@@ -53,8 +45,8 @@ contract HelperConfig {
      * @dev Set the name, symbol, and token configuration for the pool here
      */
     function getPoolConfig(
-        IERC20 token1,
-        IERC20 token2
+        address token1,
+        address token2
     )
         public
         pure
@@ -69,13 +61,13 @@ contract HelperConfig {
 
         tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
         tokenConfig[0] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
-            token: token1,
+            token: IERC20(token1),
             tokenType: TokenType.STANDARD, // STANDARD, WITH_RATE, or ERC4626
             rateProvider: IRateProvider(address(0)), // The rate provider for a token
             yieldFeeExempt: false // Flag indicating whether yield fees should be charged on this token
         });
         tokenConfig[1] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
-            token: token2,
+            token: IERC20(token2),
             tokenType: TokenType.STANDARD, // STANDARD, WITH_RATE, or ERC4626
             rateProvider: IRateProvider(address(0)), // The rate provider for a token
             yieldFeeExempt: false // Flag indicating whether yield fees should be charged on this token
@@ -109,12 +101,17 @@ contract HelperConfig {
         userData = bytes(""); // Additional (optional) data required for adding initial liquidity
     }
 
-    function sortTokenConfig(TokenConfig[] memory tokenConfig) public pure returns (TokenConfig[] memory) {
+    function sortTokenConfig(
+        TokenConfig[] memory tokenConfig
+    ) public pure returns (TokenConfig[] memory) {
         for (uint256 i = 0; i < tokenConfig.length - 1; i++) {
             for (uint256 j = 0; j < tokenConfig.length - i - 1; j++) {
                 if (tokenConfig[j].token > tokenConfig[j + 1].token) {
                     // Swap if they're out of order.
-                    (tokenConfig[j], tokenConfig[j + 1]) = (tokenConfig[j + 1], tokenConfig[j]);
+                    (tokenConfig[j], tokenConfig[j + 1]) = (
+                        tokenConfig[j + 1],
+                        tokenConfig[j]
+                    );
                 }
             }
         }
