@@ -5,17 +5,26 @@ pragma solidity ^0.8.4;
 import "forge-std/Test.sol";
 
 import {IVault} from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-import {TokenConfig, TokenType} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import {IRateProvider} from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
+import {
+    TokenConfig,
+    TokenType
+} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import {IRateProvider} from
+    "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 
 import {VaultMock} from "@balancer-labs/v3-vault/contracts/test/VaultMock.sol";
-import {VaultExtensionMock} from "@balancer-labs/v3-vault/contracts/test/VaultExtensionMock.sol";
-import {VaultMockDeployer} from "@balancer-labs/v3-vault/test/foundry/utils/VaultMockDeployer.sol";
-import {ERC20TestToken} from "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
-import {RateProviderMock} from "@balancer-labs/v3-vault/contracts/test/RateProviderMock.sol";
+import {VaultExtensionMock} from
+    "@balancer-labs/v3-vault/contracts/test/VaultExtensionMock.sol";
+import {VaultMockDeployer} from
+    "@balancer-labs/v3-vault/test/foundry/utils/VaultMockDeployer.sol";
+import {ERC20TestToken} from
+    "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
+import {RateProviderMock} from
+    "@balancer-labs/v3-vault/contracts/test/RateProviderMock.sol";
 
 import {ConstantPricePool} from "../contracts/ConstantPricePool.sol";
-import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
+import {CustomPoolFactoryExample} from
+    "../contracts/CustomPoolFactoryExample.sol";
 
 /**
  * @title Custom Pool Factory Starter Test Template
@@ -36,10 +45,7 @@ contract CustomPoolFactoryTemplateTest is Test {
 
     function setUp() public {
         vault = VaultMockDeployer.deploy();
-        factory = new CustomPoolFactoryExample(
-            IVault(address(vault)),
-            365 days
-        ); // TODO - Update with your own custom pool factory
+        factory = new CustomPoolFactoryExample(IVault(address(vault)), 365 days); // TODO - Update with your own custom pool factory
 
         tokenA = new ERC20TestToken("Token A", "TKNA", 18);
         tokenB = new ERC20TestToken("Token B", "TKNB", 6);
@@ -98,9 +104,7 @@ contract CustomPoolFactoryTemplateTest is Test {
             "Two deployed pool addresses are equal"
         );
         assertEq(
-            address(secondPool),
-            expectedPoolAddress,
-            "Unexpected pool address"
+            address(secondPool), expectedPoolAddress, "Unexpected pool address"
         );
     }
 
@@ -123,15 +127,13 @@ contract CustomPoolFactoryTemplateTest is Test {
             factory.create("New Custom Pool #2", "CP2", tokens, salt)
         ); // TODO - Update with your own custom pool factory create() params rqd
         assertFalse(
-            address(pool) == expectedPoolAddress,
-            "Unexpected pool address"
+            address(pool) == expectedPoolAddress, "Unexpected pool address"
         );
 
         vm.prank(alice);
         address aliceExpectedPoolAddress = factory.getDeploymentAddress(salt);
         assertTrue(
-            address(pool) == aliceExpectedPoolAddress,
-            "Unexpected pool address"
+            address(pool) == aliceExpectedPoolAddress, "Unexpected pool address"
         );
     }
 
