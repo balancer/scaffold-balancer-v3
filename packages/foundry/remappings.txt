@@ -1,0 +1,6 @@
+@test/=../../node_modules/@balancer-labs/v3-monorepo/pkg/
+@balancer-labs/v3-solidity-utils/=../../node_modules/@balancer-labs/v3-monorepo/pkg/solidity-utils/
+@balancer-labs/v3-interfaces/=../../node_modules/@balancer-labs/v3-monorepo/pkg/interfaces/
+@balancer-labs/v3-vault/=../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/
+permit2/=../../node_modules/permit2/
+forge-gas-snapshot/=../../node_modules/forge-gas-snapshot/src/

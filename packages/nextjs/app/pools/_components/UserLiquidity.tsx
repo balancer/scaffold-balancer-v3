@@ -1,37 +1,71 @@
+import { useEffect, useState } from "react";
+import { type TokenAmount } from "@balancer/sdk";
+import { useAccount } from "wagmi";
+import { useExit } from "~~/hooks/balancer/";
+import { type Pool } from "~~/hooks/balancer/types";
+import { formatToHuman } from "~~/utils/formatToHuman";
+
 /**
- * Display the connected user's liquidity within the pool
+ * If there is a connected user, display their liquidity within the pool
  */
-export const UserLiquidity = () => {
+export const UserLiquidity = ({ pool }: { pool: Pool }) => {
+  const [expectedAmountsOut, setExpectedAmountsOut] = useState<TokenAmount[] | undefined>();
+
+  const { isConnected } = useAccount();
+  const { queryExit } = useExit(pool);
+
+  useEffect(() => {
+    async function fetchExitQuery() {
+      if (pool.userBalance > 0n) {
+        const { expectedAmountsOut } = await queryExit(pool.userBalance);
+        setExpectedAmountsOut(expectedAmountsOut);
+      } else {
+        setExpectedAmountsOut(undefined);
+      }
+    }
+    fetchExitQuery();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pool.userBalance]); // excluded queryExit from deps array because it causes infinite re-renders
+
+  // only render the component if the pool is initialized and the user is connected
+  if (!isConnected || !pool?.poolConfig?.isPoolInitialized) {
+    return null;
+  }
+
   return (
     <div className="w-full flex flex-col">
       <div className="bg-base-200 p-4 rounded-lg ">
         <h5 className="text-xl font-bold mb-3">My Liquidity</h5>
+
         <div className="border border-base-100 rounded-lg">
-          <div className="flex justify-between font-bold border-base-100 border-b p-3">
-            <h5 className="font-bold">My total balance</h5>
-            <h5>$0.00</h5>
+          <div className="flex justify-between border-base-100 border-b p-3 items-center">
+            <div>
+              <div className="font-bold">BPT</div>
+              <div className="text-sm">{pool.name}</div>
+            </div>
+            <div className="text-end">
+              <div className="font-bold">{formatToHuman(pool.userBalance ?? 0n, pool.decimals)}</div>
+              <div className="text-sm">{pool.userBalance?.toString()}</div>
+            </div>
           </div>
           <div className="p-3 flex flex-col gap-3">
-            <div className="flex justify-between">
-              <div>
-                <div className="font-bold">DAI</div>
-                <div className="text-sm">Dai stablecoin</div>
+            {pool.poolTokens.map((token, index) => (
+              <div key={token.address} className="flex justify-between items-center">
+                <div>
+                  <div className="font-bold">{token.symbol}</div>
+                  <div className="text-sm">{token.name}</div>
+                </div>
+
+                <div className="text-end">
+                  <div className="font-bold text-end">
+                    {expectedAmountsOut ? formatToHuman(expectedAmountsOut[index].amount, token.decimals) : "0.0000"}
+                  </div>
+                  <div className="text-sm">
+                    {expectedAmountsOut ? expectedAmountsOut[index].amount.toString() : "0"}
+                  </div>
+                </div>
               </div>
-              <div>
-                <div className="font-bold flex justify-end">0</div>
-                <div className="text-sm">$0.00</div>
-              </div>
-            </div>
-            <div className="flex justify-between">
-              <div>
-                <div className="font-bold">DAI</div>
-                <div className="text-sm">Dai stablecoin</div>
-              </div>
-              <div>
-                <div className="font-bold flex justify-end">0</div>
-                <div className="text-sm">$0.00</div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

@@ -1,3 +1,5 @@
 export * from "./usePoolContract";
 export * from "./types";
-export * from "./useVaultContract";
+export * from "./useSwap";
+export * from "./useJoin";
+export * from "./useExit";

@@ -1,62 +1,76 @@
 "use client";
 
-import { useState } from "react";
-import { PoolActions, PoolAttributes, PoolComposition, UserLiquidity } from "./_components/";
-import type { NextPage } from "next";
-import { type Address, isAddress } from "viem";
-import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import deployedContractsData from "~~/contracts/deployedContracts";
+import { Fragment, useEffect, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { PoolActions, PoolAttributes, PoolComposition, PoolConfig, PoolSelector, UserLiquidity } from "./_components/";
+import { type NextPage } from "next";
+import { type Address } from "viem";
+import { parseAbi } from "viem";
+import { useAccount, useContractReads, useWalletClient } from "wagmi";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { SkeletonLoader } from "~~/components/common";
 import { usePoolContract } from "~~/hooks/balancer";
-import scaffoldConfig from "~~/scaffold.config";
+import { type Pool } from "~~/hooks/balancer/types";
+import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
+import { useAccountBalance } from "~~/hooks/scaffold-eth";
 
 /**
  * Page for viewing custom pool data and performing actions (swap, join, exit) on a pool
  */
 const Pools: NextPage = () => {
-  // Grab custom pool contract info for pools deployed through scaffold-eth
-  const scaffoldPoolsRawData = deployedContractsData[scaffoldConfig.targetNetworks[0].id];
-  const scaffoldPools = Object.entries(scaffoldPoolsRawData).map(([name, details]) => ({
-    name,
-    ...details,
-  }));
+  const [selectedPoolAddress, setSelectedPoolAddress] = useState<Address | null>(null);
 
-  const [selectedPool, setSelectedPool] = useState<Address>(scaffoldPools[0].address);
-  const { data: pool } = usePoolContract(selectedPool);
+  const { data: pool, refetch: refetchPool, isLoading, isError, isSuccess } = usePoolContract(selectedPoolAddress);
+
+  const { address } = useAccount();
+  const { balance } = useAccountBalance(address);
+  const searchParams = useSearchParams();
+  const poolAddress = searchParams.get("address");
+
+  useEffect(() => {
+    if (poolAddress) {
+      setSelectedPoolAddress(poolAddress);
+    }
+  }, [poolAddress]);
 
   return (
     <div className="flex-grow bg-base-300">
       <div className="max-w-screen-2xl mx-auto">
         <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
-          <div className="pb-7">
-            <h1 className="text-3xl md:text-5xl font-bold my-7">🌊 Custom Pools</h1>
+          <div>
+            <h1 className="text-3xl md:text-5xl font-semibold my-7">🌊 Custom Pools</h1>
             <p className="text-xl my-0">
               Balancer is infinitely extensible to allow for any conceivable pool type with custom curves, logic,
               parameters, and more. Each pool deployed to balancer is its own smart contract. This tool allows you to
-              interact with any pool currently deployed (custom or existing). To get started, select one of your custom
-              pools deployed through scaffold eth or enter the contract address of the desired pool below.
+              interact with any v3 pool deployed on a given network.
             </p>
           </div>
 
-          <PoolSelector scaffoldPools={scaffoldPools} setSelectedPool={setSelectedPool} />
+          <PoolSelector setSelectedPoolAddress={setSelectedPoolAddress} />
 
-          <div className="text-center mb-5 border-base-100">
-            <h3 className="font-extrabold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500 mb-0">
-              {pool?.name}
-            </h3>
-            <h3 className="text-2xl text-base-100">{pool?.address}</h3>
-          </div>
-
-          {selectedPool && (
-            <div className="w-full">
-              <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
-                <div className="flex flex-col gap-7">
-                  <UserLiquidity />
-                  <PoolComposition poolAddress={selectedPool} />
-                </div>
-                <PoolActions />
-                <PoolAttributes poolAddress={selectedPool} />
-              </div>
+          {!poolAddress && (
+            <div className="text-xl mb-10">
+              To get started, search by pool contract address or select a pool from the dropdown
             </div>
+          )}
+
+          {address && !balance && (
+            <Alert>
+              The connected account has no funds to pay gas for transactions. Click the faucet button in the top right
+              corner to grab some!
+            </Alert>
+          )}
+
+          {isLoading ? (
+            <PoolPageSkeleton />
+          ) : isError ? (
+            <div className="text-red-500 text-xl text-center">
+              <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
+              <div>{selectedPoolAddress}</div>
+            </div>
+          ) : (
+            isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
           )}
         </div>
       </div>
@@ -66,66 +80,92 @@ const Pools: NextPage = () => {
 
 export default Pools;
 
-/**
- * The dropdown selector for internal custom pool and the external pool address input
- */
-const PoolSelector = ({ scaffoldPools, setSelectedPool }: { scaffoldPools: any; setSelectedPool: any }) => {
-  const [poolAddressInput, setPoolAddressInput] = useState<Address>("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: RefetchPool }) => {
+  const { data: walletClient } = useWalletClient();
 
-  const isValidAddress = isAddress(poolAddressInput);
+  const { data: tokenBalances } = useContractReads({
+    contracts: pool.poolTokens.map(token => ({
+      address: token.address,
+      abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
+      functionName: "balanceOf",
+      args: [walletClient?.account.address as string],
+    })),
+  });
+
+  const userHasNoTokens = tokenBalances?.every(balance => balance.result === 0n);
+
   return (
-    <section className="flex justify-center flex-wrap gap-5 w-full mb-5 items-center text-xl py-5 border-b border-t border-base-100">
-      <div className={`dropdown dropdown-end ${isDropdownOpen ? "dropdown-open" : ""}`}>
-        <div
-          tabIndex={0}
-          role="button"
-          className="btn text-lg btn-accent w-96 font-normal relative"
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        >
-          <div>Choose custom pool</div> <ChevronDownIcon className="absolute top-4 right-5 w-5 h-5" />
-        </div>
-        <ul
-          tabIndex={0}
-          className={`dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-3 ${
-            !isDropdownOpen ? "hidden" : ""
-          }`}
-        >
-          {scaffoldPools.map((pool: any) => (
-            <li key={pool.name}>
-              <button
-                onClick={() => {
-                  setSelectedPool(pool.address);
-                  setIsDropdownOpen(false); // Close the dropdown
-                }}
-              >
-                {pool.name}
-              </button>
-            </li>
-          ))}
-        </ul>
+    <Fragment>
+      {userHasNoTokens && (
+        <Alert>
+          The connected account has zero balance for all of the selected pool&apos;s tokens. To grab some mock tokens,
+          go to the{" "}
+          <Link className="link" href="/debug">
+            Debug Contracts
+          </Link>{" "}
+          page and call the mint function!
+        </Alert>
+      )}
+      <div className="text-center mb-5 bg-base-200 p-3 w-full rounded-lg">
+        <h3 className="font-semibold text-3xl my-2">{pool.name}</h3>
+        <h5 className="text-sm md:text-lg xl:text-xl">{pool.address}</h5>
       </div>
-      <div>OR</div>
-      <form
-        className="flex flex-row items-center gap-2"
-        onSubmit={event => {
-          event.preventDefault();
-          setSelectedPool(poolAddressInput);
-          setPoolAddressInput("");
-        }}
-      >
-        <div className="relative">
-          <input
-            value={poolAddressInput}
-            onChange={e => setPoolAddressInput(e.target.value)}
-            className="input input-bordered bg-base-200 w-96 text-center pr-16"
-            placeholder="Search by contract addresss"
-          />
-          <button className="btn btn-sm btn-accent absolute top-2 right-3 " type="submit" disabled={!isValidAddress}>
-            <MagnifyingGlassIcon className="h-5 w-5" />
-          </button>
+
+      <div className="w-full">
+        <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
+          <div className="flex flex-col gap-7">
+            <UserLiquidity pool={pool} />
+            <PoolComposition pool={pool} />
+            <PoolAttributes pool={pool} />
+          </div>
+          <div className="flex flex-col gap-7">
+            {pool.poolConfig?.isPoolInitialized && <PoolActions pool={pool} refetchPool={refetchPool} />}
+            <PoolConfig pool={pool} />
+          </div>
         </div>
-      </form>
-    </section>
+      </div>
+    </Fragment>
+  );
+};
+
+const PoolPageSkeleton = () => {
+  return (
+    <div className="w-full">
+      <div className="flex h-20 mb-7">
+        <SkeletonLoader />
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
+        <div className="flex flex-col gap-7">
+          <div className="w-full h-60">
+            <SkeletonLoader />
+          </div>
+          <div className="w-full h-60">
+            <SkeletonLoader />
+          </div>
+          <div className="w-full h-60">
+            <SkeletonLoader />
+          </div>
+        </div>
+        <div className="flex flex-col gap-7">
+          <div className="w-full h-72">
+            <SkeletonLoader />
+          </div>
+          <div className="w-full h-72">
+            <SkeletonLoader />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Alert = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div className="bg-[#FCD34D40] border border-amber-500 rounded-lg p-5 mb-5 w-full flex gap-2 items-center justify-center">
+      <div>
+        <ExclamationTriangleIcon className="w-5 h-5 text-amber-500" />
+      </div>
+      <div className="dark:text-amber-500 light:text-amber-800">{children}</div>
+    </div>
   );
 };
