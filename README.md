@@ -4,7 +4,7 @@
 
 🛠️ This repo is a series of guides and internal prototyping tools for creating custom pools that integrate with Balancer v3. It is based off of commit hash 4bc7978d8b8c4ac8e42c5a4adf233663b8390678 from the BalancerV3 monorepo. This repo is to be updated once the monorepo is fully public.
 
-> 📚📖 PRE-REQs: It is highly recommended to read through the (BalancerV3 docs](https://docs-v3.balancer.fi/) before using this repo. Custom pools are built upon the architecture outlined within these docs. If you cannot find what you are looking for in the docs, and it is not in this README, please refer to the (BalancerV3 monorepo](https://github.com/balancer/balancer-v3-monorepo/tree/main) and/or reachout on the (Balancer Discord](https://discord.balancer.fi/).
+> 📚📖 PRE-REQs: It is highly recommended to read through the [BalancerV3 docs](https://docs-v3.balancer.fi/) before using this repo. Custom pools are built upon the architecture outlined within these docs. If you cannot find what you are looking for in the docs, and it is not in this README, please refer to the [BalancerV3 monorepo](https://github.com/balancer/balancer-v3-monorepo/tree/main) and/or reachout on the [Balancer Discord](https://discord.balancer.fi/).
 
 🧑‍🏫 This guide walks through example contracts for a custom pool, custom pool factory, test files, and deployment scripts. These files are used to deploy an example BalancerV3 custom pool that can be interacted with using a test, local front-end, on a test network (by default it is a foundry fork of Sepolia). The repo also provides a starting point for developers to create their own custom pools and factories.
 
@@ -558,9 +558,9 @@ Cool, now we have these gotcha's understood with the script. We can move on to s
 
 ### 🤖 3.2.3: Interacting with the Custom Pool Factory via Scripts
 
-As seen in the beginning of this [README](#032-deployment), this repo comes with bash commands to deploy the discussed smart contracts on a local anvil fork of the Sepolia test network. For quick reference, here are the commands again:
+As seen in the beginning of this [README](#024-deploy-contracts), this repo comes with bash commands to deploy the discussed smart contracts on a local anvil fork of the Sepolia test network. For quick reference, here are the commands again:
 
-> If you would like to change the network the local node is forking, [review this section](#033-changing-the-frontend-network-connection)
+> If you would like to change the network the local node is forking, [review this section.](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/tree/dev#:~:text=0.3.4%20Changing%20The%20Frontend%20Network%20Connection) 
 
 To simulate deployment transactions on your local fork
 
