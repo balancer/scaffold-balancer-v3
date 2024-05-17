@@ -84,7 +84,9 @@ ETHERSCAN_API_KEY=...
 SEPOLIA_RPC_URL=...
 ```
 
-The `DEPLOYER_PRIVATE_KEY` must start with `0x` and will be referred to as 'DEPLOYER' throughout this README. The `ETHERSCAN_API_KEY` is used to conveniently verify contracts from the command line with `yarn verify`
+- The `DEPLOYER_PRIVATE_KEY` must start with `0x` and will be referred to as 'DEPLOYER' throughout this README. 
+- The `ETHERSCAN_API_KEY` is used to conveniently verify contracts from the command line with `yarn verify`
+- The `SEPOLIA_RPC_URL` facilitates running a local fork and sending transactions to sepolia testnet
 
 #### 0.2.3 Start Local Fork
 
