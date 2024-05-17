@@ -77,12 +77,14 @@ yarn install
 #### 0.2.2 Set Environment Variables
 
 Set a `DEPLOYER_PRIVATE_KEY`, referred to as 'DEPLOYER' throughout this README, `ALCHEMY_API_KEY`, and `ETHERSCAN_API_KEY` at the path `packagages/foundry/.env`
-
 ```
 DEPLOYER_PRIVATE_KEY=0x...
 ETHERSCAN_API_KEY=...
 ALCHEMY_API_KEY=...
 ```
+- The `DEPLOYER_PRIVATE_KEY` needs to start with 0x and will be referred to as 'DEPLOYER' throughout this README
+- The `ETHERSCAN_API_KEY` is used to conveniently verify contracts from the command line with `yarn verify`
+- The `ALCHEMY_API_KEY` is used to power a bunch of rpc url aliases in the `foundry.toml`
 
 #### 0.2.3 Start Local Fork
 
