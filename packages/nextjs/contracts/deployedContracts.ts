@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MockToken1: {
-      address: "0x63bD53efc26cdA2cA9d7101cDB26e8808bFE95a9",
+      address: "0xC7A49f9D6A7AcD951f604e7838C51B451b5244f2",
       abi: [
         {
           type: "constructor",
@@ -360,7 +360,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x8400A3A4CFdF3dDC12Ba45bA3DAE3381D206EC5e",
+      address: "0x579bB3a775c831526D5E94EF9ccd6601F62790Bc",
       abi: [
         {
           type: "constructor",
@@ -713,7 +713,7 @@ const deployedContracts = {
       },
     },
     CustomPoolFactoryExample: {
-      address: "0xA253c3212628FE3E380a042Cc2Ac57c0bdebadd4",
+      address: "0x3626DEff4AFB3Acd8f217288cd33FBE3a337Ce0B",
       abi: [
         {
           type: "constructor",

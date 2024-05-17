@@ -28,7 +28,7 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
             );
         }
 
-        // Deploy mock tokens. Remove this if using already deployed tokens and instead set the tokens above
+        // Deploy mock tokens. Remove this if using already deployed tokens
         vm.startBroadcast(deployerPrivateKey);
         (address mockToken1, address mockToken2) = deployMockTokens();
         vm.stopBroadcast();

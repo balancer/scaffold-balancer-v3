@@ -20,7 +20,7 @@ Let's outline what this repo provides in more detail:
 
 👀 Watch this video to quickly get started with the full stack development environment 👇
 
-[![Getting Started Demo](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/ad988ac7-67a6-4dd4-8e12-18c2be2773ea)](https://www.loom.com/share/31cabf0568a845abadcbdbb0df416b20?sid=9b1176c7-5ee4-4feb-8b6e-c971721440a0) 
+[![Getting Started Demo](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/ad988ac7-67a6-4dd4-8e12-18c2be2773ea)](https://www.loom.com/share/31cabf0568a845abadcbdbb0df416b20?sid=9b1176c7-5ee4-4feb-8b6e-c971721440a0)
 
 👀 Watch this video to get better acquainted with the smart contracts 👇
 
@@ -76,15 +76,15 @@ yarn install
 
 #### 0.2.2 Set Environment Variables
 
-Set a `DEPLOYER_PRIVATE_KEY`, referred to as 'DEPLOYER' throughout this README, `ALCHEMY_API_KEY`, and `ETHERSCAN_API_KEY` at the path `packagages/foundry/.env`
+Set the following environment variables in a `packagages/foundry/.env` file
+
 ```
 DEPLOYER_PRIVATE_KEY=0x...
 ETHERSCAN_API_KEY=...
-ALCHEMY_API_KEY=...
+SEPOLIA_RPC_URL=...
 ```
-- The `DEPLOYER_PRIVATE_KEY` needs to start with 0x and will be referred to as 'DEPLOYER' throughout this README
-- The `ETHERSCAN_API_KEY` is used to conveniently verify contracts from the command line with `yarn verify`
-- The `ALCHEMY_API_KEY` is used to power a bunch of rpc url aliases in the `foundry.toml`
+
+The `DEPLOYER_PRIVATE_KEY` must start with `0x` and will be referred to as 'DEPLOYER' throughout this README. The `ETHERSCAN_API_KEY` is used to conveniently verify contracts from the command line with `yarn verify`
 
 #### 0.2.3 Start Local Fork
 
@@ -401,7 +401,7 @@ This section will walk you through:
 
 ## 🏭 3.1: Creating the Custom Pool Factory
 
-We will focus on creating the `CustomPoolFactoryExample.sol` contract. Let's focus on the constructor first. 
+We will focus on creating the `CustomPoolFactoryExample.sol` contract. Let's focus on the constructor first.
 
 Listed here for easy reference, the constructor discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/CustomPoolFactoryExample.sol#L22).
 
@@ -562,7 +562,7 @@ Cool, now we have these gotcha's understood with the script. We can move on to s
 
 As seen in the beginning of this [README](#024-deploy-contracts), this repo comes with bash commands to deploy the discussed smart contracts on a local anvil fork of the Sepolia test network. For quick reference, here are the commands again:
 
-> If you would like to change the network the local node is forking, [review this section.](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/tree/dev#:~:text=0.3.4%20Changing%20The%20Frontend%20Network%20Connection) 
+> If you would like to change the network the local node is forking, [review this section.](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/tree/dev#:~:text=0.3.4%20Changing%20The%20Frontend%20Network%20Connection)
 
 To simulate deployment transactions on your local fork
 
