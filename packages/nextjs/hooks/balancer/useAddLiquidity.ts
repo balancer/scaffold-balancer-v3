@@ -11,30 +11,30 @@ import {
 } from "@balancer/sdk";
 import { parseAbi } from "viem";
 import { useContractReads, usePublicClient, useWalletClient } from "wagmi";
-import { Pool, QueryJoinResponse, TransactionHash } from "~~/hooks/balancer/types";
+import { Pool, QueryAddLiquidityResponse, TransactionHash } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
-type JoinPoolFunctions = {
-  queryJoin: () => Promise<QueryJoinResponse>;
-  joinPool: () => Promise<TransactionHash>;
+type AddLiquidityFunctions = {
+  queryAddLiquidity: () => Promise<QueryAddLiquidityResponse>;
+  addLiquidity: () => Promise<TransactionHash>;
   allowances: any[] | undefined;
   refetchAllowances: () => void;
   tokenBalances: any[] | undefined;
 };
 
 /**
- * Custom hook for adding liquidity to a pool where `queryJoin()` sets state of
- * the call object that is used to construct the transaction that is later sent by `joinPool()`
+ * Custom hook for adding liquidity to a pool where `queryAddLiquidity()` sets state of
+ * the call object that is used to construct the transaction that is later sent by `addLiquidity()`
  */
-export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions => {
+export const useAddLiquidity = (pool: Pool, amountsIn: InputAmount[]): AddLiquidityFunctions => {
   const [call, setCall] = useState<any>();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const writeTx = useTransactor();
 
-  const queryJoin = async () => {
+  const queryAddLiquidity = async () => {
     try {
       if (!publicClient) {
         throw new Error("public client is undefined");
@@ -78,7 +78,7 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
     }
   };
 
-  const joinPool = async () => {
+  const addLiquidity = async () => {
     try {
       if (!walletClient) {
         throw new Error("Client is undefined");
@@ -125,5 +125,5 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
     })),
   });
 
-  return { queryJoin, joinPool, allowances, refetchAllowances, tokenBalances };
+  return { queryAddLiquidity, addLiquidity, allowances, refetchAllowances, tokenBalances };
 };

@@ -9,10 +9,8 @@ interface PoolActionButtonProps {
 }
 
 /**
- * Styled button for approve and join/swap/exit transactions
- *
- * Approve button is outlined styles
- * Join/Swap/Exit buttons are solid styles
+ * Approve button is outlined style
+ * Swap, AddLiquidity, and RemoveLiquidity buttons are solid gradient style
  */
 export const PoolActionButton: React.FC<PoolActionButtonProps> = ({ onClick, children, isDisabled, isFormEmpty }) => {
   const outlined = `border border-neutral hover:bg-neutral hover:text-neutral-content`;

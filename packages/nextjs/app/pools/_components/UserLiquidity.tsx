@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { type TokenAmount } from "@balancer/sdk";
 import { useAccount } from "wagmi";
-import { useExit } from "~~/hooks/balancer/";
+import { useRemoveLiquidity } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
 import { formatToHuman } from "~~/utils/formatToHuman";
 
@@ -12,20 +12,20 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
   const [expectedAmountsOut, setExpectedAmountsOut] = useState<TokenAmount[] | undefined>();
 
   const { isConnected } = useAccount();
-  const { queryExit } = useExit(pool);
+  const { queryRemoveLiquidity } = useRemoveLiquidity(pool);
 
   useEffect(() => {
-    async function fetchExitQuery() {
+    async function sendQuery() {
       if (pool.userBalance > 0n) {
-        const { expectedAmountsOut } = await queryExit(pool.userBalance);
+        const { expectedAmountsOut } = await queryRemoveLiquidity(pool.userBalance);
         setExpectedAmountsOut(expectedAmountsOut);
       } else {
         setExpectedAmountsOut(undefined);
       }
     }
-    fetchExitQuery();
+    sendQuery();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pool.userBalance]); // excluded queryExit from deps array because it causes infinite re-renders
+  }, [pool.userBalance]); // excluded queryRemoveLiquidity from deps array because it causes infinite re-renders
 
   // only render the component if the pool is initialized and the user is connected
   if (!isConnected || !pool?.poolConfig?.isPoolInitialized) {

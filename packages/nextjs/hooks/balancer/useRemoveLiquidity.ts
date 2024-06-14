@@ -10,27 +10,26 @@ import {
   Slippage,
 } from "@balancer/sdk";
 import { usePublicClient, useWalletClient } from "wagmi";
-import { Pool, QueryExitResponse, TransactionHash } from "~~/hooks/balancer/types";
+import { Pool, QueryRemoveLiquidityResponse, TransactionHash } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
-type PoolExitFunctions = {
-  queryExit: (rawAmount: bigint) => Promise<QueryExitResponse>;
-  exitPool: () => Promise<TransactionHash>;
+type RemoveLiquidityFunctions = {
+  queryRemoveLiquidity: (rawAmount: bigint) => Promise<QueryRemoveLiquidityResponse>;
+  removeLiquidity: () => Promise<TransactionHash>;
 };
 
 /**
- * Custom hook for exiting a pool where `queryExit()` sets state of
- * the call object that is used to construct the transaction that is later sent by `exitPool()`
+ * Custom hook for removing liquidity from a pool where `queryRemoveLiquidity()` sets state of
+ * the call object that is used to construct the transaction that is later sent by `removeLiquidity()`
  */
-export const useExit = (pool: Pool): PoolExitFunctions => {
+export const useRemoveLiquidity = (pool: Pool): RemoveLiquidityFunctions => {
   const [call, setCall] = useState<any>();
-
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const writeTx = useTransactor();
 
-  const queryExit = async (rawAmount: bigint) => {
+  const queryRemoveLiquidity = async (rawAmount: bigint) => {
     try {
       if (!publicClient) {
         throw new Error("public client is undefined");
@@ -63,15 +62,14 @@ export const useExit = (pool: Pool): PoolExitFunctions => {
       const removeLiquidity = new RemoveLiquidity();
       const queryOutput = await removeLiquidity.query(removeLiquidityInput, poolState);
 
-      // Construct call object for exit transaction and save to state
+      // Construct call object for transaction
       const call = removeLiquidity.buildCall({
         ...queryOutput,
         slippage,
         chainId,
         wethIsEth: false,
       });
-
-      setCall(call);
+      setCall(call); // save to state for use in removeLiquidity()
 
       return { expectedAmountsOut: queryOutput.amountsOut, minAmountsOut: call.minAmountsOut };
     } catch (error) {
@@ -80,7 +78,7 @@ export const useExit = (pool: Pool): PoolExitFunctions => {
     }
   };
 
-  const exitPool = async () => {
+  const removeLiquidity = async () => {
     try {
       if (!walletClient) {
         throw new Error("Client is undefined");
@@ -108,5 +106,5 @@ export const useExit = (pool: Pool): PoolExitFunctions => {
     }
   };
 
-  return { queryExit, exitPool };
+  return { queryRemoveLiquidity, removeLiquidity };
 };

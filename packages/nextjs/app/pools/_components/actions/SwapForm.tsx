@@ -26,10 +26,9 @@ const initialSwapConfig = {
 
 /**
  * 1. Choose tokenIn and tokenOut
- * 2. Query the results of swap transaction
- * 3. User approves the vault for the tokenIn used in the swap transaction (if necessary)
- * 4. User sends transaction to swap the tokens
- * @notice using poolTokensIndex to reference the token in the pool
+ * 2. Query swapping some amount of tokens in the pool
+ * 3. Approve the vault for the tokenIn used in the swap transaction (if necessary)
+ * 4. Send transaction to swap the tokens
  */
 export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [queryResponse, setQueryResponse] = useState<QuerySwapResponse | null>(null);
@@ -172,7 +171,6 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       refetchPool();
       refetchTokenInAllowance();
       refetchTokenInBalance();
-      // setSwapConfig(initialSwapConfig);
     } catch (e) {
       if (e instanceof Error) {
         console.error("error", e);

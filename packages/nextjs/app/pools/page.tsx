@@ -16,13 +16,14 @@ import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
 import { useAccountBalance } from "~~/hooks/scaffold-eth";
 
 /**
- * Page for viewing custom pool data and performing actions (swap, join, exit) on a pool
+ * 1. Search by pool address or select from dropdown
+ * 2. Display pool info including composition, attributes, and configurations
+ * 3. Perform actions within the selected pool by swapping and adding/removing liquidity
  */
 const Pools: NextPage = () => {
   const [selectedPoolAddress, setSelectedPoolAddress] = useState<Address | null>(null);
 
   const { data: pool, refetch: refetchPool, isLoading, isError, isSuccess } = usePoolContract(selectedPoolAddress);
-
   const { address } = useAccount();
   const { balance } = useAccountBalance(address);
   const searchParams = useSearchParams();
@@ -110,7 +111,6 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
         <h3 className="font-semibold text-3xl my-2">{pool.name}</h3>
         <h5 className="text-sm md:text-lg xl:text-xl">{pool.address}</h5>
       </div>
-
       <div className="w-full">
         <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
           <div className="flex flex-col gap-7">

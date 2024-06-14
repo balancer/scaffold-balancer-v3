@@ -4,43 +4,41 @@ import { PoolActionsProps } from "../PoolActions";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
 import abis from "~~/contracts/abis";
-import { useExit } from "~~/hooks/balancer/";
-import { QueryExitResponse, QueryPoolActionError } from "~~/hooks/balancer/types";
+import { useRemoveLiquidity } from "~~/hooks/balancer/";
+import { QueryPoolActionError, QueryRemoveLiquidityResponse } from "~~/hooks/balancer/types";
 import { formatToHuman } from "~~/utils/formatToHuman";
 
-const initialBptIn = {
-  rawAmount: 0n, // needed for precision to allow max exit
-  displayValue: "", // shown in UI
-};
-
 /**
- * 1. Query the results of exit transaction
- * 2. User sends transaction to exit the pool
+ * 1. Query removing some amount of liquidity from the pool
+ * 2. Send transaction to remove liquidity from the pool
+ * 3. Display the transaction results to the user
  */
-export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
-  const [queryResponse, setQueryResponse] = useState<QueryExitResponse | null>(null);
+export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
+  const [queryResponse, setQueryResponse] = useState<QueryRemoveLiquidityResponse | null>(null);
   const [queryError, setQueryError] = useState<QueryPoolActionError>(null);
   const [isQuerying, setIsQuerying] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
-  const [bptIn, setBptIn] = useState(initialBptIn);
-  const [exitReceipt, setExitReceipt] = useState<any>(null);
-  // const [poolEvent, setPoolEvent] = useState<any>(null);
+  const [isRemovingLiquidity, setIsRemovingLiquidity] = useState(false);
+  const [txReceipt, setTxReceipt] = useState<any>(null);
+  const [bptIn, setBptIn] = useState({
+    rawAmount: 0n,
+    displayValue: "",
+  });
 
-  const { queryExit, exitPool } = useExit(pool);
+  const { queryRemoveLiquidity, removeLiquidity } = useRemoveLiquidity(pool);
 
   const handleAmountChange = (amount: string) => {
     setQueryError(null);
-    setExitReceipt(null);
+    setTxReceipt(null);
     const rawAmount = parseUnits(amount, pool.decimals);
     setBptIn({ rawAmount, displayValue: amount });
     setQueryResponse(null);
   };
 
-  const handleQueryExit = async () => {
+  const handleQuery = async () => {
     setQueryError(null);
-    setExitReceipt(null);
+    setTxReceipt(null);
     setIsQuerying(true);
-    const response = await queryExit(bptIn.rawAmount);
+    const response = await queryRemoveLiquidity(bptIn.rawAmount);
     if (response.error) {
       setQueryError(response.error);
     } else {
@@ -50,15 +48,15 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
     setIsQuerying(false);
   };
 
-  const handleExitPool = async () => {
+  const handleRemoveLiquidity = async () => {
     try {
-      setIsExiting(true);
-      await exitPool();
+      setIsRemovingLiquidity(true);
+      await removeLiquidity();
       refetchPool();
     } catch (error) {
-      console.error("Error exiting pool", error);
+      console.error("Error removing liquidity", error);
     } finally {
-      setIsExiting(false);
+      setIsRemovingLiquidity(false);
     }
   };
 
@@ -69,23 +67,6 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
     });
     setQueryResponse(null);
   };
-
-  const { expectedAmountsOut } = queryResponse ?? {};
-
-  // useContractEvent({
-  //   address: pool.address,
-  //   abi: abis.balancer.Pool,
-  //   eventName: "Transfer",
-  //   listener(log: any[]) {
-  //     console.log("Pool event", log);
-  //     const result = {
-  //       bptInAmount: log[0].args.value,
-  //       transactionHash: log[0].transactionHash,
-  //     };
-  //     setPoolEvent(result);
-  //     setTransactionHash(log[0].transactionHash);
-  //   },
-  // });
 
   useContractEvent({
     address: pool.vaultAddress,
@@ -98,9 +79,11 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         rawAmount: -delta,
         decimals: pool.poolTokens[idx].decimals,
       }));
-      setExitReceipt({ tokensOut, transactionHash: log[0].transactionHash });
+      setTxReceipt({ tokensOut, transactionHash: log[0].transactionHash });
     },
   });
+
+  const { expectedAmountsOut } = queryResponse ?? {};
 
   return (
     <section>
@@ -113,21 +96,21 @@ export const ExitForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         setMaxAmount={setMaxAmount}
       />
 
-      {!expectedAmountsOut || (expectedAmountsOut && exitReceipt) ? (
-        <PoolActionButton onClick={handleQueryExit} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
+      {!expectedAmountsOut || (expectedAmountsOut && txReceipt) ? (
+        <PoolActionButton onClick={handleQuery} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
           Query
         </PoolActionButton>
       ) : (
-        <PoolActionButton isDisabled={isExiting} onClick={handleExitPool}>
-          Exit
+        <PoolActionButton isDisabled={isRemovingLiquidity} onClick={handleRemoveLiquidity}>
+          Remove Liquidity
         </PoolActionButton>
       )}
 
-      {exitReceipt && (
+      {txReceipt && (
         <TransactionReceiptAlert
           title="Actual Tokens Out"
-          transactionHash={exitReceipt.transactionHash}
-          data={exitReceipt.tokensOut}
+          transactionHash={txReceipt.transactionHash}
+          data={txReceipt.tokensOut}
         />
       )}
 
