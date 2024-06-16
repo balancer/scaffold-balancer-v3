@@ -11,7 +11,7 @@ import { useScaffoldEventHistory, useScaffoldEventSubscriber } from "~~/hooks/sc
 export const PoolSelector = ({ setSelectedPoolAddress }: { setSelectedPoolAddress: (_: Address) => void }) => {
   const [inputValue, setInputValue] = useState<string>("");
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [createdPools, setCreatedPools] = useState<any[]>([]);
+  const [createdPools, setCreatedPools] = useState<Address[]>([]);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -30,20 +30,22 @@ export const PoolSelector = ({ setSelectedPoolAddress }: { setSelectedPoolAddres
     eventName: "PoolCreated",
     listener: logs => {
       logs.forEach(log => {
-        console.log("PoolCreated Event!", log);
         const { pool } = log.args;
-        setCreatedPools(pools => [...pools, pool]);
+        if (pool) {
+          setCreatedPools(pools => [...pools, pool]);
+        }
       });
     },
   });
 
   useEffect(() => {
     if (!createdPools?.length && !!eventsHistory?.length && !isLoadingEventsHistory) {
-      setCreatedPools(
-        eventsHistory.map(({ args }) => {
-          return args.pool;
-        }) || [],
-      );
+      const pools = eventsHistory
+        .map(({ args }) => {
+          if (args.pool && isAddress(args.pool)) return args.pool;
+        })
+        .filter((pool): pool is string => typeof pool === "string");
+      setCreatedPools(pools);
     }
   }, [createdPools.length, eventsHistory, isLoadingEventsHistory]);
 

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   AddLiquidity,
+  AddLiquidityBuildCallOutput,
   AddLiquidityInput,
   AddLiquidityKind,
   InputAmount,
@@ -18,9 +19,9 @@ import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 type AddLiquidityFunctions = {
   queryAddLiquidity: () => Promise<QueryAddLiquidityResponse>;
   addLiquidity: () => Promise<TransactionHash>;
-  allowances: any[] | undefined;
   refetchAllowances: () => void;
-  tokenBalances: any[] | undefined;
+  allowances: (bigint | undefined)[] | undefined;
+  balances: (bigint | undefined)[] | undefined;
 };
 
 /**
@@ -28,7 +29,7 @@ type AddLiquidityFunctions = {
  * the call object that is used to construct the transaction that is later sent by `addLiquidity()`
  */
 export const useAddLiquidity = (pool: Pool, amountsIn: InputAmount[]): AddLiquidityFunctions => {
-  const [call, setCall] = useState<any>();
+  const [call, setCall] = useState<AddLiquidityBuildCallOutput>();
   const { data: walletClient } = useWalletClient();
   const { rpcUrl, chainId } = useTargetFork();
   const writeTx = useTransactor();
@@ -75,7 +76,9 @@ export const useAddLiquidity = (pool: Pool, amountsIn: InputAmount[]): AddLiquid
       if (!walletClient) {
         throw new Error("Must connect a wallet to send a transaction");
       }
-
+      if (!call) {
+        throw new Error("tx call object is undefined");
+      }
       const txHashPromise = () =>
         walletClient.sendTransaction({
           account: walletClient.account,
@@ -99,7 +102,7 @@ export const useAddLiquidity = (pool: Pool, amountsIn: InputAmount[]): AddLiquid
     }
   };
 
-  const { data: allowances, refetch: refetchAllowances } = useContractReads({
+  const { data: tokenAllowances, refetch: refetchAllowances } = useContractReads({
     contracts: amountsIn.map(token => ({
       address: token.address,
       abi: parseAbi(["function allowance(address owner, address spender) returns (uint256)"]),
@@ -107,6 +110,14 @@ export const useAddLiquidity = (pool: Pool, amountsIn: InputAmount[]): AddLiquid
       args: [walletClient?.account.address as string, pool.vaultAddress],
     })),
   });
+  const allowances = useMemo(() => {
+    return tokenAllowances?.map(allowance => {
+      if (typeof allowance.result === "bigint") {
+        return allowance.result;
+      }
+      return undefined;
+    });
+  }, [tokenAllowances]); // Only recompute if tokenAllowances changes
 
   const { data: tokenBalances } = useContractReads({
     contracts: amountsIn.map(token => ({
@@ -116,6 +127,14 @@ export const useAddLiquidity = (pool: Pool, amountsIn: InputAmount[]): AddLiquid
       args: [walletClient?.account.address as string],
     })),
   });
+  const balances = useMemo(() => {
+    return tokenBalances?.map(balance => {
+      if (typeof balance.result === "bigint") {
+        return balance.result;
+      }
+      return undefined;
+    });
+  }, [tokenBalances]); // Only recompute if tokenAllowances changes
 
-  return { queryAddLiquidity, addLiquidity, allowances, refetchAllowances, tokenBalances };
+  return { queryAddLiquidity, addLiquidity, allowances, refetchAllowances, balances };
 };

@@ -5,7 +5,12 @@ import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
 import abis from "~~/contracts/abis";
 import { useRemoveLiquidity } from "~~/hooks/balancer/";
-import { QueryPoolActionError, QueryRemoveLiquidityResponse } from "~~/hooks/balancer/types";
+import {
+  PoolActionReceipt,
+  QueryPoolActionError,
+  QueryRemoveLiquidityResponse,
+  TokenInfo,
+} from "~~/hooks/balancer/types";
 import { formatToHuman } from "~~/utils/formatToHuman";
 
 /**
@@ -18,7 +23,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
   const [queryError, setQueryError] = useState<QueryPoolActionError>(null);
   const [isQuerying, setIsQuerying] = useState(false);
   const [isRemovingLiquidity, setIsRemovingLiquidity] = useState(false);
-  const [txReceipt, setTxReceipt] = useState<any>(null);
+  const [removeLiquidityReceipt, setRemoveLiquidityReceipt] = useState<PoolActionReceipt>(null);
   const [bptIn, setBptIn] = useState({
     rawAmount: 0n,
     displayValue: "",
@@ -28,7 +33,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
 
   const handleAmountChange = (amount: string) => {
     setQueryError(null);
-    setTxReceipt(null);
+    setRemoveLiquidityReceipt(null);
     const rawAmount = parseUnits(amount, pool.decimals);
     setBptIn({ rawAmount, displayValue: amount });
     setQueryResponse(null);
@@ -36,7 +41,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
 
   const handleQuery = async () => {
     setQueryError(null);
-    setTxReceipt(null);
+    setRemoveLiquidityReceipt(null);
     setIsQuerying(true);
     const response = await queryRemoveLiquidity(bptIn.rawAmount);
     if (response.error) {
@@ -73,13 +78,13 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
     abi: abis.balancer.Vault,
     eventName: "PoolBalanceChanged",
     listener(log: any[]) {
-      const tokensOut = log[0].args.deltas.map((delta: bigint, idx: number) => ({
+      const data: TokenInfo[] = log[0].args.deltas.map((delta: bigint, idx: number) => ({
         symbol: pool.poolTokens[idx].symbol,
         name: pool.poolTokens[idx].name,
         rawAmount: -delta,
         decimals: pool.poolTokens[idx].decimals,
       }));
-      setTxReceipt({ tokensOut, transactionHash: log[0].transactionHash });
+      setRemoveLiquidityReceipt({ data, transactionHash: log[0].transactionHash });
     },
   });
 
@@ -96,7 +101,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
         setMaxAmount={setMaxAmount}
       />
 
-      {!expectedAmountsOut || (expectedAmountsOut && txReceipt) ? (
+      {!expectedAmountsOut || (expectedAmountsOut && removeLiquidityReceipt) ? (
         <PoolActionButton onClick={handleQuery} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
           Query
         </PoolActionButton>
@@ -106,11 +111,11 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
         </PoolActionButton>
       )}
 
-      {txReceipt && (
+      {removeLiquidityReceipt && (
         <TransactionReceiptAlert
           title="Actual Tokens Out"
-          transactionHash={txReceipt.transactionHash}
-          data={txReceipt.tokensOut}
+          transactionHash={removeLiquidityReceipt.transactionHash}
+          data={removeLiquidityReceipt.data}
         />
       )}
 

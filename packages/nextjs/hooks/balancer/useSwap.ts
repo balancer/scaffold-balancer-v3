@@ -1,14 +1,5 @@
 import { useState } from "react";
-import {
-  ExactInQueryOutput,
-  ExactOutQueryOutput,
-  Slippage,
-  Swap,
-  SwapBuildOutputExactIn,
-  SwapBuildOutputExactOut,
-  SwapKind,
-  TokenAmount,
-} from "@balancer/sdk";
+import { Slippage, Swap, SwapBuildOutputExactIn, SwapBuildOutputExactOut, SwapKind, TokenAmount } from "@balancer/sdk";
 import { WriteContractResult } from "@wagmi/core";
 import { parseAbi } from "viem";
 import { useContractRead, useContractWrite, useWalletClient } from "wagmi";
@@ -31,7 +22,7 @@ type PoolSwapFunctions = {
  * the call object that is used to construct the transaction that is then sent by `swap()`
  */
 export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions => {
-  const [call, setCall] = useState<any>();
+  const [call, setCall] = useState<SwapBuildOutputExactIn | SwapBuildOutputExactOut>();
   const { data: walletClient } = useWalletClient();
   const { rpcUrl, chainId } = useTargetFork();
   const writeTx = useTransactor();
@@ -65,14 +56,14 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
       };
 
       const swap = new Swap(swapInput);
-      const updatedAmount = (await swap.query(rpcUrl)) as ExactInQueryOutput | ExactOutQueryOutput;
+      const updatedAmount = await swap.query(rpcUrl);
 
       const call = swap.buildCall({
         slippage: Slippage.fromPercentage("0.1"),
         deadline: 999999999999999999n, // Deadline for the swap, in this case infinite
         queryOutput: updatedAmount,
         wethIsEth: false,
-      }) as SwapBuildOutputExactIn | SwapBuildOutputExactOut;
+      });
 
       setCall(call);
 
@@ -110,7 +101,9 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
       if (!walletClient) {
         throw new Error("Must connect a wallet to send a transaction");
       }
-
+      if (!call) {
+        throw new Error("tx call object is undefined");
+      }
       const txHashPromise = () =>
         walletClient.sendTransaction({
           account: walletClient.account,
@@ -120,10 +113,10 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
         });
 
       const txHash = await writeTx(txHashPromise, { blockConfirmations: 1 });
-
       if (!txHash) {
         throw new Error("Transaction failed");
       }
+
       return txHash;
     } catch (e) {
       console.error("error", e);

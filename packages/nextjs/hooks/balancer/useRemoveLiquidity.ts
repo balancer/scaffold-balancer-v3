@@ -4,6 +4,7 @@ import {
   OnChainProvider,
   PoolState,
   RemoveLiquidity,
+  RemoveLiquidityBuildCallOutput,
   RemoveLiquidityInput,
   RemoveLiquidityKind,
   Slippage,
@@ -24,7 +25,7 @@ type RemoveLiquidityFunctions = {
  * the call object that is used to construct the transaction that is later sent by `removeLiquidity()`
  */
 export const useRemoveLiquidity = (pool: Pool): RemoveLiquidityFunctions => {
-  const [call, setCall] = useState<any>();
+  const [call, setCall] = useState<RemoveLiquidityBuildCallOutput>();
   const { data: walletClient } = useWalletClient();
   const { rpcUrl, chainId } = useTargetFork();
   const writeTx = useTransactor();
@@ -76,6 +77,9 @@ export const useRemoveLiquidity = (pool: Pool): RemoveLiquidityFunctions => {
       if (!walletClient) {
         throw new Error("Must connect a wallet to send a transaction");
       }
+      if (!call) {
+        throw new Error("tx call object is undefined");
+      }
       const txHashPromise = () =>
         walletClient.sendTransaction({
           account: walletClient.account,
@@ -85,7 +89,6 @@ export const useRemoveLiquidity = (pool: Pool): RemoveLiquidityFunctions => {
         });
 
       const hash = await writeTx(txHashPromise, { blockConfirmations: 1 });
-
       if (!hash) {
         throw new Error("Transaction failed");
       }

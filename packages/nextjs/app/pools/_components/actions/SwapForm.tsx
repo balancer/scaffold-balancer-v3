@@ -6,7 +6,13 @@ import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
 import abis from "~~/contracts/abis";
 import { useSwap } from "~~/hooks/balancer/";
-import { QueryPoolActionError, QuerySwapResponse, SwapConfig } from "~~/hooks/balancer/types";
+import {
+  PoolActionReceipt,
+  QueryPoolActionError,
+  QuerySwapResponse,
+  SwapConfig,
+  TokenInfo,
+} from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { formatToHuman } from "~~/utils/formatToHuman";
 
@@ -36,7 +42,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
   const [isTokenOutDropdownOpen, setTokenOutDropdownOpen] = useState(false);
   const [isTokenInDropdownOpen, setTokenInDropdownOpen] = useState(false);
-  const [swapReceipt, setSwapReceipt] = useState<any>(null);
+  const [swapReceipt, setSwapReceipt] = useState<PoolActionReceipt>(null);
   const [isApproving, setIsApproving] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
@@ -189,7 +195,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
     abi: abis.balancer.Vault,
     eventName: "Swap",
     listener(log: any[]) {
-      const data = [
+      const data: TokenInfo[] = [
         {
           decimals: tokenIn.decimals,
           rawAmount: log[0].args.amountIn,

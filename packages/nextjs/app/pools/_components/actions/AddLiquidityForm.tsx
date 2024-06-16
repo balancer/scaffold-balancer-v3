@@ -6,7 +6,7 @@ import { formatUnits, parseAbi, parseUnits } from "viem";
 import { useContractEvent, usePublicClient, useWalletClient } from "wagmi";
 import abis from "~~/contracts/abis";
 import { useAddLiquidity } from "~~/hooks/balancer/";
-import { QueryAddLiquidityResponse, QueryPoolActionError } from "~~/hooks/balancer/types";
+import { PoolActionReceipt, QueryAddLiquidityResponse, QueryPoolActionError, TokenInfo } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { formatToHuman } from "~~/utils/formatToHuman";
 
@@ -30,9 +30,9 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
   const [isApproving, setIsApproving] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
   const [isAddingLiquidity, setIsAddingLiquidity] = useState(false);
-  const [txReceipt, setTxReceipt] = useState<any>(null);
+  const [addLiquidityReceipt, setAddLiquidityReceipt] = useState<PoolActionReceipt>(null);
 
-  const { queryAddLiquidity, addLiquidity, allowances, refetchAllowances, tokenBalances } = useAddLiquidity(
+  const { queryAddLiquidity, addLiquidity, allowances, refetchAllowances, balances } = useAddLiquidity(
     pool,
     tokenInputs,
   );
@@ -45,7 +45,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
     async function determineTokensToApprove() {
       if (allowances) {
         const tokensNeedingApproval = tokenInputs.filter((token, index) => {
-          const allowance = BigInt((allowances[index]?.result as string) || "0");
+          const allowance = allowances[index] || 0n;
           return allowance < token.rawAmount;
         });
         setTokensToApprove(tokensNeedingApproval);
@@ -63,7 +63,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
   const handleInputChange = (index: number, value: string) => {
     setQueryError(null);
     setQueryResponse(null);
-    setTxReceipt(null);
+    setAddLiquidityReceipt(null);
     const updatedTokens = tokenInputs.map((token, idx) => {
       if (idx === index) {
         return { ...token, rawAmount: parseUnits(value, token.decimals) };
@@ -75,7 +75,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
 
   const handlequeryAddLiquidity = async () => {
     setQueryResponse(null);
-    setTxReceipt(null);
+    setAddLiquidityReceipt(null);
     setIsQuerying(true);
     const response = await queryAddLiquidity();
     if (response.error) {
@@ -132,14 +132,13 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
     abi: abis.balancer.Pool,
     eventName: "Transfer",
     listener(log: any[]) {
-      const bptOut = {
+      const data: TokenInfo = {
         symbol: pool.symbol,
         name: pool.name,
         decimals: pool.decimals,
         rawAmount: log[0].args.value,
       };
-
-      setTxReceipt({ bptOut, transactionHash: log[0].transactionHash });
+      setAddLiquidityReceipt({ data: [data], transactionHash: log[0].transactionHash });
     },
   });
 
@@ -157,13 +156,13 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
               formatUnits(token.rawAmount, token.decimals) === "0" ? "" : formatUnits(token.rawAmount, token.decimals)
             }
             onAmountChange={value => handleInputChange(index, value)}
-            allowance={allowances && formatToHuman((allowances[index].result as bigint) || 0n, token.decimals)}
-            balance={tokenBalances && formatToHuman((tokenBalances[index].result as bigint) || 0n, token.decimals)}
+            allowance={allowances && formatToHuman(allowances[index] || 0n, token.decimals)}
+            balance={balances && formatToHuman(balances[index] || 0n, token.decimals)}
           />
         ))}
       </div>
 
-      {!expectedBptOut || (expectedBptOut && txReceipt) ? (
+      {!expectedBptOut || (expectedBptOut && addLiquidityReceipt) ? (
         <PoolActionButton
           onClick={handlequeryAddLiquidity}
           isDisabled={isQuerying}
@@ -181,11 +180,11 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
         </PoolActionButton>
       )}
 
-      {txReceipt && (
+      {addLiquidityReceipt && (
         <TransactionReceiptAlert
           title="Actual BPT Out"
-          transactionHash={txReceipt.transactionHash}
-          data={[txReceipt.bptOut]}
+          transactionHash={addLiquidityReceipt.transactionHash}
+          data={addLiquidityReceipt.data}
         />
       )}
 

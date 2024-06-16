@@ -84,3 +84,15 @@ export type QueryRemoveLiquidityResponse = {
   minAmountsOut?: TokenAmount[];
   error?: QueryPoolActionError;
 };
+
+export type TokenInfo = {
+  symbol: string;
+  name: string;
+  rawAmount: bigint;
+  decimals: number;
+};
+
+export type PoolActionReceipt = {
+  data: TokenInfo[];
+  transactionHash: string;
+} | null;
