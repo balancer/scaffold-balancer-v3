@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  ChainId,
   InputAmount,
   OnChainProvider,
   PoolState,
@@ -9,7 +8,8 @@ import {
   RemoveLiquidityKind,
   Slippage,
 } from "@balancer/sdk";
-import { usePublicClient, useWalletClient } from "wagmi";
+import { useWalletClient } from "wagmi";
+import { useTargetFork } from "~~/hooks/balancer";
 import { Pool, QueryRemoveLiquidityResponse, TransactionHash } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
@@ -26,19 +26,12 @@ type RemoveLiquidityFunctions = {
 export const useRemoveLiquidity = (pool: Pool): RemoveLiquidityFunctions => {
   const [call, setCall] = useState<any>();
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
+  const { rpcUrl, chainId } = useTargetFork();
   const writeTx = useTransactor();
 
   const queryRemoveLiquidity = async (rawAmount: bigint) => {
     try {
-      if (!publicClient) {
-        throw new Error("public client is undefined");
-      }
-      // const chainId = await publicClient.getChainId();
-      const chainId = ChainId.SEPOLIA; // hardcoding to sepolia because query requires chainId of forked network, but SE-2 frontend needs chainId of 31337 to send tx to local node
-      const rpcUrl = publicClient.chain.rpcUrls.default.http[0] as string;
       const slippage = Slippage.fromPercentage("1"); // 1%
-
       const onchainProvider = new OnChainProvider(rpcUrl, chainId);
       const poolId = pool.address as `0x${string}`;
       const poolState: PoolState = await onchainProvider.pools.fetchPoolState(poolId, "CustomPool");
@@ -81,7 +74,7 @@ export const useRemoveLiquidity = (pool: Pool): RemoveLiquidityFunctions => {
   const removeLiquidity = async () => {
     try {
       if (!walletClient) {
-        throw new Error("Client is undefined");
+        throw new Error("Must connect a wallet to send a transaction");
       }
       const txHashPromise = () =>
         walletClient.sendTransaction({

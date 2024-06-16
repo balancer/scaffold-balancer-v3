@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  ChainId,
   ExactInQueryOutput,
   ExactOutQueryOutput,
   Slippage,
@@ -13,6 +12,7 @@ import {
 import { WriteContractResult } from "@wagmi/core";
 import { parseAbi } from "viem";
 import { useContractRead, useContractWrite, useWalletClient } from "wagmi";
+import { useTargetFork } from "~~/hooks/balancer";
 import { Pool, QuerySwapResponse, SwapConfig, TransactionHash } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 
@@ -32,16 +32,12 @@ type PoolSwapFunctions = {
  */
 export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions => {
   const [call, setCall] = useState<any>();
-
   const { data: walletClient } = useWalletClient();
+  const { rpcUrl, chainId } = useTargetFork();
   const writeTx = useTransactor();
 
   const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
   const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
-
-  // const chainId = walletClient?.chain.id as number;
-  const chainId = ChainId.SEPOLIA; // hardcoding to sepolia because query requires chainId of forked network, but SE-2 frontend needs chainId of 31337 to send tx to local node
-  const rpcUrl = walletClient?.chain.rpcUrls.default.http[0] as string;
 
   const querySwap = async () => {
     try {
@@ -112,7 +108,7 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
   const swap = async () => {
     try {
       if (!walletClient) {
-        throw new Error("walletClient is undefined");
+        throw new Error("Must connect a wallet to send a transaction");
       }
 
       const txHashPromise = () =>
