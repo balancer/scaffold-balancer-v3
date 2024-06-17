@@ -73,14 +73,26 @@ export type QuerySwapResponse = {
   error?: QueryPoolActionError;
 };
 
-export type QueryJoinResponse = {
+export type QueryAddLiquidityResponse = {
   expectedBptOut?: TokenAmount;
   minBptOut?: TokenAmount;
   error?: QueryPoolActionError;
 };
 
-export type QueryExitResponse = {
+export type QueryRemoveLiquidityResponse = {
   expectedAmountsOut?: TokenAmount[];
   minAmountsOut?: TokenAmount[];
   error?: QueryPoolActionError;
 };
+
+export type TokenInfo = {
+  symbol: string;
+  name: string;
+  rawAmount: bigint;
+  decimals: number;
+};
+
+export type PoolActionReceipt = {
+  data: TokenInfo[];
+  transactionHash: string;
+} | null;

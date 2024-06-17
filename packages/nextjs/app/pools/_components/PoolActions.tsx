@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { ExitForm, JoinForm, SwapForm } from "./actions";
+import { AddLiquidityForm, RemoveLiquidityForm, SwapForm } from "./actions";
 import { type Pool } from "~~/hooks/balancer/types";
 import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
 
-type Action = "Swap" | "Join" | "Exit";
+type Action = "Swap" | "AddLiquidity" | "RemoveLiquidity";
 
 export interface PoolActionsProps {
   pool: Pool;
@@ -11,15 +11,15 @@ export interface PoolActionsProps {
 }
 
 /**
- * Allow user to perform swap, join, and exit transactions with a pool
+ * Allow user to swap, add liquidity, and remove liquidity from a pool
  */
 export const PoolActions: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [activeTab, setActiveTab] = useState<Action>("Swap");
 
   const tabs = {
     Swap: <SwapForm pool={pool} refetchPool={refetchPool} />,
-    Join: <JoinForm pool={pool} refetchPool={refetchPool} />,
-    Exit: <ExitForm pool={pool} refetchPool={refetchPool} />,
+    AddLiquidity: <AddLiquidityForm pool={pool} refetchPool={refetchPool} />,
+    RemoveLiquidity: <RemoveLiquidityForm pool={pool} refetchPool={refetchPool} />,
   };
 
   return (

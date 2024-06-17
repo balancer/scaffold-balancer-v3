@@ -6,7 +6,13 @@ import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
 import abis from "~~/contracts/abis";
 import { useSwap } from "~~/hooks/balancer/";
-import { QueryPoolActionError, QuerySwapResponse, SwapConfig } from "~~/hooks/balancer/types";
+import {
+  PoolActionReceipt,
+  QueryPoolActionError,
+  QuerySwapResponse,
+  SwapConfig,
+  TokenInfo,
+} from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { formatToHuman } from "~~/utils/formatToHuman";
 
@@ -26,10 +32,9 @@ const initialSwapConfig = {
 
 /**
  * 1. Choose tokenIn and tokenOut
- * 2. Query the results of swap transaction
- * 3. User approves the vault for the tokenIn used in the swap transaction (if necessary)
- * 4. User sends transaction to swap the tokens
- * @notice using poolTokensIndex to reference the token in the pool
+ * 2. Query swapping some amount of tokens in the pool
+ * 3. Approve the vault for the tokenIn used in the swap transaction (if necessary)
+ * 4. Send transaction to swap the tokens
  */
 export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [queryResponse, setQueryResponse] = useState<QuerySwapResponse | null>(null);
@@ -37,7 +42,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
   const [isTokenOutDropdownOpen, setTokenOutDropdownOpen] = useState(false);
   const [isTokenInDropdownOpen, setTokenInDropdownOpen] = useState(false);
-  const [swapReceipt, setSwapReceipt] = useState<any>(null);
+  const [swapReceipt, setSwapReceipt] = useState<PoolActionReceipt>(null);
   const [isApproving, setIsApproving] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
@@ -172,7 +177,6 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       refetchPool();
       refetchTokenInAllowance();
       refetchTokenInBalance();
-      // setSwapConfig(initialSwapConfig);
     } catch (e) {
       if (e instanceof Error) {
         console.error("error", e);
@@ -191,7 +195,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
     abi: abis.balancer.Vault,
     eventName: "Swap",
     listener(log: any[]) {
-      const data = [
+      const data: TokenInfo[] = [
         {
           decimals: tokenIn.decimals,
           rawAmount: log[0].args.amountIn,

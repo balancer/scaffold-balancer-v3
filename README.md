@@ -84,7 +84,7 @@ ETHERSCAN_API_KEY=...
 SEPOLIA_RPC_URL=...
 ```
 
-- The `DEPLOYER_PRIVATE_KEY` must start with `0x` and will be referred to as 'DEPLOYER' throughout this README. 
+- The `DEPLOYER_PRIVATE_KEY` must start with `0x` and will be referred to as 'DEPLOYER' throughout this README.
 - The `ETHERSCAN_API_KEY` is used to conveniently verify contracts from the command line with `yarn verify`
 - The `SEPOLIA_RPC_URL` facilitates running a local fork and sending transactions to sepolia testnet
 
@@ -171,11 +171,13 @@ const scaffoldConfig = {
 
 <details><summary><strong>0.3.5 Changing The Forked Network</strong></summary>
 
-You can modify the `"fork"` alias in the `packages/foundry/package.json` file, but do not change the chain id. By default, the `yarn fork` command uses sepolia, but any of the network aliases from the `[rpc_endpoints]` of `foundry.toml` can be used
+By default, the `yarn fork` command points at sepolia, but any of the network aliases from the `[rpc_endpoints]` of `foundry.toml` can be used to modify the `"fork"` alias in the `packages/foundry/package.json` file
 
 ```json
 	"fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
 ```
+
+To point the frontend at a different forked network, simply change the `targetFork` in `scaffold.config.ts`
 
 </details>
 
@@ -201,7 +203,7 @@ https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/cc3
 
 ### 🚰 1.2 Use Your Pool
 
-Connect the account you specified in the `.env` file using your favorite wallet extension and start splashing around in your pool with swaps, joins, and exits!
+Connect the account you specified in the `.env` file using your favorite wallet extension and start splashing around in your pool by swapping, adding liquidity, and removing liquidity!
 
 <details><summary><strong>👀 Swap Preview</strong></summary>
 
@@ -209,15 +211,15 @@ Connect the account you specified in the `.env` file using your favorite wallet 
 
 </details>
 
-<details><summary><strong>👀 Join Preview</strong></summary>
+<details><summary><strong>👀 Add Liquidity Preview</strong></summary>
 
-![Join](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/cf8dc531-d98b-49fa-9195-ec86d7018e09)
+![Add Liquidity](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/cf8dc531-d98b-49fa-9195-ec86d7018e09)
 
 </details>
 
-<details><summary><strong>👀 Exit Preview</strong></summary>
+<details><summary><strong>👀 Remove Liquidity Preview</strong></summary>
 
-![Exit](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/3604dbfb-fea2-414f-8e62-c01dc12cc691)
+![Remove Liquidity](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/3604dbfb-fea2-414f-8e62-c01dc12cc691)
 
 </details>
 

@@ -1,45 +1,38 @@
 import { useState } from "react";
 import {
-  ChainId,
   InputAmount,
   OnChainProvider,
   PoolState,
   RemoveLiquidity,
+  RemoveLiquidityBuildCallOutput,
   RemoveLiquidityInput,
   RemoveLiquidityKind,
   Slippage,
 } from "@balancer/sdk";
-import { usePublicClient, useWalletClient } from "wagmi";
-import { Pool, QueryExitResponse, TransactionHash } from "~~/hooks/balancer/types";
+import { useWalletClient } from "wagmi";
+import { useTargetFork } from "~~/hooks/balancer";
+import { Pool, QueryRemoveLiquidityResponse, TransactionHash } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
-type PoolExitFunctions = {
-  queryExit: (rawAmount: bigint) => Promise<QueryExitResponse>;
-  exitPool: () => Promise<TransactionHash>;
+type RemoveLiquidityFunctions = {
+  queryRemoveLiquidity: (rawAmount: bigint) => Promise<QueryRemoveLiquidityResponse>;
+  removeLiquidity: () => Promise<TransactionHash>;
 };
 
 /**
- * Custom hook for exiting a pool where `queryExit()` sets state of
- * the call object that is used to construct the transaction that is later sent by `exitPool()`
+ * Custom hook for removing liquidity from a pool where `queryRemoveLiquidity()` sets state of
+ * the call object that is used to construct the transaction that is later sent by `removeLiquidity()`
  */
-export const useExit = (pool: Pool): PoolExitFunctions => {
-  const [call, setCall] = useState<any>();
-
+export const useRemoveLiquidity = (pool: Pool): RemoveLiquidityFunctions => {
+  const [call, setCall] = useState<RemoveLiquidityBuildCallOutput>();
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
+  const { rpcUrl, chainId } = useTargetFork();
   const writeTx = useTransactor();
 
-  const queryExit = async (rawAmount: bigint) => {
+  const queryRemoveLiquidity = async (rawAmount: bigint) => {
     try {
-      if (!publicClient) {
-        throw new Error("public client is undefined");
-      }
-      // const chainId = await publicClient.getChainId();
-      const chainId = ChainId.SEPOLIA; // hardcoding to sepolia because query requires chainId of forked network, but SE-2 frontend needs chainId of 31337 to send tx to local node
-      const rpcUrl = publicClient.chain.rpcUrls.default.http[0] as string;
       const slippage = Slippage.fromPercentage("1"); // 1%
-
       const onchainProvider = new OnChainProvider(rpcUrl, chainId);
       const poolId = pool.address as `0x${string}`;
       const poolState: PoolState = await onchainProvider.pools.fetchPoolState(poolId, "CustomPool");
@@ -63,15 +56,14 @@ export const useExit = (pool: Pool): PoolExitFunctions => {
       const removeLiquidity = new RemoveLiquidity();
       const queryOutput = await removeLiquidity.query(removeLiquidityInput, poolState);
 
-      // Construct call object for exit transaction and save to state
+      // Construct call object for transaction
       const call = removeLiquidity.buildCall({
         ...queryOutput,
         slippage,
         chainId,
         wethIsEth: false,
       });
-
-      setCall(call);
+      setCall(call); // save to state for use in removeLiquidity()
 
       return { expectedAmountsOut: queryOutput.amountsOut, minAmountsOut: call.minAmountsOut };
     } catch (error) {
@@ -80,10 +72,13 @@ export const useExit = (pool: Pool): PoolExitFunctions => {
     }
   };
 
-  const exitPool = async () => {
+  const removeLiquidity = async () => {
     try {
       if (!walletClient) {
-        throw new Error("Client is undefined");
+        throw new Error("Must connect a wallet to send a transaction");
+      }
+      if (!call) {
+        throw new Error("tx call object is undefined");
       }
       const txHashPromise = () =>
         walletClient.sendTransaction({
@@ -94,7 +89,6 @@ export const useExit = (pool: Pool): PoolExitFunctions => {
         });
 
       const hash = await writeTx(txHashPromise, { blockConfirmations: 1 });
-
       if (!hash) {
         throw new Error("Transaction failed");
       }
@@ -108,5 +102,5 @@ export const useExit = (pool: Pool): PoolExitFunctions => {
     }
   };
 
-  return { queryExit, exitPool };
+  return { queryRemoveLiquidity, removeLiquidity };
 };

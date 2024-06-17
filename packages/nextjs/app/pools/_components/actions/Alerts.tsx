@@ -1,5 +1,6 @@
 import { usePublicClient } from "wagmi";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import { type TokenInfo } from "~~/hooks/balancer/types";
 import { formatToHuman } from "~~/utils/formatToHuman";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
@@ -58,14 +59,8 @@ export const QueryErrorAlert: React.FC<{ message: string }> = ({ message }) => {
 interface TransactionReceiptAlertProps {
   transactionHash: string;
   title: string;
-  data: tokenData[];
+  data: TokenInfo[];
 }
-type tokenData = {
-  symbol: string;
-  name: string;
-  rawAmount: bigint;
-  decimals: number;
-};
 /**
  * Displays after successful pool operation transaction
  */

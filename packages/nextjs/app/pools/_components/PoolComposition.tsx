@@ -16,7 +16,7 @@ export const PoolComposition = ({ pool }: { pool: Pool }) => {
 
         <div className="border border-base-100 rounded-lg">
           <div className="p-3 flex flex-col gap-3">
-            {pool.poolTokens.map((token: any) => (
+            {pool.poolTokens.map(token => (
               <div key={token.address} className="flex justify-between items-center">
                 <div>
                   <div className="font-bold">{token.symbol}</div>

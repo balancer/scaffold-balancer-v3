@@ -1,49 +1,42 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   AddLiquidity,
+  AddLiquidityBuildCallOutput,
   AddLiquidityInput,
   AddLiquidityKind,
-  ChainId,
   InputAmount,
   OnChainProvider,
   PoolState,
   Slippage,
 } from "@balancer/sdk";
 import { parseAbi } from "viem";
-import { useContractReads, usePublicClient, useWalletClient } from "wagmi";
-import { Pool, QueryJoinResponse, TransactionHash } from "~~/hooks/balancer/types";
+import { useContractReads, useWalletClient } from "wagmi";
+import { useTargetFork } from "~~/hooks/balancer";
+import { Pool, QueryAddLiquidityResponse, TransactionHash } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
-type JoinPoolFunctions = {
-  queryJoin: () => Promise<QueryJoinResponse>;
-  joinPool: () => Promise<TransactionHash>;
-  allowances: any[] | undefined;
+type AddLiquidityFunctions = {
+  queryAddLiquidity: () => Promise<QueryAddLiquidityResponse>;
+  addLiquidity: () => Promise<TransactionHash>;
   refetchAllowances: () => void;
-  tokenBalances: any[] | undefined;
+  allowances: (bigint | undefined)[] | undefined;
+  balances: (bigint | undefined)[] | undefined;
 };
 
 /**
- * Custom hook for adding liquidity to a pool where `queryJoin()` sets state of
- * the call object that is used to construct the transaction that is later sent by `joinPool()`
+ * Custom hook for adding liquidity to a pool where `queryAddLiquidity()` sets state of
+ * the call object that is used to construct the transaction that is later sent by `addLiquidity()`
  */
-export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions => {
-  const [call, setCall] = useState<any>();
-
+export const useAddLiquidity = (pool: Pool, amountsIn: InputAmount[]): AddLiquidityFunctions => {
+  const [call, setCall] = useState<AddLiquidityBuildCallOutput>();
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
+  const { rpcUrl, chainId } = useTargetFork();
   const writeTx = useTransactor();
 
-  const queryJoin = async () => {
+  const queryAddLiquidity = async () => {
     try {
-      if (!publicClient) {
-        throw new Error("public client is undefined");
-      }
-      // const chainId = await publicClient.getChainId();
-      const chainId = ChainId.SEPOLIA; // hardcoding to sepolia because query requires chainId of forked network, but SE-2 frontend needs chainId of 31337 to send tx to local node
-      const rpcUrl = publicClient.chain.rpcUrls.default.http[0] as string;
       const slippage = Slippage.fromPercentage("1"); // 1%
-
       const onchainProvider = new OnChainProvider(rpcUrl, chainId);
       const poolId = pool.address as `0x${string}`;
       const poolState: PoolState = await onchainProvider.pools.fetchPoolState(poolId, "CustomPool");
@@ -78,12 +71,14 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
     }
   };
 
-  const joinPool = async () => {
+  const addLiquidity = async () => {
     try {
       if (!walletClient) {
-        throw new Error("Client is undefined");
+        throw new Error("Must connect a wallet to send a transaction");
       }
-
+      if (!call) {
+        throw new Error("tx call object is undefined");
+      }
       const txHashPromise = () =>
         walletClient.sendTransaction({
           account: walletClient.account,
@@ -107,7 +102,7 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
     }
   };
 
-  const { data: allowances, refetch: refetchAllowances } = useContractReads({
+  const { data: tokenAllowances, refetch: refetchAllowances } = useContractReads({
     contracts: amountsIn.map(token => ({
       address: token.address,
       abi: parseAbi(["function allowance(address owner, address spender) returns (uint256)"]),
@@ -115,6 +110,14 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
       args: [walletClient?.account.address as string, pool.vaultAddress],
     })),
   });
+  const allowances = useMemo(() => {
+    return tokenAllowances?.map(allowance => {
+      if (typeof allowance.result === "bigint") {
+        return allowance.result;
+      }
+      return undefined;
+    });
+  }, [tokenAllowances]); // Only recompute if tokenAllowances changes
 
   const { data: tokenBalances } = useContractReads({
     contracts: amountsIn.map(token => ({
@@ -124,6 +127,14 @@ export const useJoin = (pool: Pool, amountsIn: InputAmount[]): JoinPoolFunctions
       args: [walletClient?.account.address as string],
     })),
   });
+  const balances = useMemo(() => {
+    return tokenBalances?.map(balance => {
+      if (typeof balance.result === "bigint") {
+        return balance.result;
+      }
+      return undefined;
+    });
+  }, [tokenBalances]); // Only recompute if tokenAllowances changes
 
-  return { queryJoin, joinPool, allowances, refetchAllowances, tokenBalances };
+  return { queryAddLiquidity, addLiquidity, allowances, refetchAllowances, balances };
 };
