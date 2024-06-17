@@ -171,11 +171,13 @@ const scaffoldConfig = {
 
 <details><summary><strong>0.3.5 Changing The Forked Network</strong></summary>
 
-You can modify the `"fork"` alias in the `packages/foundry/package.json` file, but do not change the chain id. By default, the `yarn fork` command uses sepolia, but any of the network aliases from the `[rpc_endpoints]` of `foundry.toml` can be used
+By default, the `yarn fork` command points at sepolia, but any of the network aliases from the `[rpc_endpoints]` of `foundry.toml` can be used to modify the `"fork"` alias in the `packages/foundry/package.json` file
 
 ```json
 	"fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
 ```
+
+To point the frontend at a different forked network, simply change the `targetFork` in `scaffold.config.ts`
 
 </details>
 
