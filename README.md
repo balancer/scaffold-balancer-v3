@@ -238,7 +238,7 @@ Using the SE-2 toolkit, developers can troubleshoot with their smart contracts u
 
 At this point, you have now seen the capabilities of this repo and how it helps a developer (or team) onboard in building custom pools in BalancerV3.
 
-🏎 Let's look under the hood, where we will start with understanding the example custom pool used within this repo., the `ConstantPricePool`.
+🏎 Let's look under the hood, where we will start with understanding the example custom pool used within this repo., the `ConstantSumPool`.
 
 ---
 
@@ -246,7 +246,7 @@ At this point, you have now seen the capabilities of this repo and how it helps 
 
 Ultimately, this repo can be used to create custom pool factories, custom pools from said factory, and register and initialize them so the pools can be interacted with using this repo's front end, all in a local environment. Before jumping into all of that, it is key that developers understand the general make-up of a custom pool.
 
-Therefore, this checkpoint focuses on writing the smart contract for a custom pool (without a factory). We will walk through the `ConstantPricePool.sol` found within `packages/foundry/contracts/ConstantPricePool.sol`.
+Therefore, this checkpoint focuses on writing the smart contract for a custom pool (without a factory). We will walk through the `ConstantSumPool.sol` found within `packages/foundry/contracts/ConstantSumPool.sol`.
 
 ---
 
@@ -256,16 +256,16 @@ As a refresher, make sure to check out the [docs on creating custom pools as wel
 
 All custom pool contracts must inherit from `IBasePool` and `BalancerPoolToken` and implement the three required functions: `onSwap`, `computeInvariant`, and `computeBalance`.
 
-Let's walk through each function in `ConstantPricePool.sol`
+Let's walk through each function in `ConstantSumPool.sol`
 
 ---
 
 #### 2.1.1 `onSwap()` Implementation
 
-Listed here for easy reference, the function discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/ConstantPricePool.sol#L25C1-L26C1).
+Listed here for easy reference, the function discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/ConstantSumPool.sol#L25C1-L26C1).
 
 <details markdown='1'><summary>👩🏽‍🏫 Code for `onSwap` functions </summary>
-Inside `ConstantPricePool.sol`
+Inside `ConstantSumPool.sol`
 
 ```
    /**
@@ -287,7 +287,7 @@ Looking at monorepo, one sees that `onSwap()` is ultimately called within a `swa
 
 Essentially, the `onSwap()` call carries the custom pool logic that the vault queries to understand how much of the requested token the swap should return.
 
-This step can vary between custom pool variations. To paint a contrast, a simple implementation can be seen within this `ConstantPricePool` example, where the amount swapped in is simply the amount swapped out (see toggle below).
+This step can vary between custom pool variations. To paint a contrast, a simple implementation can be seen within this `ConstantSumPool` example, where the amount swapped in is simply the amount swapped out (see toggle below).
 
 Whereas you can begin to see the endless possibilities that exist when you take a look at the [WeightedPool implementation](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/contracts/WeightedPool.sol#L100-L126).
 
@@ -301,10 +301,10 @@ There you can see that the return value is dependent on the `SwapKind` and ultim
 
 #### 2.1.2 `computeInvariant()` Implementation
 
-Listed here for easy reference, the function discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/ConstantPricePool.sol#L39).
+Listed here for easy reference, the function discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/ConstantSumPool.sol#L39).
 
 <details markdown='1'><summary>👩🏽‍🏫 Code for `computeInvariant()` function </summary>
-Inside `ConstantPricePool.sol`
+Inside `ConstantSumPool.sol`
 
 ```
   /**
@@ -339,10 +339,10 @@ For this example, the invariant is simply a constant sum invariant.
 
 #### 2.1.3 `computeBalance()` Implementation
 
-Listed here for easy reference, the function discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/ConstantPricePool.sol#L55).
+Listed here for easy reference, the function discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/ConstantSumPool.sol#L55).
 
 <details markdown='1'><summary>👩🏽‍🏫 Code for `computeBalance()` function </summary>
-Inside `ConstantPricePool.sol`
+Inside `ConstantSumPool.sol`
 
 ```
   /**
@@ -394,7 +394,7 @@ Now that you have created a custom pool, it is time to deploy the associated cus
 
 In addition to being useful for integrating into Balancer, once the custom pool factory is deployed, anyone can come along and deploy more of that specific custom pool type, with varying pool parameters.
 
-The example factory continues off of the previous section and uses `ConstantPricePool.sol` as the Custom Pool type. Within the script the first pool from said factory is deployed, registered, and initialized, so you can interact with it right away. Another script is created so you can create more pools and enter in the param details via your favorite code editor too.
+The example factory continues off of the previous section and uses `ConstantSumPool.sol` as the Custom Pool type. Within the script the first pool from said factory is deployed, registered, and initialized, so you can interact with it right away. Another script is created so you can create more pools and enter in the param details via your favorite code editor too.
 
 This section will walk you through:
 
@@ -416,16 +416,16 @@ Inside `CustomPoolFactoryExample.sol`
 constructor(
         IVault vault,
         uint256 pauseWindowDuration
-    ) BasePoolFactory(vault, pauseWindowDuration, type(ConstantPricePool).creationCode) {
+    ) BasePoolFactory(vault, pauseWindowDuration, type(ConstantSumPool).creationCode) {
         // solhint-disable-previous-line no-empty-blocks
     }
 ```
 
 </details>
 
-It is used to deploy the `ConstantPricePool.sol` example custom pool we walked through earlier. It inherits the `BasePoolFactory.sol` from BalancerV3's monorepo.
+It is used to deploy the `ConstantSumPool.sol` example custom pool we walked through earlier. It inherits the `BasePoolFactory.sol` from BalancerV3's monorepo.
 
-For a factory associated to the `ConstantPricePool.sol` we do not need any extra implementation within the constructor. Thus, all we need to do is write the constructor with the appropriate params as described below for `BasePoolFactory.sol`.
+For a factory associated to the `ConstantSumPool.sol` we do not need any extra implementation within the constructor. Thus, all we need to do is write the constructor with the appropriate params as described below for `BasePoolFactory.sol`.
 
 1. `IVault vault` - The BalancerV3 vault on the respective network.
 2. `uint256 pauseWindowDuration` - The pause window that will be used for all pools created from this factory. It is the timeframe that a newly created pool can be paused before its buffer endtime. Once a pool is paused, it will remain paused til the end of the pause window, and subsequently will wait til the vault's buffer period ends. When the buffer period expires, it will unpause automatically, and remain permissionless forever after.
@@ -433,7 +433,7 @@ For a factory associated to the `ConstantPricePool.sol` we do not need any extra
 
 > NOTE: more implementation can be input for the constructor for your own custom pool of course, but for this example we are keeping things simple. Even pools such as [WeightedPools](https://github.com/balancer/balancer-v3-monorepo/blob/9bc5618d7717dfbafd3cfbf025e7d3317ad7cacb/pkg/pool-weighted/contracts/WeightedPool8020Factory.sol#L21) and [StablePools](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-stable/contracts/StablePoolFactory.sol) can have simple constructor setups as seen in the v3 monorepo.
 
-Moving on to the next part, the `create()` function is used to create new pools from the custom pool factory, adhering to the specific type of pools for said factory. In this case, that's the `ConstantPricePool`.
+Moving on to the next part, the `create()` function is used to create new pools from the custom pool factory, adhering to the specific type of pools for said factory. In this case, that's the `ConstantSumPool`.
 
 ---
 
@@ -448,7 +448,7 @@ Inside `CustomPoolFactoryExample.sol`
 
 ```
 /**
-     * @notice Deploys a new `ConstantPricePool`.
+     * @notice Deploys a new `ConstantSumPool`.
      * @param name The name of the pool
      * @param symbol The symbol of the pool
      * @param tokens An array of descriptors for the tokens the pool will manage

@@ -26,7 +26,6 @@ contract HelperConfig {
     function deployMockTokens() internal returns (address, address) {
         MockToken1 scUSD = new MockToken1("Scaffold USD", "scUSD");
         MockToken2 scDAI = new MockToken2("Scaffold DAI", "scDAI");
-
         return (address(scDAI), address(scUSD));
     }
 
@@ -36,13 +35,16 @@ contract HelperConfig {
     function getFactoryConfig()
         public
         pure
-        returns (uint256 pauseWindowDuration)
+        returns (uint32 pauseWindowDuration)
     {
         pauseWindowDuration = 365 days;
     }
 
     /**
      * @dev Set the name, symbol, and token configuration for the pool here
+     * @dev TokenConfig encapsulates the data required for the Vault to support a token of the given type. For STANDARD tokens,
+     * the rate provider address must be 0, and paysYieldFees must be false. All WITH_RATE tokens need a rate provider,
+     * and may or may not be yield-bearing.
      */
     function getPoolConfig(
         address token1,
@@ -62,15 +64,15 @@ contract HelperConfig {
         tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
         tokenConfig[0] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
             token: IERC20(token1),
-            tokenType: TokenType.STANDARD, // STANDARD, WITH_RATE, or ERC4626
-            rateProvider: IRateProvider(address(0)), // The rate provider for a token
-            yieldFeeExempt: false // Flag indicating whether yield fees should be charged on this token
+            tokenType: TokenType.STANDARD, // STANDARD or WITH_RATE
+            rateProvider: IRateProvider(address(0)), // The rate provider for a token (see further documentation above)
+            paysYieldFees: false // Flag indicating whether yield fees should be charged on this token
         });
         tokenConfig[1] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
             token: IERC20(token2),
-            tokenType: TokenType.STANDARD, // STANDARD, WITH_RATE, or ERC4626
-            rateProvider: IRateProvider(address(0)), // The rate provider for a token
-            yieldFeeExempt: false // Flag indicating whether yield fees should be charged on this token
+            tokenType: TokenType.STANDARD, // STANDARD or WITH_RATE
+            rateProvider: IRateProvider(address(0)), // The rate provider for a token (see further documentation above)
+            paysYieldFees: false // Flag indicating whether yield fees should be charged on this token
         });
     }
 

@@ -2,17 +2,14 @@
 
 pragma solidity ^0.8.18;
 
-import {CustomPoolFactoryExample} from
-    "../contracts/CustomPoolFactoryExample.sol";
+import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
 import {HelperFunctions} from "../utils/HelperFunctions.sol";
 import {HelperConfig} from "../utils/HelperConfig.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {TokenConfig} from
-    "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import {TokenConfig} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {Script, console} from "forge-std/Script.sol";
-import {InputHelpers} from
-    "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
+import {InputHelpers} from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import {HelperConfig} from "../utils/HelperConfig.sol";
 
 /**
@@ -24,8 +21,8 @@ import {HelperConfig} from "../utils/HelperConfig.sol";
 contract DeployPool is HelperFunctions, HelperConfig, Script {
     error InvalidPrivateKey(string);
 
-    string name = "Scaffold Balancer Constant Price Pool #2"; // name for the pool
-    string symbol = "POOL2-SB-50scUSD-50scDAI"; // symbol for the BPT
+    string secondPoolName = "Scaffold Balancer Constant Price Pool #2"; // name for the pool
+    string secondPoolSymbol = "POOL2-SB-50scUSD-50scDAI"; // symbol for the BPT
 
     /**
      * @dev Set your pool deployment and initialization configurations in `HelperConfig.sol`
@@ -50,8 +47,10 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
 
         // Look up configurations from `HelperConfig.sol`
         HelperConfig helperConfig = new HelperConfig();
-        (,, TokenConfig[] memory tokenConfig) =
-            helperConfig.getPoolConfig(mockToken1, mockToken2);
+        (, , TokenConfig[] memory tokenConfig) = helperConfig.getPoolConfig(
+            mockToken1,
+            mockToken2
+        );
         (
             IERC20[] memory tokens,
             uint256[] memory exactAmountsIn,
@@ -68,13 +67,18 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         vm.startBroadcast(deployerPrivateKey);
         address pool = deployPoolFromFactory(
             poolFactoryAddress,
-            name,
-            symbol,
+            secondPoolName,
+            secondPoolSymbol,
             helperConfig.sortTokenConfig(tokenConfig)
         );
         tokens = InputHelpers.sortTokens(tokens);
         initializePool(
-            pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData
+            pool,
+            tokens,
+            exactAmountsIn,
+            minBptAmountOut,
+            wethIsEth,
+            userData
         );
         vm.stopBroadcast();
     }
@@ -88,8 +92,9 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         string memory symbol,
         TokenConfig[] memory tokenConfig
     ) internal returns (address) {
-        CustomPoolFactoryExample poolFactory =
-            CustomPoolFactoryExample(poolFactoryAddress);
+        CustomPoolFactoryExample poolFactory = CustomPoolFactoryExample(
+            poolFactoryAddress
+        );
 
         bytes32 salt = convertNameToBytes32(name);
         address newPool = poolFactory.create(name, symbol, tokenConfig, salt);
@@ -111,7 +116,12 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         maxApproveTokens(address(vault), tokens);
 
         router.initialize(
-            pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData
+            pool,
+            tokens,
+            exactAmountsIn,
+            minBptAmountOut,
+            wethIsEth,
+            userData
         );
     }
 

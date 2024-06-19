@@ -218,10 +218,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@balancer-labs/v3-monorepo@https://github.com/balancer/balancer-v3-monorepo#head=scaffold-package-setup-deploy3":
+"@balancer-labs/v3-monorepo@https://github.com/balancer/balancer-v3-monorepo#head=scaffold-package-setup-deploy5":
   version: 0.0.0
-  resolution: "@balancer-labs/v3-monorepo@https://github.com/balancer/balancer-v3-monorepo.git#commit=83616c0bb6d9b0f8386fbf6fe95bc345a30d8673"
-  checksum: 203920debbbeb62f72184517dee4ddcb6a1754161e55aaa7ab0ce87016268db179d94d48b0aee1acefe452e8f21a47657dab81bbf58bb813bfb97c17521a5929
+  resolution: "@balancer-labs/v3-monorepo@https://github.com/balancer/balancer-v3-monorepo.git#commit=60bf52bd3ca75140d53cdaf7a3421e54ecbf116b"
+  checksum: 68841609a7fe58758457cb8eb184d763445a8619c4c908357928bed879a840333ce189225413097e42718eb4185ad3a135c8728bb594bbae30d3a1aade607755
   languageName: node
   linkType: hard
 
@@ -8999,7 +8999,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "se-2@workspace:."
   dependencies:
-    "@balancer-labs/v3-monorepo": "https://github.com/balancer/balancer-v3-monorepo#head=scaffold-package-setup-deploy3"
+    "@balancer-labs/v3-monorepo": "https://github.com/balancer/balancer-v3-monorepo#head=scaffold-package-setup-deploy5"
     forge-gas-snapshot: "https://github.com/ylv-io/forge-gas-snapshot"
     husky: ^8.0.1
     lint-staged: ^13.0.3

@@ -5,62 +5,44 @@ pragma solidity ^0.8.4;
 import "forge-std/Test.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IERC20Errors} from
-    "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
+import {IERC20Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 
-import {IRateProvider} from
-    "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
+import {IRateProvider} from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 import {IVault} from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
-import {IVaultAdmin} from
-    "@balancer-labs/v3-interfaces/contracts/vault/IVaultAdmin.sol";
-import {IVaultMain} from
-    "@balancer-labs/v3-interfaces/contracts/vault/IVaultMain.sol";
-import {
-    TokenConfig,
-    PoolConfig
-} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import {IBasePool} from
-    "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
-import {IWETH} from
-    "@balancer-labs/v3-interfaces/contracts/solidity-utils/misc/IWETH.sol";
+import {IVaultAdmin} from "@balancer-labs/v3-interfaces/contracts/vault/IVaultAdmin.sol";
+import {IVaultMain} from "@balancer-labs/v3-interfaces/contracts/vault/IVaultMain.sol";
+import {TokenConfig, PoolConfig} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import {IBasePool} from "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
+import {IWETH} from "@balancer-labs/v3-interfaces/contracts/solidity-utils/misc/IWETH.sol";
 
-import {ArrayHelpers} from
-    "@balancer-labs/v3-solidity-utils/contracts/helpers/ArrayHelpers.sol";
-import {BasicAuthorizerMock} from
-    "@balancer-labs/v3-solidity-utils/contracts/test/BasicAuthorizerMock.sol";
-import {ERC20TestToken} from
-    "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
-import {WETHTestToken} from
-    "@balancer-labs/v3-solidity-utils/contracts/test/WETHTestToken.sol";
-import {InputHelpers} from
-    "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
+import {ArrayHelpers} from "@balancer-labs/v3-solidity-utils/contracts/helpers/ArrayHelpers.sol";
+import {BasicAuthorizerMock} from "@balancer-labs/v3-solidity-utils/contracts/test/BasicAuthorizerMock.sol";
+import {ERC20TestToken} from "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
+import {WETHTestToken} from "@balancer-labs/v3-solidity-utils/contracts/test/WETHTestToken.sol";
+import {InputHelpers} from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import {Vault} from "@balancer-labs/v3-vault/contracts/Vault.sol";
 import {Router} from "@balancer-labs/v3-vault/contracts/Router.sol";
 import {VaultMock} from "@balancer-labs/v3-vault/contracts/test/VaultMock.sol";
-import {
-    PoolConfigBits,
-    PoolConfigLib
-} from "@balancer-labs/v3-vault/contracts/lib/PoolConfigLib.sol";
+import {PoolConfigBits, PoolConfigLib} from "@balancer-labs/v3-vault/contracts/lib/PoolConfigLib.sol";
 
 import {BaseVaultTest} from "@test/vault/test/foundry/utils/BaseVaultTest.sol";
-import {ConstantPricePool} from "../contracts/ConstantPricePool.sol";
-import {CustomPoolFactoryExample} from
-    "../contracts/CustomPoolFactoryExample.sol";
+import {ConstantSumPool} from "../contracts/ConstantSumPool.sol";
+import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
 
 /**
- * @title Constant Price Pool Test Example
+ * @title Constant Sum Pool Test Example
  * @author BUIDL GUIDL
  * @notice This test file serves as an example of some areas one needs to focus on when writing their own custom BalancerV3 pool. This is not production ready, and it is the developers responsibility to carry out proper testing and auditing for their pool.
  * These tests roughly mirror the typical testing cases that are found in the BalancerV3 monorepo for weighted pool tests.  As a reference tool, it only makes sense to have tests that, at the very least, roughly mirror how weighted pools are tested within BalancerV3 monorepo.
- * @dev This test is written for the Constant Price Custom Pool. Developers may duplicate this as a starting template for their own custom pool test file.
+ * @dev This test is written for the Constant Sum Custom Pool. Developers may duplicate this as a starting template for their own custom pool test file.
  * When creating your own custom pool, developers are expected to: create their own custom pool file, test file, script file. They simply can just duplicate or override the files that are here marked as "example" within their title.
  */
-contract ConstantPoolTest is BaseVaultTest {
+contract ConstantSumPoolTest is BaseVaultTest {
     using ArrayHelpers for *;
 
     CustomPoolFactoryExample factory;
-    ConstantPricePool internal constantPricePool;
+    ConstantSumPool internal constantSumPool;
 
     uint256 constant USDC_AMOUNT = 1e3 * 1e18;
     uint256 constant DAI_AMOUNT = 1e3 * 1e18;
@@ -86,7 +68,11 @@ contract ConstantPoolTest is BaseVaultTest {
 
         assertFalse(paused);
         assertApproxEqAbs(pauseWindow, START_TIMESTAMP + 365 days, 1);
-        assertApproxEqAbs(bufferPeriod, START_TIMESTAMP + 365 days + 30 days, 1);
+        assertApproxEqAbs(
+            bufferPeriod,
+            START_TIMESTAMP + 365 days + 30 days,
+            1
+        );
         assertEq(pauseManager, address(0));
     }
 
@@ -117,30 +103,39 @@ contract ConstantPoolTest is BaseVaultTest {
         );
 
         // Tokens are deposited to the pool
-        (,, uint256[] memory balances,,) = vault.getPoolTokenInfo(address(pool));
+        (, , uint256[] memory balances, , ) = vault.getPoolTokenInfo(
+            address(pool)
+        );
         assertEq(balances[0], DAI_AMOUNT, "Pool: Wrong DAI balance");
         assertEq(balances[1], USDC_AMOUNT, "Pool: Wrong USDC balance");
 
         // should mint correct amount of BPT tokens
         // Account for the precision loss
         assertApproxEqAbs(
-            constantPricePool.balanceOf(lp),
+            constantSumPool.balanceOf(lp),
             bptAmountOut,
             DELTA,
             "LP: Wrong bptAmountOut"
         );
         assertApproxEqAbs(
-            bptAmountOut, 2 * DAI_AMOUNT, DELTA, "Wrong bptAmountOut"
+            bptAmountOut,
+            2 * DAI_AMOUNT,
+            DELTA,
+            "Wrong bptAmountOut"
         );
     }
 
     // @dev TODO - see questions in issue #28
     function testAddLiquidity() public {
-        uint256[] memory amountsIn =
-            [uint256(DAI_AMOUNT), uint256(USDC_AMOUNT)].toMemoryArray();
+        uint256[] memory amountsIn = [uint256(DAI_AMOUNT), uint256(USDC_AMOUNT)]
+            .toMemoryArray();
         vm.prank(bob);
         bptAmountOut = router.addLiquidityUnbalanced(
-            address(pool), amountsIn, DAI_AMOUNT - DELTA, false, bytes("")
+            address(pool),
+            amountsIn,
+            DAI_AMOUNT - DELTA,
+            false,
+            bytes("")
         );
 
         // Tokens are transferred from Bob
@@ -168,19 +163,24 @@ contract ConstantPoolTest is BaseVaultTest {
         );
 
         // Tokens are deposited to the pool
-        (,, uint256[] memory balances,,) = vault.getPoolTokenInfo(address(pool));
+        (, , uint256[] memory balances, , ) = vault.getPoolTokenInfo(
+            address(pool)
+        );
         assertEq(balances[0], DAI_AMOUNT * 2, "Pool: Wrong DAI balance");
         assertEq(balances[1], USDC_AMOUNT * 2, "Pool: Wrong USDC balance");
 
         // should mint correct amount of BPT tokens
         assertApproxEqAbs(
-            constantPricePool.balanceOf(bob),
+            constantSumPool.balanceOf(bob),
             bptAmountOut,
             DELTA,
             "LP: Wrong bptAmountOut"
         );
         assertApproxEqAbs(
-            bptAmountOut, 2 * DAI_AMOUNT, DELTA, "Wrong bptAmountOut"
+            bptAmountOut,
+            2 * DAI_AMOUNT,
+            DELTA,
+            "Wrong bptAmountOut"
         );
     }
 
@@ -194,9 +194,9 @@ contract ConstantPoolTest is BaseVaultTest {
             bytes("")
         );
 
-        constantPricePool.approve(address(vault), type(uint256).max);
+        constantSumPool.approve(address(vault), type(uint256).max);
 
-        uint256 bobBptBalance = constantPricePool.balanceOf(bob);
+        uint256 bobBptBalance = constantSumPool.balanceOf(bob);
         uint256 bptAmountIn = bobBptBalance;
 
         uint256[] memory amountsOut = router.removeLiquidityProportional(
@@ -212,10 +212,16 @@ contract ConstantPoolTest is BaseVaultTest {
 
         // Tokens are transferred to Bob
         assertApproxEqAbs(
-            usdc.balanceOf(bob), defaultBalance, DELTA, "LP: Wrong USDC balance"
+            usdc.balanceOf(bob),
+            defaultBalance,
+            DELTA,
+            "LP: Wrong USDC balance"
         );
         assertApproxEqAbs(
-            dai.balanceOf(bob), defaultBalance, DELTA, "LP: Wrong DAI balance"
+            dai.balanceOf(bob),
+            defaultBalance,
+            DELTA,
+            "LP: Wrong DAI balance"
         );
 
         // Tokens are stored in the Vault
@@ -233,24 +239,38 @@ contract ConstantPoolTest is BaseVaultTest {
         );
 
         // Tokens are deposited to the pool
-        (,, uint256[] memory balances,,) = vault.getPoolTokenInfo(address(pool));
-        assertApproxEqAbs(
-            balances[0], DAI_AMOUNT, DELTA, "Pool: Wrong DAI balance"
+        (, , uint256[] memory balances, , ) = vault.getPoolTokenInfo(
+            address(pool)
         );
         assertApproxEqAbs(
-            balances[1], USDC_AMOUNT, DELTA, "Pool: Wrong USDC balance"
+            balances[0],
+            DAI_AMOUNT,
+            DELTA,
+            "Pool: Wrong DAI balance"
+        );
+        assertApproxEqAbs(
+            balances[1],
+            USDC_AMOUNT,
+            DELTA,
+            "Pool: Wrong USDC balance"
         );
 
         // amountsOut are correct
         assertApproxEqAbs(
-            amountsOut[0], DAI_AMOUNT, DELTA, "Wrong DAI AmountOut"
+            amountsOut[0],
+            DAI_AMOUNT,
+            DELTA,
+            "Wrong DAI AmountOut"
         );
         assertApproxEqAbs(
-            amountsOut[1], USDC_AMOUNT, DELTA, "Wrong USDC AmountOut"
+            amountsOut[1],
+            USDC_AMOUNT,
+            DELTA,
+            "Wrong USDC AmountOut"
         );
 
         // should mint correct amount of BPT tokens
-        assertEq(constantPricePool.balanceOf(bob), 0, "LP: Wrong BPT balance");
+        assertEq(constantSumPool.balanceOf(bob), 0, "LP: Wrong BPT balance");
         assertEq(bobBptBalance, bptAmountIn, "LP: Wrong bptAmountIn");
     }
 
@@ -291,10 +311,14 @@ contract ConstantPoolTest is BaseVaultTest {
             "Vault: Wrong DAI balance"
         );
 
-        (,, uint256[] memory balances,,) = vault.getPoolTokenInfo(address(pool));
+        (, , uint256[] memory balances, , ) = vault.getPoolTokenInfo(
+            address(pool)
+        );
 
-        (uint256 daiIdx, uint256 usdcIdx) =
-            getSortedIndexes(address(dai), address(usdc));
+        (uint256 daiIdx, uint256 usdcIdx) = getSortedIndexes(
+            address(dai),
+            address(usdc)
+        );
 
         assertEq(
             balances[daiIdx],
@@ -316,34 +340,44 @@ contract ConstantPoolTest is BaseVaultTest {
         vm.prank(alice);
         vault.setStaticSwapFeePercentage(address(pool), 10e16);
 
-        uint256[] memory amountsIn =
-            [uint256(1e2 * 1e18), uint256(USDC_AMOUNT)].toMemoryArray();
+        uint256[] memory amountsIn = [uint256(1e2 * 1e18), uint256(USDC_AMOUNT)]
+            .toMemoryArray();
         vm.prank(bob);
 
         router.addLiquidityUnbalanced(
-            address(pool), amountsIn, 0, false, bytes("")
+            address(pool),
+            amountsIn,
+            0,
+            false,
+            bytes("")
         );
     }
 
     /// Helpers
 
     function createPool() internal override returns (address) {
-        factory = new CustomPoolFactoryExample(IVault(address(vault)), 365 days);
+        factory = new CustomPoolFactoryExample(
+            IVault(address(vault)),
+            365 days
+        );
         TokenConfig[] memory tokens = new TokenConfig[](2);
         tokens[0].token = IERC20(usdc);
         tokens[1].token = IERC20(dai);
 
-        constantPricePool = ConstantPricePool(
+        constantSumPool = ConstantSumPool(
             factory.create(
-                "ERC20 Pool", "ERC20POOL", tokens, keccak256(abi.encode("TEST"))
+                "ERC20 Pool",
+                "ERC20POOL",
+                tokens,
+                keccak256(abi.encode("TEST"))
             )
         );
-        return address(constantPricePool);
+        return address(constantSumPool);
     }
 
     function initPool() internal override {
-        uint256[] memory amountsIn =
-            [uint256(DAI_AMOUNT), uint256(USDC_AMOUNT)].toMemoryArray();
+        uint256[] memory amountsIn = [uint256(DAI_AMOUNT), uint256(USDC_AMOUNT)]
+            .toMemoryArray();
         vm.prank(lp);
         bptAmountOut = router.initialize(
             pool,
