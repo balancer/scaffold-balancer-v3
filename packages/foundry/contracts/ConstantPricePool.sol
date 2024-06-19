@@ -22,7 +22,7 @@ contract ConstantPricePool is IBasePool, BalancerPoolToken {
      * @param params Swap parameters
      * @return amountCalculatedScaled18 Calculated amount for the swap
      */
-    function onSwap(SwapParams calldata params)
+    function onSwap(PoolSwapParams calldata params)
         external
         pure
         returns (uint256 amountCalculatedScaled18)
