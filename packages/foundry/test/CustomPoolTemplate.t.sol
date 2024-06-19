@@ -113,7 +113,7 @@ contract CustomPoolTemplateTest is BaseVaultTest {
         );
 
         // Tokens are deposited to the pool
-        (, , uint256[] memory balances, , ) = vault.getPoolTokenInfo(
+        (, , uint256[] memory balances, ) = vault.getPoolTokenInfo(
             address(pool)
         );
         assertEq(balances[0], DAI_AMOUNT, "Pool: Wrong DAI balance");
@@ -180,7 +180,7 @@ contract CustomPoolTemplateTest is BaseVaultTest {
         );
 
         // Tokens are deposited to the pool
-        (, , uint256[] memory balances, , ) = vault.getPoolTokenInfo(
+        (, , uint256[] memory balances, ) = vault.getPoolTokenInfo(
             address(pool)
         );
         assertEq(balances[0], DAI_AMOUNT * 2, "Pool: Wrong DAI balance");
@@ -266,7 +266,7 @@ contract CustomPoolTemplateTest is BaseVaultTest {
         );
 
         // Tokens are deposited to the pool
-        (, , uint256[] memory balances, , ) = vault.getPoolTokenInfo(
+        (, , uint256[] memory balances, ) = vault.getPoolTokenInfo(
             address(pool)
         );
         assertApproxEqAbs(
@@ -345,7 +345,7 @@ contract CustomPoolTemplateTest is BaseVaultTest {
             "Vault: Wrong DAI balance"
         );
 
-        (, , uint256[] memory balances, , ) = vault.getPoolTokenInfo(
+        (, , uint256[] memory balances, ) = vault.getPoolTokenInfo(
             address(pool)
         );
 
