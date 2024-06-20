@@ -13,8 +13,7 @@ import {InputHelpers} from "@balancer-labs/v3-solidity-utils/contracts/helpers/I
 import {HelperConfig} from "../utils/HelperConfig.sol";
 
 /**
- * @title DeployPool Script
- * @author BuidlGuidl Labs
+ * @title Deploy Pool Script
  * @notice This script creates a new pool using the most recently deployed pool factory and then initializes it
  * @notice This script can be run directly, but is also inherited by the `DeployFactoryAndPool.s.sol` script
  */
@@ -95,7 +94,6 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         CustomPoolFactoryExample poolFactory = CustomPoolFactoryExample(
             poolFactoryAddress
         );
-
         bytes32 salt = convertNameToBytes32(name);
         address newPool = poolFactory.create(name, symbol, tokenConfig, salt);
         console.log("Deployed Pool Address: %s", newPool);
@@ -113,8 +111,11 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         bool wethIsEth,
         bytes memory userData
     ) internal {
-        maxApproveTokens(address(vault), tokens);
-
+        // Approve Permit2 to spend account tokens
+        approveSpenderOnToken(address(permit2), tokens);
+        // Approve Router to spend account tokens using Permit2
+        approveSpenderOnPermit2(address(router), tokens);
+        // Initialize pool with the tokens that have been permitted
         router.initialize(
             pool,
             tokens,
@@ -130,12 +131,34 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
      * @param tokens Array of tokens to approve
      * @param spender Address of the spender
      */
-    function maxApproveTokens(
+    function approveSpenderOnToken(
         address spender,
         IERC20[] memory tokens
     ) internal {
+        uint256 maxAmount = type(uint256).max;
         for (uint256 i = 0; i < tokens.length; ++i) {
-            tokens[i].approve(spender, type(uint256).max);
+            tokens[i].approve(spender, maxAmount);
+        }
+    }
+
+    /**
+     * @notice Max approving to speed up UX on frontend
+     * @param tokens Array of tokens to approve
+     * @param spender Address of the spender
+     */
+    function approveSpenderOnPermit2(
+        address spender,
+        IERC20[] memory tokens
+    ) internal {
+        uint160 maxAmount = type(uint160).max;
+        uint48 maxExpiration = type(uint48).max;
+        for (uint256 i = 0; i < tokens.length; ++i) {
+            permit2.approve(
+                address(tokens[i]),
+                spender,
+                maxAmount,
+                maxExpiration
+            );
         }
     }
 }

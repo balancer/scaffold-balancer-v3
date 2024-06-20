@@ -7,18 +7,20 @@ import {MockToken2} from "../contracts/MockToken2.sol";
 import "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
 import "@balancer-labs/v3-interfaces/contracts/vault/IVaultExtension.sol";
+import {IPermit2} from "permit2/src/interfaces/IPermit2.sol";
 
 /**
- * @title HelperConfig
- * @author BuidlGuidl Labs
  * @dev This is where all configurations are set for mock token deployment, factory deployment, pool deployment, and pool initialization
  * @dev Each pool deployed must have a unique name
  * @dev If using this and the associated deployment scripts to help troubleshoot your own custom pool type, then it is advised to use this HelperConfig to outline the appropriate details of your custom pool to use the already written example scripts within this repo.
  */
 contract HelperConfig {
-    // BalancerV3 Sepolia addresses
-    IVault public vault = IVault(0x1FC7F1F84CFE61a04224AC8D3F87f56214FeC08c);
-    IRouter public router = IRouter(0xA0De078cd5cFa7088821B83e0bD7545ccfb7c883);
+    // BalancerV3 Sepolia addresses (5th testnet release)
+    IVault public vault = IVault(0xD5584b37D1845fFeD958C2d94bC675603DdCce68);
+    IRouter public router = IRouter(0x1c58cc548a23956469c7C528Bb3a846c842dfaF9);
+    // Canonical permit2 Sepolia address
+    IPermit2 public permit2 =
+        IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
 
     /**
      * @notice Creates mock tokens for the pool and mints 1000 of each to the deployer wallet

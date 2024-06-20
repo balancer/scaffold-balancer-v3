@@ -725,8 +725,8 @@ const deployedContracts = {
             },
             {
               name: "pauseWindowDuration",
-              type: "uint256",
-              internalType: "uint256",
+              type: "uint32",
+              internalType: "uint32",
             },
           ],
           stateMutability: "nonpayable",
@@ -746,7 +746,7 @@ const deployedContracts = {
               internalType: "string",
             },
             {
-              name: "tokens",
+              name: "tokenConfig",
               type: "tuple[]",
               internalType: "struct TokenConfig[]",
               components: [
@@ -766,7 +766,7 @@ const deployedContracts = {
                   internalType: "contract IRateProvider",
                 },
                 {
-                  name: "yieldFeeExempt",
+                  name: "paysYieldFees",
                   type: "bool",
                   internalType: "bool",
                 },
@@ -828,6 +828,49 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "getDefaultLiquidityManagement",
+          inputs: [],
+          outputs: [
+            {
+              name: "liquidityManagement",
+              type: "tuple",
+              internalType: "struct LiquidityManagement",
+              components: [
+                {
+                  name: "disableUnbalancedLiquidity",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableAddLiquidityCustom",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableRemoveLiquidityCustom",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "getDefaultPoolHooksContract",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
           name: "getDeploymentAddress",
           inputs: [
             {
@@ -852,8 +895,8 @@ const deployedContracts = {
           outputs: [
             {
               name: "",
-              type: "uint256",
-              internalType: "uint256",
+              type: "uint32",
+              internalType: "uint32",
             },
           ],
           stateMutability: "view",
@@ -865,8 +908,8 @@ const deployedContracts = {
           outputs: [
             {
               name: "",
-              type: "uint256",
-              internalType: "uint256",
+              type: "uint32",
+              internalType: "uint32",
             },
           ],
           stateMutability: "view",
@@ -878,8 +921,8 @@ const deployedContracts = {
           outputs: [
             {
               name: "",
-              type: "uint256",
-              internalType: "uint256",
+              type: "uint32",
+              internalType: "uint32",
             },
           ],
           stateMutability: "view",
@@ -963,11 +1006,20 @@ const deployedContracts = {
           name: "SenderNotAllowed",
           inputs: [],
         },
+        {
+          type: "error",
+          name: "StandardPoolWithCreator",
+          inputs: [],
+        },
       ],
       inheritedFunctions: {
         disable: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
         getActionId: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
         getAuthorizer:
+          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getDefaultLiquidityManagement:
+          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getDefaultPoolHooksContract:
           "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
         getDeploymentAddress:
           "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",

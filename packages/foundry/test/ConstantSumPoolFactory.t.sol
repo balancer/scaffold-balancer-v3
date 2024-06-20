@@ -17,7 +17,7 @@ import {RateProviderMock} from "@balancer-labs/v3-vault/contracts/test/RateProvi
 import {ConstantSumPool} from "../contracts/ConstantSumPool.sol";
 import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
 
-contract ConstantPricePoolFactoryTest is Test {
+contract ConstantSumPoolFactoryTest is Test {
     VaultMock vault;
     CustomPoolFactoryExample factory;
     RateProviderMock rateProvider;
