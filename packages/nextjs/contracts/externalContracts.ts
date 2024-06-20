@@ -13,546 +13,310 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
  */
 
 /**
- * @dev the local chain is configured to fork sepolia testnet
- * so the balancer contract addresses correspond to sepolia
+ * @dev the `31337` local chain is configured to fork sepolia testnet so the balancer contract addresses correspond to sepolia
+ * @notice using the `VaultExtension` abi for the Vault contract
  */
 const externalContracts = {
   31337: {
     Vault: {
-      address: "0x1FC7F1F84CFE61a04224AC8D3F87f56214FeC08c",
+      address: "0xd5584b37d1845ffed958c2d94bc675603ddcce68",
       abi: [
         {
-          inputs: [],
-          name: "AfterAddLiquidityHookFailed",
+          inputs: [
+            { internalType: "contract IVault", name: "mainVault", type: "address" },
+            { internalType: "contract IVaultAdmin", name: "vaultAdmin", type: "address" },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          inputs: [{ internalType: "address", name: "target", type: "address" }],
+          name: "AddressEmptyCode",
           type: "error",
         },
         {
-          inputs: [],
-          name: "AfterInitializeHookFailed",
+          inputs: [{ internalType: "address", name: "account", type: "address" }],
+          name: "AddressInsufficientBalance",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "AfterRemoveLiquidityHookFailed",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "AfterSwapHookFailed",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "AmountGivenZero",
-          type: "error",
-        },
+        { inputs: [], name: "AfterAddLiquidityHookFailed", type: "error" },
+        { inputs: [], name: "AfterInitializeHookFailed", type: "error" },
+        { inputs: [], name: "AfterRemoveLiquidityHookFailed", type: "error" },
+        { inputs: [], name: "AfterSwapHookFailed", type: "error" },
+        { inputs: [], name: "AmountGivenZero", type: "error" },
         {
           inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "limit",
-              type: "uint256",
-            },
+            { internalType: "contract IERC20", name: "token", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
           name: "AmountInAboveMax",
           type: "error",
         },
         {
           inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "limit",
-              type: "uint256",
-            },
+            { internalType: "contract IERC20", name: "token", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
           name: "AmountOutBelowMin",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "BalanceNotSettled",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "BeforeAddLiquidityHookFailed",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "BeforeInitializeHookFailed",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "BeforeRemoveLiquidityHookFailed",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "BeforeSwapHookFailed",
-          type: "error",
-        },
+        { inputs: [], name: "BalanceNotSettled", type: "error" },
+        { inputs: [], name: "BalanceOverflow", type: "error" },
+        { inputs: [], name: "BeforeAddLiquidityHookFailed", type: "error" },
+        { inputs: [], name: "BeforeInitializeHookFailed", type: "error" },
+        { inputs: [], name: "BeforeRemoveLiquidityHookFailed", type: "error" },
+        { inputs: [], name: "BeforeSwapHookFailed", type: "error" },
         {
           inputs: [
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "limit",
-              type: "uint256",
-            },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
           name: "BptAmountInAboveMax",
           type: "error",
         },
         {
           inputs: [
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "limit",
-              type: "uint256",
-            },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
           name: "BptAmountOutBelowMin",
           type: "error",
         },
+        { inputs: [], name: "CannotReceiveEth", type: "error" },
+        { inputs: [], name: "CannotSwapSameToken", type: "error" },
+        { inputs: [], name: "CodecOverflow", type: "error" },
+        { inputs: [], name: "DoesNotSupportAddLiquidityCustom", type: "error" },
+        { inputs: [], name: "DoesNotSupportRemoveLiquidityCustom", type: "error" },
+        { inputs: [], name: "DoesNotSupportUnbalancedLiquidity", type: "error" },
+        { inputs: [], name: "DynamicSwapFeeHookFailed", type: "error" },
         {
-          inputs: [],
-          name: "CannotReceiveEth",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "CannotSwapSameToken",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "DoesNotSupportAddLiquidityCustom",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "DoesNotSupportRemoveLiquidityCustom",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InvalidAddLiquidityKind",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InvalidRemoveLiquidityKind",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InvalidToken",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InvalidTokenConfiguration",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InvalidTokenType",
+          inputs: [
+            { internalType: "address", name: "spender", type: "address" },
+            { internalType: "uint256", name: "allowance", type: "uint256" },
+            { internalType: "uint256", name: "needed", type: "uint256" },
+          ],
+          name: "ERC20InsufficientAllowance",
           type: "error",
         },
         {
           inputs: [
-            {
-              internalType: "uint256",
-              name: "index",
-              type: "uint256",
-            },
+            { internalType: "address", name: "sender", type: "address" },
+            { internalType: "uint256", name: "balance", type: "uint256" },
+            { internalType: "uint256", name: "needed", type: "uint256" },
           ],
-          name: "LockerOutOfBounds",
+          name: "ERC20InsufficientBalance",
           type: "error",
         },
         {
-          inputs: [],
-          name: "MaxTokens",
+          inputs: [{ internalType: "address", name: "approver", type: "address" }],
+          name: "ERC20InvalidApprover",
           type: "error",
         },
         {
-          inputs: [],
-          name: "MinTokens",
+          inputs: [{ internalType: "address", name: "receiver", type: "address" }],
+          name: "ERC20InvalidReceiver",
           type: "error",
         },
         {
-          inputs: [],
-          name: "NoLocker",
+          inputs: [{ internalType: "address", name: "sender", type: "address" }],
+          name: "ERC20InvalidSender",
           type: "error",
         },
         {
-          inputs: [],
-          name: "NotVaultDelegateCall",
+          inputs: [{ internalType: "address", name: "spender", type: "address" }],
+          name: "ERC20InvalidSpender",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "OperationNotSupported",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "PauseBufferPeriodDurationTooLarge",
-          type: "error",
-        },
+        { inputs: [], name: "ErrorSelectorNotFound", type: "error" },
+        { inputs: [], name: "FailedInnerCall", type: "error" },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
+            { internalType: "address", name: "poolHooksContract", type: "address" },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "address", name: "poolFactory", type: "address" },
           ],
+          name: "HookRegistrationFailed",
+          type: "error",
+        },
+        { inputs: [], name: "InputLengthMismatch", type: "error" },
+        { inputs: [], name: "InvalidAddLiquidityKind", type: "error" },
+        { inputs: [], name: "InvalidRemoveLiquidityKind", type: "error" },
+        {
+          inputs: [
+            { internalType: "uint256", name: "currentValue", type: "uint256" },
+            { internalType: "uint256", name: "expectedSize", type: "uint256" },
+          ],
+          name: "InvalidSize",
+          type: "error",
+        },
+        { inputs: [], name: "InvalidToken", type: "error" },
+        { inputs: [], name: "InvalidTokenConfiguration", type: "error" },
+        { inputs: [], name: "InvalidTokenType", type: "error" },
+        { inputs: [], name: "MaxTokens", type: "error" },
+        { inputs: [], name: "MinTokens", type: "error" },
+        { inputs: [], name: "NotEnoughBufferShares", type: "error" },
+        { inputs: [], name: "NotStaticCall", type: "error" },
+        { inputs: [], name: "NotVaultDelegateCall", type: "error" },
+        { inputs: [], name: "OperationNotSupported", type: "error" },
+        { inputs: [], name: "OutOfBounds", type: "error" },
+        { inputs: [], name: "PauseBufferPeriodDurationTooLarge", type: "error" },
+        {
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolAlreadyInitialized",
           type: "error",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolAlreadyRegistered",
           type: "error",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolInRecoveryMode",
           type: "error",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolNotInRecoveryMode",
           type: "error",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolNotInitialized",
           type: "error",
         },
+        { inputs: [{ internalType: "address", name: "pool", type: "address" }], name: "PoolNotPaused", type: "error" },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "PoolNotPaused",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolNotRegistered",
           type: "error",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolPauseWindowExpired",
           type: "error",
         },
+        { inputs: [{ internalType: "address", name: "pool", type: "address" }], name: "PoolPaused", type: "error" },
+        { inputs: [], name: "ProtocolFeesExceedTotalCollected", type: "error" },
+        { inputs: [], name: "QueriesDisabled", type: "error" },
+        { inputs: [], name: "QuoteResultSpoofed", type: "error" },
+        { inputs: [], name: "ReentrancyGuardReentrantCall", type: "error" },
+        { inputs: [{ internalType: "bytes", name: "result", type: "bytes" }], name: "Result", type: "error" },
+        { inputs: [], name: "RouterNotTrusted", type: "error" },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "PoolPaused",
+          inputs: [{ internalType: "uint256", name: "value", type: "uint256" }],
+          name: "SafeCastOverflowedUintToInt",
           type: "error",
         },
         {
-          inputs: [],
-          name: "ProtocolSwapFeePercentageTooHigh",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "ProtocolYieldFeePercentageTooHigh",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "QueriesDisabled",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "RouterNotTrusted",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "SenderIsNotPauseManager",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "sender",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "sender", type: "address" }],
           name: "SenderIsNotVault",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "SwapFeePercentageTooHigh",
-          type: "error",
-        },
+        { inputs: [], name: "SwapFeePercentageTooHigh", type: "error" },
+        { inputs: [], name: "SwapFeePercentageTooLow", type: "error" },
         {
           inputs: [
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "limit",
-              type: "uint256",
-            },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
           name: "SwapLimit",
           type: "error",
         },
         {
-          inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "contract IERC20", name: "token", type: "address" }],
           name: "TokenAlreadyRegistered",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "TokenNotRegistered",
-          type: "error",
-        },
+        { inputs: [], name: "TokenNotRegistered", type: "error" },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "expectedToken",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "actualToken",
-              type: "address",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "address", name: "expectedToken", type: "address" },
+            { internalType: "address", name: "actualToken", type: "address" },
           ],
           name: "TokensMismatch",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "UserDataNotSupported",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "VaultNotPaused",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "VaultPauseWindowDurationTooLarge",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "VaultPauseWindowExpired",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "VaultPaused",
-          type: "error",
-        },
+        { inputs: [], name: "TokensNotSorted", type: "error" },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "locker",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "caller",
-              type: "address",
-            },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
-          name: "WrongLocker",
+          name: "TotalSupplyTooLow",
+          type: "error",
+        },
+        { inputs: [], name: "UserDataNotSupported", type: "error" },
+        { inputs: [], name: "VaultBuffersArePaused", type: "error" },
+        { inputs: [], name: "VaultIsNotUnlocked", type: "error" },
+        { inputs: [], name: "VaultNotPaused", type: "error" },
+        { inputs: [], name: "VaultPauseWindowDurationTooLarge", type: "error" },
+        { inputs: [], name: "VaultPauseWindowExpired", type: "error" },
+        { inputs: [], name: "VaultPaused", type: "error" },
+        {
+          inputs: [{ internalType: "address", name: "wrappedToken", type: "address" }],
+          name: "WrapAmountTooSmall",
+          type: "error",
+        },
+        { inputs: [], name: "WrongProtocolFeeControllerDeployment", type: "error" },
+        {
+          inputs: [{ internalType: "address", name: "wrappedToken", type: "address" }],
+          name: "WrongUnderlyingAmount",
+          type: "error",
+        },
+        { inputs: [], name: "WrongVaultAdminDeployment", type: "error" },
+        { inputs: [], name: "WrongVaultExtensionDeployment", type: "error" },
+        {
+          inputs: [{ internalType: "address", name: "wrappedToken", type: "address" }],
+          name: "WrongWrappedAmount",
           type: "error",
         },
         {
-          inputs: [],
-          name: "WrongVaultAdminDeployment",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "WrongVaultExtensionDeployment",
+          inputs: [{ internalType: "address", name: "token", type: "address" }],
+          name: "WrongWrappedTokenAsset",
           type: "error",
         },
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "contract IAuthorizer",
-              name: "newAuthorizer",
-              type: "address",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: true, internalType: "address", name: "owner", type: "address" },
+            { indexed: true, internalType: "address", name: "spender", type: "address" },
+            { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
           ],
+          name: "Approval",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [{ indexed: true, internalType: "contract IAuthorizer", name: "newAuthorizer", type: "address" }],
           name: "AuthorizerChanged",
           type: "event",
         },
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "liquidityProvider",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "contract IERC20[]",
-              name: "tokens",
-              type: "address[]",
-            },
-            {
-              indexed: false,
-              internalType: "int256[]",
-              name: "deltas",
-              type: "int256[]",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: true, internalType: "address", name: "liquidityProvider", type: "address" },
+            { indexed: false, internalType: "int256[]", name: "deltas", type: "int256[]" },
           ],
           name: "PoolBalanceChanged",
           type: "event",
         },
         {
           anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ indexed: true, internalType: "address", name: "pool", type: "address" }],
           name: "PoolInitialized",
           type: "event",
         },
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "bool",
-              name: "paused",
-              type: "bool",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: false, internalType: "bool", name: "paused", type: "bool" },
           ],
           name: "PoolPausedStateChanged",
           type: "event",
@@ -560,18 +324,8 @@ const externalContracts = {
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "bool",
-              name: "recoveryMode",
-              type: "bool",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: false, internalType: "bool", name: "recoveryMode", type: "bool" },
           ],
           name: "PoolRecoveryModeStateChanged",
           type: "event",
@@ -579,118 +333,56 @@ const externalContracts = {
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "factory",
-              type: "address",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: true, internalType: "address", name: "factory", type: "address" },
             {
               components: [
-                {
-                  internalType: "contract IERC20",
-                  name: "token",
-                  type: "address",
-                },
-                {
-                  internalType: "enum TokenType",
-                  name: "tokenType",
-                  type: "uint8",
-                },
-                {
-                  internalType: "contract IRateProvider",
-                  name: "rateProvider",
-                  type: "address",
-                },
-                {
-                  internalType: "bool",
-                  name: "yieldFeeExempt",
-                  type: "bool",
-                },
+                { internalType: "contract IERC20", name: "token", type: "address" },
+                { internalType: "enum TokenType", name: "tokenType", type: "uint8" },
+                { internalType: "contract IRateProvider", name: "rateProvider", type: "address" },
+                { internalType: "bool", name: "paysYieldFees", type: "bool" },
               ],
               indexed: false,
               internalType: "struct TokenConfig[]",
               name: "tokenConfig",
               type: "tuple[]",
             },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "pauseWindowEndTime",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "address",
-              name: "pauseManager",
-              type: "address",
-            },
+            { indexed: false, internalType: "uint256", name: "swapFeePercentage", type: "uint256" },
+            { indexed: false, internalType: "uint32", name: "pauseWindowEndTime", type: "uint32" },
             {
               components: [
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeInitialize",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterInitialize",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeSwap",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterSwap",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeAddLiquidity",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterAddLiquidity",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeRemoveLiquidity",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterRemoveLiquidity",
-                  type: "bool",
-                },
+                { internalType: "address", name: "pauseManager", type: "address" },
+                { internalType: "address", name: "swapFeeManager", type: "address" },
+                { internalType: "address", name: "poolCreator", type: "address" },
               ],
               indexed: false,
-              internalType: "struct PoolHooks",
-              name: "hooks",
+              internalType: "struct PoolRoleAccounts",
+              name: "roleAccounts",
               type: "tuple",
             },
             {
               components: [
-                {
-                  internalType: "bool",
-                  name: "supportsAddLiquidityCustom",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "supportsRemoveLiquidityCustom",
-                  type: "bool",
-                },
+                { internalType: "bool", name: "shouldCallBeforeInitialize", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterInitialize", type: "bool" },
+                { internalType: "bool", name: "shouldCallComputeDynamicSwapFee", type: "bool" },
+                { internalType: "bool", name: "shouldCallBeforeSwap", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterSwap", type: "bool" },
+                { internalType: "bool", name: "shouldCallBeforeAddLiquidity", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterAddLiquidity", type: "bool" },
+                { internalType: "bool", name: "shouldCallBeforeRemoveLiquidity", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterRemoveLiquidity", type: "bool" },
+                { internalType: "address", name: "hooksContract", type: "address" },
+              ],
+              indexed: false,
+              internalType: "struct HooksConfig",
+              name: "hooksConfig",
+              type: "tuple",
+            },
+            {
+              components: [
+                { internalType: "bool", name: "disableUnbalancedLiquidity", type: "bool" },
+                { internalType: "bool", name: "enableAddLiquidityCustom", type: "bool" },
+                { internalType: "bool", name: "enableRemoveLiquidityCustom", type: "bool" },
               ],
               indexed: false,
               internalType: "struct LiquidityManagement",
@@ -706,135 +398,25 @@ const externalContracts = {
           inputs: [
             {
               indexed: true,
-              internalType: "contract IERC20",
-              name: "token",
+              internalType: "contract IProtocolFeeController",
+              name: "newProtocolFeeController",
               type: "address",
             },
-            {
-              indexed: true,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
           ],
-          name: "ProtocolFeeCollected",
+          name: "ProtocolFeeControllerChanged",
           type: "event",
         },
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "token",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-          ],
-          name: "ProtocolSwapFeeCharged",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "uint256",
-              name: "swapFeePercentage",
-              type: "uint256",
-            },
-          ],
-          name: "ProtocolSwapFeePercentageChanged",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "token",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-          ],
-          name: "ProtocolYieldFeeCharged",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "uint256",
-              name: "yieldFeePercentage",
-              type: "uint256",
-            },
-          ],
-          name: "ProtocolYieldFeePercentageChanged",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "amountIn",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "amountOut",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "swapFeeAmount",
-              type: "uint256",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: true, internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { indexed: true, internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { indexed: false, internalType: "uint256", name: "amountIn", type: "uint256" },
+            { indexed: false, internalType: "uint256", name: "amountOut", type: "uint256" },
+            { indexed: false, internalType: "uint256", name: "swapFeePercentage", type: "uint256" },
+            { indexed: false, internalType: "uint256", name: "swapFeeAmount", type: "uint256" },
+            { indexed: false, internalType: "contract IERC20", name: "swapFeeToken", type: "address" },
           ],
           name: "Swap",
           type: "event",
@@ -842,18 +424,8 @@ const externalContracts = {
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "uint256",
-              name: "swapFeePercentage",
-              type: "uint256",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: false, internalType: "uint256", name: "swapFeePercentage", type: "uint256" },
           ],
           name: "SwapFeePercentageChanged",
           type: "event",
@@ -861,444 +433,207 @@ const externalContracts = {
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: false,
-              internalType: "bool",
-              name: "paused",
-              type: "bool",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: true, internalType: "address", name: "from", type: "address" },
+            { indexed: true, internalType: "address", name: "to", type: "address" },
+            { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
           ],
+          name: "Transfer",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            { indexed: true, internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { indexed: true, internalType: "contract IERC20", name: "underlyingToken", type: "address" },
+            { indexed: false, internalType: "uint256", name: "burnedShares", type: "uint256" },
+            { indexed: false, internalType: "uint256", name: "withdrawnUnderlying", type: "uint256" },
+          ],
+          name: "Unwrap",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [{ indexed: false, internalType: "bool", name: "paused", type: "bool" }],
           name: "VaultPausedStateChanged",
           type: "event",
         },
         {
+          anonymous: false,
           inputs: [
+            { indexed: true, internalType: "contract IERC20", name: "underlyingToken", type: "address" },
+            { indexed: true, internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { indexed: false, internalType: "uint256", name: "depositedUnderlying", type: "uint256" },
+            { indexed: false, internalType: "uint256", name: "mintedShares", type: "uint256" },
+          ],
+          name: "Wrap",
+          type: "event",
+        },
+        { stateMutability: "payable", type: "fallback" },
+        {
+          inputs: [
+            { internalType: "address", name: "token", type: "address" },
+            { internalType: "address", name: "owner", type: "address" },
+            { internalType: "address", name: "spender", type: "address" },
+          ],
+          name: "allowance",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "owner", type: "address" },
+            { internalType: "address", name: "spender", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+          ],
+          name: "approve",
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "token", type: "address" },
+            { internalType: "address", name: "account", type: "address" },
+          ],
+          name: "balanceOf",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "enum SwapKind", name: "kind", type: "uint8" },
+            { internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { internalType: "uint256", name: "amountGiven", type: "uint256" },
+          ],
+          name: "calculateBufferAmounts",
+          outputs: [
+            { internalType: "uint256", name: "amountCalculated", type: "uint256" },
+            { internalType: "uint256", name: "amountInUnderlying", type: "uint256" },
+            { internalType: "uint256", name: "amountOutWrapped", type: "uint256" },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "pool", type: "address" },
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "to",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "maxAmountsIn",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "minBptAmountOut",
-                  type: "uint256",
-                },
-                {
-                  internalType: "enum AddLiquidityKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "enum SwapKind", name: "kind", type: "uint8" },
+                { internalType: "uint256", name: "amountGivenScaled18", type: "uint256" },
+                { internalType: "uint256[]", name: "balancesScaled18", type: "uint256[]" },
+                { internalType: "uint256", name: "indexIn", type: "uint256" },
+                { internalType: "uint256", name: "indexOut", type: "uint256" },
+                { internalType: "address", name: "router", type: "address" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
-              internalType: "struct AddLiquidityParams",
-              name: "params",
+              internalType: "struct IBasePool.PoolSwapParams",
+              name: "swapParams",
               type: "tuple",
             },
           ],
-          name: "addLiquidity",
+          name: "computeDynamicSwapFee",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "token",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "owner",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "spender",
-              type: "address",
-            },
-          ],
-          name: "allowance",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
+            { internalType: "bool", name: "success", type: "bool" },
+            { internalType: "uint256", name: "dynamicSwapFee", type: "uint256" },
           ],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "owner",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "spender",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "token", type: "address" },
           ],
-          name: "approve",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "token",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "account",
-              type: "address",
-            },
-          ],
-          name: "balanceOf",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          name: "getAggregateSwapFeeAmount",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "contract IERC20[]",
-              name: "tokens",
-              type: "address[]",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "token", type: "address" },
           ],
-          name: "collectProtocolFees",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "disableQuery",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "disableRecoveryMode",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "enableRecoveryMode",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getAuthorizer",
-          outputs: [
-            {
-              internalType: "contract IAuthorizer",
-              name: "",
-              type: "address",
-            },
-          ],
+          name: "getAggregateYieldFeeAmount",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [],
-          name: "getBufferPeriodDuration",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
+          name: "getBptRate",
+          outputs: [{ internalType: "uint256", name: "rate", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [],
-          name: "getBufferPeriodEndTime",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
+          name: "getCurrentLiveBalances",
+          outputs: [{ internalType: "uint256[]", name: "balancesLiveScaled18", type: "uint256[]" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "index",
-              type: "uint256",
-            },
-          ],
-          name: "getLocker",
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
+          name: "getHooksConfig",
           outputs: [
             {
-              internalType: "address",
+              components: [
+                { internalType: "bool", name: "shouldCallBeforeInitialize", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterInitialize", type: "bool" },
+                { internalType: "bool", name: "shouldCallComputeDynamicSwapFee", type: "bool" },
+                { internalType: "bool", name: "shouldCallBeforeSwap", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterSwap", type: "bool" },
+                { internalType: "bool", name: "shouldCallBeforeAddLiquidity", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterAddLiquidity", type: "bool" },
+                { internalType: "bool", name: "shouldCallBeforeRemoveLiquidity", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterRemoveLiquidity", type: "bool" },
+                { internalType: "address", name: "hooksContract", type: "address" },
+              ],
+              internalType: "struct HooksConfig",
               name: "",
-              type: "address",
+              type: "tuple",
             },
           ],
           stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getLockersCount",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getMaximumPoolTokens",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "pure",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getMinimumPoolTokens",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "pure",
           type: "function",
         },
         {
           inputs: [],
           name: "getNonzeroDeltaCount",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [],
-          name: "getPauseWindowEndTime",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "getPoolConfig",
           outputs: [
             {
               components: [
                 {
-                  internalType: "bool",
-                  name: "isPoolRegistered",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "isPoolInitialized",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "isPoolPaused",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "isPoolInRecoveryMode",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "hasDynamicSwapFee",
-                  type: "bool",
-                },
-                {
-                  internalType: "uint64",
-                  name: "staticSwapFeePercentage",
-                  type: "uint64",
-                },
-                {
-                  internalType: "uint24",
-                  name: "tokenDecimalDiffs",
-                  type: "uint24",
-                },
-                {
-                  internalType: "uint32",
-                  name: "pauseWindowEndTime",
-                  type: "uint32",
-                },
-                {
                   components: [
-                    {
-                      internalType: "bool",
-                      name: "shouldCallBeforeInitialize",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallAfterInitialize",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallBeforeSwap",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallAfterSwap",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallBeforeAddLiquidity",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallAfterAddLiquidity",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallBeforeRemoveLiquidity",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallAfterRemoveLiquidity",
-                      type: "bool",
-                    },
-                  ],
-                  internalType: "struct PoolHooks",
-                  name: "hooks",
-                  type: "tuple",
-                },
-                {
-                  components: [
-                    {
-                      internalType: "bool",
-                      name: "supportsAddLiquidityCustom",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "supportsRemoveLiquidityCustom",
-                      type: "bool",
-                    },
+                    { internalType: "bool", name: "disableUnbalancedLiquidity", type: "bool" },
+                    { internalType: "bool", name: "enableAddLiquidityCustom", type: "bool" },
+                    { internalType: "bool", name: "enableRemoveLiquidityCustom", type: "bool" },
                   ],
                   internalType: "struct LiquidityManagement",
                   name: "liquidityManagement",
                   type: "tuple",
                 },
+                { internalType: "uint256", name: "staticSwapFeePercentage", type: "uint256" },
+                { internalType: "uint256", name: "aggregateSwapFeePercentage", type: "uint256" },
+                { internalType: "uint256", name: "aggregateYieldFeePercentage", type: "uint256" },
+                { internalType: "uint24", name: "tokenDecimalDiffs", type: "uint24" },
+                { internalType: "uint32", name: "pauseWindowEndTime", type: "uint32" },
+                { internalType: "bool", name: "isPoolRegistered", type: "bool" },
+                { internalType: "bool", name: "isPoolInitialized", type: "bool" },
+                { internalType: "bool", name: "isPoolPaused", type: "bool" },
+                { internalType: "bool", name: "isPoolInRecoveryMode", type: "bool" },
               ],
               internalType: "struct PoolConfig",
               name: "",
@@ -1309,608 +644,242 @@ const externalContracts = {
           type: "function",
         },
         {
-          inputs: [
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
+          name: "getPoolData",
+          outputs: [
             {
-              internalType: "address",
-              name: "pool",
-              type: "address",
+              components: [
+                { internalType: "PoolConfigBits", name: "poolConfigBits", type: "bytes32" },
+                { internalType: "contract IERC20[]", name: "tokens", type: "address[]" },
+                {
+                  components: [
+                    { internalType: "enum TokenType", name: "tokenType", type: "uint8" },
+                    { internalType: "contract IRateProvider", name: "rateProvider", type: "address" },
+                    { internalType: "bool", name: "paysYieldFees", type: "bool" },
+                  ],
+                  internalType: "struct TokenInfo[]",
+                  name: "tokenInfo",
+                  type: "tuple[]",
+                },
+                { internalType: "uint256[]", name: "balancesRaw", type: "uint256[]" },
+                { internalType: "uint256[]", name: "balancesLiveScaled18", type: "uint256[]" },
+                { internalType: "uint256[]", name: "tokenRates", type: "uint256[]" },
+                { internalType: "uint256[]", name: "decimalScalingFactors", type: "uint256[]" },
+              ],
+              internalType: "struct PoolData",
+              name: "",
+              type: "tuple",
             },
           ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "getPoolPausedState",
           outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
+            { internalType: "bool", name: "", type: "bool" },
+            { internalType: "uint32", name: "", type: "uint32" },
+            { internalType: "uint32", name: "", type: "uint32" },
+            { internalType: "address", name: "", type: "address" },
           ],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-          ],
-          name: "getPoolTokenCountAndIndexOfToken",
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
+          name: "getPoolRoleAccounts",
           outputs: [
             {
-              internalType: "uint256",
+              components: [
+                { internalType: "address", name: "pauseManager", type: "address" },
+                { internalType: "address", name: "swapFeeManager", type: "address" },
+                { internalType: "address", name: "poolCreator", type: "address" },
+              ],
+              internalType: "struct PoolRoleAccounts",
               name: "",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
+              type: "tuple",
             },
           ],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "getPoolTokenInfo",
           outputs: [
+            { internalType: "contract IERC20[]", name: "tokens", type: "address[]" },
             {
-              internalType: "contract IERC20[]",
-              name: "",
-              type: "address[]",
+              components: [
+                { internalType: "enum TokenType", name: "tokenType", type: "uint8" },
+                { internalType: "contract IRateProvider", name: "rateProvider", type: "address" },
+                { internalType: "bool", name: "paysYieldFees", type: "bool" },
+              ],
+              internalType: "struct TokenInfo[]",
+              name: "tokenInfo",
+              type: "tuple[]",
             },
-            {
-              internalType: "enum TokenType[]",
-              name: "",
-              type: "uint8[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "",
-              type: "uint256[]",
-            },
-            {
-              internalType: "contract IRateProvider[]",
-              name: "",
-              type: "address[]",
-            },
+            { internalType: "uint256[]", name: "balancesRaw", type: "uint256[]" },
+            { internalType: "uint256[]", name: "lastLiveBalances", type: "uint256[]" },
           ],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "getPoolTokenRates",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "decimalScalingFactors", type: "uint256[]" },
+            { internalType: "uint256[]", name: "tokenRates", type: "uint256[]" },
           ],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "getPoolTokens",
-          outputs: [
-            {
-              internalType: "contract IERC20[]",
-              name: "",
-              type: "address[]",
-            },
-          ],
+          outputs: [{ internalType: "contract IERC20[]", name: "tokens", type: "address[]" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "token",
-              type: "address",
-            },
-          ],
-          name: "getProtocolFees",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getProtocolSwapFeePercentage",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getProtocolYieldFeePercentage",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "contract IERC20", name: "token", type: "address" }],
           name: "getReservesOf",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "getStaticSwapFeePercentage",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "user",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "contract IERC20", name: "token", type: "address" }],
           name: "getTokenDelta",
-          outputs: [
-            {
-              internalType: "int256",
-              name: "",
-              type: "int256",
-            },
-          ],
+          outputs: [{ internalType: "int256", name: "", type: "int256" }],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [],
           name: "getVaultAdmin",
-          outputs: [
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getVaultExtension",
-          outputs: [
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getVaultPausedState",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "address", name: "", type: "address" }],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20[]",
-              name: "tokens",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "exactAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "minBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "address", name: "to", type: "address" },
+            { internalType: "contract IERC20[]", name: "tokens", type: "address[]" },
+            { internalType: "uint256[]", name: "exactAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "initialize",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountOut", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "isPoolInRecoveryMode",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "isPoolInitialized",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "isPoolPaused",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "isPoolRegistered",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [],
           name: "isQueryDisabled",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [],
-          name: "isVaultPaused",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          name: "isUnlocked",
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "bytes",
-              name: "data",
-              type: "bytes",
-            },
-          ],
-          name: "lock",
-          outputs: [
-            {
-              internalType: "bytes",
-              name: "result",
-              type: "bytes",
-            },
-          ],
-          stateMutability: "payable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "pausePool",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "pauseVault",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "bytes",
-              name: "data",
-              type: "bytes",
-            },
-          ],
+          inputs: [{ internalType: "bytes", name: "data", type: "bytes" }],
           name: "quote",
-          outputs: [
-            {
-              internalType: "bytes",
-              name: "result",
-              type: "bytes",
-            },
-          ],
+          outputs: [{ internalType: "bytes", name: "result", type: "bytes" }],
           stateMutability: "payable",
           type: "function",
         },
         {
+          inputs: [{ internalType: "bytes", name: "data", type: "bytes" }],
+          name: "quoteAndRevert",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "reentrancyGuardEntered",
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
+            { internalType: "address", name: "pool", type: "address" },
             {
               components: [
-                {
-                  internalType: "contract IERC20",
-                  name: "token",
-                  type: "address",
-                },
-                {
-                  internalType: "enum TokenType",
-                  name: "tokenType",
-                  type: "uint8",
-                },
-                {
-                  internalType: "contract IRateProvider",
-                  name: "rateProvider",
-                  type: "address",
-                },
-                {
-                  internalType: "bool",
-                  name: "yieldFeeExempt",
-                  type: "bool",
-                },
+                { internalType: "contract IERC20", name: "token", type: "address" },
+                { internalType: "enum TokenType", name: "tokenType", type: "uint8" },
+                { internalType: "contract IRateProvider", name: "rateProvider", type: "address" },
+                { internalType: "bool", name: "paysYieldFees", type: "bool" },
               ],
               internalType: "struct TokenConfig[]",
               name: "tokenConfig",
               type: "tuple[]",
             },
-            {
-              internalType: "uint256",
-              name: "pauseWindowEndTime",
-              type: "uint256",
-            },
-            {
-              internalType: "address",
-              name: "pauseManager",
-              type: "address",
-            },
+            { internalType: "uint256", name: "swapFeePercentage", type: "uint256" },
+            { internalType: "uint32", name: "pauseWindowEndTime", type: "uint32" },
+            { internalType: "bool", name: "protocolFeeExempt", type: "bool" },
             {
               components: [
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeInitialize",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterInitialize",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeSwap",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterSwap",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeAddLiquidity",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterAddLiquidity",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeRemoveLiquidity",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterRemoveLiquidity",
-                  type: "bool",
-                },
+                { internalType: "address", name: "pauseManager", type: "address" },
+                { internalType: "address", name: "swapFeeManager", type: "address" },
+                { internalType: "address", name: "poolCreator", type: "address" },
               ],
-              internalType: "struct PoolHooks",
-              name: "hookConfig",
+              internalType: "struct PoolRoleAccounts",
+              name: "roleAccounts",
               type: "tuple",
             },
+            { internalType: "address", name: "poolHooksContract", type: "address" },
             {
               components: [
-                {
-                  internalType: "bool",
-                  name: "supportsAddLiquidityCustom",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "supportsRemoveLiquidityCustom",
-                  type: "bool",
-                },
+                { internalType: "bool", name: "disableUnbalancedLiquidity", type: "bool" },
+                { internalType: "bool", name: "enableAddLiquidityCustom", type: "bool" },
+                { internalType: "bool", name: "enableRemoveLiquidityCustom", type: "bool" },
               ],
               internalType: "struct LiquidityManagement",
               name: "liquidityManagement",
@@ -1924,526 +893,113 @@ const externalContracts = {
         },
         {
           inputs: [
-            {
-              components: [
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "from",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "maxBptAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "minAmountsOut",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "enum RemoveLiquidityKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
-              ],
-              internalType: "struct RemoveLiquidityParams",
-              name: "params",
-              type: "tuple",
-            },
-          ],
-          name: "removeLiquidity",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "from",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "address", name: "from", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
           ],
           name: "removeLiquidityRecovery",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOutRaw", type: "uint256[]" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-          ],
-          name: "sendTo",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "contract IAuthorizer",
-              name: "newAuthorizer",
-              type: "address",
-            },
-          ],
-          name: "setAuthorizer",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "newSwapFeePercentage",
-              type: "uint256",
-            },
-          ],
-          name: "setProtocolSwapFeePercentage",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "newYieldFeePercentage",
-              type: "uint256",
-            },
-          ],
-          name: "setProtocolYieldFeePercentage",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "swapFeePercentage",
-              type: "uint256",
-            },
-          ],
-          name: "setStaticSwapFeePercentage",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-          ],
-          name: "settle",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "paid",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              components: [
-                {
-                  internalType: "enum SwapKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenOut",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "amountGivenRaw",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "limitRaw",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
-              ],
-              internalType: "struct SwapParams",
-              name: "params",
-              type: "tuple",
-            },
-          ],
-          name: "swap",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountCalculatedRaw",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "amountInRaw",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "amountOutRaw",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "from",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-          ],
-          name: "takeFrom",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "token",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "token", type: "address" }],
           name: "totalSupply",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "owner",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
+            { internalType: "address", name: "owner", type: "address" },
+            { internalType: "address", name: "to", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
           ],
           name: "transfer",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "spender",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "from",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
+            { internalType: "address", name: "spender", type: "address" },
+            { internalType: "address", name: "from", type: "address" },
+            { internalType: "address", name: "to", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
           ],
           name: "transferFrom",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "unpausePool",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "unpauseVault",
-          outputs: [],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [],
           name: "vault",
-          outputs: [
-            {
-              internalType: "contract IVault",
-              name: "",
-              type: "address",
-            },
-          ],
+          outputs: [{ internalType: "contract IVault", name: "", type: "address" }],
           stateMutability: "view",
           type: "function",
         },
+        { stateMutability: "payable", type: "receive" },
       ],
     },
     Router: {
-      address: "0xA0De078cd5cFa7088821B83e0bD7545ccfb7c883",
+      address: "0x1c58cc548a23956469c7c528bb3a846c842dfaf9",
       abi: [
         {
           inputs: [
-            {
-              internalType: "contract IVault",
-              name: "vault",
-              type: "address",
-            },
-            {
-              internalType: "contract IWETH",
-              name: "weth",
-              type: "address",
-            },
+            { internalType: "contract IVault", name: "vault", type: "address" },
+            { internalType: "contract IWETH", name: "weth", type: "address" },
+            { internalType: "contract IPermit2", name: "permit2", type: "address" },
           ],
           stateMutability: "nonpayable",
           type: "constructor",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "account",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "target", type: "address" }],
+          name: "AddressEmptyCode",
+          type: "error",
+        },
+        {
+          inputs: [{ internalType: "address", name: "account", type: "address" }],
           name: "AddressInsufficientBalance",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "EthTransfer",
-          type: "error",
-        },
+        { inputs: [], name: "EthTransfer", type: "error" },
         {
           inputs: [
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "limit",
-              type: "uint256",
-            },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
           name: "ExitBelowMin",
           type: "error",
         },
+        { inputs: [], name: "FailedInnerCall", type: "error" },
+        { inputs: [], name: "InsufficientEth", type: "error" },
+        { inputs: [], name: "ReentrancyGuardReentrantCall", type: "error" },
         {
-          inputs: [],
-          name: "FailedInnerCall",
+          inputs: [{ internalType: "address", name: "token", type: "address" }],
+          name: "SafeERC20FailedOperation",
           type: "error",
         },
         {
-          inputs: [],
-          name: "InsufficientEth",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "ReentrancyGuardReentrantCall",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "sender",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "sender", type: "address" }],
           name: "SenderIsNotVault",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "SwapDeadline",
-          type: "error",
-        },
+        { inputs: [], name: "SwapDeadline", type: "error" },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256[]",
-              name: "maxAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "minBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256[]", name: "maxAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "addLiquidityCustom",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "bptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "payable",
           type: "function",
@@ -2452,41 +1008,13 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "maxAmountsIn",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "minBptAmountOut",
-                  type: "uint256",
-                },
-                {
-                  internalType: "enum AddLiquidityKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "uint256[]", name: "maxAmountsIn", type: "uint256[]" },
+                { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+                { internalType: "enum AddLiquidityKind", name: "kind", type: "uint8" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.AddLiquidityHookParams",
               name: "params",
@@ -2495,149 +1023,95 @@ const externalContracts = {
           ],
           name: "addLiquidityHook",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "bptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "maxAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256[]", name: "maxAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "exactBptAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
+          ],
+          name: "addLiquidityProportional",
+          outputs: [{ internalType: "uint256[]", name: "amountsIn", type: "uint256[]" }],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { internalType: "uint256", name: "maxAmountIn", type: "uint256" },
+            { internalType: "uint256", name: "exactBptAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "addLiquiditySingleTokenExactOut",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountIn",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "amountIn", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256[]",
-              name: "exactAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "minBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { internalType: "uint256", name: "amountUnderlyingRaw", type: "uint256" },
+            { internalType: "uint256", name: "amountWrappedRaw", type: "uint256" },
+            { internalType: "address", name: "sharesOwner", type: "address" },
+          ],
+          name: "addLiquidityToBuffer",
+          outputs: [{ internalType: "uint256", name: "issuedShares", type: "uint256" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { internalType: "uint256", name: "amountUnderlyingRaw", type: "uint256" },
+            { internalType: "uint256", name: "amountWrappedRaw", type: "uint256" },
+            { internalType: "address", name: "sharesOwner", type: "address" },
+          ],
+          name: "addLiquidityToBufferHook",
+          outputs: [{ internalType: "uint256", name: "issuedShares", type: "uint256" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256[]", name: "exactAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "addLiquidityUnbalanced",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountOut", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
         {
+          inputs: [],
+          name: "getSender",
+          outputs: [{ internalType: "address", name: "", type: "address" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20[]",
-              name: "tokens",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "exactAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "minBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20[]", name: "tokens", type: "address[]" },
+            { internalType: "uint256[]", name: "exactAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "initialize",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountOut", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
@@ -2645,41 +1119,13 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20[]",
-                  name: "tokens",
-                  type: "address[]",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "exactAmountsIn",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "minBptAmountOut",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "contract IERC20[]", name: "tokens", type: "address[]" },
+                { internalType: "uint256[]", name: "exactAmountsIn", type: "uint256[]" },
+                { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.InitializeHookParams",
               name: "params",
@@ -2687,56 +1133,73 @@ const externalContracts = {
             },
           ],
           name: "initializeHook",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountOut", type: "uint256" }],
           stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "bytes[]", name: "data", type: "bytes[]" }],
+          name: "multicall",
+          outputs: [{ internalType: "bytes[]", name: "results", type: "bytes[]" }],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
             {
-              internalType: "address",
-              name: "pool",
-              type: "address",
+              components: [
+                { internalType: "address", name: "token", type: "address" },
+                { internalType: "address", name: "owner", type: "address" },
+                { internalType: "address", name: "spender", type: "address" },
+                { internalType: "uint256", name: "amount", type: "uint256" },
+                { internalType: "uint256", name: "nonce", type: "uint256" },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+              ],
+              internalType: "struct IRouter.PermitApproval[]",
+              name: "permitBatch",
+              type: "tuple[]",
             },
+            { internalType: "bytes[]", name: "permitSignatures", type: "bytes[]" },
             {
-              internalType: "uint256[]",
-              name: "maxAmountsIn",
-              type: "uint256[]",
+              components: [
+                {
+                  components: [
+                    { internalType: "address", name: "token", type: "address" },
+                    { internalType: "uint160", name: "amount", type: "uint160" },
+                    { internalType: "uint48", name: "expiration", type: "uint48" },
+                    { internalType: "uint48", name: "nonce", type: "uint48" },
+                  ],
+                  internalType: "struct IAllowanceTransfer.PermitDetails[]",
+                  name: "details",
+                  type: "tuple[]",
+                },
+                { internalType: "address", name: "spender", type: "address" },
+                { internalType: "uint256", name: "sigDeadline", type: "uint256" },
+              ],
+              internalType: "struct IAllowanceTransfer.PermitBatch",
+              name: "permit2Batch",
+              type: "tuple",
             },
-            {
-              internalType: "uint256",
-              name: "minBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "bytes", name: "permit2Signature", type: "bytes" },
+            { internalType: "bytes[]", name: "multicallData", type: "bytes[]" },
+          ],
+          name: "permitBatchAndCall",
+          outputs: [{ internalType: "bytes[]", name: "results", type: "bytes[]" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256[]", name: "maxAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryAddLiquidityCustom",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "bptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "nonpayable",
           type: "function",
@@ -2745,41 +1208,13 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "maxAmountsIn",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "minBptAmountOut",
-                  type: "uint256",
-                },
-                {
-                  internalType: "enum AddLiquidityKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "uint256[]", name: "maxAmountsIn", type: "uint256[]" },
+                { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+                { internalType: "enum AddLiquidityKind", name: "kind", type: "uint8" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.AddLiquidityHookParams",
               name: "params",
@@ -2788,128 +1223,60 @@ const externalContracts = {
           ],
           name: "queryAddLiquidityHook",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "bptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256[]", name: "maxAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "exactBptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
+          ],
+          name: "queryAddLiquidityProportional",
+          outputs: [{ internalType: "uint256[]", name: "amountsIn", type: "uint256[]" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryAddLiquiditySingleTokenExactOut",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountIn",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "amountIn", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256[]",
-              name: "exactAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256[]", name: "exactAmountsIn", type: "uint256[]" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryAddLiquidityUnbalanced",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountOut", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "maxBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "minAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "maxBptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "minAmountsOut", type: "uint256[]" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryRemoveLiquidityCustom",
           outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256", name: "bptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "nonpayable",
           type: "function",
@@ -2918,41 +1285,13 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "minAmountsOut",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "maxBptAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "enum RemoveLiquidityKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "uint256[]", name: "minAmountsOut", type: "uint256[]" },
+                { internalType: "uint256", name: "maxBptAmountIn", type: "uint256" },
+                { internalType: "enum RemoveLiquidityKind", name: "kind", type: "uint8" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.RemoveLiquidityHookParams",
               name: "params",
@@ -2961,172 +1300,66 @@ const externalContracts = {
           ],
           name: "queryRemoveLiquidityHook",
           outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256", name: "bptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryRemoveLiquidityProportional",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOut", type: "uint256[]" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
           ],
           name: "queryRemoveLiquidityRecovery",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOut", type: "uint256[]" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "sender",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "address", name: "sender", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
           ],
           name: "queryRemoveLiquidityRecoveryHook",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOut", type: "uint256[]" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryRemoveLiquiditySingleTokenExactIn",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "amountOut", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryRemoveLiquiditySingleTokenExactOut",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountIn", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -3134,56 +1367,16 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "enum SwapKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenOut",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "amountGiven",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "limit",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "deadline",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "enum SwapKind", name: "kind", type: "uint8" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+                { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                { internalType: "uint256", name: "amountGiven", type: "uint256" },
+                { internalType: "uint256", name: "limit", type: "uint256" },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.SwapSingleTokenHookParams",
               name: "params",
@@ -3191,139 +1384,76 @@ const externalContracts = {
             },
           ],
           name: "querySwapHook",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "exactAmountIn", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "querySwapSingleTokenExactIn",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountCalculated",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "amountCalculated", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "querySwapSingleTokenExactOut",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountCalculated",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "amountCalculated", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "maxBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "minAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "maxBptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "minAmountsOut", type: "uint256[]" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "removeLiquidityCustom",
           outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256", name: "bptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { internalType: "uint256", name: "sharesToRemove", type: "uint256" },
+          ],
+          name: "removeLiquidityFromBuffer",
+          outputs: [
+            { internalType: "uint256", name: "", type: "uint256" },
+            { internalType: "uint256", name: "", type: "uint256" },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { internalType: "uint256", name: "sharesToRemove", type: "uint256" },
+            { internalType: "address", name: "sharesOwner", type: "address" },
+          ],
+          name: "removeLiquidityFromBufferHook",
+          outputs: [
+            { internalType: "uint256", name: "removedUnderlyingBalanceRaw", type: "uint256" },
+            { internalType: "uint256", name: "removedWrappedBalanceRaw", type: "uint256" },
           ],
           stateMutability: "nonpayable",
           type: "function",
@@ -3332,41 +1462,13 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "minAmountsOut",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "maxBptAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "enum RemoveLiquidityKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "uint256[]", name: "minAmountsOut", type: "uint256[]" },
+                { internalType: "uint256", name: "maxBptAmountIn", type: "uint256" },
+                { internalType: "enum RemoveLiquidityKind", name: "kind", type: "uint8" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.RemoveLiquidityHookParams",
               name: "params",
@@ -3375,310 +1477,104 @@ const externalContracts = {
           ],
           name: "removeLiquidityHook",
           outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256", name: "bptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "minAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "minAmountsOut", type: "uint256[]" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "removeLiquidityProportional",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOut", type: "uint256[]" }],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
           ],
           name: "removeLiquidityRecovery",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOut", type: "uint256[]" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "sender",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "address", name: "sender", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
           ],
           name: "removeLiquidityRecoveryHook",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOut", type: "uint256[]" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "minAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "minAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "removeLiquiditySingleTokenExactIn",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "amountOut", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "maxBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "maxBptAmountIn", type: "uint256" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "removeLiquiditySingleTokenExactOut",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountIn", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "minAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "deadline",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "exactAmountIn", type: "uint256" },
+            { internalType: "uint256", name: "minAmountOut", type: "uint256" },
+            { internalType: "uint256", name: "deadline", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "swapSingleTokenExactIn",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "maxAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "deadline",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
+            { internalType: "uint256", name: "maxAmountIn", type: "uint256" },
+            { internalType: "uint256", name: "deadline", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "swapSingleTokenExactOut",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
@@ -3686,56 +1582,16 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "enum SwapKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenOut",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "amountGiven",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "limit",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "deadline",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "enum SwapKind", name: "kind", type: "uint8" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+                { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                { internalType: "uint256", name: "amountGiven", type: "uint256" },
+                { internalType: "uint256", name: "limit", type: "uint256" },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.SwapSingleTokenHookParams",
               name: "params",
@@ -3743,152 +1599,86 @@ const externalContracts = {
             },
           ],
           name: "swapSingleTokenHook",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
-        {
-          stateMutability: "payable",
-          type: "receive",
-        },
+        { stateMutability: "payable", type: "receive" },
       ],
     },
     BatchRouter: {
-      address: "0x8A8B9f35765899B3a0291700141470D79EA2eA88",
+      address: "0xeb1aa94421aecfb1dc17ddb1068e4609c4be8758",
       abi: [
         {
           inputs: [
-            {
-              internalType: "contract IVault",
-              name: "vault",
-              type: "address",
-            },
-            {
-              internalType: "contract IWETH",
-              name: "weth",
-              type: "address",
-            },
+            { internalType: "contract IVault", name: "vault", type: "address" },
+            { internalType: "contract IWETH", name: "weth", type: "address" },
+            { internalType: "contract IPermit2", name: "permit2", type: "address" },
           ],
           stateMutability: "nonpayable",
           type: "constructor",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "account",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "target", type: "address" }],
+          name: "AddressEmptyCode",
+          type: "error",
+        },
+        {
+          inputs: [{ internalType: "address", name: "account", type: "address" }],
           name: "AddressInsufficientBalance",
           type: "error",
         },
+        { inputs: [], name: "EthTransfer", type: "error" },
+        { inputs: [], name: "FailedInnerCall", type: "error" },
+        { inputs: [], name: "InsufficientEth", type: "error" },
+        { inputs: [], name: "ReentrancyGuardReentrantCall", type: "error" },
         {
-          inputs: [],
-          name: "EthTransfer",
+          inputs: [{ internalType: "address", name: "token", type: "address" }],
+          name: "SafeERC20FailedOperation",
           type: "error",
         },
         {
-          inputs: [],
-          name: "FailedInnerCall",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InsufficientEth",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "ReentrancyGuardReentrantCall",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "sender",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "sender", type: "address" }],
           name: "SenderIsNotVault",
           type: "error",
         },
+        { inputs: [], name: "SwapDeadline", type: "error" },
         {
           inputs: [],
-          name: "SwapDeadline",
-          type: "error",
+          name: "getSender",
+          outputs: [{ internalType: "address", name: "", type: "address" }],
+          stateMutability: "view",
+          type: "function",
         },
         {
           inputs: [
             {
               components: [
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
+                { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "address",
-                      name: "pool",
-                      type: "address",
-                    },
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenOut",
-                      type: "address",
-                    },
+                    { internalType: "address", name: "pool", type: "address" },
+                    { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                    { internalType: "bool", name: "isBuffer", type: "bool" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathStep[]",
                   name: "steps",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "exactAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "minAmountOut",
-                  type: "uint256",
-                },
+                { internalType: "uint256", name: "exactAmountIn", type: "uint256" },
+                { internalType: "uint256", name: "minAmountOut", type: "uint256" },
               ],
               internalType: "struct IBatchRouter.SwapPathExactAmountIn[]",
               name: "paths",
               type: "tuple[]",
             },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "querySwapExactIn",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensOut",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsOut", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensOut", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
           ],
           stateMutability: "nonpayable",
           type: "function",
@@ -3897,65 +1687,30 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
+                { internalType: "address", name: "sender", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenIn",
-                      type: "address",
-                    },
+                    { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                     {
                       components: [
-                        {
-                          internalType: "address",
-                          name: "pool",
-                          type: "address",
-                        },
-                        {
-                          internalType: "contract IERC20",
-                          name: "tokenOut",
-                          type: "address",
-                        },
+                        { internalType: "address", name: "pool", type: "address" },
+                        { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                        { internalType: "bool", name: "isBuffer", type: "bool" },
                       ],
                       internalType: "struct IBatchRouter.SwapPathStep[]",
                       name: "steps",
                       type: "tuple[]",
                     },
-                    {
-                      internalType: "uint256",
-                      name: "exactAmountIn",
-                      type: "uint256",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "minAmountOut",
-                      type: "uint256",
-                    },
+                    { internalType: "uint256", name: "exactAmountIn", type: "uint256" },
+                    { internalType: "uint256", name: "minAmountOut", type: "uint256" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathExactAmountIn[]",
                   name: "paths",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "deadline",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IBatchRouter.SwapExactInHookParams",
               name: "params",
@@ -3964,21 +1719,9 @@ const externalContracts = {
           ],
           name: "querySwapExactInHook",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensOut",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsOut", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensOut", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
           ],
           stateMutability: "payable",
           type: "function",
@@ -3987,66 +1730,31 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
+                { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "address",
-                      name: "pool",
-                      type: "address",
-                    },
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenOut",
-                      type: "address",
-                    },
+                    { internalType: "address", name: "pool", type: "address" },
+                    { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                    { internalType: "bool", name: "isBuffer", type: "bool" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathStep[]",
                   name: "steps",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "maxAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "exactAmountOut",
-                  type: "uint256",
-                },
+                { internalType: "uint256", name: "maxAmountIn", type: "uint256" },
+                { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
               ],
               internalType: "struct IBatchRouter.SwapPathExactAmountOut[]",
               name: "paths",
               type: "tuple[]",
             },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "querySwapExactOut",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensIn",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsIn", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensIn", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
           ],
           stateMutability: "nonpayable",
           type: "function",
@@ -4055,65 +1763,30 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
+                { internalType: "address", name: "sender", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenIn",
-                      type: "address",
-                    },
+                    { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                     {
                       components: [
-                        {
-                          internalType: "address",
-                          name: "pool",
-                          type: "address",
-                        },
-                        {
-                          internalType: "contract IERC20",
-                          name: "tokenOut",
-                          type: "address",
-                        },
+                        { internalType: "address", name: "pool", type: "address" },
+                        { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                        { internalType: "bool", name: "isBuffer", type: "bool" },
                       ],
                       internalType: "struct IBatchRouter.SwapPathStep[]",
                       name: "steps",
                       type: "tuple[]",
                     },
-                    {
-                      internalType: "uint256",
-                      name: "maxAmountIn",
-                      type: "uint256",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "exactAmountOut",
-                      type: "uint256",
-                    },
+                    { internalType: "uint256", name: "maxAmountIn", type: "uint256" },
+                    { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathExactAmountOut[]",
                   name: "paths",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "deadline",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IBatchRouter.SwapExactOutHookParams",
               name: "params",
@@ -4122,21 +1795,9 @@ const externalContracts = {
           ],
           name: "querySwapExactOutHook",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensIn",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsIn", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensIn", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
           ],
           stateMutability: "payable",
           type: "function",
@@ -4145,76 +1806,33 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
+                { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "address",
-                      name: "pool",
-                      type: "address",
-                    },
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenOut",
-                      type: "address",
-                    },
+                    { internalType: "address", name: "pool", type: "address" },
+                    { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                    { internalType: "bool", name: "isBuffer", type: "bool" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathStep[]",
                   name: "steps",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "exactAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "minAmountOut",
-                  type: "uint256",
-                },
+                { internalType: "uint256", name: "exactAmountIn", type: "uint256" },
+                { internalType: "uint256", name: "minAmountOut", type: "uint256" },
               ],
               internalType: "struct IBatchRouter.SwapPathExactAmountIn[]",
               name: "paths",
               type: "tuple[]",
             },
-            {
-              internalType: "uint256",
-              name: "deadline",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "uint256", name: "deadline", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "swapExactIn",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensOut",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsOut", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensOut", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
           ],
           stateMutability: "payable",
           type: "function",
@@ -4223,65 +1841,30 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
+                { internalType: "address", name: "sender", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenIn",
-                      type: "address",
-                    },
+                    { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                     {
                       components: [
-                        {
-                          internalType: "address",
-                          name: "pool",
-                          type: "address",
-                        },
-                        {
-                          internalType: "contract IERC20",
-                          name: "tokenOut",
-                          type: "address",
-                        },
+                        { internalType: "address", name: "pool", type: "address" },
+                        { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                        { internalType: "bool", name: "isBuffer", type: "bool" },
                       ],
                       internalType: "struct IBatchRouter.SwapPathStep[]",
                       name: "steps",
                       type: "tuple[]",
                     },
-                    {
-                      internalType: "uint256",
-                      name: "exactAmountIn",
-                      type: "uint256",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "minAmountOut",
-                      type: "uint256",
-                    },
+                    { internalType: "uint256", name: "exactAmountIn", type: "uint256" },
+                    { internalType: "uint256", name: "minAmountOut", type: "uint256" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathExactAmountIn[]",
                   name: "paths",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "deadline",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IBatchRouter.SwapExactInHookParams",
               name: "params",
@@ -4290,21 +1873,9 @@ const externalContracts = {
           ],
           name: "swapExactInHook",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensOut",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsOut", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensOut", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
           ],
           stateMutability: "payable",
           type: "function",
@@ -4313,76 +1884,33 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
+                { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "address",
-                      name: "pool",
-                      type: "address",
-                    },
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenOut",
-                      type: "address",
-                    },
+                    { internalType: "address", name: "pool", type: "address" },
+                    { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                    { internalType: "bool", name: "isBuffer", type: "bool" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathStep[]",
                   name: "steps",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "maxAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "exactAmountOut",
-                  type: "uint256",
-                },
+                { internalType: "uint256", name: "maxAmountIn", type: "uint256" },
+                { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
               ],
               internalType: "struct IBatchRouter.SwapPathExactAmountOut[]",
               name: "paths",
               type: "tuple[]",
             },
-            {
-              internalType: "uint256",
-              name: "deadline",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "uint256", name: "deadline", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "swapExactOut",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensIn",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsIn", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensIn", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
           ],
           stateMutability: "payable",
           type: "function",
@@ -4391,65 +1919,30 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
+                { internalType: "address", name: "sender", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenIn",
-                      type: "address",
-                    },
+                    { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                     {
                       components: [
-                        {
-                          internalType: "address",
-                          name: "pool",
-                          type: "address",
-                        },
-                        {
-                          internalType: "contract IERC20",
-                          name: "tokenOut",
-                          type: "address",
-                        },
+                        { internalType: "address", name: "pool", type: "address" },
+                        { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                        { internalType: "bool", name: "isBuffer", type: "bool" },
                       ],
                       internalType: "struct IBatchRouter.SwapPathStep[]",
                       name: "steps",
                       type: "tuple[]",
                     },
-                    {
-                      internalType: "uint256",
-                      name: "maxAmountIn",
-                      type: "uint256",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "exactAmountOut",
-                      type: "uint256",
-                    },
+                    { internalType: "uint256", name: "maxAmountIn", type: "uint256" },
+                    { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathExactAmountOut[]",
                   name: "paths",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "deadline",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IBatchRouter.SwapExactOutHookParams",
               name: "params",
@@ -4458,568 +1951,317 @@ const externalContracts = {
           ],
           name: "swapExactOutHook",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensIn",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsIn", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensIn", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
           ],
           stateMutability: "payable",
           type: "function",
         },
-        {
-          stateMutability: "payable",
-          type: "receive",
-        },
+        { stateMutability: "payable", type: "receive" },
       ],
     },
   },
   11155111: {
     Vault: {
-      address: "0x1FC7F1F84CFE61a04224AC8D3F87f56214FeC08c",
+      address: "0xd5584b37d1845ffed958c2d94bc675603ddcce68",
       abi: [
         {
-          inputs: [],
-          name: "AfterAddLiquidityHookFailed",
+          inputs: [
+            { internalType: "contract IVault", name: "mainVault", type: "address" },
+            { internalType: "contract IVaultAdmin", name: "vaultAdmin", type: "address" },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          inputs: [{ internalType: "address", name: "target", type: "address" }],
+          name: "AddressEmptyCode",
           type: "error",
         },
         {
-          inputs: [],
-          name: "AfterInitializeHookFailed",
+          inputs: [{ internalType: "address", name: "account", type: "address" }],
+          name: "AddressInsufficientBalance",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "AfterRemoveLiquidityHookFailed",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "AfterSwapHookFailed",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "AmountGivenZero",
-          type: "error",
-        },
+        { inputs: [], name: "AfterAddLiquidityHookFailed", type: "error" },
+        { inputs: [], name: "AfterInitializeHookFailed", type: "error" },
+        { inputs: [], name: "AfterRemoveLiquidityHookFailed", type: "error" },
+        { inputs: [], name: "AfterSwapHookFailed", type: "error" },
+        { inputs: [], name: "AmountGivenZero", type: "error" },
         {
           inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "limit",
-              type: "uint256",
-            },
+            { internalType: "contract IERC20", name: "token", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
           name: "AmountInAboveMax",
           type: "error",
         },
         {
           inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "limit",
-              type: "uint256",
-            },
+            { internalType: "contract IERC20", name: "token", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
           name: "AmountOutBelowMin",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "BalanceNotSettled",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "BeforeAddLiquidityHookFailed",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "BeforeInitializeHookFailed",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "BeforeRemoveLiquidityHookFailed",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "BeforeSwapHookFailed",
-          type: "error",
-        },
+        { inputs: [], name: "BalanceNotSettled", type: "error" },
+        { inputs: [], name: "BalanceOverflow", type: "error" },
+        { inputs: [], name: "BeforeAddLiquidityHookFailed", type: "error" },
+        { inputs: [], name: "BeforeInitializeHookFailed", type: "error" },
+        { inputs: [], name: "BeforeRemoveLiquidityHookFailed", type: "error" },
+        { inputs: [], name: "BeforeSwapHookFailed", type: "error" },
         {
           inputs: [
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "limit",
-              type: "uint256",
-            },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
           name: "BptAmountInAboveMax",
           type: "error",
         },
         {
           inputs: [
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "limit",
-              type: "uint256",
-            },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
           name: "BptAmountOutBelowMin",
           type: "error",
         },
+        { inputs: [], name: "CannotReceiveEth", type: "error" },
+        { inputs: [], name: "CannotSwapSameToken", type: "error" },
+        { inputs: [], name: "CodecOverflow", type: "error" },
+        { inputs: [], name: "DoesNotSupportAddLiquidityCustom", type: "error" },
+        { inputs: [], name: "DoesNotSupportRemoveLiquidityCustom", type: "error" },
+        { inputs: [], name: "DoesNotSupportUnbalancedLiquidity", type: "error" },
+        { inputs: [], name: "DynamicSwapFeeHookFailed", type: "error" },
         {
-          inputs: [],
-          name: "CannotReceiveEth",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "CannotSwapSameToken",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "DoesNotSupportAddLiquidityCustom",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "DoesNotSupportRemoveLiquidityCustom",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InvalidAddLiquidityKind",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InvalidRemoveLiquidityKind",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InvalidToken",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InvalidTokenConfiguration",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InvalidTokenType",
+          inputs: [
+            { internalType: "address", name: "spender", type: "address" },
+            { internalType: "uint256", name: "allowance", type: "uint256" },
+            { internalType: "uint256", name: "needed", type: "uint256" },
+          ],
+          name: "ERC20InsufficientAllowance",
           type: "error",
         },
         {
           inputs: [
-            {
-              internalType: "uint256",
-              name: "index",
-              type: "uint256",
-            },
+            { internalType: "address", name: "sender", type: "address" },
+            { internalType: "uint256", name: "balance", type: "uint256" },
+            { internalType: "uint256", name: "needed", type: "uint256" },
           ],
-          name: "LockerOutOfBounds",
+          name: "ERC20InsufficientBalance",
           type: "error",
         },
         {
-          inputs: [],
-          name: "MaxTokens",
+          inputs: [{ internalType: "address", name: "approver", type: "address" }],
+          name: "ERC20InvalidApprover",
           type: "error",
         },
         {
-          inputs: [],
-          name: "MinTokens",
+          inputs: [{ internalType: "address", name: "receiver", type: "address" }],
+          name: "ERC20InvalidReceiver",
           type: "error",
         },
         {
-          inputs: [],
-          name: "NoLocker",
+          inputs: [{ internalType: "address", name: "sender", type: "address" }],
+          name: "ERC20InvalidSender",
           type: "error",
         },
         {
-          inputs: [],
-          name: "NotVaultDelegateCall",
+          inputs: [{ internalType: "address", name: "spender", type: "address" }],
+          name: "ERC20InvalidSpender",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "OperationNotSupported",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "PauseBufferPeriodDurationTooLarge",
-          type: "error",
-        },
+        { inputs: [], name: "ErrorSelectorNotFound", type: "error" },
+        { inputs: [], name: "FailedInnerCall", type: "error" },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
+            { internalType: "address", name: "poolHooksContract", type: "address" },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "address", name: "poolFactory", type: "address" },
           ],
+          name: "HookRegistrationFailed",
+          type: "error",
+        },
+        { inputs: [], name: "InputLengthMismatch", type: "error" },
+        { inputs: [], name: "InvalidAddLiquidityKind", type: "error" },
+        { inputs: [], name: "InvalidRemoveLiquidityKind", type: "error" },
+        {
+          inputs: [
+            { internalType: "uint256", name: "currentValue", type: "uint256" },
+            { internalType: "uint256", name: "expectedSize", type: "uint256" },
+          ],
+          name: "InvalidSize",
+          type: "error",
+        },
+        { inputs: [], name: "InvalidToken", type: "error" },
+        { inputs: [], name: "InvalidTokenConfiguration", type: "error" },
+        { inputs: [], name: "InvalidTokenType", type: "error" },
+        { inputs: [], name: "MaxTokens", type: "error" },
+        { inputs: [], name: "MinTokens", type: "error" },
+        { inputs: [], name: "NotEnoughBufferShares", type: "error" },
+        { inputs: [], name: "NotStaticCall", type: "error" },
+        { inputs: [], name: "NotVaultDelegateCall", type: "error" },
+        { inputs: [], name: "OperationNotSupported", type: "error" },
+        { inputs: [], name: "OutOfBounds", type: "error" },
+        { inputs: [], name: "PauseBufferPeriodDurationTooLarge", type: "error" },
+        {
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolAlreadyInitialized",
           type: "error",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolAlreadyRegistered",
           type: "error",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolInRecoveryMode",
           type: "error",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolNotInRecoveryMode",
           type: "error",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolNotInitialized",
           type: "error",
         },
+        { inputs: [{ internalType: "address", name: "pool", type: "address" }], name: "PoolNotPaused", type: "error" },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "PoolNotPaused",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolNotRegistered",
           type: "error",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "PoolPauseWindowExpired",
           type: "error",
         },
+        { inputs: [{ internalType: "address", name: "pool", type: "address" }], name: "PoolPaused", type: "error" },
+        { inputs: [], name: "ProtocolFeesExceedTotalCollected", type: "error" },
+        { inputs: [], name: "QueriesDisabled", type: "error" },
+        { inputs: [], name: "QuoteResultSpoofed", type: "error" },
+        { inputs: [], name: "ReentrancyGuardReentrantCall", type: "error" },
+        { inputs: [{ internalType: "bytes", name: "result", type: "bytes" }], name: "Result", type: "error" },
+        { inputs: [], name: "RouterNotTrusted", type: "error" },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "PoolPaused",
+          inputs: [{ internalType: "uint256", name: "value", type: "uint256" }],
+          name: "SafeCastOverflowedUintToInt",
           type: "error",
         },
         {
-          inputs: [],
-          name: "ProtocolSwapFeePercentageTooHigh",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "ProtocolYieldFeePercentageTooHigh",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "QueriesDisabled",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "RouterNotTrusted",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "SenderIsNotPauseManager",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "sender",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "sender", type: "address" }],
           name: "SenderIsNotVault",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "SwapFeePercentageTooHigh",
-          type: "error",
-        },
+        { inputs: [], name: "SwapFeePercentageTooHigh", type: "error" },
+        { inputs: [], name: "SwapFeePercentageTooLow", type: "error" },
         {
           inputs: [
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "limit",
-              type: "uint256",
-            },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
           name: "SwapLimit",
           type: "error",
         },
         {
-          inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "contract IERC20", name: "token", type: "address" }],
           name: "TokenAlreadyRegistered",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "TokenNotRegistered",
-          type: "error",
-        },
+        { inputs: [], name: "TokenNotRegistered", type: "error" },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "expectedToken",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "actualToken",
-              type: "address",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "address", name: "expectedToken", type: "address" },
+            { internalType: "address", name: "actualToken", type: "address" },
           ],
           name: "TokensMismatch",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "UserDataNotSupported",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "VaultNotPaused",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "VaultPauseWindowDurationTooLarge",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "VaultPauseWindowExpired",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "VaultPaused",
-          type: "error",
-        },
+        { inputs: [], name: "TokensNotSorted", type: "error" },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "locker",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "caller",
-              type: "address",
-            },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
-          name: "WrongLocker",
+          name: "TotalSupplyTooLow",
+          type: "error",
+        },
+        { inputs: [], name: "UserDataNotSupported", type: "error" },
+        { inputs: [], name: "VaultBuffersArePaused", type: "error" },
+        { inputs: [], name: "VaultIsNotUnlocked", type: "error" },
+        { inputs: [], name: "VaultNotPaused", type: "error" },
+        { inputs: [], name: "VaultPauseWindowDurationTooLarge", type: "error" },
+        { inputs: [], name: "VaultPauseWindowExpired", type: "error" },
+        { inputs: [], name: "VaultPaused", type: "error" },
+        {
+          inputs: [{ internalType: "address", name: "wrappedToken", type: "address" }],
+          name: "WrapAmountTooSmall",
+          type: "error",
+        },
+        { inputs: [], name: "WrongProtocolFeeControllerDeployment", type: "error" },
+        {
+          inputs: [{ internalType: "address", name: "wrappedToken", type: "address" }],
+          name: "WrongUnderlyingAmount",
+          type: "error",
+        },
+        { inputs: [], name: "WrongVaultAdminDeployment", type: "error" },
+        { inputs: [], name: "WrongVaultExtensionDeployment", type: "error" },
+        {
+          inputs: [{ internalType: "address", name: "wrappedToken", type: "address" }],
+          name: "WrongWrappedAmount",
           type: "error",
         },
         {
-          inputs: [],
-          name: "WrongVaultAdminDeployment",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "WrongVaultExtensionDeployment",
+          inputs: [{ internalType: "address", name: "token", type: "address" }],
+          name: "WrongWrappedTokenAsset",
           type: "error",
         },
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "contract IAuthorizer",
-              name: "newAuthorizer",
-              type: "address",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: true, internalType: "address", name: "owner", type: "address" },
+            { indexed: true, internalType: "address", name: "spender", type: "address" },
+            { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
           ],
+          name: "Approval",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [{ indexed: true, internalType: "contract IAuthorizer", name: "newAuthorizer", type: "address" }],
           name: "AuthorizerChanged",
           type: "event",
         },
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "liquidityProvider",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "contract IERC20[]",
-              name: "tokens",
-              type: "address[]",
-            },
-            {
-              indexed: false,
-              internalType: "int256[]",
-              name: "deltas",
-              type: "int256[]",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: true, internalType: "address", name: "liquidityProvider", type: "address" },
+            { indexed: false, internalType: "int256[]", name: "deltas", type: "int256[]" },
           ],
           name: "PoolBalanceChanged",
           type: "event",
         },
         {
           anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ indexed: true, internalType: "address", name: "pool", type: "address" }],
           name: "PoolInitialized",
           type: "event",
         },
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "bool",
-              name: "paused",
-              type: "bool",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: false, internalType: "bool", name: "paused", type: "bool" },
           ],
           name: "PoolPausedStateChanged",
           type: "event",
@@ -5027,18 +2269,8 @@ const externalContracts = {
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "bool",
-              name: "recoveryMode",
-              type: "bool",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: false, internalType: "bool", name: "recoveryMode", type: "bool" },
           ],
           name: "PoolRecoveryModeStateChanged",
           type: "event",
@@ -5046,118 +2278,56 @@ const externalContracts = {
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "factory",
-              type: "address",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: true, internalType: "address", name: "factory", type: "address" },
             {
               components: [
-                {
-                  internalType: "contract IERC20",
-                  name: "token",
-                  type: "address",
-                },
-                {
-                  internalType: "enum TokenType",
-                  name: "tokenType",
-                  type: "uint8",
-                },
-                {
-                  internalType: "contract IRateProvider",
-                  name: "rateProvider",
-                  type: "address",
-                },
-                {
-                  internalType: "bool",
-                  name: "yieldFeeExempt",
-                  type: "bool",
-                },
+                { internalType: "contract IERC20", name: "token", type: "address" },
+                { internalType: "enum TokenType", name: "tokenType", type: "uint8" },
+                { internalType: "contract IRateProvider", name: "rateProvider", type: "address" },
+                { internalType: "bool", name: "paysYieldFees", type: "bool" },
               ],
               indexed: false,
               internalType: "struct TokenConfig[]",
               name: "tokenConfig",
               type: "tuple[]",
             },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "pauseWindowEndTime",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "address",
-              name: "pauseManager",
-              type: "address",
-            },
+            { indexed: false, internalType: "uint256", name: "swapFeePercentage", type: "uint256" },
+            { indexed: false, internalType: "uint32", name: "pauseWindowEndTime", type: "uint32" },
             {
               components: [
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeInitialize",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterInitialize",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeSwap",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterSwap",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeAddLiquidity",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterAddLiquidity",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeRemoveLiquidity",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterRemoveLiquidity",
-                  type: "bool",
-                },
+                { internalType: "address", name: "pauseManager", type: "address" },
+                { internalType: "address", name: "swapFeeManager", type: "address" },
+                { internalType: "address", name: "poolCreator", type: "address" },
               ],
               indexed: false,
-              internalType: "struct PoolHooks",
-              name: "hooks",
+              internalType: "struct PoolRoleAccounts",
+              name: "roleAccounts",
               type: "tuple",
             },
             {
               components: [
-                {
-                  internalType: "bool",
-                  name: "supportsAddLiquidityCustom",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "supportsRemoveLiquidityCustom",
-                  type: "bool",
-                },
+                { internalType: "bool", name: "shouldCallBeforeInitialize", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterInitialize", type: "bool" },
+                { internalType: "bool", name: "shouldCallComputeDynamicSwapFee", type: "bool" },
+                { internalType: "bool", name: "shouldCallBeforeSwap", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterSwap", type: "bool" },
+                { internalType: "bool", name: "shouldCallBeforeAddLiquidity", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterAddLiquidity", type: "bool" },
+                { internalType: "bool", name: "shouldCallBeforeRemoveLiquidity", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterRemoveLiquidity", type: "bool" },
+                { internalType: "address", name: "hooksContract", type: "address" },
+              ],
+              indexed: false,
+              internalType: "struct HooksConfig",
+              name: "hooksConfig",
+              type: "tuple",
+            },
+            {
+              components: [
+                { internalType: "bool", name: "disableUnbalancedLiquidity", type: "bool" },
+                { internalType: "bool", name: "enableAddLiquidityCustom", type: "bool" },
+                { internalType: "bool", name: "enableRemoveLiquidityCustom", type: "bool" },
               ],
               indexed: false,
               internalType: "struct LiquidityManagement",
@@ -5173,135 +2343,25 @@ const externalContracts = {
           inputs: [
             {
               indexed: true,
-              internalType: "contract IERC20",
-              name: "token",
+              internalType: "contract IProtocolFeeController",
+              name: "newProtocolFeeController",
               type: "address",
             },
-            {
-              indexed: true,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
           ],
-          name: "ProtocolFeeCollected",
+          name: "ProtocolFeeControllerChanged",
           type: "event",
         },
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "token",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-          ],
-          name: "ProtocolSwapFeeCharged",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "uint256",
-              name: "swapFeePercentage",
-              type: "uint256",
-            },
-          ],
-          name: "ProtocolSwapFeePercentageChanged",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "token",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-          ],
-          name: "ProtocolYieldFeeCharged",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "uint256",
-              name: "yieldFeePercentage",
-              type: "uint256",
-            },
-          ],
-          name: "ProtocolYieldFeePercentageChanged",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "amountIn",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "amountOut",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "swapFeeAmount",
-              type: "uint256",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: true, internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { indexed: true, internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { indexed: false, internalType: "uint256", name: "amountIn", type: "uint256" },
+            { indexed: false, internalType: "uint256", name: "amountOut", type: "uint256" },
+            { indexed: false, internalType: "uint256", name: "swapFeePercentage", type: "uint256" },
+            { indexed: false, internalType: "uint256", name: "swapFeeAmount", type: "uint256" },
+            { indexed: false, internalType: "contract IERC20", name: "swapFeeToken", type: "address" },
           ],
           name: "Swap",
           type: "event",
@@ -5309,18 +2369,8 @@ const externalContracts = {
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "uint256",
-              name: "swapFeePercentage",
-              type: "uint256",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: false, internalType: "uint256", name: "swapFeePercentage", type: "uint256" },
           ],
           name: "SwapFeePercentageChanged",
           type: "event",
@@ -5328,444 +2378,207 @@ const externalContracts = {
         {
           anonymous: false,
           inputs: [
-            {
-              indexed: false,
-              internalType: "bool",
-              name: "paused",
-              type: "bool",
-            },
+            { indexed: true, internalType: "address", name: "pool", type: "address" },
+            { indexed: true, internalType: "address", name: "from", type: "address" },
+            { indexed: true, internalType: "address", name: "to", type: "address" },
+            { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
           ],
+          name: "Transfer",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            { indexed: true, internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { indexed: true, internalType: "contract IERC20", name: "underlyingToken", type: "address" },
+            { indexed: false, internalType: "uint256", name: "burnedShares", type: "uint256" },
+            { indexed: false, internalType: "uint256", name: "withdrawnUnderlying", type: "uint256" },
+          ],
+          name: "Unwrap",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [{ indexed: false, internalType: "bool", name: "paused", type: "bool" }],
           name: "VaultPausedStateChanged",
           type: "event",
         },
         {
+          anonymous: false,
           inputs: [
+            { indexed: true, internalType: "contract IERC20", name: "underlyingToken", type: "address" },
+            { indexed: true, internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { indexed: false, internalType: "uint256", name: "depositedUnderlying", type: "uint256" },
+            { indexed: false, internalType: "uint256", name: "mintedShares", type: "uint256" },
+          ],
+          name: "Wrap",
+          type: "event",
+        },
+        { stateMutability: "payable", type: "fallback" },
+        {
+          inputs: [
+            { internalType: "address", name: "token", type: "address" },
+            { internalType: "address", name: "owner", type: "address" },
+            { internalType: "address", name: "spender", type: "address" },
+          ],
+          name: "allowance",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "owner", type: "address" },
+            { internalType: "address", name: "spender", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+          ],
+          name: "approve",
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "token", type: "address" },
+            { internalType: "address", name: "account", type: "address" },
+          ],
+          name: "balanceOf",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "enum SwapKind", name: "kind", type: "uint8" },
+            { internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { internalType: "uint256", name: "amountGiven", type: "uint256" },
+          ],
+          name: "calculateBufferAmounts",
+          outputs: [
+            { internalType: "uint256", name: "amountCalculated", type: "uint256" },
+            { internalType: "uint256", name: "amountInUnderlying", type: "uint256" },
+            { internalType: "uint256", name: "amountOutWrapped", type: "uint256" },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "pool", type: "address" },
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "to",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "maxAmountsIn",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "minBptAmountOut",
-                  type: "uint256",
-                },
-                {
-                  internalType: "enum AddLiquidityKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "enum SwapKind", name: "kind", type: "uint8" },
+                { internalType: "uint256", name: "amountGivenScaled18", type: "uint256" },
+                { internalType: "uint256[]", name: "balancesScaled18", type: "uint256[]" },
+                { internalType: "uint256", name: "indexIn", type: "uint256" },
+                { internalType: "uint256", name: "indexOut", type: "uint256" },
+                { internalType: "address", name: "router", type: "address" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
-              internalType: "struct AddLiquidityParams",
-              name: "params",
+              internalType: "struct IBasePool.PoolSwapParams",
+              name: "swapParams",
               type: "tuple",
             },
           ],
-          name: "addLiquidity",
+          name: "computeDynamicSwapFee",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "token",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "owner",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "spender",
-              type: "address",
-            },
-          ],
-          name: "allowance",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
+            { internalType: "bool", name: "success", type: "bool" },
+            { internalType: "uint256", name: "dynamicSwapFee", type: "uint256" },
           ],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "owner",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "spender",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "token", type: "address" },
           ],
-          name: "approve",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "token",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "account",
-              type: "address",
-            },
-          ],
-          name: "balanceOf",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          name: "getAggregateSwapFeeAmount",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "contract IERC20[]",
-              name: "tokens",
-              type: "address[]",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "token", type: "address" },
           ],
-          name: "collectProtocolFees",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "disableQuery",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "disableRecoveryMode",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "enableRecoveryMode",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getAuthorizer",
-          outputs: [
-            {
-              internalType: "contract IAuthorizer",
-              name: "",
-              type: "address",
-            },
-          ],
+          name: "getAggregateYieldFeeAmount",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [],
-          name: "getBufferPeriodDuration",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
+          name: "getBptRate",
+          outputs: [{ internalType: "uint256", name: "rate", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [],
-          name: "getBufferPeriodEndTime",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
+          name: "getCurrentLiveBalances",
+          outputs: [{ internalType: "uint256[]", name: "balancesLiveScaled18", type: "uint256[]" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "index",
-              type: "uint256",
-            },
-          ],
-          name: "getLocker",
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
+          name: "getHooksConfig",
           outputs: [
             {
-              internalType: "address",
+              components: [
+                { internalType: "bool", name: "shouldCallBeforeInitialize", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterInitialize", type: "bool" },
+                { internalType: "bool", name: "shouldCallComputeDynamicSwapFee", type: "bool" },
+                { internalType: "bool", name: "shouldCallBeforeSwap", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterSwap", type: "bool" },
+                { internalType: "bool", name: "shouldCallBeforeAddLiquidity", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterAddLiquidity", type: "bool" },
+                { internalType: "bool", name: "shouldCallBeforeRemoveLiquidity", type: "bool" },
+                { internalType: "bool", name: "shouldCallAfterRemoveLiquidity", type: "bool" },
+                { internalType: "address", name: "hooksContract", type: "address" },
+              ],
+              internalType: "struct HooksConfig",
               name: "",
-              type: "address",
+              type: "tuple",
             },
           ],
           stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getLockersCount",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getMaximumPoolTokens",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "pure",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getMinimumPoolTokens",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "pure",
           type: "function",
         },
         {
           inputs: [],
           name: "getNonzeroDeltaCount",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [],
-          name: "getPauseWindowEndTime",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "getPoolConfig",
           outputs: [
             {
               components: [
                 {
-                  internalType: "bool",
-                  name: "isPoolRegistered",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "isPoolInitialized",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "isPoolPaused",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "isPoolInRecoveryMode",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "hasDynamicSwapFee",
-                  type: "bool",
-                },
-                {
-                  internalType: "uint64",
-                  name: "staticSwapFeePercentage",
-                  type: "uint64",
-                },
-                {
-                  internalType: "uint24",
-                  name: "tokenDecimalDiffs",
-                  type: "uint24",
-                },
-                {
-                  internalType: "uint32",
-                  name: "pauseWindowEndTime",
-                  type: "uint32",
-                },
-                {
                   components: [
-                    {
-                      internalType: "bool",
-                      name: "shouldCallBeforeInitialize",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallAfterInitialize",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallBeforeSwap",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallAfterSwap",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallBeforeAddLiquidity",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallAfterAddLiquidity",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallBeforeRemoveLiquidity",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "shouldCallAfterRemoveLiquidity",
-                      type: "bool",
-                    },
-                  ],
-                  internalType: "struct PoolHooks",
-                  name: "hooks",
-                  type: "tuple",
-                },
-                {
-                  components: [
-                    {
-                      internalType: "bool",
-                      name: "supportsAddLiquidityCustom",
-                      type: "bool",
-                    },
-                    {
-                      internalType: "bool",
-                      name: "supportsRemoveLiquidityCustom",
-                      type: "bool",
-                    },
+                    { internalType: "bool", name: "disableUnbalancedLiquidity", type: "bool" },
+                    { internalType: "bool", name: "enableAddLiquidityCustom", type: "bool" },
+                    { internalType: "bool", name: "enableRemoveLiquidityCustom", type: "bool" },
                   ],
                   internalType: "struct LiquidityManagement",
                   name: "liquidityManagement",
                   type: "tuple",
                 },
+                { internalType: "uint256", name: "staticSwapFeePercentage", type: "uint256" },
+                { internalType: "uint256", name: "aggregateSwapFeePercentage", type: "uint256" },
+                { internalType: "uint256", name: "aggregateYieldFeePercentage", type: "uint256" },
+                { internalType: "uint24", name: "tokenDecimalDiffs", type: "uint24" },
+                { internalType: "uint32", name: "pauseWindowEndTime", type: "uint32" },
+                { internalType: "bool", name: "isPoolRegistered", type: "bool" },
+                { internalType: "bool", name: "isPoolInitialized", type: "bool" },
+                { internalType: "bool", name: "isPoolPaused", type: "bool" },
+                { internalType: "bool", name: "isPoolInRecoveryMode", type: "bool" },
               ],
               internalType: "struct PoolConfig",
               name: "",
@@ -5776,608 +2589,242 @@ const externalContracts = {
           type: "function",
         },
         {
-          inputs: [
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
+          name: "getPoolData",
+          outputs: [
             {
-              internalType: "address",
-              name: "pool",
-              type: "address",
+              components: [
+                { internalType: "PoolConfigBits", name: "poolConfigBits", type: "bytes32" },
+                { internalType: "contract IERC20[]", name: "tokens", type: "address[]" },
+                {
+                  components: [
+                    { internalType: "enum TokenType", name: "tokenType", type: "uint8" },
+                    { internalType: "contract IRateProvider", name: "rateProvider", type: "address" },
+                    { internalType: "bool", name: "paysYieldFees", type: "bool" },
+                  ],
+                  internalType: "struct TokenInfo[]",
+                  name: "tokenInfo",
+                  type: "tuple[]",
+                },
+                { internalType: "uint256[]", name: "balancesRaw", type: "uint256[]" },
+                { internalType: "uint256[]", name: "balancesLiveScaled18", type: "uint256[]" },
+                { internalType: "uint256[]", name: "tokenRates", type: "uint256[]" },
+                { internalType: "uint256[]", name: "decimalScalingFactors", type: "uint256[]" },
+              ],
+              internalType: "struct PoolData",
+              name: "",
+              type: "tuple",
             },
           ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "getPoolPausedState",
           outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
+            { internalType: "bool", name: "", type: "bool" },
+            { internalType: "uint32", name: "", type: "uint32" },
+            { internalType: "uint32", name: "", type: "uint32" },
+            { internalType: "address", name: "", type: "address" },
           ],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-          ],
-          name: "getPoolTokenCountAndIndexOfToken",
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
+          name: "getPoolRoleAccounts",
           outputs: [
             {
-              internalType: "uint256",
+              components: [
+                { internalType: "address", name: "pauseManager", type: "address" },
+                { internalType: "address", name: "swapFeeManager", type: "address" },
+                { internalType: "address", name: "poolCreator", type: "address" },
+              ],
+              internalType: "struct PoolRoleAccounts",
               name: "",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
+              type: "tuple",
             },
           ],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "getPoolTokenInfo",
           outputs: [
+            { internalType: "contract IERC20[]", name: "tokens", type: "address[]" },
             {
-              internalType: "contract IERC20[]",
-              name: "",
-              type: "address[]",
+              components: [
+                { internalType: "enum TokenType", name: "tokenType", type: "uint8" },
+                { internalType: "contract IRateProvider", name: "rateProvider", type: "address" },
+                { internalType: "bool", name: "paysYieldFees", type: "bool" },
+              ],
+              internalType: "struct TokenInfo[]",
+              name: "tokenInfo",
+              type: "tuple[]",
             },
-            {
-              internalType: "enum TokenType[]",
-              name: "",
-              type: "uint8[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "",
-              type: "uint256[]",
-            },
-            {
-              internalType: "contract IRateProvider[]",
-              name: "",
-              type: "address[]",
-            },
+            { internalType: "uint256[]", name: "balancesRaw", type: "uint256[]" },
+            { internalType: "uint256[]", name: "lastLiveBalances", type: "uint256[]" },
           ],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "getPoolTokenRates",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "decimalScalingFactors", type: "uint256[]" },
+            { internalType: "uint256[]", name: "tokenRates", type: "uint256[]" },
           ],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "getPoolTokens",
-          outputs: [
-            {
-              internalType: "contract IERC20[]",
-              name: "",
-              type: "address[]",
-            },
-          ],
+          outputs: [{ internalType: "contract IERC20[]", name: "tokens", type: "address[]" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "token",
-              type: "address",
-            },
-          ],
-          name: "getProtocolFees",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getProtocolSwapFeePercentage",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getProtocolYieldFeePercentage",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "contract IERC20", name: "token", type: "address" }],
           name: "getReservesOf",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "getStaticSwapFeePercentage",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "user",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "contract IERC20", name: "token", type: "address" }],
           name: "getTokenDelta",
-          outputs: [
-            {
-              internalType: "int256",
-              name: "",
-              type: "int256",
-            },
-          ],
+          outputs: [{ internalType: "int256", name: "", type: "int256" }],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [],
           name: "getVaultAdmin",
-          outputs: [
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getVaultExtension",
-          outputs: [
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getVaultPausedState",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "address", name: "", type: "address" }],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20[]",
-              name: "tokens",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "exactAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "minBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "address", name: "to", type: "address" },
+            { internalType: "contract IERC20[]", name: "tokens", type: "address[]" },
+            { internalType: "uint256[]", name: "exactAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "initialize",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountOut", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "isPoolInRecoveryMode",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "isPoolInitialized",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "isPoolPaused",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "pool", type: "address" }],
           name: "isPoolRegistered",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [],
           name: "isQueryDisabled",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [],
-          name: "isVaultPaused",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          name: "isUnlocked",
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "view",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "bytes",
-              name: "data",
-              type: "bytes",
-            },
-          ],
-          name: "lock",
-          outputs: [
-            {
-              internalType: "bytes",
-              name: "result",
-              type: "bytes",
-            },
-          ],
-          stateMutability: "payable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "pausePool",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "pauseVault",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "bytes",
-              name: "data",
-              type: "bytes",
-            },
-          ],
+          inputs: [{ internalType: "bytes", name: "data", type: "bytes" }],
           name: "quote",
-          outputs: [
-            {
-              internalType: "bytes",
-              name: "result",
-              type: "bytes",
-            },
-          ],
+          outputs: [{ internalType: "bytes", name: "result", type: "bytes" }],
           stateMutability: "payable",
           type: "function",
         },
         {
+          inputs: [{ internalType: "bytes", name: "data", type: "bytes" }],
+          name: "quoteAndRevert",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "reentrancyGuardEntered",
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
+            { internalType: "address", name: "pool", type: "address" },
             {
               components: [
-                {
-                  internalType: "contract IERC20",
-                  name: "token",
-                  type: "address",
-                },
-                {
-                  internalType: "enum TokenType",
-                  name: "tokenType",
-                  type: "uint8",
-                },
-                {
-                  internalType: "contract IRateProvider",
-                  name: "rateProvider",
-                  type: "address",
-                },
-                {
-                  internalType: "bool",
-                  name: "yieldFeeExempt",
-                  type: "bool",
-                },
+                { internalType: "contract IERC20", name: "token", type: "address" },
+                { internalType: "enum TokenType", name: "tokenType", type: "uint8" },
+                { internalType: "contract IRateProvider", name: "rateProvider", type: "address" },
+                { internalType: "bool", name: "paysYieldFees", type: "bool" },
               ],
               internalType: "struct TokenConfig[]",
               name: "tokenConfig",
               type: "tuple[]",
             },
-            {
-              internalType: "uint256",
-              name: "pauseWindowEndTime",
-              type: "uint256",
-            },
-            {
-              internalType: "address",
-              name: "pauseManager",
-              type: "address",
-            },
+            { internalType: "uint256", name: "swapFeePercentage", type: "uint256" },
+            { internalType: "uint32", name: "pauseWindowEndTime", type: "uint32" },
+            { internalType: "bool", name: "protocolFeeExempt", type: "bool" },
             {
               components: [
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeInitialize",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterInitialize",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeSwap",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterSwap",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeAddLiquidity",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterAddLiquidity",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallBeforeRemoveLiquidity",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "shouldCallAfterRemoveLiquidity",
-                  type: "bool",
-                },
+                { internalType: "address", name: "pauseManager", type: "address" },
+                { internalType: "address", name: "swapFeeManager", type: "address" },
+                { internalType: "address", name: "poolCreator", type: "address" },
               ],
-              internalType: "struct PoolHooks",
-              name: "hookConfig",
+              internalType: "struct PoolRoleAccounts",
+              name: "roleAccounts",
               type: "tuple",
             },
+            { internalType: "address", name: "poolHooksContract", type: "address" },
             {
               components: [
-                {
-                  internalType: "bool",
-                  name: "supportsAddLiquidityCustom",
-                  type: "bool",
-                },
-                {
-                  internalType: "bool",
-                  name: "supportsRemoveLiquidityCustom",
-                  type: "bool",
-                },
+                { internalType: "bool", name: "disableUnbalancedLiquidity", type: "bool" },
+                { internalType: "bool", name: "enableAddLiquidityCustom", type: "bool" },
+                { internalType: "bool", name: "enableRemoveLiquidityCustom", type: "bool" },
               ],
               internalType: "struct LiquidityManagement",
               name: "liquidityManagement",
@@ -6391,526 +2838,113 @@ const externalContracts = {
         },
         {
           inputs: [
-            {
-              components: [
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "from",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "maxBptAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "minAmountsOut",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "enum RemoveLiquidityKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
-              ],
-              internalType: "struct RemoveLiquidityParams",
-              name: "params",
-              type: "tuple",
-            },
-          ],
-          name: "removeLiquidity",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "from",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "address", name: "from", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
           ],
           name: "removeLiquidityRecovery",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOutRaw", type: "uint256[]" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-          ],
-          name: "sendTo",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "contract IAuthorizer",
-              name: "newAuthorizer",
-              type: "address",
-            },
-          ],
-          name: "setAuthorizer",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "newSwapFeePercentage",
-              type: "uint256",
-            },
-          ],
-          name: "setProtocolSwapFeePercentage",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "newYieldFeePercentage",
-              type: "uint256",
-            },
-          ],
-          name: "setProtocolYieldFeePercentage",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "swapFeePercentage",
-              type: "uint256",
-            },
-          ],
-          name: "setStaticSwapFeePercentage",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-          ],
-          name: "settle",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "paid",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              components: [
-                {
-                  internalType: "enum SwapKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenOut",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "amountGivenRaw",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "limitRaw",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
-              ],
-              internalType: "struct SwapParams",
-              name: "params",
-              type: "tuple",
-            },
-          ],
-          name: "swap",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountCalculatedRaw",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "amountInRaw",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "amountOutRaw",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "contract IERC20",
-              name: "token",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "from",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-          ],
-          name: "takeFrom",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "token",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "token", type: "address" }],
           name: "totalSupply",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "view",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "owner",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
+            { internalType: "address", name: "owner", type: "address" },
+            { internalType: "address", name: "to", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
           ],
           name: "transfer",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "spender",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "from",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
+            { internalType: "address", name: "spender", type: "address" },
+            { internalType: "address", name: "from", type: "address" },
+            { internalType: "address", name: "to", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
           ],
           name: "transferFrom",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-          ],
-          name: "unpausePool",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "unpauseVault",
-          outputs: [],
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [],
           name: "vault",
-          outputs: [
-            {
-              internalType: "contract IVault",
-              name: "",
-              type: "address",
-            },
-          ],
+          outputs: [{ internalType: "contract IVault", name: "", type: "address" }],
           stateMutability: "view",
           type: "function",
         },
+        { stateMutability: "payable", type: "receive" },
       ],
     },
     Router: {
-      address: "0xA0De078cd5cFa7088821B83e0bD7545ccfb7c883",
+      address: "0x1c58cc548a23956469c7c528bb3a846c842dfaf9",
       abi: [
         {
           inputs: [
-            {
-              internalType: "contract IVault",
-              name: "vault",
-              type: "address",
-            },
-            {
-              internalType: "contract IWETH",
-              name: "weth",
-              type: "address",
-            },
+            { internalType: "contract IVault", name: "vault", type: "address" },
+            { internalType: "contract IWETH", name: "weth", type: "address" },
+            { internalType: "contract IPermit2", name: "permit2", type: "address" },
           ],
           stateMutability: "nonpayable",
           type: "constructor",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "account",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "target", type: "address" }],
+          name: "AddressEmptyCode",
+          type: "error",
+        },
+        {
+          inputs: [{ internalType: "address", name: "account", type: "address" }],
           name: "AddressInsufficientBalance",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "EthTransfer",
-          type: "error",
-        },
+        { inputs: [], name: "EthTransfer", type: "error" },
         {
           inputs: [
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "limit",
-              type: "uint256",
-            },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "uint256", name: "limit", type: "uint256" },
           ],
           name: "ExitBelowMin",
           type: "error",
         },
+        { inputs: [], name: "FailedInnerCall", type: "error" },
+        { inputs: [], name: "InsufficientEth", type: "error" },
+        { inputs: [], name: "ReentrancyGuardReentrantCall", type: "error" },
         {
-          inputs: [],
-          name: "FailedInnerCall",
+          inputs: [{ internalType: "address", name: "token", type: "address" }],
+          name: "SafeERC20FailedOperation",
           type: "error",
         },
         {
-          inputs: [],
-          name: "InsufficientEth",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "ReentrancyGuardReentrantCall",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "sender",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "sender", type: "address" }],
           name: "SenderIsNotVault",
           type: "error",
         },
-        {
-          inputs: [],
-          name: "SwapDeadline",
-          type: "error",
-        },
+        { inputs: [], name: "SwapDeadline", type: "error" },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256[]",
-              name: "maxAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "minBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256[]", name: "maxAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "addLiquidityCustom",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "bptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "payable",
           type: "function",
@@ -6919,41 +2953,13 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "maxAmountsIn",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "minBptAmountOut",
-                  type: "uint256",
-                },
-                {
-                  internalType: "enum AddLiquidityKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "uint256[]", name: "maxAmountsIn", type: "uint256[]" },
+                { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+                { internalType: "enum AddLiquidityKind", name: "kind", type: "uint8" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.AddLiquidityHookParams",
               name: "params",
@@ -6962,149 +2968,95 @@ const externalContracts = {
           ],
           name: "addLiquidityHook",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "bptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "maxAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256[]", name: "maxAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "exactBptAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
+          ],
+          name: "addLiquidityProportional",
+          outputs: [{ internalType: "uint256[]", name: "amountsIn", type: "uint256[]" }],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { internalType: "uint256", name: "maxAmountIn", type: "uint256" },
+            { internalType: "uint256", name: "exactBptAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "addLiquiditySingleTokenExactOut",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountIn",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "amountIn", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256[]",
-              name: "exactAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "minBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { internalType: "uint256", name: "amountUnderlyingRaw", type: "uint256" },
+            { internalType: "uint256", name: "amountWrappedRaw", type: "uint256" },
+            { internalType: "address", name: "sharesOwner", type: "address" },
+          ],
+          name: "addLiquidityToBuffer",
+          outputs: [{ internalType: "uint256", name: "issuedShares", type: "uint256" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { internalType: "uint256", name: "amountUnderlyingRaw", type: "uint256" },
+            { internalType: "uint256", name: "amountWrappedRaw", type: "uint256" },
+            { internalType: "address", name: "sharesOwner", type: "address" },
+          ],
+          name: "addLiquidityToBufferHook",
+          outputs: [{ internalType: "uint256", name: "issuedShares", type: "uint256" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256[]", name: "exactAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "addLiquidityUnbalanced",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountOut", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
         {
+          inputs: [],
+          name: "getSender",
+          outputs: [{ internalType: "address", name: "", type: "address" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20[]",
-              name: "tokens",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "exactAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "minBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20[]", name: "tokens", type: "address[]" },
+            { internalType: "uint256[]", name: "exactAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "initialize",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountOut", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
@@ -7112,41 +3064,13 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20[]",
-                  name: "tokens",
-                  type: "address[]",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "exactAmountsIn",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "minBptAmountOut",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "contract IERC20[]", name: "tokens", type: "address[]" },
+                { internalType: "uint256[]", name: "exactAmountsIn", type: "uint256[]" },
+                { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.InitializeHookParams",
               name: "params",
@@ -7154,56 +3078,73 @@ const externalContracts = {
             },
           ],
           name: "initializeHook",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountOut", type: "uint256" }],
           stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "bytes[]", name: "data", type: "bytes[]" }],
+          name: "multicall",
+          outputs: [{ internalType: "bytes[]", name: "results", type: "bytes[]" }],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
             {
-              internalType: "address",
-              name: "pool",
-              type: "address",
+              components: [
+                { internalType: "address", name: "token", type: "address" },
+                { internalType: "address", name: "owner", type: "address" },
+                { internalType: "address", name: "spender", type: "address" },
+                { internalType: "uint256", name: "amount", type: "uint256" },
+                { internalType: "uint256", name: "nonce", type: "uint256" },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+              ],
+              internalType: "struct IRouter.PermitApproval[]",
+              name: "permitBatch",
+              type: "tuple[]",
             },
+            { internalType: "bytes[]", name: "permitSignatures", type: "bytes[]" },
             {
-              internalType: "uint256[]",
-              name: "maxAmountsIn",
-              type: "uint256[]",
+              components: [
+                {
+                  components: [
+                    { internalType: "address", name: "token", type: "address" },
+                    { internalType: "uint160", name: "amount", type: "uint160" },
+                    { internalType: "uint48", name: "expiration", type: "uint48" },
+                    { internalType: "uint48", name: "nonce", type: "uint48" },
+                  ],
+                  internalType: "struct IAllowanceTransfer.PermitDetails[]",
+                  name: "details",
+                  type: "tuple[]",
+                },
+                { internalType: "address", name: "spender", type: "address" },
+                { internalType: "uint256", name: "sigDeadline", type: "uint256" },
+              ],
+              internalType: "struct IAllowanceTransfer.PermitBatch",
+              name: "permit2Batch",
+              type: "tuple",
             },
-            {
-              internalType: "uint256",
-              name: "minBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "bytes", name: "permit2Signature", type: "bytes" },
+            { internalType: "bytes[]", name: "multicallData", type: "bytes[]" },
+          ],
+          name: "permitBatchAndCall",
+          outputs: [{ internalType: "bytes[]", name: "results", type: "bytes[]" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256[]", name: "maxAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryAddLiquidityCustom",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "bptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "nonpayable",
           type: "function",
@@ -7212,41 +3153,13 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "maxAmountsIn",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "minBptAmountOut",
-                  type: "uint256",
-                },
-                {
-                  internalType: "enum AddLiquidityKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "uint256[]", name: "maxAmountsIn", type: "uint256[]" },
+                { internalType: "uint256", name: "minBptAmountOut", type: "uint256" },
+                { internalType: "enum AddLiquidityKind", name: "kind", type: "uint8" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.AddLiquidityHookParams",
               name: "params",
@@ -7255,128 +3168,60 @@ const externalContracts = {
           ],
           name: "queryAddLiquidityHook",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "bptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256[]", name: "maxAmountsIn", type: "uint256[]" },
+            { internalType: "uint256", name: "exactBptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
+          ],
+          name: "queryAddLiquidityProportional",
+          outputs: [{ internalType: "uint256[]", name: "amountsIn", type: "uint256[]" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryAddLiquiditySingleTokenExactOut",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountIn",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "amountIn", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256[]",
-              name: "exactAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256[]", name: "exactAmountsIn", type: "uint256[]" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryAddLiquidityUnbalanced",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountOut", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "maxBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "minAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "maxBptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "minAmountsOut", type: "uint256[]" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryRemoveLiquidityCustom",
           outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256", name: "bptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "nonpayable",
           type: "function",
@@ -7385,41 +3230,13 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "minAmountsOut",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "maxBptAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "enum RemoveLiquidityKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "uint256[]", name: "minAmountsOut", type: "uint256[]" },
+                { internalType: "uint256", name: "maxBptAmountIn", type: "uint256" },
+                { internalType: "enum RemoveLiquidityKind", name: "kind", type: "uint8" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.RemoveLiquidityHookParams",
               name: "params",
@@ -7428,172 +3245,66 @@ const externalContracts = {
           ],
           name: "queryRemoveLiquidityHook",
           outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256", name: "bptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryRemoveLiquidityProportional",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOut", type: "uint256[]" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
           ],
           name: "queryRemoveLiquidityRecovery",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOut", type: "uint256[]" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "sender",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "address", name: "sender", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
           ],
           name: "queryRemoveLiquidityRecoveryHook",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOut", type: "uint256[]" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryRemoveLiquiditySingleTokenExactIn",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "amountOut", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "queryRemoveLiquiditySingleTokenExactOut",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountIn", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -7601,56 +3312,16 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "enum SwapKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenOut",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "amountGiven",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "limit",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "deadline",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "enum SwapKind", name: "kind", type: "uint8" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+                { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                { internalType: "uint256", name: "amountGiven", type: "uint256" },
+                { internalType: "uint256", name: "limit", type: "uint256" },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.SwapSingleTokenHookParams",
               name: "params",
@@ -7658,139 +3329,76 @@ const externalContracts = {
             },
           ],
           name: "querySwapHook",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "exactAmountIn", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "querySwapSingleTokenExactIn",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountCalculated",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "amountCalculated", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "querySwapSingleTokenExactOut",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountCalculated",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "amountCalculated", type: "uint256" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "maxBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "minAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "maxBptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "minAmountsOut", type: "uint256[]" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "removeLiquidityCustom",
           outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256", name: "bptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { internalType: "uint256", name: "sharesToRemove", type: "uint256" },
+          ],
+          name: "removeLiquidityFromBuffer",
+          outputs: [
+            { internalType: "uint256", name: "", type: "uint256" },
+            { internalType: "uint256", name: "", type: "uint256" },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "contract IERC4626", name: "wrappedToken", type: "address" },
+            { internalType: "uint256", name: "sharesToRemove", type: "uint256" },
+            { internalType: "address", name: "sharesOwner", type: "address" },
+          ],
+          name: "removeLiquidityFromBufferHook",
+          outputs: [
+            { internalType: "uint256", name: "removedUnderlyingBalanceRaw", type: "uint256" },
+            { internalType: "uint256", name: "removedWrappedBalanceRaw", type: "uint256" },
           ],
           stateMutability: "nonpayable",
           type: "function",
@@ -7799,41 +3407,13 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256[]",
-                  name: "minAmountsOut",
-                  type: "uint256[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "maxBptAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "enum RemoveLiquidityKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "uint256[]", name: "minAmountsOut", type: "uint256[]" },
+                { internalType: "uint256", name: "maxBptAmountIn", type: "uint256" },
+                { internalType: "enum RemoveLiquidityKind", name: "kind", type: "uint8" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.RemoveLiquidityHookParams",
               name: "params",
@@ -7842,310 +3422,104 @@ const externalContracts = {
           ],
           name: "removeLiquidityHook",
           outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "returnData",
-              type: "bytes",
-            },
+            { internalType: "uint256", name: "bptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
+            { internalType: "bytes", name: "returnData", type: "bytes" },
           ],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256[]",
-              name: "minAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
+            { internalType: "uint256[]", name: "minAmountsOut", type: "uint256[]" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "removeLiquidityProportional",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOut", type: "uint256[]" }],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
           ],
           name: "removeLiquidityRecovery",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOut", type: "uint256[]" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "sender",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "address", name: "sender", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
           ],
           name: "removeLiquidityRecoveryHook",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
-          ],
+          outputs: [{ internalType: "uint256[]", name: "amountsOut", type: "uint256[]" }],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "minAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "exactBptAmountIn", type: "uint256" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "minAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "removeLiquiditySingleTokenExactIn",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "amountOut",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "amountOut", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "maxBptAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "uint256", name: "maxBptAmountIn", type: "uint256" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "removeLiquiditySingleTokenExactOut",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "bptAmountIn",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "bptAmountIn", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "minAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "deadline",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "exactAmountIn", type: "uint256" },
+            { internalType: "uint256", name: "minAmountOut", type: "uint256" },
+            { internalType: "uint256", name: "deadline", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "swapSingleTokenExactIn",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
         {
           inputs: [
-            {
-              internalType: "address",
-              name: "pool",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenIn",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20",
-              name: "tokenOut",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "exactAmountOut",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "maxAmountIn",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "deadline",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "address", name: "pool", type: "address" },
+            { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+            { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+            { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
+            { internalType: "uint256", name: "maxAmountIn", type: "uint256" },
+            { internalType: "uint256", name: "deadline", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "swapSingleTokenExactOut",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
@@ -8153,56 +3527,16 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
-                {
-                  internalType: "enum SwapKind",
-                  name: "kind",
-                  type: "uint8",
-                },
-                {
-                  internalType: "address",
-                  name: "pool",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenOut",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "amountGiven",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "limit",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "deadline",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "address", name: "sender", type: "address" },
+                { internalType: "enum SwapKind", name: "kind", type: "uint8" },
+                { internalType: "address", name: "pool", type: "address" },
+                { internalType: "contract IERC20", name: "tokenIn", type: "address" },
+                { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                { internalType: "uint256", name: "amountGiven", type: "uint256" },
+                { internalType: "uint256", name: "limit", type: "uint256" },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IRouter.SwapSingleTokenHookParams",
               name: "params",
@@ -8210,152 +3544,86 @@ const externalContracts = {
             },
           ],
           name: "swapSingleTokenHook",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
           stateMutability: "payable",
           type: "function",
         },
-        {
-          stateMutability: "payable",
-          type: "receive",
-        },
+        { stateMutability: "payable", type: "receive" },
       ],
     },
     BatchRouter: {
-      address: "0x8A8B9f35765899B3a0291700141470D79EA2eA88",
+      address: "0xeb1aa94421aecfb1dc17ddb1068e4609c4be8758",
       abi: [
         {
           inputs: [
-            {
-              internalType: "contract IVault",
-              name: "vault",
-              type: "address",
-            },
-            {
-              internalType: "contract IWETH",
-              name: "weth",
-              type: "address",
-            },
+            { internalType: "contract IVault", name: "vault", type: "address" },
+            { internalType: "contract IWETH", name: "weth", type: "address" },
+            { internalType: "contract IPermit2", name: "permit2", type: "address" },
           ],
           stateMutability: "nonpayable",
           type: "constructor",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "account",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "target", type: "address" }],
+          name: "AddressEmptyCode",
+          type: "error",
+        },
+        {
+          inputs: [{ internalType: "address", name: "account", type: "address" }],
           name: "AddressInsufficientBalance",
           type: "error",
         },
+        { inputs: [], name: "EthTransfer", type: "error" },
+        { inputs: [], name: "FailedInnerCall", type: "error" },
+        { inputs: [], name: "InsufficientEth", type: "error" },
+        { inputs: [], name: "ReentrancyGuardReentrantCall", type: "error" },
         {
-          inputs: [],
-          name: "EthTransfer",
+          inputs: [{ internalType: "address", name: "token", type: "address" }],
+          name: "SafeERC20FailedOperation",
           type: "error",
         },
         {
-          inputs: [],
-          name: "FailedInnerCall",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InsufficientEth",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "ReentrancyGuardReentrantCall",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "sender",
-              type: "address",
-            },
-          ],
+          inputs: [{ internalType: "address", name: "sender", type: "address" }],
           name: "SenderIsNotVault",
           type: "error",
         },
+        { inputs: [], name: "SwapDeadline", type: "error" },
         {
           inputs: [],
-          name: "SwapDeadline",
-          type: "error",
+          name: "getSender",
+          outputs: [{ internalType: "address", name: "", type: "address" }],
+          stateMutability: "view",
+          type: "function",
         },
         {
           inputs: [
             {
               components: [
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
+                { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "address",
-                      name: "pool",
-                      type: "address",
-                    },
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenOut",
-                      type: "address",
-                    },
+                    { internalType: "address", name: "pool", type: "address" },
+                    { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                    { internalType: "bool", name: "isBuffer", type: "bool" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathStep[]",
                   name: "steps",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "exactAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "minAmountOut",
-                  type: "uint256",
-                },
+                { internalType: "uint256", name: "exactAmountIn", type: "uint256" },
+                { internalType: "uint256", name: "minAmountOut", type: "uint256" },
               ],
               internalType: "struct IBatchRouter.SwapPathExactAmountIn[]",
               name: "paths",
               type: "tuple[]",
             },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "querySwapExactIn",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensOut",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsOut", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensOut", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
           ],
           stateMutability: "nonpayable",
           type: "function",
@@ -8364,65 +3632,30 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
+                { internalType: "address", name: "sender", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenIn",
-                      type: "address",
-                    },
+                    { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                     {
                       components: [
-                        {
-                          internalType: "address",
-                          name: "pool",
-                          type: "address",
-                        },
-                        {
-                          internalType: "contract IERC20",
-                          name: "tokenOut",
-                          type: "address",
-                        },
+                        { internalType: "address", name: "pool", type: "address" },
+                        { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                        { internalType: "bool", name: "isBuffer", type: "bool" },
                       ],
                       internalType: "struct IBatchRouter.SwapPathStep[]",
                       name: "steps",
                       type: "tuple[]",
                     },
-                    {
-                      internalType: "uint256",
-                      name: "exactAmountIn",
-                      type: "uint256",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "minAmountOut",
-                      type: "uint256",
-                    },
+                    { internalType: "uint256", name: "exactAmountIn", type: "uint256" },
+                    { internalType: "uint256", name: "minAmountOut", type: "uint256" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathExactAmountIn[]",
                   name: "paths",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "deadline",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IBatchRouter.SwapExactInHookParams",
               name: "params",
@@ -8431,21 +3664,9 @@ const externalContracts = {
           ],
           name: "querySwapExactInHook",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensOut",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsOut", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensOut", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
           ],
           stateMutability: "payable",
           type: "function",
@@ -8454,66 +3675,31 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
+                { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "address",
-                      name: "pool",
-                      type: "address",
-                    },
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenOut",
-                      type: "address",
-                    },
+                    { internalType: "address", name: "pool", type: "address" },
+                    { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                    { internalType: "bool", name: "isBuffer", type: "bool" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathStep[]",
                   name: "steps",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "maxAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "exactAmountOut",
-                  type: "uint256",
-                },
+                { internalType: "uint256", name: "maxAmountIn", type: "uint256" },
+                { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
               ],
               internalType: "struct IBatchRouter.SwapPathExactAmountOut[]",
               name: "paths",
               type: "tuple[]",
             },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "querySwapExactOut",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensIn",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsIn", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensIn", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
           ],
           stateMutability: "nonpayable",
           type: "function",
@@ -8522,65 +3708,30 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
+                { internalType: "address", name: "sender", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenIn",
-                      type: "address",
-                    },
+                    { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                     {
                       components: [
-                        {
-                          internalType: "address",
-                          name: "pool",
-                          type: "address",
-                        },
-                        {
-                          internalType: "contract IERC20",
-                          name: "tokenOut",
-                          type: "address",
-                        },
+                        { internalType: "address", name: "pool", type: "address" },
+                        { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                        { internalType: "bool", name: "isBuffer", type: "bool" },
                       ],
                       internalType: "struct IBatchRouter.SwapPathStep[]",
                       name: "steps",
                       type: "tuple[]",
                     },
-                    {
-                      internalType: "uint256",
-                      name: "maxAmountIn",
-                      type: "uint256",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "exactAmountOut",
-                      type: "uint256",
-                    },
+                    { internalType: "uint256", name: "maxAmountIn", type: "uint256" },
+                    { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathExactAmountOut[]",
                   name: "paths",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "deadline",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IBatchRouter.SwapExactOutHookParams",
               name: "params",
@@ -8589,21 +3740,9 @@ const externalContracts = {
           ],
           name: "querySwapExactOutHook",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensIn",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsIn", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensIn", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
           ],
           stateMutability: "payable",
           type: "function",
@@ -8612,76 +3751,33 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
+                { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "address",
-                      name: "pool",
-                      type: "address",
-                    },
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenOut",
-                      type: "address",
-                    },
+                    { internalType: "address", name: "pool", type: "address" },
+                    { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                    { internalType: "bool", name: "isBuffer", type: "bool" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathStep[]",
                   name: "steps",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "exactAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "minAmountOut",
-                  type: "uint256",
-                },
+                { internalType: "uint256", name: "exactAmountIn", type: "uint256" },
+                { internalType: "uint256", name: "minAmountOut", type: "uint256" },
               ],
               internalType: "struct IBatchRouter.SwapPathExactAmountIn[]",
               name: "paths",
               type: "tuple[]",
             },
-            {
-              internalType: "uint256",
-              name: "deadline",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "uint256", name: "deadline", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "swapExactIn",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensOut",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsOut", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensOut", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
           ],
           stateMutability: "payable",
           type: "function",
@@ -8690,65 +3786,30 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
+                { internalType: "address", name: "sender", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenIn",
-                      type: "address",
-                    },
+                    { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                     {
                       components: [
-                        {
-                          internalType: "address",
-                          name: "pool",
-                          type: "address",
-                        },
-                        {
-                          internalType: "contract IERC20",
-                          name: "tokenOut",
-                          type: "address",
-                        },
+                        { internalType: "address", name: "pool", type: "address" },
+                        { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                        { internalType: "bool", name: "isBuffer", type: "bool" },
                       ],
                       internalType: "struct IBatchRouter.SwapPathStep[]",
                       name: "steps",
                       type: "tuple[]",
                     },
-                    {
-                      internalType: "uint256",
-                      name: "exactAmountIn",
-                      type: "uint256",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "minAmountOut",
-                      type: "uint256",
-                    },
+                    { internalType: "uint256", name: "exactAmountIn", type: "uint256" },
+                    { internalType: "uint256", name: "minAmountOut", type: "uint256" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathExactAmountIn[]",
                   name: "paths",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "deadline",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IBatchRouter.SwapExactInHookParams",
               name: "params",
@@ -8757,21 +3818,9 @@ const externalContracts = {
           ],
           name: "swapExactInHook",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsOut",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensOut",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsOut",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsOut", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensOut", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsOut", type: "uint256[]" },
           ],
           stateMutability: "payable",
           type: "function",
@@ -8780,76 +3829,33 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "contract IERC20",
-                  name: "tokenIn",
-                  type: "address",
-                },
+                { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "address",
-                      name: "pool",
-                      type: "address",
-                    },
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenOut",
-                      type: "address",
-                    },
+                    { internalType: "address", name: "pool", type: "address" },
+                    { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                    { internalType: "bool", name: "isBuffer", type: "bool" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathStep[]",
                   name: "steps",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "maxAmountIn",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "exactAmountOut",
-                  type: "uint256",
-                },
+                { internalType: "uint256", name: "maxAmountIn", type: "uint256" },
+                { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
               ],
               internalType: "struct IBatchRouter.SwapPathExactAmountOut[]",
               name: "paths",
               type: "tuple[]",
             },
-            {
-              internalType: "uint256",
-              name: "deadline",
-              type: "uint256",
-            },
-            {
-              internalType: "bool",
-              name: "wethIsEth",
-              type: "bool",
-            },
-            {
-              internalType: "bytes",
-              name: "userData",
-              type: "bytes",
-            },
+            { internalType: "uint256", name: "deadline", type: "uint256" },
+            { internalType: "bool", name: "wethIsEth", type: "bool" },
+            { internalType: "bytes", name: "userData", type: "bytes" },
           ],
           name: "swapExactOut",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensIn",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsIn", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensIn", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
           ],
           stateMutability: "payable",
           type: "function",
@@ -8858,65 +3864,30 @@ const externalContracts = {
           inputs: [
             {
               components: [
-                {
-                  internalType: "address",
-                  name: "sender",
-                  type: "address",
-                },
+                { internalType: "address", name: "sender", type: "address" },
                 {
                   components: [
-                    {
-                      internalType: "contract IERC20",
-                      name: "tokenIn",
-                      type: "address",
-                    },
+                    { internalType: "contract IERC20", name: "tokenIn", type: "address" },
                     {
                       components: [
-                        {
-                          internalType: "address",
-                          name: "pool",
-                          type: "address",
-                        },
-                        {
-                          internalType: "contract IERC20",
-                          name: "tokenOut",
-                          type: "address",
-                        },
+                        { internalType: "address", name: "pool", type: "address" },
+                        { internalType: "contract IERC20", name: "tokenOut", type: "address" },
+                        { internalType: "bool", name: "isBuffer", type: "bool" },
                       ],
                       internalType: "struct IBatchRouter.SwapPathStep[]",
                       name: "steps",
                       type: "tuple[]",
                     },
-                    {
-                      internalType: "uint256",
-                      name: "maxAmountIn",
-                      type: "uint256",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "exactAmountOut",
-                      type: "uint256",
-                    },
+                    { internalType: "uint256", name: "maxAmountIn", type: "uint256" },
+                    { internalType: "uint256", name: "exactAmountOut", type: "uint256" },
                   ],
                   internalType: "struct IBatchRouter.SwapPathExactAmountOut[]",
                   name: "paths",
                   type: "tuple[]",
                 },
-                {
-                  internalType: "uint256",
-                  name: "deadline",
-                  type: "uint256",
-                },
-                {
-                  internalType: "bool",
-                  name: "wethIsEth",
-                  type: "bool",
-                },
-                {
-                  internalType: "bytes",
-                  name: "userData",
-                  type: "bytes",
-                },
+                { internalType: "uint256", name: "deadline", type: "uint256" },
+                { internalType: "bool", name: "wethIsEth", type: "bool" },
+                { internalType: "bytes", name: "userData", type: "bytes" },
               ],
               internalType: "struct IBatchRouter.SwapExactOutHookParams",
               name: "params",
@@ -8925,29 +3896,14 @@ const externalContracts = {
           ],
           name: "swapExactOutHook",
           outputs: [
-            {
-              internalType: "uint256[]",
-              name: "pathAmountsIn",
-              type: "uint256[]",
-            },
-            {
-              internalType: "address[]",
-              name: "tokensIn",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amountsIn",
-              type: "uint256[]",
-            },
+            { internalType: "uint256[]", name: "pathAmountsIn", type: "uint256[]" },
+            { internalType: "address[]", name: "tokensIn", type: "address[]" },
+            { internalType: "uint256[]", name: "amountsIn", type: "uint256[]" },
           ],
           stateMutability: "payable",
           type: "function",
         },
-        {
-          stateMutability: "payable",
-          type: "receive",
-        },
+        { stateMutability: "payable", type: "receive" },
       ],
     },
   },

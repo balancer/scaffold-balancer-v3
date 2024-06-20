@@ -24,28 +24,30 @@ export type PoolTokens = {
 };
 
 export type PoolConfig = {
-  hasDynamicSwapFee: boolean;
+  liquidityManagement: {
+    disableUnbalancedLiquidity: boolean;
+    enableAddLiquidityCustom: boolean;
+    enableRemoveLiquidityCustom: boolean;
+  };
+  staticSwapFeePercentage: bigint;
+  aggregateSwapFeePercentage: bigint;
+  aggregateYieldFeePercentage: bigint;
+  tokenDecimalDiffs: number;
+  pauseWindowEndTime: number;
   isPoolRegistered: boolean;
   isPoolInitialized: boolean;
   isPoolPaused: boolean;
   isPoolInRecoveryMode: boolean;
-  pauseWindowEndTime: number;
-  staticSwapFeePercentage: bigint;
-  tokenDecimalDiffs: number;
-  liquidityManagement: {
-    supportsAddLiquidityCustom: boolean;
-    supportsRemoveLiquidityCustom: boolean;
-  };
-  hooks: {
-    shouldCallAfterAddLiquidity: boolean;
-    shouldCallAfterInitialize: boolean;
-    shouldCallAfterRemoveLiquidity: boolean;
-    shouldCallAfterSwap: boolean;
-    shouldCallBeforeAddLiquidity: boolean;
-    shouldCallBeforeInitialize: boolean;
-    shouldCallBeforeRemoveLiquidity: boolean;
-    shouldCallBeforeSwap: boolean;
-  };
+  // hooks: {
+  //   shouldCallAfterAddLiquidity: boolean;
+  //   shouldCallAfterInitialize: boolean;
+  //   shouldCallAfterRemoveLiquidity: boolean;
+  //   shouldCallAfterSwap: boolean;
+  //   shouldCallBeforeAddLiquidity: boolean;
+  //   shouldCallBeforeInitialize: boolean;
+  //   shouldCallBeforeRemoveLiquidity: boolean;
+  //   shouldCallBeforeSwap: boolean;
+  // };
 };
 
 // Pool Actions
