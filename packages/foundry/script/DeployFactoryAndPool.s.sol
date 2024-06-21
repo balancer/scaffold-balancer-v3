@@ -1,12 +1,13 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.24;
 
-import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
 import { DeployPool } from "./DeployPool.s.sol";
-import "./ScaffoldETHDeploy.s.sol";
+import { ScaffoldETHDeploy, console } from "./ScaffoldETHDeploy.s.sol";
+import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
+import { HelperConfig } from "../utils/HelperConfig.sol";
+
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { TokenConfig } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import { HelperConfig } from "../utils/HelperConfig.sol";
 import { ArrayHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/ArrayHelpers.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 

@@ -1,13 +1,14 @@
-// SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.18;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.24;
 
-import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {MockToken1} from "../contracts/MockToken1.sol";
-import {MockToken2} from "../contracts/MockToken2.sol";
-import "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-import "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
-import "@balancer-labs/v3-interfaces/contracts/vault/IVaultExtension.sol";
-import {IPermit2} from "permit2/src/interfaces/IPermit2.sol";
+import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import { MockToken1 } from "../contracts/MockToken1.sol";
+import { MockToken2 } from "../contracts/MockToken2.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { TokenConfig, TokenType } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
+import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
+import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
 
 /**
  * @dev This is where all configurations are set for mock token deployment, factory deployment, pool deployment, and pool initialization
@@ -19,8 +20,7 @@ contract HelperConfig {
     IVault public vault = IVault(0xD5584b37D1845fFeD958C2d94bC675603DdCce68);
     IRouter public router = IRouter(0x1c58cc548a23956469c7C528Bb3a846c842dfaF9);
     // Canonical permit2 Sepolia address
-    IPermit2 public permit2 =
-        IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
+    IPermit2 public permit2 = IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
 
     /**
      * @notice Creates mock tokens for the pool and mints 1000 of each to the deployer wallet
@@ -34,11 +34,7 @@ contract HelperConfig {
     /**
      * @dev Set the pause window duration for the pool factory here
      */
-    function getFactoryConfig()
-        public
-        pure
-        returns (uint32 pauseWindowDuration)
-    {
+    function getFactoryConfig() public pure returns (uint32 pauseWindowDuration) {
         pauseWindowDuration = 365 days;
     }
 
@@ -51,15 +47,7 @@ contract HelperConfig {
     function getPoolConfig(
         address token1,
         address token2
-    )
-        public
-        pure
-        returns (
-            string memory name,
-            string memory symbol,
-            TokenConfig[] memory tokenConfig
-        )
-    {
+    ) public pure returns (string memory name, string memory symbol, TokenConfig[] memory tokenConfig) {
         name = "Scaffold Balancer Constant Price Pool #1"; // name for the pool
         symbol = "SB-50scUSD-50scDAI"; // symbol for the BPT
 
@@ -105,17 +93,12 @@ contract HelperConfig {
         userData = bytes(""); // Additional (optional) data required for adding initial liquidity
     }
 
-    function sortTokenConfig(
-        TokenConfig[] memory tokenConfig
-    ) public pure returns (TokenConfig[] memory) {
+    function sortTokenConfig(TokenConfig[] memory tokenConfig) public pure returns (TokenConfig[] memory) {
         for (uint256 i = 0; i < tokenConfig.length - 1; i++) {
             for (uint256 j = 0; j < tokenConfig.length - i - 1; j++) {
                 if (tokenConfig[j].token > tokenConfig[j + 1].token) {
                     // Swap if they're out of order.
-                    (tokenConfig[j], tokenConfig[j + 1]) = (
-                        tokenConfig[j + 1],
-                        tokenConfig[j]
-                    );
+                    (tokenConfig[j], tokenConfig[j + 1]) = (tokenConfig[j + 1], tokenConfig[j]);
                 }
             }
         }

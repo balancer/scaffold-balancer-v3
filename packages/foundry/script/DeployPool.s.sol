@@ -1,23 +1,21 @@
 // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 
-pragma solidity ^0.8.18;
-
-import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
-import { HelperFunctions } from "../utils/HelperFunctions.sol";
 import { HelperConfig } from "../utils/HelperConfig.sol";
+import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import { TokenConfig } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 import { Script, console } from "forge-std/Script.sol";
+
+import { TokenConfig } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
-import { HelperConfig } from "../utils/HelperConfig.sol";
 
 /**
  * @title Deploy Pool Script
  * @notice This script creates a new pool using the most recently deployed pool factory and then initializes it
  * @notice This script can be run directly, but is also inherited by the `DeployFactoryAndPool.s.sol` script
  */
-contract DeployPool is HelperFunctions, HelperConfig, Script {
+contract DeployPool is HelperConfig, Script {
     error InvalidPrivateKey(string);
 
     string secondPoolName = "Scaffold Balancer Constant Price Pool #2"; // name for the pool
@@ -82,7 +80,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         TokenConfig[] memory tokenConfig
     ) internal returns (address) {
         CustomPoolFactory poolFactory = CustomPoolFactory(poolFactoryAddress);
-        bytes32 salt = convertNameToBytes32(name);
+        bytes32 salt = keccak256(abi.encode(name));
         address newPool = poolFactory.create(name, symbol, tokenConfig, salt);
         console.log("Deployed Pool Address: %s", newPool);
         return newPool;

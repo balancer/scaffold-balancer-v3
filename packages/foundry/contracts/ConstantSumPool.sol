@@ -1,9 +1,9 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.24;
 
-import "@balancer-labs/v3-vault/contracts/BalancerPoolToken.sol";
-import "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
-import "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { BalancerPoolToken } from "@balancer-labs/v3-vault/contracts/BalancerPoolToken.sol";
+import { IBasePool, ISwapFeePercentageBounds } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
 /**
  * @title Constant Sum Pool

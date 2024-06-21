@@ -537,7 +537,7 @@ The script, using the `.env` specified deployer wallet, deploys the custom pool 
 
 ### 💡 3.2.2 Key Gotchas
 
-- Specific to this repo, the script `DeployFactoryAndPool.s.sol` inherits [`ScaffoldETHDeploy.s.sol`](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/script/ScaffoldETHDeploy.s.sol), [`HelperConfig`](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/utils/HelperConfig.sol), and [`HelperFunctions`](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/utils/HelperFunctions.sol).
+- Specific to this repo, the script `DeployFactoryAndPool.s.sol` inherits [`ScaffoldETHDeploy.s.sol`](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/script/ScaffoldETHDeploy.s.sol) and [`HelperConfig`](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/utils/HelperConfig.sol)
 - If using this and the associated deployment scripts to help troubleshoot your own custom pool type, then it is advised to use the `HelperConfig.sol` located at: `packages/foundry/utils/HelperConfig.sol`, to outline the appropriate details of your custom pool to use the already written example scripts within this repo.
 - Balancer integration with `initialize()` has a couple of arrays that must match in terms of token ERC20 we are using, and the amounts of said token.
 
