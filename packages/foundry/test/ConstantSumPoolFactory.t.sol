@@ -15,11 +15,11 @@ import { ERC20TestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/
 import { RateProviderMock } from "@balancer-labs/v3-vault/contracts/test/RateProviderMock.sol";
 
 import { ConstantSumPool } from "../contracts/ConstantSumPool.sol";
-import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.sol";
+import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
 
 contract ConstantSumPoolFactoryTest is Test {
     VaultMock vault;
-    CustomPoolFactoryExample factory;
+    CustomPoolFactory factory;
     RateProviderMock rateProvider;
     ERC20TestToken tokenA;
     ERC20TestToken tokenB;
@@ -28,7 +28,7 @@ contract ConstantSumPoolFactoryTest is Test {
 
     function setUp() public {
         vault = VaultMockDeployer.deploy();
-        factory = new CustomPoolFactoryExample(IVault(address(vault)), 365 days);
+        factory = new CustomPoolFactory(IVault(address(vault)), 365 days);
 
         tokenA = new ERC20TestToken("Token A", "TKNA", 18);
         tokenB = new ERC20TestToken("Token B", "TKNB", 6);

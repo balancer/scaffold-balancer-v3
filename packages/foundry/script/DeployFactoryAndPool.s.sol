@@ -1,18 +1,17 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
-import {DeployPool} from "./DeployPool.s.sol";
+import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
+import { DeployPool } from "./DeployPool.s.sol";
 import "./ScaffoldETHDeploy.s.sol";
-import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {TokenConfig} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import {HelperConfig} from "../utils/HelperConfig.sol";
-import {ArrayHelpers} from "@balancer-labs/v3-solidity-utils/contracts/helpers/ArrayHelpers.sol";
-import {InputHelpers} from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
+import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import { TokenConfig } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { HelperConfig } from "../utils/HelperConfig.sol";
+import { ArrayHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/ArrayHelpers.sol";
+import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 
 /**
- * @title DeployFactoryAndPool
- * @author BuidlGuidl Labs
+ * @title Deploy Factory And Pool Script
  * @notice Contracts deployed by this script will have their info saved into the frontend for hot reload
  * @notice This script deploys a pool factory, deploys a pool using the factory, and then initializes the pool with mock tokens
  * @notice Mock tokens and BPT will be sent to the PK set in the .env file
@@ -36,11 +35,10 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
         // Look up configuration options from `HelperConfig.sol`
         HelperConfig helperConfig = new HelperConfig();
         uint32 pauseWindowDuration = helperConfig.getFactoryConfig();
-        (
-            string memory name,
-            string memory symbol,
-            TokenConfig[] memory tokenConfig
-        ) = helperConfig.getPoolConfig(mockToken1, mockToken2);
+        (string memory name, string memory symbol, TokenConfig[] memory tokenConfig) = helperConfig.getPoolConfig(
+            mockToken1,
+            mockToken2
+        );
         (
             IERC20[] memory tokens,
             uint256[] memory exactAmountsIn,
@@ -51,10 +49,7 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
 
         // Deploy the pool factory and then deploy a pool using the factory and then initialize the pool
         vm.startBroadcast(deployerPrivateKey);
-        CustomPoolFactoryExample customPoolFactory = new CustomPoolFactoryExample(
-                vault,
-                pauseWindowDuration
-            );
+        CustomPoolFactory customPoolFactory = new CustomPoolFactory(vault, pauseWindowDuration);
         console.log("Deployed Factory Address: %s", address(customPoolFactory));
         address pool = deployPoolFromFactory(
             address(customPoolFactory),
@@ -64,14 +59,7 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
         );
 
         tokens = InputHelpers.sortTokens(tokens);
-        initializePool(
-            pool,
-            tokens,
-            exactAmountsIn,
-            minBptAmountOut,
-            wethIsEth,
-            userData
-        );
+        initializePool(pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData);
         vm.stopBroadcast();
 
         /**

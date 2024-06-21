@@ -712,7 +712,7 @@ const deployedContracts = {
         transferFrom: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
       },
     },
-    CustomPoolFactoryExample: {
+    CustomPoolFactory: {
       address: "0x69221a99e5Bc30E0cf891992e958E3Ba3815bfc6",
       abi: [
         {
@@ -746,7 +746,7 @@ const deployedContracts = {
               internalType: "string",
             },
             {
-              name: "tokenConfig",
+              name: "tokens",
               type: "tuple[]",
               internalType: "struct TokenConfig[]",
               components: [
@@ -1012,28 +1012,7 @@ const deployedContracts = {
           inputs: [],
         },
       ],
-      inheritedFunctions: {
-        disable: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getActionId: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getAuthorizer:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getDefaultLiquidityManagement:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getDefaultPoolHooksContract:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getDeploymentAddress:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getNewPoolPauseWindowEndTime:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getOriginalPauseWindowEndTime:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getPauseWindowDuration:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getVault: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        isDisabled: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        isPoolFromFactory:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-      },
+      inheritedFunctions: {},
     },
   },
 } as const;

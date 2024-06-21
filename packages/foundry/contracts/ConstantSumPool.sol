@@ -61,13 +61,4 @@ contract ConstantSumPool is IBasePool, BalancerPoolToken {
     function getMaximumSwapFeePercentage() external pure returns (uint256) {
         return _MAX_SWAP_FEE_PERCENTAGE;
     }
-
-    // I Don't think getPoolTokens is needed anymore. Not shown in docs and not implimented in monorepo examples
-    // /**
-    //  * @notice Gets the tokens registered to a pool.
-    //  * @dev Delegated to the Vault; added here as a convenience, mainly for off-chain processes.
-    //  * @dev TODO - left blank for now, but for post milestone 1 w/ scaffoldBalancer it'd be good to implement.
-    //  * @return tokens List of tokens in the pool
-    //  */
-    // function getPoolTokens() external view returns (IERC20[] memory tokens) {}
 }

@@ -28,15 +28,15 @@ import { PoolConfigBits, PoolConfigLib } from "@balancer-labs/v3-vault/contracts
 
 import { BaseVaultTest } from "@test/vault/test/foundry/utils/BaseVaultTest.sol";
 import { ConstantSumPool } from "../contracts/ConstantSumPool.sol";
-import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.sol";
+import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
 
 /**
- * @notice This test roughly mirrors how weighted pools are tested within BalancerV3 monorepo
+ * @dev This test roughly mirrors how weighted pools are tested within BalancerV3 monorepo
  */
 contract ConstantSumPoolTest is BaseVaultTest {
     using ArrayHelpers for *;
 
-    CustomPoolFactoryExample factory;
+    CustomPoolFactory factory;
     ConstantSumPool internal constantSumPool;
 
     uint256 constant USDC_AMOUNT = 1e3 * 1e18;
@@ -199,7 +199,7 @@ contract ConstantSumPoolTest is BaseVaultTest {
     /// Helpers
 
     function createPool() internal override returns (address) {
-        factory = new CustomPoolFactoryExample(IVault(address(vault)), 365 days);
+        factory = new CustomPoolFactory(IVault(address(vault)), 365 days);
         TokenConfig[] memory tokens = new TokenConfig[](2);
         tokens[0].token = IERC20(usdc);
         tokens[1].token = IERC20(dai);

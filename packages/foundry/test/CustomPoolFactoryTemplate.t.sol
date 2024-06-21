@@ -15,7 +15,7 @@ import { ERC20TestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/
 import { RateProviderMock } from "@balancer-labs/v3-vault/contracts/test/RateProviderMock.sol";
 
 import { ConstantSumPool } from "../contracts/ConstantSumPool.sol";
-import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.sol";
+import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
 
 /**
  * @title Custom Pool Factory Starter Test Template
@@ -27,7 +27,7 @@ import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.
  */
 contract CustomPoolFactoryTemplateTest is Test {
     VaultMock vault;
-    CustomPoolFactoryExample factory; // TODO - Update with your own custom pool factory
+    CustomPoolFactory factory; // TODO - Update with your own custom pool factory
     RateProviderMock rateProvider;
     ERC20TestToken tokenA;
     ERC20TestToken tokenB;
@@ -36,14 +36,14 @@ contract CustomPoolFactoryTemplateTest is Test {
 
     function setUp() public {
         vault = VaultMockDeployer.deploy();
-        factory = new CustomPoolFactoryExample(IVault(address(vault)), 365 days); // TODO - Update with your own custom pool factory
+        factory = new CustomPoolFactory(IVault(address(vault)), 365 days); // TODO - Update with your own custom pool factory
 
         tokenA = new ERC20TestToken("Token A", "TKNA", 18);
         tokenB = new ERC20TestToken("Token B", "TKNB", 6);
     }
 
     /**
-     * @dev Checks that custom pool factory pauseWindowDuration is what is expected. Recall that this is specified in the custom pool factory smart contract, for this example see `CustomPoolFactoryExample.sol`
+     * @dev Checks that custom pool factory pauseWindowDuration is what is expected. Recall that this is specified in the custom pool factory smart contract, for this example see `CustomPoolFactory.sol`
      */
     function testFactoryPausedState() public {
         uint256 pauseWindowDuration = factory.getPauseWindowDuration();

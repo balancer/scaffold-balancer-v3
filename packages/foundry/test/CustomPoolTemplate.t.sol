@@ -28,7 +28,7 @@ import { PoolConfigBits, PoolConfigLib } from "@balancer-labs/v3-vault/contracts
 
 import { BaseVaultTest } from "@test/vault/test/foundry/utils/BaseVaultTest.sol";
 import { ConstantSumPool } from "../contracts/ConstantSumPool.sol";
-import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.sol";
+import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
 
 /**
  * @title Custom Pool Starter Test Template
@@ -41,7 +41,7 @@ import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.
 contract CustomPoolTemplateTest is BaseVaultTest {
     using ArrayHelpers for *;
 
-    CustomPoolFactoryExample factory; // TODO - use your own custom pool factory when working with your own custom pool type.
+    CustomPoolFactory factory; // TODO - use your own custom pool factory when working with your own custom pool type.
     ConstantSumPool internal constantSumPool; // TODO - use your own custom pool type of course.
 
     uint256 constant USDC_AMOUNT = 1e3 * 1e18;
@@ -61,7 +61,7 @@ contract CustomPoolTemplateTest is BaseVaultTest {
 
     /**
      * @dev Tests to ensure that pool pause state and associated details are correct (bool pause, pauseWindow duration, bufferPeriod duration, and pauseManager) - recall that these are specified within your custom pool factory contract.
-     * For further information, see `FactoryWidePauseWindow.sol` that is inherited by `BasePoolFactory.sol`, which is inherited by the custom pool factory (`CustomPoolFactoryExample.sol`) used in these tests.
+     * For further information, see `FactoryWidePauseWindow.sol` that is inherited by `BasePoolFactory.sol`, which is inherited by the custom pool factory (`CustomPoolFactory.sol`) used in these tests.
      */
     function testPoolPausedState() public {
         (bool paused, uint256 pauseWindow, uint256 bufferPeriod, address pauseManager) = vault.getPoolPausedState(
@@ -242,7 +242,7 @@ contract CustomPoolTemplateTest is BaseVaultTest {
     /// Helpers
 
     function createPool() internal override returns (address) {
-        factory = new CustomPoolFactoryExample(IVault(address(vault)), 365 days);
+        factory = new CustomPoolFactory(IVault(address(vault)), 365 days);
         TokenConfig[] memory tokens = new TokenConfig[](2);
         tokens[0].token = IERC20(usdc);
         tokens[1].token = IERC20(dai);

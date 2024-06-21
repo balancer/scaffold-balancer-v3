@@ -2,43 +2,49 @@
 
 pragma solidity ^0.8.4;
 
-import { ConstantSumPool } from "./ConstantSumPool.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { ConstantSumPool } from "./ConstantSumPool.sol";
-import "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-import "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
-import "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { BasePoolFactory } from "@balancer-labs/v3-vault/contracts/factories/BasePoolFactory.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { ConstantSumPool } from "./ConstantSumPool.sol";
+import {
+    LiquidityManagement,
+    PoolRoleAccounts,
+    TokenConfig
+} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 
 /**
- * @title Pool Factory
+ * @title Custom Pool Factory
  * @dev Deploying pools via a factory is the preferred pattern as opposed to deploying a pool directly without a factory
  */
-contract CustomPoolFactoryExample is BasePoolFactory {
+contract CustomPoolFactory is BasePoolFactory {
     constructor(
         IVault vault,
         uint32 pauseWindowDuration
     ) BasePoolFactory(vault, pauseWindowDuration, type(ConstantSumPool).creationCode) {}
 
     /**
-     * @notice Deploys a new pool and then immediately registers it with the vault
+     * @notice Deploys a new `CustomPool`
      * @param name The name of the pool
      * @param symbol The symbol of the pool
-     * @param tokenConfig An array of descriptors for the tokens the pool will manage
+     * @param tokens An array of descriptors for the tokens the pool will manage
      * @param salt The salt value that will be passed to create3 deployment
      */
     function create(
         string memory name,
         string memory symbol,
-        TokenConfig[] memory tokenConfig,
+        TokenConfig[] memory tokens,
         bytes32 salt
     ) external returns (address pool) {
         // deploy the pool
         pool = _create(abi.encode(getVault(), name, symbol), salt);
+
         // config for pool registration
         uint256 swapFeePercentage = 0;
         bool protocolFeeExempt = false;
-        PoolRoleAccounts memory roleAccounts;
+        PoolRoleAccounts memory roleAccounts = PoolRoleAccounts({
+            pauseManager: address(0), // Account empowered to pause/unpause the pool (or 0 to delegate to governance)
+            swapFeeManager: address(0), // Account empowered to set static swap fees for a pool (or 0 to delegate to goverance)
+            poolCreator: address(0) // Account empowered to set the pool creator fee percentage
+        });
         address poolHooksContract = address(0); // No hook contract
         LiquidityManagement memory liquidityManagement = LiquidityManagement({
             disableUnbalancedLiquidity: false,
@@ -46,11 +52,10 @@ contract CustomPoolFactoryExample is BasePoolFactory {
             enableRemoveLiquidityCustom: false
         });
 
-        getVault().registerPool(
+        _registerPoolWithVault(
             pool,
-            tokenConfig,
+            tokens,
             swapFeePercentage,
-            getNewPoolPauseWindowEndTime(),
             protocolFeeExempt,
             roleAccounts,
             poolHooksContract,

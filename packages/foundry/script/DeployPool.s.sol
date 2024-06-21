@@ -2,15 +2,15 @@
 
 pragma solidity ^0.8.18;
 
-import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
-import {HelperFunctions} from "../utils/HelperFunctions.sol";
-import {HelperConfig} from "../utils/HelperConfig.sol";
-import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {TokenConfig} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
-import {Script, console} from "forge-std/Script.sol";
-import {InputHelpers} from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
-import {HelperConfig} from "../utils/HelperConfig.sol";
+import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
+import { HelperFunctions } from "../utils/HelperFunctions.sol";
+import { HelperConfig } from "../utils/HelperConfig.sol";
+import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import { TokenConfig } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
+import { Script, console } from "forge-std/Script.sol";
+import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
+import { HelperConfig } from "../utils/HelperConfig.sol";
 
 /**
  * @title Deploy Pool Script
@@ -46,10 +46,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
 
         // Look up configurations from `HelperConfig.sol`
         HelperConfig helperConfig = new HelperConfig();
-        (, , TokenConfig[] memory tokenConfig) = helperConfig.getPoolConfig(
-            mockToken1,
-            mockToken2
-        );
+        (, , TokenConfig[] memory tokenConfig) = helperConfig.getPoolConfig(mockToken1, mockToken2);
         (
             IERC20[] memory tokens,
             uint256[] memory exactAmountsIn,
@@ -58,7 +55,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
             bytes memory userData
         ) = helperConfig.getInitializationConfig(tokenConfig);
         address poolFactoryAddress = DevOpsTools.get_most_recent_deployment(
-            "CustomPoolFactoryExample", // Must match the pool factory contract name
+            "CustomPoolFactory", // Must match the pool factory contract name
             block.chainid
         ); // Get the most recently deployed address of the pool factory
 
@@ -71,14 +68,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
             helperConfig.sortTokenConfig(tokenConfig)
         );
         tokens = InputHelpers.sortTokens(tokens);
-        initializePool(
-            pool,
-            tokens,
-            exactAmountsIn,
-            minBptAmountOut,
-            wethIsEth,
-            userData
-        );
+        initializePool(pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData);
         vm.stopBroadcast();
     }
 
@@ -91,9 +81,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         string memory symbol,
         TokenConfig[] memory tokenConfig
     ) internal returns (address) {
-        CustomPoolFactoryExample poolFactory = CustomPoolFactoryExample(
-            poolFactoryAddress
-        );
+        CustomPoolFactory poolFactory = CustomPoolFactory(poolFactoryAddress);
         bytes32 salt = convertNameToBytes32(name);
         address newPool = poolFactory.create(name, symbol, tokenConfig, salt);
         console.log("Deployed Pool Address: %s", newPool);
@@ -116,14 +104,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
         // Approve Router to spend account tokens using Permit2
         approveSpenderOnPermit2(address(router), tokens);
         // Initialize pool with the tokens that have been permitted
-        router.initialize(
-            pool,
-            tokens,
-            exactAmountsIn,
-            minBptAmountOut,
-            wethIsEth,
-            userData
-        );
+        router.initialize(pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData);
     }
 
     /**
@@ -131,10 +112,7 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
      * @param tokens Array of tokens to approve
      * @param spender Address of the spender
      */
-    function approveSpenderOnToken(
-        address spender,
-        IERC20[] memory tokens
-    ) internal {
+    function approveSpenderOnToken(address spender, IERC20[] memory tokens) internal {
         uint256 maxAmount = type(uint256).max;
         for (uint256 i = 0; i < tokens.length; ++i) {
             tokens[i].approve(spender, maxAmount);
@@ -146,19 +124,11 @@ contract DeployPool is HelperFunctions, HelperConfig, Script {
      * @param tokens Array of tokens to approve
      * @param spender Address of the spender
      */
-    function approveSpenderOnPermit2(
-        address spender,
-        IERC20[] memory tokens
-    ) internal {
+    function approveSpenderOnPermit2(address spender, IERC20[] memory tokens) internal {
         uint160 maxAmount = type(uint160).max;
         uint48 maxExpiration = type(uint48).max;
         for (uint256 i = 0; i < tokens.length; ++i) {
-            permit2.approve(
-                address(tokens[i]),
-                spender,
-                maxAmount,
-                maxExpiration
-            );
+            permit2.approve(address(tokens[i]), spender, maxAmount, maxExpiration);
         }
     }
 }
