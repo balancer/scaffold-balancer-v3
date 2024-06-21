@@ -21,11 +21,3 @@ sepolia = "${SEPOLIA_RPC_URL}"
 [etherscan]
 polygonMumbai = { key = "${ETHERSCAN_API_KEY}" }
 sepolia = { key = "${ETHERSCAN_API_KEY}" }
-
-
-[fmt]
-line_length = 80
-multiline_func_header = "params_first"
-
-# See more config options https://github.com/foundry-rs/foundry/tree/master/config
-

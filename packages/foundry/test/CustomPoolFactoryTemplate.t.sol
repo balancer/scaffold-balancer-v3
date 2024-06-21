@@ -4,18 +4,18 @@ pragma solidity ^0.8.4;
 
 import "forge-std/Test.sol";
 
-import {IVault} from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-import {TokenConfig, TokenType} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import {IRateProvider} from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { TokenConfig, TokenType } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 
-import {VaultMock} from "@balancer-labs/v3-vault/contracts/test/VaultMock.sol";
-import {VaultExtensionMock} from "@balancer-labs/v3-vault/contracts/test/VaultExtensionMock.sol";
-import {VaultMockDeployer} from "@balancer-labs/v3-vault/test/foundry/utils/VaultMockDeployer.sol";
-import {ERC20TestToken} from "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
-import {RateProviderMock} from "@balancer-labs/v3-vault/contracts/test/RateProviderMock.sol";
+import { VaultMock } from "@balancer-labs/v3-vault/contracts/test/VaultMock.sol";
+import { VaultExtensionMock } from "@balancer-labs/v3-vault/contracts/test/VaultExtensionMock.sol";
+import { VaultMockDeployer } from "@balancer-labs/v3-vault/test/foundry/utils/VaultMockDeployer.sol";
+import { ERC20TestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
+import { RateProviderMock } from "@balancer-labs/v3-vault/contracts/test/RateProviderMock.sol";
 
-import {ConstantSumPool} from "../contracts/ConstantSumPool.sol";
-import {CustomPoolFactoryExample} from "../contracts/CustomPoolFactoryExample.sol";
+import { ConstantSumPool } from "../contracts/ConstantSumPool.sol";
+import { CustomPoolFactoryExample } from "../contracts/CustomPoolFactoryExample.sol";
 
 /**
  * @title Custom Pool Factory Starter Test Template
@@ -36,10 +36,7 @@ contract CustomPoolFactoryTemplateTest is Test {
 
     function setUp() public {
         vault = VaultMockDeployer.deploy();
-        factory = new CustomPoolFactoryExample(
-            IVault(address(vault)),
-            365 days
-        ); // TODO - Update with your own custom pool factory
+        factory = new CustomPoolFactoryExample(IVault(address(vault)), 365 days); // TODO - Update with your own custom pool factory
 
         tokenA = new ERC20TestToken("Token A", "TKNA", 18);
         tokenB = new ERC20TestToken("Token B", "TKNB", 6);
@@ -89,19 +86,10 @@ contract CustomPoolFactoryTemplateTest is Test {
         );
         address expectedPoolAddress = factory.getDeploymentAddress(salt);
 
-        ConstantSumPool secondPool = ConstantSumPool(
-            factory.create("New Custom Pool #2", "CP2", tokens, salt)
-        );
+        ConstantSumPool secondPool = ConstantSumPool(factory.create("New Custom Pool #2", "CP2", tokens, salt));
 
-        assertFalse(
-            address(pool) == address(secondPool),
-            "Two deployed pool addresses are equal"
-        );
-        assertEq(
-            address(secondPool),
-            expectedPoolAddress,
-            "Unexpected pool address"
-        );
+        assertFalse(address(pool) == address(secondPool), "Two deployed pool addresses are equal");
+        assertEq(address(secondPool), expectedPoolAddress, "Unexpected pool address");
     }
 
     /**
@@ -119,30 +107,19 @@ contract CustomPoolFactoryTemplateTest is Test {
 
         // Different sender should change the address of the pool, given the same salt value
         vm.prank(alice);
-        ConstantSumPool pool = ConstantSumPool(
-            factory.create("New Custom Pool #2", "CP2", tokens, salt)
-        ); // TODO - Update with your own custom pool factory create() params rqd
-        assertFalse(
-            address(pool) == expectedPoolAddress,
-            "Unexpected pool address"
-        );
+        ConstantSumPool pool = ConstantSumPool(factory.create("New Custom Pool #2", "CP2", tokens, salt)); // TODO - Update with your own custom pool factory create() params rqd
+        assertFalse(address(pool) == expectedPoolAddress, "Unexpected pool address");
 
         vm.prank(alice);
         address aliceExpectedPoolAddress = factory.getDeploymentAddress(salt);
-        assertTrue(
-            address(pool) == aliceExpectedPoolAddress,
-            "Unexpected pool address"
-        );
+        assertTrue(address(pool) == aliceExpectedPoolAddress, "Unexpected pool address");
     }
 
     /**
      * @dev Checks that even though the same sender and salt values are used in creating a pool from a specific pool factory type, the chainIds will result in different addresses on each respective chain.
      * It does this carrying out fuzz tests with different salts and different chainIds.
      */
-    function testPoolCrossChainProtection__Fuzz(
-        bytes32 salt,
-        uint16 chainId
-    ) public {
+    function testPoolCrossChainProtection__Fuzz(bytes32 salt, uint16 chainId) public {
         vm.assume(chainId > 1);
 
         TokenConfig[] memory tokens = new TokenConfig[](2);
@@ -150,21 +127,14 @@ contract CustomPoolFactoryTemplateTest is Test {
         tokens[1].token = tokenA;
 
         vm.prank(alice);
-        ConstantSumPool poolMainnet = ConstantSumPool(
-            factory.create("New Custom Pool #2", "CP2", tokens, salt)
-        ); // TODO - Update with your own custom pool factory create() params rqd
+        ConstantSumPool poolMainnet = ConstantSumPool(factory.create("New Custom Pool #2", "CP2", tokens, salt)); // TODO - Update with your own custom pool factory create() params rqd
 
         vm.chainId(chainId);
 
         vm.prank(alice);
-        ConstantSumPool poolL2 = ConstantSumPool(
-            factory.create("New Custom Pool #2", "CP2", tokens, salt)
-        ); // TODO - Update with your own custom pool factory create() params rqd
+        ConstantSumPool poolL2 = ConstantSumPool(factory.create("New Custom Pool #2", "CP2", tokens, salt)); // TODO - Update with your own custom pool factory create() params rqd
 
         // Same sender and salt, should still be different because of the chainId.
-        assertFalse(
-            address(poolL2) == address(poolMainnet),
-            "L2 and mainnet pool addresses are equal"
-        );
+        assertFalse(address(poolL2) == address(poolMainnet), "L2 and mainnet pool addresses are equal");
     }
 }

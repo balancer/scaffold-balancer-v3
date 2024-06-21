@@ -14,20 +14,14 @@ contract ConstantSumPool is IBasePool, BalancerPoolToken {
     uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 0;
     uint256 private constant _MAX_SWAP_FEE_PERCENTAGE = 0.1e18; // 10%
 
-    constructor(
-        IVault vault,
-        string memory name,
-        string memory symbol
-    ) BalancerPoolToken(vault, name, symbol) {}
+    constructor(IVault vault, string memory name, string memory symbol) BalancerPoolToken(vault, name, symbol) {}
 
     /**
      * @notice Execute a swap in the pool.
      * @param params Swap parameters
      * @return amountCalculatedScaled18 Calculated amount for the swap
      */
-    function onSwap(
-        PoolSwapParams calldata params
-    ) external pure returns (uint256 amountCalculatedScaled18) {
+    function onSwap(PoolSwapParams calldata params) external pure returns (uint256 amountCalculatedScaled18) {
         amountCalculatedScaled18 = params.amountGivenScaled18;
     }
 
@@ -37,9 +31,7 @@ contract ConstantSumPool is IBasePool, BalancerPoolToken {
      * @param balancesLiveScaled18 Array of current pool balances for each token in the pool, scaled to 18 decimals
      * @return invariant The calculated invariant of the pool, represented as a uint256
      */
-    function computeInvariant(
-        uint256[] memory balancesLiveScaled18
-    ) public pure returns (uint256 invariant) {
+    function computeInvariant(uint256[] memory balancesLiveScaled18) public pure returns (uint256 invariant) {
         invariant = balancesLiveScaled18[0] + balancesLiveScaled18[1];
     }
 
@@ -57,11 +49,7 @@ contract ConstantSumPool is IBasePool, BalancerPoolToken {
     ) external pure returns (uint256 newBalance) {
         uint256 invariant = computeInvariant(balancesLiveScaled18);
 
-        newBalance =
-            (balancesLiveScaled18[tokenInIndex] +
-                invariant *
-                (invariantRatio)) -
-            invariant;
+        newBalance = (balancesLiveScaled18[tokenInIndex] + invariant * (invariantRatio)) - invariant;
     }
 
     /// @inheritdoc ISwapFeePercentageBounds
