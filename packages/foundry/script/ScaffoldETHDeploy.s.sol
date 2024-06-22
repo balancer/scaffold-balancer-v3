@@ -6,6 +6,7 @@ import "forge-std/Vm.sol";
 
 contract ScaffoldETHDeploy is Script {
     error InvalidChain();
+    error InvalidPrivateKey(string);
 
     struct Deployment {
         string name;

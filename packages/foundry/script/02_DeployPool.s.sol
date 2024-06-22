@@ -8,25 +8,17 @@ import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 import { Script, console } from "forge-std/Script.sol";
 import { RegistrationConfig, InitializationConfig } from "../utils/PoolTypes.sol";
 
-import {
-    TokenConfig,
-    LiquidityManagement,
-    PoolRoleAccounts
-} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 
 /**
  * @title Deploy Pool Script
- * @notice This script creates a new pool using the most recently deployed pool factory and then initializes it
- * @notice This script can be run directly with `yarn deploy:pool`, but is also inherited by the `DeployFactoryAndPool.s.sol` script
+ * @notice This script deploys a new pool using the most recently deployed pool factory and mock tokens
+ * @dev Set the pool registration and initialization configurations in `HelperConfig.sol`
+ * @dev Run this script with `yarn deploy:pool`
  */
 contract DeployPool is HelperConfig, Script {
     error InvalidPrivateKey(string);
 
-    /**
-     * @dev Set your pool deployment and initialization configurations in `HelperConfig.sol`
-     * @dev Deploy only the pool with the CLI command `yarn deploy:pool`
-     */
     function run() external virtual {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         if (deployerPrivateKey == 0) {
@@ -35,6 +27,7 @@ contract DeployPool is HelperConfig, Script {
             );
         }
 
+        // Grab the most recently deployed addresses of mock tokens and factory
         address mockToken1 = DevOpsTools.get_most_recent_deployment(
             "MockToken1", // Must match the mock token contract name
             block.chainid
@@ -43,22 +36,18 @@ contract DeployPool is HelperConfig, Script {
             "MockToken2", // Must match the mock token contract name
             block.chainid
         );
-
-        // Generate all configurations from `HelperConfig.sol`
-        HelperConfig helperConfig = new HelperConfig();
-        RegistrationConfig memory regConfig = helperConfig.getPoolConfig(
-            "Scaffold Balancer Constant Price Pool #2", // name for the pool
-            "POOL2-SB-50scUSD-50scDAI", // symbol for the BPT
-            mockToken1,
-            mockToken2
-        );
-        InitializationConfig memory poolInitConfig = helperConfig.getInitializationConfig(regConfig.tokenConfig);
-        // Get the most recently deployed address of the pool factory
         address poolFactoryAddress = DevOpsTools.get_most_recent_deployment(
             "CustomPoolFactory", // Must match the pool factory contract name
             block.chainid
         );
         CustomPoolFactory factory = CustomPoolFactory(poolFactoryAddress);
+
+        // Set all pool configurations from `HelperConfig.sol`
+        HelperConfig helperConfig = new HelperConfig();
+        RegistrationConfig memory regConfig = helperConfig.getPoolConfig(mockToken1, mockToken2);
+        InitializationConfig memory initConfig = helperConfig.getInitializationConfig(regConfig.tokenConfig);
+
+        vm.startBroadcast(deployerPrivateKey);
         // Deploy the pool (and register it with the vault)
         address newPool = factory.create(
             regConfig.name,
@@ -72,14 +61,14 @@ contract DeployPool is HelperConfig, Script {
             regConfig.liquidityManagement
         );
         console.log("Deployed pool at address: %s", newPool);
-        IERC20[] memory tokens = InputHelpers.sortTokens(poolInitConfig.tokens);
+        // Initialize the pool
         initializePool(
             newPool,
-            tokens,
-            poolInitConfig.exactAmountsIn,
-            poolInitConfig.minBptAmountOut,
-            poolInitConfig.wethIsEth,
-            poolInitConfig.userData
+            InputHelpers.sortTokens(initConfig.tokens),
+            initConfig.exactAmountsIn,
+            initConfig.minBptAmountOut,
+            initConfig.wethIsEth,
+            initConfig.userData
         );
         vm.stopBroadcast();
     }
