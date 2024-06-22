@@ -70,7 +70,7 @@ contract HelperConfig {
             rateProvider: IRateProvider(address(0)), // The rate provider for a token (see further documentation above)
             paysYieldFees: false // Flag indicating whether yield fees should be charged on this token
         });
-        uint256 swapFeePercentage = 0;
+        uint256 swapFeePercentage = 1e12; // 0.00001%
         bool protocolFeeExempt = false;
         PoolRoleAccounts memory roleAccounts = PoolRoleAccounts({
             pauseManager: address(0), // Account empowered to pause/unpause the pool (or 0 to delegate to governance)

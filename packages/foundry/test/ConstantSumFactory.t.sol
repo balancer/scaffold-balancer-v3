@@ -1,102 +1,133 @@
-// // SPDX-License-Identifier: GPL-3.0-or-later
-// pragma solidity ^0.8.24;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.24;
 
-// import "forge-std/Test.sol";
+import "forge-std/Test.sol";
 
-// import { ConstantSumPool } from "../contracts/ConstantSumPool.sol";
-// import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
+import {
+    LiquidityManagement,
+    PoolRoleAccounts,
+    TokenConfig
+} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { VaultMock } from "@balancer-labs/v3-vault/contracts/test/VaultMock.sol";
+import { VaultMockDeployer } from "@balancer-labs/v3-vault/test/foundry/utils/VaultMockDeployer.sol";
+import { ERC20TestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
 
-// import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-// import { TokenConfig, TokenType } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-// import { VaultMock } from "@balancer-labs/v3-vault/contracts/test/VaultMock.sol";
-// import { VaultMockDeployer } from "@balancer-labs/v3-vault/test/foundry/utils/VaultMockDeployer.sol";
-// import { ERC20TestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
+import { ConstantSumPool } from "../contracts/ConstantSumPool.sol";
+import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
 
-// contract ConstantSumPoolFactoryTest is Test {
-//     VaultMock vault;
-//     ConstantSumFactory factory;
-//     ERC20TestToken tokenA;
-//     ERC20TestToken tokenB;
+contract ConstantSumPoolFactoryTest is Test {
+    uint256 internal DEFAULT_SWAP_FEE = 1e16; // 1%
 
-//     address alice = vm.addr(1);
+    VaultMock vault;
+    ConstantSumFactory factory;
+    ERC20TestToken tokenA;
+    ERC20TestToken tokenB;
 
-//     function setUp() public {
-//         vault = VaultMockDeployer.deploy();
-//         factory = new ConstantSumFactory(IVault(address(vault)), 365 days);
+    address alice = vm.addr(1);
 
-//         tokenA = new ERC20TestToken("Token A", "TKNA", 18);
-//         tokenB = new ERC20TestToken("Token B", "TKNB", 6);
-//     }
+    function setUp() public {
+        vault = VaultMockDeployer.deploy();
+        factory = new ConstantSumFactory(IVault(address(vault)), 365 days);
+        tokenA = new ERC20TestToken("Token A", "TKNA", 18);
+        tokenB = new ERC20TestToken("Token B", "TKNB", 6);
+    }
 
-//     function testFactoryPausedState() public {
-//         uint256 pauseWindowDuration = factory.getPauseWindowDuration();
-//         assertEq(pauseWindowDuration, 365 days);
-//     }
+    function _createPool(
+        string memory name,
+        string memory symbol,
+        TokenConfig[] memory tokenConfigs,
+        bytes32 salt
+    ) private returns (ConstantSumPool) {
+        uint256 swapFeePercentage = 0;
+        bool protocolFeeExempt = false;
+        PoolRoleAccounts memory roleAccounts;
+        address poolHooksContract = address(0);
+        LiquidityManagement memory liquidityManagement;
 
-//     function testPoolCreation__Fuzz(bytes32 salt) public {
-//         vm.assume(salt > 0);
+        return
+            ConstantSumPool(
+                factory.create(
+                    name,
+                    symbol,
+                    salt,
+                    tokenConfigs,
+                    DEFAULT_SWAP_FEE, // swapFeePercentage
+                    protocolFeeExempt,
+                    roleAccounts,
+                    poolHooksContract,
+                    liquidityManagement
+                )
+            );
+    }
 
-//         TokenConfig[] memory tokens = new TokenConfig[](2);
+    function testFactoryPausedState() public {
+        uint256 pauseWindowDuration = factory.getPauseWindowDuration();
+        assertEq(pauseWindowDuration, 365 days);
+    }
 
-//         // assign tokens in alphanumeric order - FYI in ConstantPool.t.sol, they are sorted via a helper
-//         tokens[0].token = tokenB;
-//         tokens[1].token = tokenA;
+    function testPoolCreation__Fuzz(bytes32 salt) public {
+        vm.assume(salt > 0);
 
-//         ConstantSumPool pool = ConstantSumPool(factory.create("New Custom Pool #2", "CP2", tokens, bytes32(0)));
+        TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
+        tokenConfigs[0].token = tokenA;
+        tokenConfigs[1].token = tokenB;
 
-//         assertEq(pool.symbol(), "CP2", "Wrong pool symbol");
-//     }
+        ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenConfigs, bytes32(0));
+        assertEq(pool.symbol(), "CSP1", "Wrong pool symbol");
+    }
 
-//     function testPoolSalt__Fuzz(bytes32 salt) public {
-//         vm.assume(salt > 0);
+    function testPoolSalt__Fuzz(bytes32 salt) public {
+        vm.assume(salt > 0);
 
-//         TokenConfig[] memory tokens = new TokenConfig[](2);
-//         tokens[0].token = tokenB;
-//         tokens[1].token = tokenA;
+        TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
+        tokenConfigs[0].token = tokenA;
+        tokenConfigs[1].token = tokenB;
 
-//         ConstantSumPool pool = ConstantSumPool(factory.create("New Custom Pool #2", "CP2", tokens, bytes32(0)));
-//         address expectedPoolAddress = factory.getDeploymentAddress(salt);
+        ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenConfigs, bytes32(0));
+        ConstantSumPool secondPool = _createPool("Constant Sum Pool #2", "CSP2", tokenConfigs, salt);
 
-//         ConstantSumPool secondPool = ConstantSumPool(factory.create("New Custom Pool #2", "CP2", tokens, salt));
+        address expectedPoolAddress = factory.getDeploymentAddress(salt);
 
-//         assertFalse(address(pool) == address(secondPool), "Two deployed pool addresses are equal");
-//         assertEq(address(secondPool), expectedPoolAddress, "Unexpected pool address");
-//     }
+        assertFalse(address(pool) == address(secondPool), "Two deployed pool addresses are equal");
+        assertEq(address(secondPool), expectedPoolAddress, "Unexpected pool address");
+    }
 
-//     function testPoolSender__Fuzz(bytes32 salt) public {
-//         vm.assume(salt > 0);
-//         address expectedPoolAddress = factory.getDeploymentAddress(salt);
+    function testPoolSender__Fuzz(bytes32 salt) public {
+        vm.assume(salt > 0);
+        address expectedPoolAddress = factory.getDeploymentAddress(salt);
 
-//         TokenConfig[] memory tokens = new TokenConfig[](2);
-//         tokens[0].token = tokenB;
-//         tokens[1].token = tokenA;
+        TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
+        tokenConfigs[0].token = tokenA;
+        tokenConfigs[1].token = tokenB;
 
-//         // Different sender should change the address of the pool, given the same salt value
-//         vm.prank(alice);
-//         ConstantSumPool pool = ConstantSumPool(factory.create("New Custom Pool #2", "CP2", tokens, salt));
-//         assertFalse(address(pool) == expectedPoolAddress, "Unexpected pool address");
+        // Different sender should change the address of the pool, given the same salt value
+        vm.prank(alice);
+        ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenConfigs, salt);
 
-//         vm.prank(alice);
-//         address aliceExpectedPoolAddress = factory.getDeploymentAddress(salt);
-//         assertTrue(address(pool) == aliceExpectedPoolAddress, "Unexpected pool address");
-//     }
+        assertFalse(address(pool) == expectedPoolAddress, "Unexpected pool address");
 
-//     function testPoolCrossChainProtection__Fuzz(bytes32 salt, uint16 chainId) public {
-//         vm.assume(chainId > 1);
+        vm.prank(alice);
+        address aliceExpectedPoolAddress = factory.getDeploymentAddress(salt);
+        assertTrue(address(pool) == aliceExpectedPoolAddress, "Unexpected pool address");
+    }
 
-//         TokenConfig[] memory tokens = new TokenConfig[](2);
-//         tokens[0].token = tokenB;
-//         tokens[1].token = tokenA;
+    function testPoolCrossChainProtection__Fuzz(bytes32 salt, uint16 chainId) public {
+        vm.assume(chainId > 1);
 
-//         vm.prank(alice);
-//         ConstantSumPool poolMainnet = ConstantSumPool(factory.create("New Custom Pool #2", "CP2", tokens, salt));
+        TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
+        tokenConfigs[0].token = tokenA;
+        tokenConfigs[1].token = tokenB;
 
-//         vm.chainId(chainId);
+        vm.prank(alice);
+        ConstantSumPool poolMainnet = _createPool("Constant Sum Pool #1", "CSP1", tokenConfigs, salt);
 
-//         vm.prank(alice);
-//         ConstantSumPool poolL2 = ConstantSumPool(factory.create("New Custom Pool #2", "CP2", tokens, salt));
+        vm.chainId(chainId);
 
-//         // Same sender and salt, should still be different because of the chainId.
-//         assertFalse(address(poolL2) == address(poolMainnet), "L2 and mainnet pool addresses are equal");
-//     }
-// }
+        vm.prank(alice);
+        ConstantSumPool poolL2 = _createPool("Constant Sum Pool #2", "CSP2", tokenConfigs, salt);
+
+        // Same sender and salt, should still be different because of the chainId.
+        assertFalse(address(poolL2) == address(poolMainnet), "L2 and mainnet pool addresses are equal");
+    }
+}
