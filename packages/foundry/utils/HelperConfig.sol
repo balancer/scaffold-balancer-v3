@@ -1,14 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.24;
 
-import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import { MockToken1 } from "../contracts/MockToken1.sol";
-import { MockToken2 } from "../contracts/MockToken2.sol";
+import {
+    TokenConfig,
+    TokenType,
+    LiquidityManagement,
+    PoolRoleAccounts
+} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-import { TokenConfig, TokenType } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
 import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
+
+import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import { MockToken1 } from "../contracts/MockToken1.sol";
+import { MockToken2 } from "../contracts/MockToken2.sol";
+import { RegistrationConfig, InitializationConfig } from "./PoolTypes.sol";
 
 /**
  * @dev This is where all configurations are set for mock token deployment, factory deployment, pool deployment, and pool initialization
@@ -32,7 +39,7 @@ contract HelperConfig {
     }
 
     /**
-     * @dev Set the pause window duration for the pool factory here
+     * @dev Set the pool factory configuration here
      */
     function getFactoryConfig() public pure returns (uint32 pauseWindowDuration) {
         pauseWindowDuration = 365 days;
@@ -45,13 +52,14 @@ contract HelperConfig {
      * and may or may not be yield-bearing.
      */
     function getPoolConfig(
+        string memory name,
+        string memory symbol,
         address token1,
         address token2
-    ) public pure returns (string memory name, string memory symbol, TokenConfig[] memory tokenConfig) {
-        name = "Scaffold Balancer Constant Price Pool #1"; // name for the pool
-        symbol = "SB-50scUSD-50scDAI"; // symbol for the BPT
+    ) public pure returns (RegistrationConfig memory poolSettings) {
+        bytes32 salt = keccak256(abi.encode(name)); // salt for the pool deployment
 
-        tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
+        TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
         tokenConfig[0] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
             token: IERC20(token1),
             tokenType: TokenType.STANDARD, // STANDARD or WITH_RATE
@@ -64,6 +72,32 @@ contract HelperConfig {
             rateProvider: IRateProvider(address(0)), // The rate provider for a token (see further documentation above)
             paysYieldFees: false // Flag indicating whether yield fees should be charged on this token
         });
+
+        uint256 swapFeePercentage = 0;
+        bool protocolFeeExempt = false;
+        PoolRoleAccounts memory roleAccounts = PoolRoleAccounts({
+            pauseManager: address(0), // Account empowered to pause/unpause the pool (or 0 to delegate to governance)
+            swapFeeManager: address(0), // Account empowered to set static swap fees for a pool (or 0 to delegate to goverance)
+            poolCreator: address(0) // Account empowered to set the pool creator fee percentage
+        });
+        address poolHooksContract = address(0); // No hook contract
+        LiquidityManagement memory liquidityManagement = LiquidityManagement({
+            disableUnbalancedLiquidity: false,
+            enableAddLiquidityCustom: false,
+            enableRemoveLiquidityCustom: false
+        });
+
+        poolSettings = RegistrationConfig({
+            name: name,
+            symbol: symbol,
+            salt: salt,
+            tokenConfig: tokenConfig,
+            swapFeePercentage: swapFeePercentage,
+            protocolFeeExempt: protocolFeeExempt,
+            roleAccounts: roleAccounts,
+            poolHooksContract: poolHooksContract,
+            liquidityManagement: liquidityManagement
+        });
     }
 
     /**
@@ -71,26 +105,24 @@ contract HelperConfig {
      */
     function getInitializationConfig(
         TokenConfig[] memory tokenConfig
-    )
-        public
-        pure
-        returns (
-            IERC20[] memory tokens,
-            uint256[] memory exactAmountsIn,
-            uint256 minBptAmountOut,
-            bool wethIsEth,
-            bytes memory userData
-        )
-    {
-        tokens = new IERC20[](2); // Array of tokens to be used in the pool
+    ) public pure returns (InitializationConfig memory poolInitConfig) {
+        IERC20[] memory tokens = new IERC20[](2); // Array of tokens to be used in the pool
         tokens[0] = tokenConfig[0].token;
         tokens[1] = tokenConfig[1].token;
-        exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
-        exactAmountsIn[0] = 10 ether; // amount of token1 to send during pool initialization
-        exactAmountsIn[1] = 10 ether; // amount of token2 to send during pool initialization
-        minBptAmountOut = 1 ether; // Minimum amount of pool tokens to be received
-        wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
-        userData = bytes(""); // Additional (optional) data required for adding initial liquidity
+        uint256[] memory exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
+        exactAmountsIn[0] = 1 ether; // amount of token1 to send during pool initialization
+        exactAmountsIn[1] = 1 ether; // amount of token2 to send during pool initialization
+        uint256 minBptAmountOut = 1 ether; // Minimum amount of pool tokens to be received
+        bool wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
+        bytes memory userData = bytes(""); // Additional (optional) data required for adding initial liquidity
+
+        poolInitConfig = InitializationConfig({
+            tokens: tokens,
+            exactAmountsIn: exactAmountsIn,
+            minBptAmountOut: minBptAmountOut,
+            wethIsEth: wethIsEth,
+            userData: userData
+        });
     }
 
     function sortTokenConfig(TokenConfig[] memory tokenConfig) public pure returns (TokenConfig[] memory) {

@@ -5,9 +5,14 @@ import { DeployPool } from "./DeployPool.s.sol";
 import { ScaffoldETHDeploy, console } from "./ScaffoldETHDeploy.s.sol";
 import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
 import { HelperConfig } from "../utils/HelperConfig.sol";
-
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import { TokenConfig } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { RegistrationConfig, InitializationConfig } from "../utils/PoolTypes.sol";
+
+import {
+    TokenConfig,
+    LiquidityManagement,
+    PoolRoleAccounts
+} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { ArrayHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/ArrayHelpers.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 
@@ -33,34 +38,43 @@ contract DeployFactoryAndPool is ScaffoldETHDeploy, DeployPool {
         (address mockToken1, address mockToken2) = deployMockTokens();
         vm.stopBroadcast();
 
-        // Look up configuration options from `HelperConfig.sol`
+        // Look up all configuration from `HelperConfig.sol`
         HelperConfig helperConfig = new HelperConfig();
         uint32 pauseWindowDuration = helperConfig.getFactoryConfig();
-        (string memory name, string memory symbol, TokenConfig[] memory tokenConfig) = helperConfig.getPoolConfig(
+        RegistrationConfig memory regConfig = helperConfig.getPoolConfig(
+            "Scaffold Balancer Constant Price Pool #1", // name for the pool
+            "SB-50scUSD-50scDAI", // symbol for the BPT
             mockToken1,
             mockToken2
         );
-        (
-            IERC20[] memory tokens,
-            uint256[] memory exactAmountsIn,
-            uint256 minBptAmountOut,
-            bool wethIsEth,
-            bytes memory userData
-        ) = helperConfig.getInitializationConfig(tokenConfig);
+        InitializationConfig memory initConfig = helperConfig.getInitializationConfig(regConfig.tokenConfig);
 
-        // Deploy the pool factory and then deploy a pool using the factory and then initialize the pool
+        // Deploy the pool factory
         vm.startBroadcast(deployerPrivateKey);
-        CustomPoolFactory customPoolFactory = new CustomPoolFactory(vault, pauseWindowDuration);
-        console.log("Deployed Factory Address: %s", address(customPoolFactory));
-        address pool = deployPoolFromFactory(
-            address(customPoolFactory),
-            name,
-            symbol,
-            helperConfig.sortTokenConfig(tokenConfig)
+        CustomPoolFactory factory = new CustomPoolFactory(vault, pauseWindowDuration);
+        console.log("Deployed Factory Address: %s", address(factory));
+        // Deploy the pool (and register it with the vault)
+        address newPool = factory.create(
+            regConfig.name,
+            regConfig.symbol,
+            regConfig.salt,
+            helperConfig.sortTokenConfig(regConfig.tokenConfig),
+            regConfig.swapFeePercentage,
+            regConfig.protocolFeeExempt,
+            regConfig.roleAccounts,
+            regConfig.poolHooksContract,
+            regConfig.liquidityManagement
         );
-
-        tokens = InputHelpers.sortTokens(tokens);
-        initializePool(pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData);
+        console.log("Deployed pool at address: %s", newPool);
+        // Initialize the pool
+        initializePool(
+            newPool,
+            InputHelpers.sortTokens(initConfig.tokens),
+            initConfig.exactAmountsIn,
+            initConfig.minBptAmountOut,
+            initConfig.wethIsEth,
+            initConfig.userData
+        );
         vm.stopBroadcast();
 
         /**

@@ -347,7 +347,17 @@ const deployedContracts = {
           ],
         },
       ],
-      inheritedFunctions: {},
+      inheritedFunctions: {
+        allowance: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        approve: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        balanceOf: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        decimals: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        name: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        symbol: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        totalSupply: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        transfer: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        transferFrom: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+      },
     },
     MockToken2: {
       address: "0x3626DEff4AFB3Acd8f217288cd33FBE3a337Ce0B",
@@ -690,7 +700,17 @@ const deployedContracts = {
           ],
         },
       ],
-      inheritedFunctions: {},
+      inheritedFunctions: {
+        allowance: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        approve: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        balanceOf: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        decimals: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        name: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        symbol: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        totalSupply: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        transfer: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        transferFrom: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+      },
     },
     CustomPoolFactory: {
       address: "0x69221a99e5Bc30E0cf891992e958E3Ba3815bfc6",
@@ -726,6 +746,11 @@ const deployedContracts = {
               internalType: "string",
             },
             {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
               name: "tokens",
               type: "tuple[]",
               internalType: "struct TokenConfig[]",
@@ -753,9 +778,63 @@ const deployedContracts = {
               ],
             },
             {
-              name: "salt",
-              type: "bytes32",
-              internalType: "bytes32",
+              name: "swapFeePercentage",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "protocolFeeExempt",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "roleAccounts",
+              type: "tuple",
+              internalType: "struct PoolRoleAccounts",
+              components: [
+                {
+                  name: "pauseManager",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "swapFeeManager",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "poolCreator",
+                  type: "address",
+                  internalType: "address",
+                },
+              ],
+            },
+            {
+              name: "poolHooksContract",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "liquidityManagement",
+              type: "tuple",
+              internalType: "struct LiquidityManagement",
+              components: [
+                {
+                  name: "disableUnbalancedLiquidity",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableAddLiquidityCustom",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableRemoveLiquidityCustom",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
             },
           ],
           outputs: [
@@ -992,7 +1071,28 @@ const deployedContracts = {
           inputs: [],
         },
       ],
-      inheritedFunctions: {},
+      inheritedFunctions: {
+        disable: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getActionId: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getAuthorizer:
+          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getDefaultLiquidityManagement:
+          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getDefaultPoolHooksContract:
+          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getDeploymentAddress:
+          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getNewPoolPauseWindowEndTime:
+          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getOriginalPauseWindowEndTime:
+          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getPauseWindowDuration:
+          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getVault: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        isDisabled: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        isPoolFromFactory:
+          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+      },
     },
   },
 } as const;

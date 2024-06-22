@@ -6,20 +6,22 @@ import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 import { Script, console } from "forge-std/Script.sol";
+import { RegistrationConfig, InitializationConfig } from "../utils/PoolTypes.sol";
 
-import { TokenConfig } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import {
+    TokenConfig,
+    LiquidityManagement,
+    PoolRoleAccounts
+} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 
 /**
  * @title Deploy Pool Script
  * @notice This script creates a new pool using the most recently deployed pool factory and then initializes it
- * @notice This script can be run directly, but is also inherited by the `DeployFactoryAndPool.s.sol` script
+ * @notice This script can be run directly with `yarn deploy:pool`, but is also inherited by the `DeployFactoryAndPool.s.sol` script
  */
 contract DeployPool is HelperConfig, Script {
     error InvalidPrivateKey(string);
-
-    string secondPoolName = "Scaffold Balancer Constant Price Pool #2"; // name for the pool
-    string secondPoolSymbol = "POOL2-SB-50scUSD-50scDAI"; // symbol for the BPT
 
     /**
      * @dev Set your pool deployment and initialization configurations in `HelperConfig.sol`
@@ -42,48 +44,44 @@ contract DeployPool is HelperConfig, Script {
             block.chainid
         );
 
-        // Look up configurations from `HelperConfig.sol`
+        // Generate all configurations from `HelperConfig.sol`
         HelperConfig helperConfig = new HelperConfig();
-        (, , TokenConfig[] memory tokenConfig) = helperConfig.getPoolConfig(mockToken1, mockToken2);
-        (
-            IERC20[] memory tokens,
-            uint256[] memory exactAmountsIn,
-            uint256 minBptAmountOut,
-            bool wethIsEth,
-            bytes memory userData
-        ) = helperConfig.getInitializationConfig(tokenConfig);
+        RegistrationConfig memory regConfig = helperConfig.getPoolConfig(
+            "Scaffold Balancer Constant Price Pool #2", // name for the pool
+            "POOL2-SB-50scUSD-50scDAI", // symbol for the BPT
+            mockToken1,
+            mockToken2
+        );
+        InitializationConfig memory poolInitConfig = helperConfig.getInitializationConfig(regConfig.tokenConfig);
+        // Get the most recently deployed address of the pool factory
         address poolFactoryAddress = DevOpsTools.get_most_recent_deployment(
             "CustomPoolFactory", // Must match the pool factory contract name
             block.chainid
-        ); // Get the most recently deployed address of the pool factory
-
-        // Deploy a pool using the factory contract and then initialize it
-        vm.startBroadcast(deployerPrivateKey);
-        address pool = deployPoolFromFactory(
-            poolFactoryAddress,
-            secondPoolName,
-            secondPoolSymbol,
-            helperConfig.sortTokenConfig(tokenConfig)
         );
-        tokens = InputHelpers.sortTokens(tokens);
-        initializePool(pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData);
+        CustomPoolFactory factory = CustomPoolFactory(poolFactoryAddress);
+        // Deploy the pool (and register it with the vault)
+        address newPool = factory.create(
+            regConfig.name,
+            regConfig.symbol,
+            regConfig.salt,
+            helperConfig.sortTokenConfig(regConfig.tokenConfig),
+            regConfig.swapFeePercentage,
+            regConfig.protocolFeeExempt,
+            regConfig.roleAccounts,
+            regConfig.poolHooksContract,
+            regConfig.liquidityManagement
+        );
+        console.log("Deployed pool at address: %s", newPool);
+        IERC20[] memory tokens = InputHelpers.sortTokens(poolInitConfig.tokens);
+        initializePool(
+            newPool,
+            tokens,
+            poolInitConfig.exactAmountsIn,
+            poolInitConfig.minBptAmountOut,
+            poolInitConfig.wethIsEth,
+            poolInitConfig.userData
+        );
         vm.stopBroadcast();
-    }
-
-    /**
-     * @notice Uses the pool name to generate a salt for the pool deployment
-     */
-    function deployPoolFromFactory(
-        address poolFactoryAddress,
-        string memory name,
-        string memory symbol,
-        TokenConfig[] memory tokenConfig
-    ) internal returns (address) {
-        CustomPoolFactory poolFactory = CustomPoolFactory(poolFactoryAddress);
-        bytes32 salt = keccak256(abi.encode(name));
-        address newPool = poolFactory.create(name, symbol, tokenConfig, salt);
-        console.log("Deployed Pool Address: %s", newPool);
-        return newPool;
     }
 
     /**

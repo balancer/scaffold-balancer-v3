@@ -30,27 +30,17 @@ contract CustomPoolFactory is BasePoolFactory {
     function create(
         string memory name,
         string memory symbol,
+        bytes32 salt,
         TokenConfig[] memory tokens,
-        bytes32 salt
+        uint256 swapFeePercentage,
+        bool protocolFeeExempt,
+        PoolRoleAccounts memory roleAccounts,
+        address poolHooksContract,
+        LiquidityManagement memory liquidityManagement
     ) external returns (address pool) {
         // deploy the pool
         pool = _create(abi.encode(getVault(), name, symbol), salt);
-
-        // config for pool registration
-        uint256 swapFeePercentage = 0;
-        bool protocolFeeExempt = false;
-        PoolRoleAccounts memory roleAccounts = PoolRoleAccounts({
-            pauseManager: address(0), // Account empowered to pause/unpause the pool (or 0 to delegate to governance)
-            swapFeeManager: address(0), // Account empowered to set static swap fees for a pool (or 0 to delegate to goverance)
-            poolCreator: address(0) // Account empowered to set the pool creator fee percentage
-        });
-        address poolHooksContract = address(0); // No hook contract
-        LiquidityManagement memory liquidityManagement = LiquidityManagement({
-            disableUnbalancedLiquidity: false,
-            enableAddLiquidityCustom: false,
-            enableRemoveLiquidityCustom: false
-        });
-
+        // register the pool
         _registerPoolWithVault(
             pool,
             tokens,
