@@ -405,12 +405,12 @@ This section will walk you through:
 
 ## 🏭 3.1: Creating the Custom Pool Factory
 
-We will focus on creating the `CustomPoolFactory.sol` contract. Let's focus on the constructor first.
+We will focus on creating the `ConstantSumFactory.sol` contract. Let's focus on the constructor first.
 
-Listed here for easy reference, the constructor discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/CustomPoolFactory.sol#L22).
+Listed here for easy reference, the constructor discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/ConstantSumFactory.sol#L22).
 
 <details markdown='1'><summary>👩🏽‍🏫 Code for `constructor()` </summary>
-Inside `CustomPoolFactory.sol`
+Inside `ConstantSumFactory.sol`
 
 ```
 constructor(
@@ -441,10 +441,10 @@ Moving on to the next part, the `create()` function is used to create new pools 
 
 The `create()` function, in this simple example pool factory, simply calls the `_create()` function within the `BasePoolFactory.sol`. The `_create()` function uses `CREATE3`, similar to `CREATE2` to deploy a pool that has a pre-determined address based on its salt, and encoded creation code & args.
 
-Listed here for easy reference, the the `create()` function discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/CustomPoolFactory.sol#L42).
+Listed here for easy reference, the the `create()` function discussed can also be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/ConstantSumFactory.sol#L42).
 
 <details markdown='1'><summary>👩🏽‍🏫 Code for `create()` function </summary>
-Inside `CustomPoolFactory.sol`
+Inside `ConstantSumFactory.sol`
 
 ```
 /**
@@ -493,7 +493,7 @@ Inside `CustomPoolFactory.sol`
 Here is the `_create()` internal function for reference (it can also be found [here](https://github.com/balancer/balancer-v3-monorepo/blob/c009aa9217070e88ed3a39bda97d83c14342f39b/pkg/vault/contracts/factories/BasePoolFactory.sol#L86)):
 
 <details markdown='1'><summary>👩🏽‍🏫 Code for `_create()` function </summary>
-Inside `CustomPoolFactory.sol`
+Inside `ConstantSumFactory.sol`
 
 ```
 function _create(bytes memory constructorArgs, bytes32 salt) internal returns (address) {
@@ -513,7 +513,7 @@ New pools need to be registered to the BalancerV3 vault to operate within the Ba
 
 For the example factory contract we are working with, we have no pause manager, no hooks, and do not support "custom" liquidity provision or removal.
 
-Finally, the `create()` function ends by calling `_registerPoolWithFactory(newPool)` (as seen [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/CustomPoolFactory.sol#L72)) which registers the new pool with the respective factory. This is done for accounting purposes, amongst other reasons.
+Finally, the `create()` function ends by calling `_registerPoolWithFactory(newPool)` (as seen [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/contracts/ConstantSumFactory.sol#L72)) which registers the new pool with the respective factory. This is done for accounting purposes, amongst other reasons.
 
 > NOTE: like all other contracts and scripts within this repo, one must adjust aspects within this smart contract when creating their own type of custom pool.
 
@@ -521,7 +521,7 @@ Finally, the `create()` function ends by calling `_registerPoolWithFactory(newPo
 
 ## 🏭🧑🏻‍💻 3.2: Deploying the Custom Pool Factory
 
-Now that we have created the `CustomPoolFactory.sol` contract, it is time to write the deployment scripts. We've provided example deployment scripts to reference as you create your own, and will walk through key gotcha's when writing your own deployment scripts. As always, test on your own before deploying!
+Now that we have created the `ConstantSumFactory.sol` contract, it is time to write the deployment scripts. We've provided example deployment scripts to reference as you create your own, and will walk through key gotcha's when writing your own deployment scripts. As always, test on your own before deploying!
 
 `DeployFactoryAndPool.s.sol` is the file that we will use as a template, it can be found [here](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/blob/1bb9e662e1f94bba7f30b7ad2a50bcee17ad9232/packages/foundry/script/DeployFactoryAndPool.s.sol).
 

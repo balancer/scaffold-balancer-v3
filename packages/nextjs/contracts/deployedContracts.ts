@@ -6,7 +6,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
   31337: {
-    CustomPoolFactory: {
+    ConstantSumFactory: {
       address: "0x69221a99e5Bc30E0cf891992e958E3Ba3815bfc6",
       abi: [
         {

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import { HelperConfig } from "../utils/HelperConfig.sol";
-import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
+import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 import { Script, console } from "forge-std/Script.sol";
@@ -26,34 +26,23 @@ contract DeployPool is HelperConfig, Script {
                 "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"
             );
         }
-
-        // Grab the most recently deployed addresses of mock tokens and factory
-        address mockToken1 = DevOpsTools.get_most_recent_deployment(
-            "MockToken1", // Must match the mock token contract name
-            block.chainid
-        );
-        address mockToken2 = DevOpsTools.get_most_recent_deployment(
-            "MockToken2", // Must match the mock token contract name
-            block.chainid
-        );
+        // Set the pool registration and initialization configurations in `HelperConfig.sol`
+        RegistrationConfig memory regConfig = getPoolConfig();
+        InitializationConfig memory initConfig = getInitializationConfig(regConfig.tokenConfig);
+        // Grab the most recently deployed address of the pool factory
         address poolFactoryAddress = DevOpsTools.get_most_recent_deployment(
-            "CustomPoolFactory", // Must match the pool factory contract name
+            "ConstantSumFactory", // Must match the pool factory contract name
             block.chainid
         );
-        CustomPoolFactory factory = CustomPoolFactory(poolFactoryAddress);
-
-        // Set all pool configurations from `HelperConfig.sol`
-        HelperConfig helperConfig = new HelperConfig();
-        RegistrationConfig memory regConfig = helperConfig.getPoolConfig(mockToken1, mockToken2);
-        InitializationConfig memory initConfig = helperConfig.getInitializationConfig(regConfig.tokenConfig);
-
+        ConstantSumFactory factory = ConstantSumFactory(poolFactoryAddress);
+        // Send the transactions
         vm.startBroadcast(deployerPrivateKey);
         // Deploy the pool (and register it with the vault)
         address newPool = factory.create(
             regConfig.name,
             regConfig.symbol,
             regConfig.salt,
-            helperConfig.sortTokenConfig(regConfig.tokenConfig),
+            sortTokenConfig(regConfig.tokenConfig),
             regConfig.swapFeePercentage,
             regConfig.protocolFeeExempt,
             regConfig.roleAccounts,
@@ -70,6 +59,7 @@ contract DeployPool is HelperConfig, Script {
             initConfig.wethIsEth,
             initConfig.userData
         );
+        console.log("Pool initialized successfully!");
         vm.stopBroadcast();
     }
 

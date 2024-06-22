@@ -7,7 +7,7 @@ import { MockToken2 } from "../contracts/MockToken2.sol";
 
 /**
  * @title Deploy Mock Tokens
- * @dev run this script with `yarn deploy:tokens`
+ * @dev Run this script with `yarn deploy:tokens`
  */
 contract DeployMockTokens is ScaffoldETHDeploy {
     function run() external virtual {

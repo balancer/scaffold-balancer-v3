@@ -4,7 +4,7 @@
 // import "forge-std/Test.sol";
 
 // import { ConstantSumPool } from "../contracts/ConstantSumPool.sol";
-// import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
+// import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
 
 // import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
@@ -20,7 +20,7 @@
 // contract ConstantSumPoolTest is BaseVaultTest {
 //     using ArrayHelpers for *;
 
-//     CustomPoolFactory factory;
+//     ConstantSumFactory factory;
 //     ConstantSumPool internal constantSumPool;
 
 //     uint256 constant USDC_AMOUNT = 1e3 * 1e18;
@@ -39,7 +39,7 @@
 //     }
 
 //     function _createPool(address[] memory tokens, string memory label) internal override returns (address) {
-//         factory = new CustomPoolFactory(IVault(address(vault)), 365 days);
+//         factory = new ConstantSumFactory(IVault(address(vault)), 365 days);
 //         // TokenConfig[] memory tokens = new TokenConfig[](2);
 //         // tokens[0].token = IERC20(usdc);
 //         // tokens[1].token = IERC20(dai);

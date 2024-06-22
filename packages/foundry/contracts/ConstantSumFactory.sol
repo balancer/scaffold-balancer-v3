@@ -1,20 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.24;
 
-import { BasePoolFactory } from "@balancer-labs/v3-vault/contracts/factories/BasePoolFactory.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-import { ConstantSumPool } from "./ConstantSumPool.sol";
 import {
     LiquidityManagement,
     PoolRoleAccounts,
     TokenConfig
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { BasePoolFactory } from "@balancer-labs/v3-vault/contracts/factories/BasePoolFactory.sol";
+
+import { ConstantSumPool } from "./ConstantSumPool.sol";
 
 /**
  * @title Custom Pool Factory
  * @dev Deploying pools via a factory is the preferred pattern as opposed to deploying a pool directly without a factory
  */
-contract CustomPoolFactory is BasePoolFactory {
+contract ConstantSumFactory is BasePoolFactory {
     constructor(
         IVault vault,
         uint32 pauseWindowDuration
@@ -38,9 +39,9 @@ contract CustomPoolFactory is BasePoolFactory {
         address poolHooksContract,
         LiquidityManagement memory liquidityManagement
     ) external returns (address pool) {
-        // deploy the pool
+        // Deploy the pool
         pool = _create(abi.encode(getVault(), name, symbol), salt);
-        // register the pool
+        // Register the pool
         _registerPoolWithVault(
             pool,
             tokens,

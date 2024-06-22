@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.24;
 
-import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {
     TokenConfig,
     LiquidityManagement,
     PoolRoleAccounts
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 struct RegistrationConfig {
     string name;

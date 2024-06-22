@@ -19,14 +19,14 @@ export const PoolSelector = ({ setSelectedPoolAddress }: { setSelectedPoolAddres
 
   // Fetches the history of pools deployed using the factory
   const { data: eventsHistory, isLoading: isLoadingEventsHistory } = useScaffoldEventHistory({
-    contractName: "CustomPoolFactory",
+    contractName: "ConstantSumFactory",
     eventName: "PoolCreated",
     fromBlock: 5837241n,
   });
 
   // Adds pools deployed using the factory to the dropdown
   useScaffoldEventSubscriber({
-    contractName: "CustomPoolFactory",
+    contractName: "ConstantSumFactory",
     eventName: "PoolCreated",
     listener: logs => {
       logs.forEach(log => {

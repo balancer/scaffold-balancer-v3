@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import { ScaffoldETHDeploy, console } from "./ScaffoldETHDeploy.s.sol";
-import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
+import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
 import { HelperConfig } from "../utils/HelperConfig.sol";
 
 /**
@@ -19,10 +19,9 @@ contract DeployFactory is HelperConfig, ScaffoldETHDeploy {
             );
         }
 
-        HelperConfig helperConfig = new HelperConfig();
-        uint32 pauseWindowDuration = helperConfig.getFactoryConfig();
+        uint32 pauseWindowDuration = getFactoryConfig();
         vm.startBroadcast(deployerPrivateKey);
-        CustomPoolFactory factory = new CustomPoolFactory(vault, pauseWindowDuration);
+        ConstantSumFactory factory = new ConstantSumFactory(vault, pauseWindowDuration);
         console.log("Deployed Factory Address: %s", address(factory));
         vm.stopBroadcast();
 

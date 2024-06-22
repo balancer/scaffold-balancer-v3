@@ -4,7 +4,7 @@
 // import "forge-std/Test.sol";
 
 // import { ConstantSumPool } from "../contracts/ConstantSumPool.sol";
-// import { CustomPoolFactory } from "../contracts/CustomPoolFactory.sol";
+// import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
 
 // import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 // import { TokenConfig, TokenType } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
@@ -14,7 +14,7 @@
 
 // contract ConstantSumPoolFactoryTest is Test {
 //     VaultMock vault;
-//     CustomPoolFactory factory;
+//     ConstantSumFactory factory;
 //     ERC20TestToken tokenA;
 //     ERC20TestToken tokenB;
 
@@ -22,7 +22,7 @@
 
 //     function setUp() public {
 //         vault = VaultMockDeployer.deploy();
-//         factory = new CustomPoolFactory(IVault(address(vault)), 365 days);
+//         factory = new ConstantSumFactory(IVault(address(vault)), 365 days);
 
 //         tokenA = new ERC20TestToken("Token A", "TKNA", 18);
 //         tokenB = new ERC20TestToken("Token B", "TKNB", 6);
