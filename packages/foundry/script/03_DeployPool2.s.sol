@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import { LiquidityManagement, PoolRoleAccounts } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 
-import { HelperConfig } from "../utils/HelperConfig.sol";
+import { HelperFunctions } from "../utils/HelperFunctions.sol";
 import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
@@ -16,7 +16,7 @@ import { RegistrationConfig, InitializationConfig } from "../utils/PoolTypes.sol
  * @dev Some of the pool registration/initialization configurations are set in `HelperConfig.sol`, some are set directly in this script
  * @dev Run this script with `yarn deploy:pool`
  */
-contract DeployPool is HelperConfig, Script {
+contract DeployPool is HelperFunctions, Script {
     error InvalidPrivateKey(string);
 
     function run() external virtual {
@@ -75,49 +75,5 @@ contract DeployPool is HelperConfig, Script {
         );
         console.log("Pool initialized successfully!");
         vm.stopBroadcast();
-    }
-
-    /**
-     * @notice Approves the vault to spend tokens and then initializes the pool
-     */
-    function initializePool(
-        address pool,
-        IERC20[] memory tokens,
-        uint256[] memory exactAmountsIn,
-        uint256 minBptAmountOut,
-        bool wethIsEth,
-        bytes memory userData
-    ) internal {
-        // Approve Permit2 to spend account tokens
-        approveSpenderOnToken(address(permit2), tokens);
-        // Approve Router to spend account tokens using Permit2
-        approveSpenderOnPermit2(address(router), tokens);
-        // Initialize pool with the tokens that have been permitted
-        router.initialize(pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData);
-    }
-
-    /**
-     * @notice Max approving to speed up UX on frontend
-     * @param tokens Array of tokens to approve
-     * @param spender Address of the spender
-     */
-    function approveSpenderOnToken(address spender, IERC20[] memory tokens) internal {
-        uint256 maxAmount = type(uint256).max;
-        for (uint256 i = 0; i < tokens.length; ++i) {
-            tokens[i].approve(spender, maxAmount);
-        }
-    }
-
-    /**
-     * @notice Max approving to speed up UX on frontend
-     * @param tokens Array of tokens to approve
-     * @param spender Address of the spender
-     */
-    function approveSpenderOnPermit2(address spender, IERC20[] memory tokens) internal {
-        uint160 maxAmount = type(uint160).max;
-        uint48 maxExpiration = type(uint48).max;
-        for (uint256 i = 0; i < tokens.length; ++i) {
-            permit2.approve(address(tokens[i]), spender, maxAmount, maxExpiration);
-        }
     }
 }
