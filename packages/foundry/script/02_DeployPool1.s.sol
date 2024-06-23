@@ -8,8 +8,6 @@ import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 import { Script, console } from "forge-std/Script.sol";
 import { RegistrationConfig, InitializationConfig } from "../utils/PoolTypes.sol";
 
-import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
-
 /**
  * @title Deploy Pool Script
  * @notice This script deploys a new pool using the most recently deployed pool factory and mock tokens
@@ -26,7 +24,9 @@ contract DeployPool is HelperConfig, Script {
                 "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"
             );
         }
-        // Set the pool registration and initialization configurations in `HelperConfig.sol`
+        /**
+         * @dev Set the pool registration and initialization configurations in `HelperConfig.sol`
+         */
         RegistrationConfig memory regConfig = getPoolConfig();
         InitializationConfig memory initConfig = getInitializationConfig(regConfig.tokenConfig);
         // Grab the most recently deployed address of the pool factory
@@ -42,7 +42,7 @@ contract DeployPool is HelperConfig, Script {
             regConfig.name,
             regConfig.symbol,
             regConfig.salt,
-            sortTokenConfig(regConfig.tokenConfig),
+            regConfig.tokenConfig,
             regConfig.swapFeePercentage,
             regConfig.protocolFeeExempt,
             regConfig.roleAccounts,
@@ -53,7 +53,7 @@ contract DeployPool is HelperConfig, Script {
         // Initialize the pool
         initializePool(
             newPool,
-            InputHelpers.sortTokens(initConfig.tokens),
+            initConfig.tokens,
             initConfig.exactAmountsIn,
             initConfig.minBptAmountOut,
             initConfig.wethIsEth,

@@ -4,6 +4,8 @@ pragma solidity ^0.8.24;
 import { ScaffoldETHDeploy, console } from "./ScaffoldETHDeploy.s.sol";
 import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
 import { HelperConfig } from "../utils/HelperConfig.sol";
+import { MockToken1 } from "../contracts/MockToken1.sol";
+import { MockToken2 } from "../contracts/MockToken2.sol";
 
 /**
  * @title Deploy Factory
@@ -20,7 +22,20 @@ contract DeployFactory is HelperConfig, ScaffoldETHDeploy {
         }
 
         uint32 pauseWindowDuration = getFactoryConfig();
+
         vm.startBroadcast(deployerPrivateKey);
+        /**
+         * @notice Deploy mock tokens to be used for initializing pools
+         * @dev remove this if you plan to use already deployed tokens
+         */
+        MockToken1 scUSD = new MockToken1("Scaffold USD", "scUSD");
+        MockToken2 scDAI = new MockToken2("Scaffold DAI", "scDAI");
+        console.log("Deployed MockToken1 Address: %s", address(scUSD));
+        console.log("Deployed MockToken2 Address: %s", address(scDAI));
+
+        /**
+         * @notice Deploys the factory contract using the pauseWindowDuration set in `HelperConfig.sol`
+         */
         ConstantSumFactory factory = new ConstantSumFactory(vault, pauseWindowDuration);
         console.log("Deployed Factory Address: %s", address(factory));
         vm.stopBroadcast();

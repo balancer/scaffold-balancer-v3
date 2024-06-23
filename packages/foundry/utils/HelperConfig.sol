@@ -10,6 +10,7 @@ import {
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
 import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
+import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
 
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
@@ -41,8 +42,8 @@ contract HelperConfig {
      * @dev Set all of the configurations for deploying and registering a pool here
      */
     function getPoolConfig() internal view returns (RegistrationConfig memory regConfig) {
-        string memory name = "Scaffold Balancer Constant Sum Pool #1"; // name for the pool
-        string memory symbol = "SB-50scUSD-50scDAI"; // symbol for the BPT
+        string memory name = "Constant Sum Pool #1"; // name for the pool
+        string memory symbol = "CS1-50scUSD-50scDAI"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(name)); // salt for the pool deployment via factory
         // Grab the most recently deployed addresses of mock tokens
         address mockToken1 = DevOpsTools.get_most_recent_deployment(
@@ -88,7 +89,7 @@ contract HelperConfig {
             name: name,
             symbol: symbol,
             salt: salt,
-            tokenConfig: tokenConfig,
+            tokenConfig: sortTokenConfig(tokenConfig),
             swapFeePercentage: swapFeePercentage,
             protocolFeeExempt: protocolFeeExempt,
             roleAccounts: roleAccounts,
@@ -115,7 +116,7 @@ contract HelperConfig {
         bytes memory userData = bytes(""); // Additional (optional) data required for adding initial liquidity
 
         poolInitConfig = InitializationConfig({
-            tokens: tokens,
+            tokens: InputHelpers.sortTokens(tokens),
             exactAmountsIn: exactAmountsIn,
             minBptAmountOut: minBptAmountOut,
             wethIsEth: wethIsEth,
