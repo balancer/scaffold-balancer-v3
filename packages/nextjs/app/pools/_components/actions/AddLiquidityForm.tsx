@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { InputAmount } from "@balancer/sdk";
-import { formatUnits, parseAbi, parseUnits } from "viem";
+import { BALANCER_ROUTER, InputAmount, PERMIT2, erc20Abi, permit2Abi } from "@balancer/sdk";
+import { formatUnits, parseUnits } from "viem";
 import { useContractEvent, usePublicClient, useWalletClient } from "wagmi";
 import abis from "~~/contracts/abis";
-import { useAddLiquidity } from "~~/hooks/balancer/";
+import { useAddLiquidity, useTargetFork, useTokens } from "~~/hooks/balancer/";
 import { PoolActionReceipt, QueryAddLiquidityResponse, QueryPoolActionError, TokenInfo } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
+import { MaxUint48, MaxUint160, MaxUint256 } from "~~/utils/constants";
 import { formatToHuman } from "~~/utils/formatToHuman";
 
 /**
@@ -32,24 +33,23 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
   const [isAddingLiquidity, setIsAddingLiquidity] = useState(false);
   const [addLiquidityReceipt, setAddLiquidityReceipt] = useState<PoolActionReceipt>(null);
 
-  const { queryAddLiquidity, addLiquidity, allowances, refetchAllowances, balances } = useAddLiquidity(
-    pool,
-    tokenInputs,
-  );
+  const { tokenAllowances, refetchTokenAllowances, tokenBalances } = useTokens(tokenInputs);
+  const { queryAddLiquidity, addLiquidity } = useAddLiquidity(pool, tokenInputs);
   const writeTx = useTransactor(); // scaffold hook for tx status toast notifications
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
+  const { chainId } = useTargetFork();
 
   useEffect(() => {
     // Determine which tokens need to be approved
     async function determineTokensToApprove() {
-      if (allowances) {
+      if (tokenAllowances) {
         const tokensNeedingApproval = tokenInputs.filter((token, index) => {
-          const allowance = allowances[index] || 0n;
+          const allowance = tokenAllowances[index] || 0n;
           return allowance < token.rawAmount;
         });
         setTokensToApprove(tokensNeedingApproval);
-        // Check if all tokens have sufficient allowances
+        // Check if all tokens have sufficient tokenAllowances
         if (tokensNeedingApproval.length > 0) {
           setSufficientAllowances(false);
         } else {
@@ -58,7 +58,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
       }
     }
     determineTokensToApprove();
-  }, [tokenInputs, allowances]);
+  }, [tokenInputs, tokenAllowances]);
 
   const handleInputChange = (index: number, value: string) => {
     setQueryError(null);
@@ -92,18 +92,34 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
     tokensToApprove.forEach(async token => {
       try {
         setIsApproving(true);
-        const { request } = await publicClient.simulateContract({
+        // Max approve canonical Permit2 address to spend account's tokens
+        const { request: approveSpenderOnToken } = await publicClient.simulateContract({
           address: token.address,
-          abi: parseAbi(["function approve(address spender, uint256 amount) returns (bool)"]),
+          abi: erc20Abi,
           functionName: "approve",
           account: walletClient.account,
-          args: [pool.vaultAddress, token.rawAmount],
+          args: [PERMIT2[chainId], MaxUint256],
         });
-
-        await writeTx(() => walletClient.writeContract(request), {
+        await writeTx(() => walletClient.writeContract(approveSpenderOnToken), {
           blockConfirmations: 1,
           onBlockConfirmation: () => {
-            refetchAllowances();
+            console.log("Approved permit2 contract to spend max amount of", token.address);
+          },
+        });
+
+        // Approve Router to spend account's tokens using Permit2.approve(token, spender, amount, deadline)
+        const { request: approveSpenderOnPermit2 } = await publicClient.simulateContract({
+          address: PERMIT2[chainId],
+          abi: permit2Abi,
+          functionName: "approve",
+          account: walletClient.account,
+          args: [token.address, BALANCER_ROUTER[chainId], MaxUint160, MaxUint48],
+        });
+        await writeTx(() => walletClient.writeContract(approveSpenderOnPermit2), {
+          blockConfirmations: 1,
+          onBlockConfirmation: () => {
+            console.log("Approved router to spend max amount of", token.address);
+            refetchTokenAllowances();
             setIsApproving(false);
           },
         });
@@ -118,7 +134,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
     try {
       setIsAddingLiquidity(true);
       await addLiquidity();
-      refetchAllowances();
+      refetchTokenAllowances();
       refetchPool();
     } catch (e) {
       console.error("error", e);
@@ -156,8 +172,8 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
               formatUnits(token.rawAmount, token.decimals) === "0" ? "" : formatUnits(token.rawAmount, token.decimals)
             }
             onAmountChange={value => handleInputChange(index, value)}
-            allowance={allowances && formatToHuman(allowances[index] || 0n, token.decimals)}
-            balance={balances && formatToHuman(balances[index] || 0n, token.decimals)}
+            allowance={tokenAllowances && formatToHuman(tokenAllowances[index] || 0n, token.decimals)}
+            balance={tokenBalances && formatToHuman(tokenBalances[index] || 0n, token.decimals)}
           />
         ))}
       </div>

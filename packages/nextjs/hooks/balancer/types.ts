@@ -1,7 +1,9 @@
 import { SwapKind, TokenAmount } from "@balancer/sdk";
 import { type Address } from "viem";
 
+///////////////////
 // Pool Data
+//////////////////
 export type Pool = {
   address: Address;
   decimals: number;
@@ -38,21 +40,37 @@ export type PoolConfig = {
   isPoolInitialized: boolean;
   isPoolPaused: boolean;
   isPoolInRecoveryMode: boolean;
-  // hooks: {
-  //   shouldCallAfterAddLiquidity: boolean;
-  //   shouldCallAfterInitialize: boolean;
-  //   shouldCallAfterRemoveLiquidity: boolean;
-  //   shouldCallAfterSwap: boolean;
-  //   shouldCallBeforeAddLiquidity: boolean;
-  //   shouldCallBeforeInitialize: boolean;
-  //   shouldCallBeforeRemoveLiquidity: boolean;
-  //   shouldCallBeforeSwap: boolean;
-  // };
 };
 
+// hooks: {
+//   shouldCallAfterAddLiquidity: boolean;
+//   shouldCallAfterInitialize: boolean;
+//   shouldCallAfterRemoveLiquidity: boolean;
+//   shouldCallAfterSwap: boolean;
+//   shouldCallBeforeAddLiquidity: boolean;
+//   shouldCallBeforeInitialize: boolean;
+//   shouldCallBeforeRemoveLiquidity: boolean;
+//   shouldCallBeforeSwap: boolean;
+// };
+
+///////////////////
 // Pool Actions
-export type QueryPoolActionError = { message: string } | null;
-export type TransactionHash = string | null;
+//////////////////
+
+export type UseSwap = {
+  querySwap: () => Promise<QuerySwapResponse>;
+  swap: () => Promise<TransactionHash>;
+};
+
+export type UseAddLiquidity = {
+  queryAddLiquidity: () => Promise<QueryAddLiquidityResponse>;
+  addLiquidity: () => Promise<TransactionHash>;
+};
+
+export type UseRemoveLiquidity = {
+  queryRemoveLiquidity: (rawAmount: bigint) => Promise<QueryRemoveLiquidityResponse>;
+  removeLiquidity: () => Promise<TransactionHash>;
+};
 
 export type SwapConfig = {
   tokenIn: {
@@ -67,6 +85,8 @@ export type SwapConfig = {
   };
   swapKind: SwapKind;
 };
+
+export type QueryPoolActionError = { message: string } | null;
 
 export type QuerySwapResponse = {
   swapKind?: SwapKind;
@@ -98,3 +118,5 @@ export type PoolActionReceipt = {
   data: TokenInfo[];
   transactionHash: string;
 } | null;
+
+export type TransactionHash = string | null;

@@ -11,20 +11,15 @@ import {
 } from "@balancer/sdk";
 import { useWalletClient } from "wagmi";
 import { useTargetFork } from "~~/hooks/balancer";
-import { Pool, QueryRemoveLiquidityResponse, TransactionHash } from "~~/hooks/balancer/types";
+import { Pool, UseRemoveLiquidity } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
-
-type RemoveLiquidityFunctions = {
-  queryRemoveLiquidity: (rawAmount: bigint) => Promise<QueryRemoveLiquidityResponse>;
-  removeLiquidity: () => Promise<TransactionHash>;
-};
 
 /**
  * Custom hook for removing liquidity from a pool where `queryRemoveLiquidity()` sets state of
  * the call object that is used to construct the transaction that is later sent by `removeLiquidity()`
  */
-export const useRemoveLiquidity = (pool: Pool): RemoveLiquidityFunctions => {
+export const useRemoveLiquidity = (pool: Pool): UseRemoveLiquidity => {
   const [call, setCall] = useState<RemoveLiquidityBuildCallOutput>();
   const { data: walletClient } = useWalletClient();
   const { rpcUrl, chainId } = useTargetFork();

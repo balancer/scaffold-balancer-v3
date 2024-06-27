@@ -1,43 +1,17 @@
 import { useState } from "react";
-import {
-  BALANCER_ROUTER,
-  PERMIT2,
-  Slippage,
-  Swap,
-  SwapBuildOutputExactIn,
-  SwapBuildOutputExactOut,
-  SwapKind,
-  TokenAmount,
-  erc20Abi,
-  permit2Abi,
-} from "@balancer/sdk";
-import { WriteContractResult } from "@wagmi/core";
-import { zeroAddress } from "viem";
-import { useContractRead, useContractWrite, useWalletClient } from "wagmi";
+import { Slippage, Swap, SwapBuildOutputExactIn, SwapBuildOutputExactOut, SwapKind, TokenAmount } from "@balancer/sdk";
+import { useWalletClient } from "wagmi";
 import { useTargetFork } from "~~/hooks/balancer";
-import { Pool, QuerySwapResponse, SwapConfig, TransactionHash } from "~~/hooks/balancer/types";
+import { Pool, SwapConfig, UseSwap } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
-import { MaxUint48, MaxUint160, MaxUint256 } from "~~/utils/constants";
-
-type PoolSwapFunctions = {
-  querySwap: () => Promise<QuerySwapResponse>;
-  swap: () => Promise<TransactionHash>;
-  tokenInAllowance: bigint;
-  tokenInBalance: bigint;
-  refetchTokenInAllowance: () => void;
-  refetchTokenInBalance: () => void;
-  approveSpenderOnToken: () => Promise<WriteContractResult>;
-  approveSpenderOnPermit2: () => Promise<WriteContractResult>;
-};
 
 /**
  * Custom hook for swapping tokens in a pool where `querySwap()` sets state of
  * the call object that is used to construct the transaction that is then sent by `swap()`
  */
-export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions => {
+export const useSwap = (pool: Pool, swapConfig: SwapConfig): UseSwap => {
   const [call, setCall] = useState<SwapBuildOutputExactIn | SwapBuildOutputExactOut>();
   const { data: walletClient } = useWalletClient();
-  const connectedAddress = walletClient?.account.address;
   const { rpcUrl, chainId } = useTargetFork();
   const writeTx = useTransactor();
 
@@ -137,44 +111,8 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
     }
   };
 
-  const { data: tokenInAllowance, refetch: refetchTokenInAllowance } = useContractRead({
-    address: PERMIT2[chainId],
-    abi: permit2Abi,
-    functionName: "allowance",
-    args: [connectedAddress || zeroAddress, tokenIn.address, BALANCER_ROUTER[chainId]],
-  });
-
-  const { data: tokenInBalance, refetch: refetchTokenInBalance } = useContractRead({
-    address: tokenIn.address,
-    abi: erc20Abi,
-    functionName: "balanceOf",
-    args: [connectedAddress || zeroAddress],
-  });
-
-  // Max approve canonical Permit2 address to spend account's tokens
-  const { writeAsync: approveSpenderOnToken } = useContractWrite({
-    address: tokenIn.address,
-    abi: erc20Abi,
-    functionName: "approve",
-    args: [PERMIT2[chainId], MaxUint256], // point this approval at permit2 contract
-  });
-
-  // Approve Router to spend account's tokens using Permit2
-  const { writeAsync: approveSpenderOnPermit2 } = useContractWrite({
-    address: PERMIT2[chainId],
-    abi: permit2Abi,
-    functionName: "approve",
-    args: [tokenIn.address, BALANCER_ROUTER[chainId], MaxUint160, MaxUint48],
-  });
-
   return {
     querySwap,
     swap,
-    tokenInBalance: tokenInBalance ? tokenInBalance : 0n,
-    tokenInAllowance: tokenInAllowance ? tokenInAllowance[0] : 0n,
-    refetchTokenInAllowance,
-    refetchTokenInBalance,
-    approveSpenderOnToken,
-    approveSpenderOnPermit2,
   };
 };

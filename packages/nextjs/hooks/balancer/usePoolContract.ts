@@ -1,8 +1,9 @@
 import type { Pool } from "./types";
+import { VAULT_V3, vaultExtensionV3Abi } from "@balancer/sdk";
 import { type Address } from "viem";
 import { erc20ABI, usePublicClient, useQuery, useWalletClient } from "wagmi";
 import abis from "~~/contracts/abis";
-import externalContracts from "~~/contracts/externalContracts";
+import { useTargetFork } from "~~/hooks/balancer";
 
 /**
  * Fetch all relevant details for a pool
@@ -10,14 +11,14 @@ import externalContracts from "~~/contracts/externalContracts";
 export const usePoolContract = (pool: Address | null) => {
   const client = usePublicClient();
   const { data: walletClient } = useWalletClient();
-  const chainId = client.chain.id;
-  const { Vault } = externalContracts[chainId as keyof typeof externalContracts];
+  const { chainId } = useTargetFork();
+  const vault = VAULT_V3[chainId];
 
   const connectedAddress = walletClient?.account?.address;
   const poolAbi = abis.balancer.Pool;
 
   return useQuery<Pool>(
-    ["PoolContract", { pool, vaultAddress: Vault.address, connectedAddress }],
+    ["PoolContract", { pool, vault, connectedAddress }],
     async () => {
       if (!pool) throw new Error("Pool address is required");
 
@@ -59,23 +60,23 @@ export const usePoolContract = (pool: Address | null) => {
             .catch(() => 0n) as Promise<bigint>,
           // fetch data about pool assets from vault contract
           client.readContract({
-            abi: Vault.abi,
-            address: Vault.address,
+            abi: vaultExtensionV3Abi,
+            address: vault,
             functionName: "isPoolRegistered",
             args: [pool],
           }),
           client
             .readContract({
-              abi: Vault.abi,
-              address: Vault.address,
+              abi: vaultExtensionV3Abi,
+              address: vault,
               functionName: "getPoolTokenInfo", // https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpooltokeninfo
               args: [pool],
             })
             .catch(() => []),
           client
             .readContract({
-              abi: Vault.abi,
-              address: Vault.address,
+              abi: vaultExtensionV3Abi,
+              address: vault,
               functionName: "getPoolConfig", // https://docs-v3.balancer.fi/concepts/vault/onchain-api.html#getpoolconfig
               args: [pool],
             })
