@@ -54,7 +54,8 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
     refetchTokenInAllowance,
     tokenInBalance,
     refetchTokenInBalance,
-    approveAsync,
+    approveSpenderOnToken,
+    approveSpenderOnPermit2,
   } = useSwap(pool, swapConfig);
   const writeTx = useTransactor();
 
@@ -154,7 +155,14 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const handleApprove = async () => {
     try {
       setIsApproving(true);
-      await writeTx(approveAsync, {
+      await writeTx(approveSpenderOnToken, {
+        blockConfirmations: 1,
+        onBlockConfirmation: () => {
+          refetchTokenInAllowance();
+          setIsApproving(false);
+        },
+      });
+      await writeTx(approveSpenderOnPermit2, {
         blockConfirmations: 1,
         onBlockConfirmation: () => {
           refetchTokenInAllowance();
@@ -227,8 +235,8 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         tokenDropdownOpen={isTokenInDropdownOpen}
         setTokenDropdownOpen={setTokenInDropdownOpen}
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenIn.symbol)}
-        allowance={formatToHuman(tokenInAllowance ?? 0n, tokenIn.decimals)}
-        balance={formatToHuman(tokenInBalance ?? 0n, tokenIn.decimals)}
+        allowance={formatToHuman(tokenInAllowance, tokenIn.decimals)}
+        balance={formatToHuman(tokenInBalance, tokenIn.decimals)}
         isHighlighted={queryResponse?.swapKind === SwapKind.GivenIn}
       />
       <TokenField
