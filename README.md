@@ -90,16 +90,26 @@ SEPOLIA_RPC_URL=...
 
 #### 0.2.3 Start Local Fork
 
+By default, this project runs on a local anvil fork of the Sepolia testnet.
+
 ```bash
 yarn fork
 ```
 
 #### 0.2.4 Deploy Contracts
 
-The following command runs the script from `DeployFactoryAndPool.s.sol` which deploys a pool factory, deploys mock tokens, deploys a new pool using the factory, and finally initializes the pool using the mock tokens. This is all done from the DEPLOYER wallet associated to the `DEPLOYER_PRIVATE_KEY` specified in the `.env`. It receives mock tokens, deploys the pool factory, and initializes the newly created pool with the some mock tokens. It carries these deployments out on an anvil local fork of the Sepolia test network.
+All contracts are deployed from the wallet associated to the `DEPLOYER_PRIVATE_KEY` specified in the `.env`. By default, this wallet receives mock tokens and the resulting BPT from the pool initialization.
+
+1. Deploy mock tokens and a pool factory using the `01_DeployFactory.s.sol` script
 
 ```bash
-yarn deploy:all
+yarn deploy:factory
+```
+
+2. Deploy, register, and initialize a pool using the `02_DeployPool1.s.sol` script
+
+```bash
+yarn deploy:pool1
 ```
 
 #### 0.2.5 Start Frontend
