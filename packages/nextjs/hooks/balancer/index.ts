@@ -6,3 +6,4 @@ export * from "./useRemoveLiquidity";
 export * from "./useTargetFork";
 export * from "./useToken";
 export * from "./useTokens";
+export * from "./useApprove";

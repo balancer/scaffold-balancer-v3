@@ -1,4 +1,5 @@
 import { SwapKind, TokenAmount } from "@balancer/sdk";
+import { WriteContractResult } from "@wagmi/core";
 import { type Address } from "viem";
 
 ///////////////////
@@ -54,7 +55,7 @@ export type PoolConfig = {
 // };
 
 ///////////////////
-// Pool Actions
+// Pool Hooks
 //////////////////
 
 export type UseSwap = {
@@ -72,6 +73,9 @@ export type UseRemoveLiquidity = {
   removeLiquidity: () => Promise<TransactionHash>;
 };
 
+///////////////////
+// Pool Action Forms
+//////////////////
 export type SwapConfig = {
   tokenIn: {
     poolTokensIndex: number;
@@ -120,3 +124,31 @@ export type PoolActionReceipt = {
 } | null;
 
 export type TransactionHash = string | null;
+
+///////////////////////
+// Token Hooks
+//////////////////////
+
+export type UseToken = {
+  tokenAllowance: bigint;
+  tokenBalance: bigint;
+  refetchTokenAllowance: () => void;
+  refetchTokenBalance: () => void;
+};
+
+export type UseTokens = {
+  tokenAllowances: (bigint | undefined)[] | undefined;
+  refetchTokenAllowances: () => void;
+  tokenBalances?: (bigint | undefined)[];
+};
+
+export type UseApprove = {
+  approveSpenderOnToken: () => Promise<WriteContractResult>;
+  approveSpenderOnPermit2: () => Promise<WriteContractResult>;
+};
+
+export type Permit2Allowance = {
+  result?: [bigint, number, number] | unknown; // [amount, nonce, expiry]
+  status: "success" | "failure";
+  error?: Error | undefined;
+};

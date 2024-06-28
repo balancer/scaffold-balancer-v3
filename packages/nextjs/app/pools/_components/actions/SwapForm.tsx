@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { SwapKind, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
+import { BALANCER_ROUTER, PERMIT2, SwapKind, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
-import { useSwap, useTargetFork, useToken } from "~~/hooks/balancer/";
+import { useApprove, useSwap, useTargetFork, useToken } from "~~/hooks/balancer/";
 import {
   PoolActionReceipt,
   QueryPoolActionError,
@@ -49,17 +49,12 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
   const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
 
-  const {
-    tokenAllowance,
-    refetchTokenAllowance,
-    tokenBalance,
-    refetchTokenBalance,
-    approveSpenderOnToken,
-    approveSpenderOnPermit2,
-  } = useToken(tokenIn.address);
-  const { querySwap, swap } = useSwap(pool, swapConfig);
-  const { chainId } = useTargetFork();
   const writeTx = useTransactor();
+  const { chainId } = useTargetFork();
+  const { querySwap, swap } = useSwap(pool, swapConfig);
+  const { approveSpenderOnToken: approvePermit2OnToken } = useApprove(tokenIn.address, PERMIT2[chainId]);
+  const { approveSpenderOnPermit2: approveRouterOnPermit2 } = useApprove(tokenIn.address, BALANCER_ROUTER[chainId]);
+  const { tokenAllowance, refetchTokenAllowance, tokenBalance, refetchTokenBalance } = useToken(tokenIn.address);
 
   const sufficientAllowance = useMemo(() => {
     return tokenAllowance && tokenAllowance >= swapConfig.tokenIn.rawAmount;
@@ -154,14 +149,14 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const handleApprove = async () => {
     try {
       setIsApproving(true);
-      await writeTx(approveSpenderOnToken, {
+      await writeTx(approvePermit2OnToken, {
         blockConfirmations: 1,
         onBlockConfirmation: () => {
           refetchTokenAllowance();
           setIsApproving(false);
         },
       });
-      await writeTx(approveSpenderOnPermit2, {
+      await writeTx(approveRouterOnPermit2, {
         blockConfirmations: 1,
         onBlockConfirmation: () => {
           refetchTokenAllowance();

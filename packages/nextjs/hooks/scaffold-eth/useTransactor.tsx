@@ -90,6 +90,7 @@ export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => 
 
       if (options?.onBlockConfirmation) options.onBlockConfirmation(transactionReceipt);
     } catch (error: any) {
+      console.log("error", error.message);
       if (notificationId) {
         notification.remove(notificationId);
       }

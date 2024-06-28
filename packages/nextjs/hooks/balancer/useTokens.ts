@@ -3,17 +3,12 @@ import { BALANCER_ROUTER, InputAmount, PERMIT2, erc20Abi, permit2Abi } from "@ba
 import { zeroAddress } from "viem";
 import { useContractReads, useWalletClient } from "wagmi";
 import { useTargetFork } from "~~/hooks/balancer";
-
-type UseTokensHook = {
-  tokenAllowances: (bigint | undefined)[] | undefined;
-  refetchTokenAllowances: () => void;
-  tokenBalances?: (bigint | undefined)[];
-};
+import { Permit2Allowance, UseTokens } from "~~/hooks/balancer/types";
 
 /**
  * Custom hook for dealing with multiple tokens
  */
-export const useTokens = (amountsIn: InputAmount[]): UseTokensHook => {
+export const useTokens = (amountsIn: InputAmount[]): UseTokens => {
   const { data: walletClient } = useWalletClient();
   const connectedAddress = walletClient?.account.address || zeroAddress;
   const { chainId } = useTargetFork();
@@ -45,11 +40,6 @@ export const useTokens = (amountsIn: InputAmount[]): UseTokensHook => {
     })),
   });
 
-  type Permit2Allowance = {
-    result?: [bigint, number, number] | unknown; // [amount, nonce, expiry]
-    status: "success" | "failure";
-    error?: Error | undefined;
-  };
   const tokenAllowances = useMemo(() => {
     if (!allowances) return undefined;
     return allowances.map((allowance: Permit2Allowance) => {

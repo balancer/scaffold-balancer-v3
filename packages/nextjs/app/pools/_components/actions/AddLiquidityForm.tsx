@@ -87,8 +87,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
   };
 
   const handleApprove = async () => {
-    if (!walletClient) return;
-
+    if (!walletClient) throw new Error("Wallet client not connected!");
     tokensToApprove.forEach(async token => {
       try {
         setIsApproving(true);
