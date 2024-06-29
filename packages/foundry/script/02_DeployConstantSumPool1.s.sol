@@ -9,12 +9,12 @@ import { Script, console } from "forge-std/Script.sol";
 import { RegistrationConfig, InitializationConfig } from "../utils/PoolTypes.sol";
 
 /**
- * @title Deploy Pool Script
+ * @title Deploy Constant Sum Pool #1
  * @notice This script deploys a new pool using the most recently deployed pool factory and mock tokens
  * @dev Set the pool registration and initialization configurations in `HelperConfig.sol`
- * @dev Run this script with `yarn deploy:pool`
+ * @dev Run this script with `yarn deploy:pool1`
  */
-contract DeployPool is HelperFunctions, Script {
+contract DeployConstantSumPool1 is HelperFunctions, Script {
     error InvalidPrivateKey(string);
 
     function run() external virtual {

@@ -13,10 +13,8 @@ import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRat
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
 
-import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import { MockToken1 } from "../contracts/MockToken1.sol";
-import { MockToken2 } from "../contracts/MockToken2.sol";
 import { RegistrationConfig, InitializationConfig } from "./PoolTypes.sol";
+import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 
 /**
@@ -78,7 +76,7 @@ contract HelperConfig {
             swapFeeManager: address(0), // Account empowered to set static swap fees for a pool (or 0 to delegate to goverance)
             poolCreator: address(0) // Account empowered to set the pool creator fee percentage
         });
-        address poolHooksContract = address(0); // No hook contract
+        address poolHooksContract = address(0); // zero address if no hooks contract is needed
         LiquidityManagement memory liquidityManagement = LiquidityManagement({
             disableUnbalancedLiquidity: false,
             enableAddLiquidityCustom: false,

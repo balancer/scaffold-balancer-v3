@@ -22,11 +22,16 @@ contract ConstantSumFactory is BasePoolFactory {
     ) BasePoolFactory(vault, pauseWindowDuration, type(ConstantSumPool).creationCode) {}
 
     /**
-     * @notice Deploys a new `CustomPool`
+     * @notice Deploys a new pool and registers it with the vault
      * @param name The name of the pool
      * @param symbol The symbol of the pool
-     * @param tokens An array of descriptors for the tokens the pool will manage
      * @param salt The salt value that will be passed to create3 deployment
+     * @param tokens An array of descriptors for the tokens the pool will manage
+     * @param swapFeePercentage Initial swap fee percentage
+     * @param protocolFeeExempt true, the pool's initial aggregate fees will be set to 0
+     * @param roleAccounts Addresses the Vault will allow to change certain pool settings
+     * @param poolHooksContract Contract that implements the hooks for the pool
+     * @param liquidityManagement Liquidity management flags with implemented methods
      */
     function create(
         string memory name,
@@ -39,9 +44,9 @@ contract ConstantSumFactory is BasePoolFactory {
         address poolHooksContract,
         LiquidityManagement memory liquidityManagement
     ) external returns (address pool) {
-        // Deploy the pool
+        // First deploy a new pool
         pool = _create(abi.encode(getVault(), name, symbol), salt);
-        // Register the pool
+        // Then register the pool
         _registerPoolWithVault(
             pool,
             tokens,

@@ -11,12 +11,13 @@ import { Script, console } from "forge-std/Script.sol";
 import { RegistrationConfig, InitializationConfig } from "../utils/PoolTypes.sol";
 
 /**
- * @title Deploy Pool Script
+ * @title Deploy Constant Sum Pool #2
  * @notice This script deploys a new pool using the most recently deployed pool factory and mock tokens
- * @dev Some of the pool registration/initialization configurations are set in `HelperConfig.sol`, some are set directly in this script
- * @dev Run this script with `yarn deploy:pool`
+ * @notice Some of the pool registration/initialization configurations are set in `HelperConfig.sol`
+ * @notice Some config is set directly in this script including the pool hooks contract
+ * @dev Run this script with `yarn deploy:pool2`
  */
-contract DeployPool is HelperFunctions, Script {
+contract DeployConstantSumPool2 is HelperFunctions, Script {
     error InvalidPrivateKey(string);
 
     function run() external virtual {
@@ -29,7 +30,6 @@ contract DeployPool is HelperFunctions, Script {
         // Set the pool registration and initialization configurations in `HelperConfig.sol`
         RegistrationConfig memory regConfig = getPoolConfig();
         InitializationConfig memory initConfig = getInitializationConfig(regConfig.tokenConfig);
-        // Grab the most recently deployed address of the pool factory
         address poolFactoryAddress = DevOpsTools.get_most_recent_deployment(
             "ConstantSumFactory", // Must match the pool factory contract name
             block.chainid
@@ -37,13 +37,17 @@ contract DeployPool is HelperFunctions, Script {
         ConstantSumFactory factory = ConstantSumFactory(poolFactoryAddress);
         /**
          * @notice Altering some of the config for this second pool
-         * @dev watch out for "stack too deep" error if you declare too many vars directly in this `run()` function
+         * @dev Watch out for "stack too deep" error if you declare too many vars directly in this `run()` function
          */
         PoolRoleAccounts memory roleAccounts = PoolRoleAccounts({
             pauseManager: msg.sender, // Account empowered to pause/unpause the pool (or 0 to delegate to governance)
             swapFeeManager: msg.sender, // Account empowered to set static swap fees for a pool (or 0 to delegate to goverance)
             poolCreator: msg.sender // Account empowered to set the pool creator fee percentage
         });
+        address veBalFeeDiscountHook = DevOpsTools.get_most_recent_deployment(
+            "VeBALFeeDiscountHook", // Must match the mock token contract name
+            block.chainid
+        );
         LiquidityManagement memory liquidityManagement = LiquidityManagement({
             disableUnbalancedLiquidity: false,
             enableAddLiquidityCustom: true,
@@ -60,7 +64,7 @@ contract DeployPool is HelperFunctions, Script {
             33e12, // swapFeePercentage of 0.000033%
             regConfig.protocolFeeExempt,
             roleAccounts,
-            regConfig.poolHooksContract,
+            veBalFeeDiscountHook, // poolHooksContract
             liquidityManagement
         );
         console.log("Deployed pool at address: %s", newPool);
