@@ -10,7 +10,7 @@ export const PoolAttributes = ({ pool }: { pool: Pool }) => {
     { attribute: "Symbol", detail: pool.symbol },
     { attribute: "Total Supply", detail: pool.totalSupply.toString() },
     { attribute: "Decimals", detail: pool.decimals },
-    { attribute: "Contract Address", detail: <Address address={pool.address} /> },
+    { attribute: "Pool Address", detail: <Address address={pool.address} /> },
     { attribute: "Vault Address", detail: <Address address={pool.vaultAddress} /> },
   ];
   return (

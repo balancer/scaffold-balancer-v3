@@ -13,6 +13,7 @@ export type Pool = {
   symbol: string;
   userBalance: bigint;
   poolConfig: PoolConfig | undefined;
+  hooksConfig: HooksConfig | undefined;
   poolTokens: Array<PoolTokens> | [];
   totalSupply: bigint;
   vaultAddress: Address;
@@ -43,16 +44,18 @@ export type PoolConfig = {
   isPoolInRecoveryMode: boolean;
 };
 
-// hooks: {
-//   shouldCallAfterAddLiquidity: boolean;
-//   shouldCallAfterInitialize: boolean;
-//   shouldCallAfterRemoveLiquidity: boolean;
-//   shouldCallAfterSwap: boolean;
-//   shouldCallBeforeAddLiquidity: boolean;
-//   shouldCallBeforeInitialize: boolean;
-//   shouldCallBeforeRemoveLiquidity: boolean;
-//   shouldCallBeforeSwap: boolean;
-// };
+export type HooksConfig = {
+  shouldCallBeforeInitialize: boolean;
+  shouldCallAfterInitialize: boolean;
+  shouldCallComputeDynamicSwapFee: boolean;
+  shouldCallBeforeSwap: boolean;
+  shouldCallAfterSwap: boolean;
+  shouldCallBeforeAddLiquidity: boolean;
+  shouldCallAfterAddLiquidity: boolean;
+  shouldCallBeforeRemoveLiquidity: boolean;
+  shouldCallAfterRemoveLiquidity: boolean;
+  hooksContract: Address;
+};
 
 ///////////////////
 // Pool Hooks

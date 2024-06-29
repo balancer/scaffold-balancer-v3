@@ -10,11 +10,24 @@ export const PoolConfig = ({ pool }: { pool: Pool }) => {
   }
 
   const detailsRows = [
-    { key: "tokenDecimalDiffs", value: pool.poolConfig.tokenDecimalDiffs.toString() },
     { key: "staticSwapFeePercentage", value: pool.poolConfig.staticSwapFeePercentage.toString() },
     { key: "aggregateSwapFeePercentage", value: pool.poolConfig.aggregateSwapFeePercentage.toString() },
+    { key: "aggregateYieldFeePercentage", value: pool.poolConfig.aggregateYieldFeePercentage.toString() },
+    { key: "tokenDecimalDiffs", value: pool.poolConfig.tokenDecimalDiffs.toString() },
+
+    {
+      key: "disableUnbalancedLiquidity",
+      value: pool.poolConfig.liquidityManagement.disableUnbalancedLiquidity.toString(),
+    },
+    {
+      key: "enableAddLiquidityCustom",
+      value: pool.poolConfig.liquidityManagement.enableAddLiquidityCustom.toString(),
+    },
+    {
+      key: "enableRemoveLiquidityCustom",
+      value: pool.poolConfig.liquidityManagement.enableRemoveLiquidityCustom.toString(),
+    },
     { key: "isPoolPaused", value: pool.poolConfig.isPoolPaused.toString() },
-    { key: "pauseWindowEndTime", value: pool.poolConfig.pauseWindowEndTime.toString() },
     { key: "isPoolInRecoveryMode", value: pool.poolConfig.isPoolInRecoveryMode.toString() },
   ];
 

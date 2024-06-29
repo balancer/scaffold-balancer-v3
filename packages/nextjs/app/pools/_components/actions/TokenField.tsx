@@ -53,7 +53,7 @@ export const TokenField: React.FC<TokenFieldProps> = ({
           onChange={e => onAmountChange(e.target.value)}
           placeholder="0.0"
           className={`text-right text-2xl w-full input input-bordered rounded-lg bg-base-300 p-10 ${
-            isHighlighted ? "ring-2 ring-fuchsia-600" : ""
+            isHighlighted ? "ring-1 ring-purple-500" : ""
           }`}
         />
         <div className="absolute top-0 left-0 flex gap-3 p-3">
@@ -107,7 +107,7 @@ export const TokenField: React.FC<TokenFieldProps> = ({
                       <td className="pl-1">
                         {balance}{" "}
                         {setMaxAmount && (
-                          <button className="text-fuchsia-500" onClick={setMaxAmount}>
+                          <button className="text-orange-300" onClick={setMaxAmount}>
                             Max
                           </button>
                         )}

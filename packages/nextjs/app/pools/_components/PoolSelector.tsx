@@ -80,10 +80,8 @@ export const PoolSelector = ({ setSelectedPoolAddress }: { setSelectedPoolAddres
             placeholder="Search by pool addresss"
           />
           <button
-            className={`btn w-16 absolute top-0.5 right-0.5 text-white ${
-              isValidAddress
-                ? "bg-gradient-to-tr from-indigo-700 from-15% to-fuchsia-600 hover:from-indigo-700 hover:to-fuchsia-700"
-                : ""
+            className={`btn w-16 absolute top-0.5 right-0.5 ${
+              isValidAddress ? "bg-orange-300 hover:bg-orange-400" : ""
             }`}
             type="submit"
             disabled={!isValidAddress}
@@ -98,7 +96,7 @@ export const PoolSelector = ({ setSelectedPoolAddress }: { setSelectedPoolAddres
               onClick={() => setIsOpen(!isOpen)}
               tabIndex={0}
               role="button"
-              className={`btn w-16 bg-base-100 hover:bg-accent`}
+              className={`btn border-none w-16 bg-violet-300 hover:bg-violet-400 text-neutral-700`}
             >
               <ChevronDoubleDownIcon className="h-5 w-5" />
             </div>

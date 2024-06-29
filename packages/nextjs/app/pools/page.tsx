@@ -3,7 +3,15 @@
 import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { PoolActions, PoolAttributes, PoolComposition, PoolConfig, PoolSelector, UserLiquidity } from "./_components/";
+import {
+  HooksConfig,
+  PoolActions,
+  PoolAttributes,
+  PoolComposition,
+  PoolConfig,
+  PoolSelector,
+  UserLiquidity,
+} from "./_components/";
 import { type NextPage } from "next";
 import { type Address } from "viem";
 import { parseAbi } from "viem";
@@ -38,7 +46,7 @@ const Pools: NextPage = () => {
   return (
     <div className="flex-grow bg-base-300">
       <div className="max-w-screen-2xl mx-auto">
-        <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
+        <div className="flex items-center flex-col flex-grow py-5 px-5 md:px-10 xl:px-20">
           <div>
             <h1 className="text-3xl md:text-5xl font-semibold my-7">🌊 Custom Pools</h1>
             <p className="text-xl my-0">
@@ -107,15 +115,22 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
           page and call the mint function!
         </Alert>
       )}
-      <div className="text-center mb-5 bg-base-200 p-3 w-full rounded-lg">
-        <h3 className="font-semibold text-3xl my-2">{pool.name}</h3>
-        <h5 className="text-sm md:text-lg xl:text-xl">{pool.address}</h5>
+      <div className="flex justify-center text-center mb-5 p-3 w-full rounded-lg">
+        <div>
+          <h3 className="font-semibold text-3xl xl:text-4xl my-2 text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-violet-400 to-orange-500">
+            {pool.name}
+          </h3>
+          <h5 className="text-sm md:text-lg xl:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-violet-400 to-orange-500">
+            {pool.address}
+          </h5>
+        </div>
       </div>
       <div className="w-full">
         <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
           <div className="flex flex-col gap-7">
             <UserLiquidity pool={pool} />
             <PoolComposition pool={pool} />
+            <HooksConfig pool={pool} />
             <PoolAttributes pool={pool} />
           </div>
           <div className="flex flex-col gap-7">
@@ -161,11 +176,11 @@ const PoolPageSkeleton = () => {
 
 const Alert = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="bg-[#FCD34D40] border border-amber-500 rounded-lg p-5 mb-5 w-full flex gap-2 items-center justify-center">
+    <div className="bg-[#d7b33e40] border border-orange-500 rounded-lg p-5 mb-5 w-full flex gap-2 items-center justify-center">
       <div>
-        <ExclamationTriangleIcon className="w-5 h-5 text-amber-500" />
+        <ExclamationTriangleIcon className="w-5 h-5 text-orange-500" />
       </div>
-      <div className="dark:text-amber-500 light:text-amber-800">{children}</div>
+      <div className="dark:text-orange-500 light:text-amber-800">{children}</div>
     </div>
   );
 };
