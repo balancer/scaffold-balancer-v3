@@ -101,8 +101,6 @@ export const usePoolContract = (pool: Address | null) => {
           .catch(() => undefined), // return undefined if pool has not been registered
       ]);
 
-      console.log("hooksConfig", hooksConfig);
-
       // populate the pool tokens with balances, names, symbols, and decimals
       const [poolTokenAddresses, , poolTokenBalances] = poolTokenInfo;
       const poolTokensWithBalances = Array.from({ length: poolTokenAddresses?.length ?? 0 }, (_, i) => ({

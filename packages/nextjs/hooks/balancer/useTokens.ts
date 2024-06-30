@@ -44,7 +44,6 @@ export const useTokens = (amountsIn: InputAmount[]): UseTokens => {
     if (!allowances) return undefined;
     return allowances.map((allowance: Permit2Allowance) => {
       if (allowance.status === "success" && Array.isArray(allowance.result)) {
-        console.log("allowance.result[0]", allowance.result[0]);
         return allowance.result[0];
       }
       return undefined;

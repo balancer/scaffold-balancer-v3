@@ -1,7 +1,6 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   HooksConfig,
@@ -14,14 +13,10 @@ import {
 } from "./_components/";
 import { type NextPage } from "next";
 import { type Address } from "viem";
-import { parseAbi } from "viem";
-import { useAccount, useContractReads, useWalletClient } from "wagmi";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { SkeletonLoader } from "~~/components/common";
 import { usePoolContract } from "~~/hooks/balancer";
 import { type Pool } from "~~/hooks/balancer/types";
 import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
-import { useAccountBalance } from "~~/hooks/scaffold-eth";
 
 /**
  * 1. Search by pool address or select from dropdown
@@ -32,8 +27,7 @@ const Pools: NextPage = () => {
   const [selectedPoolAddress, setSelectedPoolAddress] = useState<Address | null>(null);
 
   const { data: pool, refetch: refetchPool, isLoading, isError, isSuccess } = usePoolContract(selectedPoolAddress);
-  const { address } = useAccount();
-  const { balance } = useAccountBalance(address);
+
   const searchParams = useSearchParams();
   const poolAddress = searchParams.get("address");
 
@@ -56,19 +50,12 @@ const Pools: NextPage = () => {
             </p>
           </div>
 
-          <PoolSelector setSelectedPoolAddress={setSelectedPoolAddress} />
+          <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
 
           {!poolAddress && (
-            <div className="text-xl mb-10">
+            <div className="text-xl">
               To get started, search by pool contract address or select a pool from the dropdown
             </div>
-          )}
-
-          {address && !balance && (
-            <Alert>
-              The connected account has no funds to pay gas for transactions. Click the faucet button in the top right
-              corner to grab some!
-            </Alert>
           )}
 
           {isLoading ? (
@@ -90,39 +77,13 @@ const Pools: NextPage = () => {
 export default Pools;
 
 const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: RefetchPool }) => {
-  const { data: walletClient } = useWalletClient();
-
-  const { data: tokenBalances } = useContractReads({
-    contracts: pool.poolTokens.map(token => ({
-      address: token.address,
-      abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
-      functionName: "balanceOf",
-      args: [walletClient?.account.address as string],
-    })),
-  });
-
-  const userHasNoTokens = tokenBalances?.every(balance => balance.result === 0n);
-
   return (
     <Fragment>
-      {userHasNoTokens && (
-        <Alert>
-          The connected account has zero balance for all of the selected pool&apos;s tokens. To grab some mock tokens,
-          go to the{" "}
-          <Link className="link" href="/debug">
-            Debug Contracts
-          </Link>{" "}
-          page and call the mint function!
-        </Alert>
-      )}
-      <div className="flex justify-center text-center mb-5 p-3 w-full rounded-lg">
+      <div className="flex justify-center text-center pb-7 w-full rounded-lg">
         <div>
-          <h3 className="font-semibold text-3xl xl:text-4xl my-2 text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-violet-400 to-orange-500">
+          <h3 className="font-semibold text-3xl xl:text-4xl my-0 text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-violet-400 to-orange-500">
             {pool.name}
           </h3>
-          <h5 className="text-sm md:text-lg xl:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-violet-400 to-orange-500">
-            {pool.address}
-          </h5>
         </div>
       </div>
       <div className="w-full">
@@ -130,11 +91,11 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
           <div className="flex flex-col gap-7">
             <UserLiquidity pool={pool} />
             <PoolComposition pool={pool} />
-            <HooksConfig pool={pool} />
             <PoolAttributes pool={pool} />
           </div>
           <div className="flex flex-col gap-7">
             {pool.poolConfig?.isPoolInitialized && <PoolActions pool={pool} refetchPool={refetchPool} />}
+            <HooksConfig pool={pool} />
             <PoolConfig pool={pool} />
           </div>
         </div>
@@ -170,17 +131,6 @@ const PoolPageSkeleton = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
-};
-
-const Alert = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="bg-[#d7b33e40] border border-orange-500 rounded-lg p-5 mb-5 w-full flex gap-2 items-center justify-center">
-      <div>
-        <ExclamationTriangleIcon className="w-5 h-5 text-orange-500" />
-      </div>
-      <div className="dark:text-orange-500 light:text-amber-800">{children}</div>
     </div>
   );
 };

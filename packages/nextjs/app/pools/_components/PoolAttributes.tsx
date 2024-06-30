@@ -6,11 +6,11 @@ import { Pool } from "~~/hooks/balancer/types";
  */
 export const PoolAttributes = ({ pool }: { pool: Pool }) => {
   const detailsRows = [
+    { attribute: "Pool Address", detail: <Address address={pool.address} /> },
     { attribute: "Name", detail: pool.name },
     { attribute: "Symbol", detail: pool.symbol },
     { attribute: "Total Supply", detail: pool.totalSupply.toString() },
     { attribute: "Decimals", detail: pool.decimals },
-    { attribute: "Pool Address", detail: <Address address={pool.address} /> },
     { attribute: "Vault Address", detail: <Address address={pool.vaultAddress} /> },
   ];
   return (
