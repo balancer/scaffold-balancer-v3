@@ -82,7 +82,7 @@ export const PoolActions: React.FC<PoolActionsProps> = ({ pool, refetchPool }) =
 
 const Alert = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="text-orange-400 bg-[#fb923c40] border border-orange-400 rounded-lg py-1 px-5 flex gap-2 items-center justify-center">
+    <div className="text-neutral bg-[#fb923c40] border border-orange-400 rounded-lg py-1 px-5 flex gap-2 items-center justify-center">
       <div>
         <ExclamationTriangleIcon className="w-5 h-5" />
       </div>
