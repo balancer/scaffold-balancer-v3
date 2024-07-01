@@ -60,7 +60,7 @@ function getInheritedFunctions(mainArtifact) {
 }
 
 function main() {
-  const current_path_to_broadcast = path.join(__dirname, '..', 'broadcast/01_DeployFactory.s.sol');
+  const current_path_to_broadcast = path.join(__dirname, '..', 'broadcast/01_DeployConstantSumFactory.s.sol');
   console.log('current_path_to_broadcast', current_path_to_broadcast);
   const current_path_to_deployments = path.join(__dirname, '..', 'deployments');
 
