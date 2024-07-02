@@ -12,7 +12,7 @@ import { BasePoolFactory } from "@balancer-labs/v3-vault/contracts/factories/Bas
 import { ConstantSumPool } from "./ConstantSumPool.sol";
 
 /**
- * @title Custom Pool Factory
+ * @title Constant Sum Factory
  * @dev Deploying pools via a factory is the preferred pattern as opposed to deploying a pool directly without a factory
  */
 contract ConstantSumFactory is BasePoolFactory {

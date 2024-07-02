@@ -27,6 +27,13 @@ contract DeployConstantSumFactory is HelperConfig, ScaffoldETHDeploy {
         uint32 pauseWindowDuration = getFactoryConfig();
 
         vm.startBroadcast(deployerPrivateKey);
+
+        /**
+         * @notice Deploys the factory contract
+         */
+        ConstantSumFactory factory = new ConstantSumFactory(vault, pauseWindowDuration);
+        console.log("Deployed Factory Address: %s", address(factory));
+
         /**
          * @notice Deploys mock tokens used for pool initialization and hooks contract
          * @dev Remove this if you plan to work with already deployed tokens
@@ -37,12 +44,6 @@ contract DeployConstantSumFactory is HelperConfig, ScaffoldETHDeploy {
         console.log("Deployed MockToken1 Address: %s", address(token1));
         console.log("Deployed MockToken2 Address: %s", address(token2));
         console.log("Deployed Vote-escrow BAL Address: %s", address(veBAL));
-
-        /**
-         * @notice Deploys the factory contract
-         */
-        ConstantSumFactory factory = new ConstantSumFactory(vault, pauseWindowDuration);
-        console.log("Deployed Factory Address: %s", address(factory));
 
         /**
          * @notice Deploys the hook contract
