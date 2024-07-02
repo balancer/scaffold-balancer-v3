@@ -10,7 +10,7 @@ import { MockToken2 } from "../contracts/mocks/MockToken2.sol";
 import { MockVeBAL } from "../contracts/mocks/MockVeBAL.sol";
 
 /**
- * @title Deploy Factory
+ * @title Deploy Constant Sum Factory
  * @notice Deploys mock tokens, a factory contract and a hook contract
  * @dev Set the factory pauseWindowDuration in `HelperConfig.sol`
  * @dev Run this script with `yarn deploy:factory`
