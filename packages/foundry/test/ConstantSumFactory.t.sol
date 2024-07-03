@@ -12,11 +12,12 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 import { VaultMock } from "@balancer-labs/v3-vault/contracts/test/VaultMock.sol";
 import { VaultMockDeployer } from "@balancer-labs/v3-vault/test/foundry/utils/VaultMockDeployer.sol";
 import { ERC20TestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { ConstantSumPool } from "../contracts/ConstantSumPool.sol";
 import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
 
-contract ConstantSumPoolFactoryTest is Test {
+contract ConstantSumFactoryTest is Test {
     uint256 internal DEFAULT_SWAP_FEE = 1e16; // 1%
 
     VaultMock vault;
@@ -36,9 +37,13 @@ contract ConstantSumPoolFactoryTest is Test {
     function _createPool(
         string memory name,
         string memory symbol,
-        TokenConfig[] memory tokenConfigs,
+        IERC20 token1,
+        IERC20 token2,
         bytes32 salt
     ) private returns (ConstantSumPool) {
+        TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
+        tokenConfigs[0].token = token1;
+        tokenConfigs[1].token = token2;
         uint256 swapFeePercentage = 0;
         bool protocolFeeExempt = false;
         PoolRoleAccounts memory roleAccounts;
@@ -69,23 +74,16 @@ contract ConstantSumPoolFactoryTest is Test {
     function testPoolCreation__Fuzz(bytes32 salt) public {
         vm.assume(salt > 0);
 
-        TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
-        tokenConfigs[0].token = tokenA;
-        tokenConfigs[1].token = tokenB;
-
-        ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenConfigs, bytes32(0));
+        ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenA, tokenB, bytes32(0));
+        assertEq(pool.name(), "Constant Sum Pool #1", "Wrong pool name");
         assertEq(pool.symbol(), "CSP1", "Wrong pool symbol");
     }
 
     function testPoolSalt__Fuzz(bytes32 salt) public {
         vm.assume(salt > 0);
 
-        TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
-        tokenConfigs[0].token = tokenA;
-        tokenConfigs[1].token = tokenB;
-
-        ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenConfigs, bytes32(0));
-        ConstantSumPool secondPool = _createPool("Constant Sum Pool #2", "CSP2", tokenConfigs, salt);
+        ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenA, tokenB, bytes32(0));
+        ConstantSumPool secondPool = _createPool("Constant Sum Pool #2", "CSP2", tokenA, tokenB, salt);
 
         address expectedPoolAddress = factory.getDeploymentAddress(salt);
 
@@ -103,7 +101,7 @@ contract ConstantSumPoolFactoryTest is Test {
 
         // Different sender should change the address of the pool, given the same salt value
         vm.prank(alice);
-        ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenConfigs, salt);
+        ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenA, tokenB, salt);
 
         assertFalse(address(pool) == expectedPoolAddress, "Unexpected pool address");
 
@@ -120,12 +118,12 @@ contract ConstantSumPoolFactoryTest is Test {
         tokenConfigs[1].token = tokenB;
 
         vm.prank(alice);
-        ConstantSumPool poolMainnet = _createPool("Constant Sum Pool #1", "CSP1", tokenConfigs, salt);
+        ConstantSumPool poolMainnet = _createPool("Constant Sum Pool #1", "CSP1", tokenA, tokenB, salt);
 
         vm.chainId(chainId);
 
         vm.prank(alice);
-        ConstantSumPool poolL2 = _createPool("Constant Sum Pool #2", "CSP2", tokenConfigs, salt);
+        ConstantSumPool poolL2 = _createPool("Constant Sum Pool #2", "CSP2", tokenA, tokenB, salt);
 
         // Same sender and salt, should still be different because of the chainId.
         assertFalse(address(poolL2) == address(poolMainnet), "L2 and mainnet pool addresses are equal");

@@ -16,6 +16,12 @@ import { ConstantSumPool } from "./ConstantSumPool.sol";
  * @dev Deploying pools via a factory is the preferred pattern as opposed to deploying a pool directly without a factory
  */
 contract ConstantSumFactory is BasePoolFactory {
+    /**
+     * @notice BasePoolFactory requires the pool contract's creationCode which will be used for CREATE3
+     * @notice The pool creationCode cannot be changed after the factory has been deployed
+     * @param vault address of Balancer v3 Vault
+     * @param pauseWindowDuration for pools based on the factory deployment time
+     */
     constructor(
         IVault vault,
         uint32 pauseWindowDuration
