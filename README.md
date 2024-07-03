@@ -16,7 +16,7 @@ A full stack prototyping tool for building on top of Balancer v3. Speedrun the p
 
 ### 🎥 Getting Started Demo
 
-Watch this video to quickly get acquainted with the full stack dev environment 👇
+[![Getting Started Demo](https://github.com/balancer/scaffold-balancer-v3/assets/73561520/48c67ccc-9edf-48c8-a310-eb06663b6a01)](https://www.youtube.com/watch?v=r0UPuMCxeDs)
 
 ## 0 Environment Setup 🧑‍💻
 
