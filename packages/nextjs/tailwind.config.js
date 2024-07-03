@@ -8,21 +8,21 @@ module.exports = {
     themes: [
       {
         light: {
-          primary: "#404040",
+          primary: "#a78bfa",
           "primary-content": "#ffffff",
-          secondary: "#e5e5e5",
+          secondary: "rgb(251, 250, 249)",
           "secondary-content": "#171717",
           accent: "#525252",
           "accent-content": "#ffffff",
-          neutral: "#212638",
-          "neutral-content": "#ffffff",
+          neutral: "rgb(70, 77, 88)",
+          "neutral-content": "rgb(245, 243, 239)",
           "base-100": "#d4d4d4",
-          "base-200": "#f8fafc",
-          "base-300": "#ffffff",
-          "base-content": "#212638",
+          "base-200": "rgb(245, 243, 239)",
+          "base-300": "#EBE8E0", // bg color
+          "base-content": "rgb(45, 55, 72)",
           info: "#93BBFB",
           success: "#34EEB6",
-          warning: "#FFCF72",
+          warning: "#fdba74",
           error: "#FF8863",
 
           "--rounded-btn": "9999rem",
@@ -42,17 +42,17 @@ module.exports = {
         dark: {
           primary: "#ffffffff",
           "primary-content": "#0f172a",
-          secondary: "#334155",
+          secondary: "rgb(70, 77, 88)",
           "secondary-content": "#F9FBFF",
           accent: "#94a3b8",
           "accent-content": "#F9FBFF",
-          neutral: "#F9FBFF",
-          "neutral-content": "#385183",
-          "base-100": "#475569",
-          "base-200": "#162031",
-          "base-300": "#0f172a",
-          "base-content": "#F9FBFF",
-          info: "#385183",
+          neutral: "rgb(229, 211, 190)",
+          "neutral-content": "rgb(70, 77, 88)",
+          "base-100": "#6b7280",
+          "base-200": "rgb(63, 70, 80)",
+          "base-300": "rgb(56, 62, 71)", // bg color
+          "base-content": "rgb(229, 211, 190)",
+          info: "#93BBFB",
           success: "#34EEB6",
           warning: "#FFCF72",
           error: "#FF8863",
@@ -76,7 +76,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Outfit", "sans-serif"],
+        sans: ["Satoshi", "sans-serif"],
       },
       boxShadow: {
         center: "0 0 12px -2px rgb(0 0 0 / 0.05)",

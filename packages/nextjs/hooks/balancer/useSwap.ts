@@ -1,27 +1,15 @@
 import { useState } from "react";
 import { Slippage, Swap, SwapBuildOutputExactIn, SwapBuildOutputExactOut, SwapKind, TokenAmount } from "@balancer/sdk";
-import { WriteContractResult } from "@wagmi/core";
-import { parseAbi } from "viem";
-import { useContractRead, useContractWrite, useWalletClient } from "wagmi";
+import { useWalletClient } from "wagmi";
 import { useTargetFork } from "~~/hooks/balancer";
-import { Pool, QuerySwapResponse, SwapConfig, TransactionHash } from "~~/hooks/balancer/types";
+import { Pool, SwapConfig, UseSwap } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
-
-type PoolSwapFunctions = {
-  querySwap: () => Promise<QuerySwapResponse>;
-  swap: () => Promise<TransactionHash>;
-  tokenInAllowance: bigint | undefined;
-  tokenInBalance: bigint | undefined;
-  refetchTokenInAllowance: () => void;
-  refetchTokenInBalance: () => void;
-  approveAsync: () => Promise<WriteContractResult>;
-};
 
 /**
  * Custom hook for swapping tokens in a pool where `querySwap()` sets state of
  * the call object that is used to construct the transaction that is then sent by `swap()`
  */
-export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions => {
+export const useSwap = (pool: Pool, swapConfig: SwapConfig): UseSwap => {
   const [call, setCall] = useState<SwapBuildOutputExactIn | SwapBuildOutputExactOut>();
   const { data: walletClient } = useWalletClient();
   const { rpcUrl, chainId } = useTargetFork();
@@ -111,7 +99,6 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
           to: call.to,
           value: call.value,
         });
-
       const txHash = await writeTx(txHashPromise, { blockConfirmations: 1 });
       if (!txHash) {
         throw new Error("Transaction failed");
@@ -124,37 +111,8 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): PoolSwapFunctions =
     }
   };
 
-  const { data: tokenInAllowance, refetch: refetchTokenInAllowance } = useContractRead({
-    address: tokenIn.address,
-    abi: parseAbi(["function allowance(address owner, address spender) returns (uint256)"]),
-    functionName: "allowance" as any, // ???
-    args: [
-      (walletClient?.account.address as `0x${string}`) || "0x0000000000000000000000000000000000000000",
-      pool.vaultAddress,
-    ],
-  });
-
-  const { data: tokenInBalance, refetch: refetchTokenInBalance } = useContractRead({
-    address: tokenIn.address,
-    abi: parseAbi(["function balanceOf(address owner) returns (uint256)"]),
-    functionName: "balanceOf" as any, // ???
-    args: [(walletClient?.account.address as `0x${string}`) || "0x0000000000000000000000000000000000000000"],
-  });
-
-  const { writeAsync: approveAsync } = useContractWrite({
-    address: tokenIn.address,
-    abi: parseAbi(["function approve(address spender, uint256 amount) returns (bool)"]),
-    functionName: "approve",
-    args: [pool.vaultAddress, swapConfig.tokenIn.rawAmount],
-  });
-
   return {
     querySwap,
     swap,
-    tokenInBalance,
-    tokenInAllowance,
-    refetchTokenInAllowance,
-    refetchTokenInBalance,
-    approveAsync,
   };
 };

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
+import { BALANCER_ROUTER, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
-import abis from "~~/contracts/abis";
-import { useRemoveLiquidity } from "~~/hooks/balancer/";
+import { useApprove, useRemoveLiquidity, useTargetFork } from "~~/hooks/balancer/";
 import {
   PoolActionReceipt,
   QueryPoolActionError,
@@ -30,6 +30,8 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
   });
 
   const { queryRemoveLiquidity, removeLiquidity } = useRemoveLiquidity(pool);
+  const { chainId } = useTargetFork();
+  const { approveSpenderOnToken: approveRouterOnToken } = useApprove(pool.address, BALANCER_ROUTER[chainId]);
 
   const handleAmountChange = (amount: string) => {
     setQueryError(null);
@@ -56,6 +58,8 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
   const handleRemoveLiquidity = async () => {
     try {
       setIsRemovingLiquidity(true);
+      // Before removing liquidity, must approve Router to spend account's BPT
+      await approveRouterOnToken();
       await removeLiquidity();
       refetchPool();
     } catch (error) {
@@ -74,8 +78,8 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
   };
 
   useContractEvent({
-    address: pool.vaultAddress,
-    abi: abis.balancer.Vault,
+    address: VAULT_V3[chainId],
+    abi: vaultV3Abi,
     eventName: "PoolBalanceChanged",
     listener(log: any[]) {
       const data: TokenInfo[] = log[0].args.deltas.map((delta: bigint, idx: number) => ({

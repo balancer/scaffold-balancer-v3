@@ -5,14 +5,15 @@
     "account": "node script/ListAccount.js",
     "chain": "anvil --config-out localhost.json",
     "compile": "forge compile",
-    "deploy:all": "forge build --build-info --build-info-path out/build-info/ && forge script script/DeployFactoryAndPool.s.sol --rpc-url ${1:-default_network} --broadcast --legacy && node script/generateTsAbis.js",
-    "deploy:pool": "forge build --build-info --build-info-path out/build-info/ && forge script script/DeployPool.s.sol --rpc-url ${1:-default_network} --broadcast",
+    "deploy:factory": "forge build --build-info --build-info-path out/build-info/ && forge script script/01_DeployConstantSumFactory.s.sol --rpc-url ${1:-default_network} --broadcast --legacy && node script/generateTsAbis.js",
+    "deploy:pool1": "forge script script/02_DeployConstantSumPool1.s.sol --rpc-url ${1:-default_network} --broadcast",
+    "deploy:pool2": "forge script script/03_DeployConstantSumPool2.s.sol --rpc-url ${1:-default_network} --broadcast",
     "deploy:verify": "forge build --build-info --build-info-path out/build-info/ && forge script script/DeployFactoryAndPool.s.sol --rpc-url ${1:-default_network} --broadcast --legacy --verify ; node script/generateTsAbis.js",
     "flatten": "forge flatten",
     "fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
-    "format": "forge fmt && prettier --write ./script/**/*.js",
+    "format": "npx prettier --write --plugin=prettier-plugin-solidity 'contracts/**/*.sol' 'test/**/*.sol' 'script/*.sol' 'utils/*.sol'",
     "generate": "node script/generateAccount.js",
-    "lint": "forge fmt --check && prettier --check ./script/**/*.js",
+    "lint": "npx prettier --check --plugin=prettier-plugin-solidity 'contracts/**/*.sol' 'test/**/*.sol' && prettier --check ./script/**/*.js",
     "test": "forge test",
     "verify": "forge build --build-info --build-info-path out/build-info/ && forge script script/VerifyAll.s.sol --ffi --rpc-url ${1:-default_network}"
   },
@@ -20,12 +21,13 @@
     "dotenv": "~16.3.1",
     "envfile": "~6.18.0",
     "ethers": "~5.7.1",
-    "prettier": "~2.8.8",
     "qrcode": "~1.5.3",
     "toml": "~3.0.0"
   },
   "devDependencies": {
     "@types/prettier": "2",
-    "@types/qrcode": "1"
+    "@types/qrcode": "1",
+    "prettier": "~2.8.8",
+    "prettier-plugin-solidity": "^1.3.1"
   }
 }

@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.24;
+
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import {
+    LiquidityManagement,
+    PoolRoleAccounts,
+    TokenConfig
+} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { BasePoolFactory } from "@balancer-labs/v3-vault/contracts/factories/BasePoolFactory.sol";
+
+import { ConstantSumPool } from "./ConstantSumPool.sol";
+
+/**
+ * @title Constant Sum Factory
+ * @dev Deploying pools via a factory is the preferred pattern as opposed to deploying a pool directly without a factory
+ */
+contract ConstantSumFactory is BasePoolFactory {
+    constructor(
+        IVault vault,
+        uint32 pauseWindowDuration
+    ) BasePoolFactory(vault, pauseWindowDuration, type(ConstantSumPool).creationCode) {}
+
+    /**
+     * @notice Deploys a new pool and registers it with the vault
+     * @param name The name of the pool
+     * @param symbol The symbol of the pool
+     * @param salt The salt value that will be passed to create3 deployment
+     * @param tokens An array of descriptors for the tokens the pool will manage
+     * @param swapFeePercentage Initial swap fee percentage
+     * @param protocolFeeExempt true, the pool's initial aggregate fees will be set to 0
+     * @param roleAccounts Addresses the Vault will allow to change certain pool settings
+     * @param poolHooksContract Contract that implements the hooks for the pool
+     * @param liquidityManagement Liquidity management flags with implemented methods
+     */
+    function create(
+        string memory name,
+        string memory symbol,
+        bytes32 salt,
+        TokenConfig[] memory tokens,
+        uint256 swapFeePercentage,
+        bool protocolFeeExempt,
+        PoolRoleAccounts memory roleAccounts,
+        address poolHooksContract,
+        LiquidityManagement memory liquidityManagement
+    ) external returns (address pool) {
+        // First deploy a new pool
+        pool = _create(abi.encode(getVault(), name, symbol), salt);
+        // Then register the pool
+        _registerPoolWithVault(
+            pool,
+            tokens,
+            swapFeePercentage,
+            protocolFeeExempt,
+            roleAccounts,
+            poolHooksContract,
+            liquidityManagement
+        );
+    }
+}

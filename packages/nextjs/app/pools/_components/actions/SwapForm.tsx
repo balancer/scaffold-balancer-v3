@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
 import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { SwapKind } from "@balancer/sdk";
+import { BALANCER_ROUTER, PERMIT2, SwapKind, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
-import abis from "~~/contracts/abis";
-import { useSwap } from "~~/hooks/balancer/";
+import { useApprove, useSwap, useTargetFork, useToken } from "~~/hooks/balancer/";
 import {
   PoolActionReceipt,
   QueryPoolActionError,
@@ -47,23 +46,19 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const [isSwapping, setIsSwapping] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
 
-  const {
-    querySwap,
-    swap,
-    tokenInAllowance,
-    refetchTokenInAllowance,
-    tokenInBalance,
-    refetchTokenInBalance,
-    approveAsync,
-  } = useSwap(pool, swapConfig);
-  const writeTx = useTransactor();
-
   const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
   const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
 
+  const writeTx = useTransactor();
+  const { chainId } = useTargetFork();
+  const { querySwap, swap } = useSwap(pool, swapConfig);
+  const { approveSpenderOnToken: approvePermit2OnToken } = useApprove(tokenIn.address, PERMIT2[chainId]);
+  const { approveSpenderOnPermit2: approveRouterOnPermit2 } = useApprove(tokenIn.address, BALANCER_ROUTER[chainId]);
+  const { tokenAllowance, refetchTokenAllowance, tokenBalance, refetchTokenBalance } = useToken(tokenIn.address);
+
   const sufficientAllowance = useMemo(() => {
-    return tokenInAllowance && tokenInAllowance >= swapConfig.tokenIn.rawAmount;
-  }, [tokenInAllowance, swapConfig.tokenIn.rawAmount]);
+    return tokenAllowance && tokenAllowance >= swapConfig.tokenIn.rawAmount;
+  }, [tokenAllowance, swapConfig.tokenIn.rawAmount]);
 
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
     // Clean up UI to prepare for new query
@@ -154,10 +149,17 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const handleApprove = async () => {
     try {
       setIsApproving(true);
-      await writeTx(approveAsync, {
+      await writeTx(approvePermit2OnToken, {
         blockConfirmations: 1,
         onBlockConfirmation: () => {
-          refetchTokenInAllowance();
+          refetchTokenAllowance();
+          setIsApproving(false);
+        },
+      });
+      await writeTx(approveRouterOnPermit2, {
+        blockConfirmations: 1,
+        onBlockConfirmation: () => {
+          refetchTokenAllowance();
           setIsApproving(false);
         },
       });
@@ -169,14 +171,14 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
 
   const handleSwap = async () => {
     try {
-      if (tokenInBalance === null || tokenInBalance === undefined || tokenInBalance < swapConfig.tokenIn.rawAmount) {
+      if (tokenBalance === null || tokenBalance === undefined || tokenBalance < swapConfig.tokenIn.rawAmount) {
         throw new Error("Insufficient user balance");
       }
       setIsSwapping(true);
       await swap();
       refetchPool();
-      refetchTokenInAllowance();
-      refetchTokenInBalance();
+      refetchTokenAllowance();
+      refetchTokenBalance();
     } catch (e) {
       if (e instanceof Error) {
         console.error("error", e);
@@ -191,8 +193,8 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   };
 
   useContractEvent({
-    address: pool.vaultAddress,
-    abi: abis.balancer.Vault,
+    address: VAULT_V3[chainId],
+    abi: vaultV3Abi,
     eventName: "Swap",
     listener(log: any[]) {
       const data: TokenInfo[] = [
@@ -227,8 +229,8 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         tokenDropdownOpen={isTokenInDropdownOpen}
         setTokenDropdownOpen={setTokenInDropdownOpen}
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenIn.symbol)}
-        allowance={formatToHuman(tokenInAllowance ?? 0n, tokenIn.decimals)}
-        balance={formatToHuman(tokenInBalance ?? 0n, tokenIn.decimals)}
+        allowance={formatToHuman(tokenAllowance, tokenIn.decimals)}
+        balance={formatToHuman(tokenBalance, tokenIn.decimals)}
         isHighlighted={queryResponse?.swapKind === SwapKind.GivenIn}
       />
       <TokenField

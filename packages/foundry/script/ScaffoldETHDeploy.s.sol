@@ -1,11 +1,12 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.24;
 
 import "forge-std/Script.sol";
 import "forge-std/Vm.sol";
 
 contract ScaffoldETHDeploy is Script {
     error InvalidChain();
+    error InvalidPrivateKey(string);
 
     struct Deployment {
         string name;
@@ -16,10 +17,7 @@ contract ScaffoldETHDeploy is Script {
     string path;
     Deployment[] public deployments;
 
-    function setupLocalhostEnv()
-        internal
-        returns (uint256 localhostPrivateKey)
-    {
+    function setupLocalhostEnv() internal returns (uint256 localhostPrivateKey) {
         if (block.chainid == 31337) {
             root = vm.projectRoot();
             path = string.concat(root, "/localhost.json");
@@ -44,9 +42,7 @@ contract ScaffoldETHDeploy is Script {
         uint256 len = deployments.length;
 
         for (uint256 i = 0; i < len; i++) {
-            vm.serializeString(
-                jsonWrite, vm.toString(deployments[i].addr), deployments[i].name
-            );
+            vm.serializeString(jsonWrite, vm.toString(deployments[i].addr), deployments[i].name);
         }
 
         string memory chainName;
