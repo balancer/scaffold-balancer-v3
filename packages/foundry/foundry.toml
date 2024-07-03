@@ -18,6 +18,6 @@ localhost = "http://127.0.0.1:8545"
 sepolia = "${SEPOLIA_RPC_URL}"
 
 
-[etherscan]
-polygonMumbai = { key = "${ETHERSCAN_API_KEY}" }
-sepolia = { key = "${ETHERSCAN_API_KEY}" }
+# [etherscan]
+# polygonMumbai = { key = "${ETHERSCAN_API_KEY}" }
+# sepolia = { key = "${ETHERSCAN_API_KEY}" }

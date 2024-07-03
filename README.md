@@ -1,11 +1,11 @@
 # 🏗 Scaffold Balancer v3
 
-A full stack prototyping tool for building on top of Balancer v3. Speedrun the process of deploying custom pools and hooks
+A full stack prototyping tool for building on top of Balancer v3. Speedrun the process of designing and deploying custom pools and hooks contracts
 
 ### 📚 Prerequisites
 
-- Basic understanding of Solidity and Foundry
-- Basic understanding of liquidity pools and AMMs
+- Basic understanding of [Solidity](https://docs.soliditylang.org/) and [Foundry](https://book.getfoundry.sh/)
+- Basic understanding of [liquidity pools](https://www.youtube.com/watch?v=cizLhxSKrAc) and [AMMs](https://chain.link/education-hub/what-is-an-automated-market-maker-amm)
 - Basic understanding of [Balancer v3](https://docs-v3.balancer.fi/concepts/core-concepts/introduction.html)
 
 ### 🛠️ Tech Stack
@@ -14,7 +14,7 @@ A full stack prototyping tool for building on top of Balancer v3. Speedrun the p
 - [Scaffold ETH 2](https://scaffold-eth-2-docs.vercel.app/)
 - [Balancer v3 Monorepo](https://github.com/balancer/balancer-v3-monorepo)
 
-### 🎥 Demo
+### 🎥 Getting Started Demo
 
 Watch this video to quickly get acquainted with the full stack dev environment 👇
 
@@ -29,19 +29,19 @@ Watch this video to quickly get acquainted with the full stack dev environment �
 
 ### 🏃 0.2 Quickstart
 
-#### 0.2.0 Clone the repository
+#### 0.2.1 Clone the repository
 
 ```bash
 git clone https://github.com/balancer/scaffold-balancer-v3.git
 ```
 
-#### 0.2.1 Install Dependencies
+#### 0.2.2 Install Dependencies
 
 ```bash
 yarn install
 ```
 
-#### 0.2.2 Set environment variables
+#### 0.2.3 Set environment variables
 
 Set the necessary environment variables in a `packages/foundry/.env` file
 
@@ -53,7 +53,7 @@ SEPOLIA_RPC_URL=...
 - The `DEPLOYER_PRIVATE_KEY` must start with `0x`
 - The `SEPOLIA_RPC_URL` facilitates running a local fork and sending transactions to sepolia testnet
 
-#### 0.2.3 Start a Local Fork
+#### 0.2.4 Start a Local Fork
 
 By default, this project runs on a local anvil fork of the Sepolia testnet
 
@@ -61,39 +61,39 @@ By default, this project runs on a local anvil fork of the Sepolia testnet
 yarn fork
 ```
 
-#### 0.2.4 Deploy Contracts
+#### 0.2.5 Deploy Contracts
 
 All contracts are deployed from the wallet associated to the `DEPLOYER_PRIVATE_KEY` specified in the `.env`. By default, this wallet receives mock tokens and the resulting BPT from pool initialization
 
-###### Deploy the pool factory, mock tokens, and hooks contracts
+Deploy the pool factory, mock tokens, and hooks contracts
 
 ```bash
 yarn deploy:factory
 ```
 
-###### Deploy, register, and initialize pool #1
+Deploy, register, and initialize pool #1
 
 ```bash
 yarn deploy:pool1
 ```
 
-###### Deploy, register, and initialize pool #2
+Deploy, register, and initialize pool #2
 
 ```bash
 yarn deploy:pool2
 ```
 
-#### 0.2.5 Start the Frontend
+#### 0.2.6 Start the Frontend
 
 ```bash
 yarn start
 ```
 
-#### 0.2.6 Explore the Frontend
+#### 0.2.7 Explore the Frontend
 
 - Navigate to http://localhost:3000 to see the home page
-- Visit the [Pools page](http://localhost:3000/pools) to search by address or select using the buttons
-- Vist the [Debug page](http://localhost:3000/debug) to see the mock tokens, factory, and hooks contracts
+- Visit the [Pools Page](http://localhost:3000/pools) to search by address or select using the buttons
+- Vist the [Debug Page](http://localhost:3000/debug) to see the mock tokens, factory, and hooks contracts
 
 ### 💁 0.3 Scaffold ETH 2 Tips
 
@@ -156,7 +156,7 @@ const scaffoldConfig = {
 
 </details>
 
-## 1 Create a Custom Pool 🧑‍🎨
+## 1 Create a Custom Pool 🌊
 
 ### 📖 1.1 Review the Docs
 
@@ -171,7 +171,7 @@ const scaffoldConfig = {
 
 To get started, try editing the`ConstantSumPool.sol` contract directly or make a copy
 
-## 2 Create a Pool Factory 🎨
+## 2 Create a Pool Factory 🏭
 
 The recommended approach for deploying pools is via a factory contract because Balancer's off-chain infrastructure uses the factory address as a means to identify the type of pool, which is important for integration into the UI, SDK, and external aggregators
 
@@ -205,9 +205,9 @@ To get started, try editing the`ConstantSumFactory.sol` contract directly or mak
 
 To get started, try editing the`VeBALFeeDiscountHook.sol` contract directly or make a copy
 
-## 4. Deploy a Pool Factory 🏭
+## 4 Deploy a Pool Factory 🚢
 
-Use the `01_DeployConstantSumFactory.s.sol` script as a starting point
+Use the `DeployConstantSumFactory` script as a starting point
 
 ### 🕵️ 4.1 Examine the Deploy Script
 
@@ -245,16 +245,16 @@ To send the deployment transactions to sepolia testnet
 
 🛈 To simulate or deploy to a different network, swap out `sepolia` for any of the `[rpc_endpoints]` aliases listed in `foundry.toml`
 
-## 5. Deploy a Custom Pool 🌊
+## 5 Deploy a Custom Pool ⛵
 
 After the factory contract has been deployed, pools can be deployed and registered using the `DeployConstantSumPool1` and `DeployConstantSumPool2` scripts. Both scripts also handle initialization of the pool. Also notice that the [Pools](http://localhost:3000/pools) page will automatically add a button above the search bar for any pools deployed using the latest factory contract
 
 ### 🕵️ 5.1 Examine the Deploy Scripts
 
 - `DeployConstantSumPool1` pulls **all** the registration and initialization configurations from `HelperConfig`
-  - Notice that the default `HelperConfig` does not use a `poolHooksContract`
+  - The default `HelperConfig` does not use a `poolHooksContract`
 - `DeployConstantSumPool2` pulls **only some** of the registration and initialization configurations from `HelperConfig`
-  - Notice that this script uses the most recently deployed `VeBALFeeDiscountHook` during registration
+  - This script uses the most recently deployed `VeBALFeeDiscountHook` during pool registration
 
 ### 🤖 5.2 Simulate the Transaction
 
@@ -278,10 +278,34 @@ To send the pool2 deployment transaction to your local fork
 yarn deploy:pool2
 ```
 
-## 6. Smart Contract Testing 🧪
+## 6 Test the Contracts 🧪
 
-### 🧑‍🏭 6.1 Testing a Factory
+To run all the Foundry tests
 
-### 🏊 6.2 Testing a Pool
+```
+yarn test
+```
 
-### 🎣 6.3 Testing a Hook
+### 👨‍🔬 6.1 Testing Factories
+
+- Coming soon™️
+
+```
+yarn test --match-contract ConstantSumPoolFactoryTest
+```
+
+### 🏊 6.2 Testing Pools
+
+- Coming soon™️
+
+```
+yarn test --match-contract ConstantSumPoolTest
+```
+
+### 🎣 6.3 Testing Hooks
+
+- Coming soon™️
+
+### 🚀 6.4 Testing Deploy Scripts
+
+- Coming soon™️
