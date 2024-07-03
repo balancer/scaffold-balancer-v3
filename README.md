@@ -13,19 +13,19 @@ A full stack prototyping tool for building on top of Balancer v3. Accelerate the
 - Basic understanding of [liquidity pools](https://www.youtube.com/watch?v=cizLhxSKrAc) and [AMMs](https://chain.link/education-hub/what-is-an-automated-market-maker-amm)
 - Basic understanding of [Balancer v3](https://docs-v3.balancer.fi/concepts/core-concepts/introduction.html)
 
+### 🪧 Table Of Contents
+
+0. [Environment Setup 🧑‍💻](#0-environment-setup-)
+1. [Create a Custom Pool 🌊](#1-create-a-custom-pool-)
+2. [Create a Pool Factory 🏭](#2-create-a-pool-factory-)
+3. [Create a Pool Hook 🪝](#3-create-a-pool-hook-)
+4. [Deploy a Pool Factory 🚢](#4-deploy-a-pool-factory-)
+5. [Deploy a Custom Pool ⛵](#5-deploy-a-custom-pool-)
+6. [Test the Contracts 🧪](#6-test-the-contracts-)
+
 ### 🎥 Getting Started Demo
 
 [![Getting Started Demo](https://github.com/balancer/scaffold-balancer-v3/assets/73561520/48c67ccc-9edf-48c8-a310-eb06663b6a01)](https://www.youtube.com/watch?v=r0UPuMCxeDs)
-
-### 🪧 Table Of Contents
-
-0. [Environment Setup 🧑‍💻](#0-Environment-Setup-🧑%E2%80%8D💻)
-1. [Create a Custom Pool 🌊](#1-Create-a-Custom-Pool-🌊)
-2. [Create a Pool Factory 🏭](#2-Create-a-Pool-Factory-🏭)
-3. [Create a Pool Hook 🪝](#3-Create-a-Pool-Hook-🪝)
-4. [Deploy a Pool Factory 🚢](#4-Deploy-a-Pool-Factory-🚢)
-5. [Deploy a Custom Pool ⛵](#5-Deploy-a-Custom-Pool-⛵)
-6. [Test the Contracts 🧪](#6-Test-the-Contracts-🧪)
 
 ## 0. Environment Setup 🧑‍💻
 
@@ -299,7 +299,7 @@ The `ConstantSumFactoryTest` roughly mirrors the [WeightedPool8020FactoryTest
 yarn test --match-contract ConstantSumFactoryTest
 ```
 
-### 🏊 6.2 Testing Pool
+### 🏊 6.2 Testing Pools
 
 The `ConstantSumPoolTest` roughly mirrors the [WeightedPoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool.t.sol) from the v3-monorepo
 
