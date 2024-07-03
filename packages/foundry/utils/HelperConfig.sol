@@ -42,8 +42,7 @@ contract HelperConfig {
     function getPoolConfig() internal view returns (RegistrationConfig memory regConfig) {
         string memory name = "Constant Sum Pool #1"; // name for the pool
         string memory symbol = "CS1-50scUSD-50scDAI"; // symbol for the BPT
-        bytes32 salt = keccak256(abi.encode(name)); // salt for the pool deployment via factory
-        // Grab the most recently deployed addresses of mock tokens
+        bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
         address mockToken1 = DevOpsTools.get_most_recent_deployment(
             "MockToken1", // Must match the mock token contract name
             block.chainid
