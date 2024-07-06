@@ -30,7 +30,7 @@
     "next:format": "yarn workspace @se-2/nextjs format",
     "next:check-types": "yarn workspace @se-2/nextjs check-types",
     "next:build": "yarn workspace @se-2/nextjs build",
-    "postinstall": "husky install",
+    "postinstall": "husky install && forge install --root packages/foundry",
     "precommit": "lint-staged",
     "vercel": "vercel",
     "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true"
