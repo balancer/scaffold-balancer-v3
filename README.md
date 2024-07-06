@@ -190,8 +190,7 @@ After designing a pool contract, the next step is to prepare a factory contract 
 
 ### 📖 2.1 Review the Docs
 
-- Coming soon™️
-- View the `FactoryWidePauseWindow` for full details about the `pauseWindowDuration` constructor param
+- [Deploy a Custom AMM Using a Factory](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/deploy-custom-amm-using-factory.html)
 
 ### 🔑 2.2 Recall the Key Requirements
 
@@ -201,7 +200,7 @@ After designing a pool contract, the next step is to prepare a factory contract 
 
 ### 📝 2.3 Write a Factory Contract
 
-To get started, try editing the`ConstantSumFactory.sol` contract directly or make a copy
+- To get started, try editing the`ConstantSumFactory.sol` contract directly or make a copy
 
 ## 3. Create a Pool Hook 🪝
 
