@@ -36,7 +36,7 @@ jobs:
           version: nightly
 
       - name: Run foundry node, deploy contracts (& generate contracts typescript output)
-        run: yarn chain & yarn deploy
+        run: yarn fork & yarn deploy:factory
 
       - name: Run nextjs lint
         run: yarn next:lint --max-warnings=0
