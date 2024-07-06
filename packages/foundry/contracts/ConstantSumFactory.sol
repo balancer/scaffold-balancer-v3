@@ -17,10 +17,10 @@ import { ConstantSumPool } from "./ConstantSumPool.sol";
  */
 contract ConstantSumFactory is BasePoolFactory {
     /**
-     * @notice BasePoolFactory requires the pool contract's creationCode which will be used for CREATE3
+     * @dev The pool's creationCode is used to deploy pools via CREATE3
      * @notice The pool creationCode cannot be changed after the factory has been deployed
-     * @param vault address of Balancer v3 Vault
-     * @param pauseWindowDuration for pools based on the factory deployment time
+     * @param vault The contract instance of the Vault
+     * @param pauseWindowDuration The period ( starting from deployment of this factory ) during which pools can be paused and unpaused
      */
     constructor(
         IVault vault,

@@ -365,28 +365,7 @@ const deployedContracts = {
           inputs: [],
         },
       ],
-      inheritedFunctions: {
-        disable: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getActionId: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getAuthorizer:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getDefaultLiquidityManagement:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getDefaultPoolHooksContract:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getDeploymentAddress:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getNewPoolPauseWindowEndTime:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getOriginalPauseWindowEndTime:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getPauseWindowDuration:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        getVault: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        isDisabled: "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-        isPoolFromFactory:
-          "../../node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
-      },
+      inheritedFunctions: {},
     },
     MockToken1: {
       address: "0x3626DEff4AFB3Acd8f217288cd33FBE3a337Ce0B",
@@ -2068,30 +2047,7 @@ const deployedContracts = {
           ],
         },
       ],
-      inheritedFunctions: {
-        getHookFlags:
-          "/home/matthu/Desktop/Balancer/scaffold-balancer-v3/node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
-        onAfterAddLiquidity:
-          "/home/matthu/Desktop/Balancer/scaffold-balancer-v3/node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
-        onAfterInitialize:
-          "/home/matthu/Desktop/Balancer/scaffold-balancer-v3/node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
-        onAfterRemoveLiquidity:
-          "/home/matthu/Desktop/Balancer/scaffold-balancer-v3/node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
-        onAfterSwap:
-          "/home/matthu/Desktop/Balancer/scaffold-balancer-v3/node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
-        onBeforeAddLiquidity:
-          "/home/matthu/Desktop/Balancer/scaffold-balancer-v3/node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
-        onBeforeInitialize:
-          "/home/matthu/Desktop/Balancer/scaffold-balancer-v3/node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
-        onBeforeRemoveLiquidity:
-          "/home/matthu/Desktop/Balancer/scaffold-balancer-v3/node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
-        onBeforeSwap:
-          "/home/matthu/Desktop/Balancer/scaffold-balancer-v3/node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
-        onComputeDynamicSwapFee:
-          "/home/matthu/Desktop/Balancer/scaffold-balancer-v3/node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
-        onRegister:
-          "/home/matthu/Desktop/Balancer/scaffold-balancer-v3/node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
-      },
+      inheritedFunctions: {},
     },
   },
 } as const;
