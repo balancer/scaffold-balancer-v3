@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import { HelperFunctions } from "../utils/HelperFunctions.sol";
+import { HelperConfig } from "./HelperConfig.sol";
 import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 import { Script, console } from "forge-std/Script.sol";
-import { RegistrationConfig, InitializationConfig } from "../utils/PoolTypes.sol";
 
 /**
  * @title Deploy Constant Sum Pool #1
@@ -14,7 +13,7 @@ import { RegistrationConfig, InitializationConfig } from "../utils/PoolTypes.sol
  * @dev Set the pool registration and initialization configurations in `HelperConfig.sol`
  * @dev Run this script with `yarn deploy:pool1`
  */
-contract DeployConstantSumPool1 is HelperFunctions, Script {
+contract DeployConstantSumPool1 is HelperConfig, Script {
     error InvalidPrivateKey(string);
 
     function run() external virtual {

@@ -44,7 +44,6 @@ contract ConstantSumFactoryTest is Test {
         TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
         tokenConfigs[0].token = token1;
         tokenConfigs[1].token = token2;
-        uint256 swapFeePercentage = 0;
         bool protocolFeeExempt = false;
         PoolRoleAccounts memory roleAccounts;
         address poolHooksContract = address(0);
@@ -66,7 +65,7 @@ contract ConstantSumFactoryTest is Test {
             );
     }
 
-    function testFactoryPausedState() public {
+    function testFactoryPausedState() public view {
         uint256 pauseWindowDuration = factory.getPauseWindowDuration();
         assertEq(pauseWindowDuration, 365 days);
     }

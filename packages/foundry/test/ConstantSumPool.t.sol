@@ -47,7 +47,6 @@ contract ConstantSumPoolTest is BaseVaultTest {
 
     function _createPool(address[] memory tokens, string memory label) internal override returns (address) {
         factory = new ConstantSumFactory(IVault(address(vault)), 365 days);
-        uint256 swapFeePercentage = 0;
         bool protocolFeeExempt = false;
         PoolRoleAccounts memory roleAccounts;
         address poolHooksContract = address(0);
@@ -80,12 +79,12 @@ contract ConstantSumPoolTest is BaseVaultTest {
         vm.stopPrank();
     }
 
-    function testPoolAddress() public {
+    function testPoolAddress() public view {
         address calculatedPoolAddress = factory.getDeploymentAddress(ZERO_BYTES32);
         assertEq(address(constantSumPool), calculatedPoolAddress);
     }
 
-    function testPoolPausedState() public {
+    function testPoolPausedState() public view {
         (bool paused, uint256 pauseWindow, uint256 bufferPeriod, address pauseManager) = vault.getPoolPausedState(
             address(pool)
         );
@@ -96,7 +95,7 @@ contract ConstantSumPoolTest is BaseVaultTest {
         assertEq(pauseManager, address(0), "Pause manager should be 0");
     }
 
-    function testInitialize() public {
+    function testInitialize() public view {
         // Tokens are transferred from lp
         assertEq(defaultBalance - usdc.balanceOf(lp), USDC_AMOUNT, "LP: Wrong USDC balance");
         assertEq(defaultBalance - dai.balanceOf(lp), DAI_AMOUNT, "LP: Wrong DAI balance");
@@ -229,11 +228,11 @@ contract ConstantSumPoolTest is BaseVaultTest {
         router.addLiquidityUnbalanced(address(pool), amountsIn, 0, false, bytes(""));
     }
 
-    function testMinimumSwapFee() public {
+    function testMinimumSwapFee() public view {
         assertEq(constantSumPool.getMinimumSwapFeePercentage(), MIN_SWAP_FEE, "Minimum swap fee mismatch");
     }
 
-    function testMaximumSwapFee() public {
+    function testMaximumSwapFee() public view {
         assertEq(constantSumPool.getMaximumSwapFeePercentage(), MAX_SWAP_FEE, "Maximum swap fee mismatch");
     }
 

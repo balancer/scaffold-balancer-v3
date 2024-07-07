@@ -11,9 +11,8 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
 import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
-import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
 
-import { RegistrationConfig, InitializationConfig } from "./PoolTypes.sol";
+import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 
@@ -28,6 +27,26 @@ contract HelperConfig {
     IRouter internal router = IRouter(0x1c58cc548a23956469c7C528Bb3a846c842dfaF9);
     // Canonical permit2 Sepolia address
     IPermit2 internal permit2 = IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
+
+    struct RegistrationConfig {
+        string name;
+        string symbol;
+        bytes32 salt;
+        TokenConfig[] tokenConfig;
+        uint256 swapFeePercentage;
+        bool protocolFeeExempt;
+        PoolRoleAccounts roleAccounts;
+        address poolHooksContract;
+        LiquidityManagement liquidityManagement;
+    }
+
+    struct InitializationConfig {
+        IERC20[] tokens;
+        uint256[] exactAmountsIn;
+        uint256 minBptAmountOut;
+        bool wethIsEth;
+        bytes userData;
+    }
 
     /**
      * @dev Set the pool factory configurations here
@@ -121,6 +140,10 @@ contract HelperConfig {
         });
     }
 
+    ///////////////////
+    // Helper Functions
+    //////////////////
+
     /**
      * Helper function to sort the tokenConfig array
      */
@@ -134,5 +157,49 @@ contract HelperConfig {
             }
         }
         return tokenConfig;
+    }
+
+    /**
+     * @notice Approves the vault to spend tokens and then initializes the pool
+     */
+    function initializePool(
+        address pool,
+        IERC20[] memory tokens,
+        uint256[] memory exactAmountsIn,
+        uint256 minBptAmountOut,
+        bool wethIsEth,
+        bytes memory userData
+    ) internal {
+        // Approve Permit2 to spend account tokens
+        approveSpenderOnToken(address(permit2), tokens);
+        // Approve Router to spend account tokens using Permit2
+        approveSpenderOnPermit2(address(router), tokens);
+        // Initialize pool with the tokens that have been permitted
+        router.initialize(pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData);
+    }
+
+    /**
+     * @notice Max approving to speed up UX on frontend
+     * @param tokens Array of tokens to approve
+     * @param spender Address of the spender
+     */
+    function approveSpenderOnToken(address spender, IERC20[] memory tokens) internal {
+        uint256 maxAmount = type(uint256).max;
+        for (uint256 i = 0; i < tokens.length; ++i) {
+            tokens[i].approve(spender, maxAmount);
+        }
+    }
+
+    /**
+     * @notice Max approving to speed up UX on frontend
+     * @param tokens Array of tokens to approve
+     * @param spender Address of the spender
+     */
+    function approveSpenderOnPermit2(address spender, IERC20[] memory tokens) internal {
+        uint160 maxAmount = type(uint160).max;
+        uint48 maxExpiration = type(uint48).max;
+        for (uint256 i = 0; i < tokens.length; ++i) {
+            permit2.approve(address(tokens[i]), spender, maxAmount, maxExpiration);
+        }
     }
 }
