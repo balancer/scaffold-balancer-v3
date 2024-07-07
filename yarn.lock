@@ -7007,7 +7007,7 @@ __metadata:
 "permit2@https://github.com/Uniswap/permit2.git#cc56ad0f3439c502c246fc5cfcc3db92bb8b7219":
   version: 1.0.0
   resolution: "permit2@https://github.com/Uniswap/permit2.git#commit=cc56ad0f3439c502c246fc5cfcc3db92bb8b7219"
-  checksum: 2f395ac06c43a9a4343ad5ad5fbcb98d4315c443adcfec8c6449c9b306ceb33b4201756fefe48bf048a4fb912e1eb1f217b2f617b22e9a54335dbed8b49de03f
+  checksum: be1b78ba48622130054c2b725dd31402bd29902681b6fa5ac711e9d5c1a52efc069c4567ace4d1a484408bd0a71ef8e3a0f7c0c8a8b9e5f1a1b7fdcee88dc73c
   languageName: node
   linkType: hard
 
