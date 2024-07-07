@@ -1500,7 +1500,6 @@ __metadata:
     envfile: ~6.18.0
     ethers: ~5.7.1
     forge-gas-snapshot: "https://github.com/ylv-io/forge-gas-snapshot"
-    permit2: "https://github.com/Uniswap/permit2.git#cc56ad0f3439c502c246fc5cfcc3db92bb8b7219"
     prettier: ~2.8.8
     prettier-plugin-solidity: ^1.3.1
     qrcode: ~1.5.3
@@ -7001,13 +7000,6 @@ __metadata:
   version: 1.1.2
   resolution: "pathe@npm:1.1.2"
   checksum: ec5f778d9790e7b9ffc3e4c1df39a5bb1ce94657a4e3ad830c1276491ca9d79f189f47609884671db173400256b005f4955f7952f52a2aeb5834ad5fb4faf134
-  languageName: node
-  linkType: hard
-
-"permit2@https://github.com/Uniswap/permit2.git#cc56ad0f3439c502c246fc5cfcc3db92bb8b7219":
-  version: 1.0.0
-  resolution: "permit2@https://github.com/Uniswap/permit2.git#commit=cc56ad0f3439c502c246fc5cfcc3db92bb8b7219"
-  checksum: 2f395ac06c43a9a4343ad5ad5fbcb98d4315c443adcfec8c6449c9b306ceb33b4201756fefe48bf048a4fb912e1eb1f217b2f617b22e9a54335dbed8b49de03f
   languageName: node
   linkType: hard
 
