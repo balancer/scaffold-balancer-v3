@@ -22,7 +22,7 @@
     "dotenv": "~16.3.1",
     "envfile": "~6.18.0",
     "ethers": "~5.7.1",
-    "permit2": "https://github.com/Uniswap/permit2.git",
+    "permit2": "https://github.com/Uniswap/permit2.git#cc56ad0f3439c502c246fc5cfcc3db92bb8b7219",
     "qrcode": "~1.5.3",
     "toml": "~3.0.0"
   },
