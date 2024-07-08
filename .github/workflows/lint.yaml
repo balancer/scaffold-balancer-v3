@@ -37,6 +37,9 @@ jobs:
 
       - name: Run foundry node, deploy contracts (& generate contracts typescript output)
         run: yarn fork & yarn deploy:factory
+        env:
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
 
       - name: Run nextjs lint
         run: yarn next:lint --max-warnings=0
