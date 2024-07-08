@@ -3,12 +3,11 @@ pragma solidity ^0.8.24;
 
 import { LiquidityManagement, PoolRoleAccounts } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 
-import { HelperFunctions } from "../utils/HelperFunctions.sol";
+import { HelperConfig } from "./HelperConfig.sol";
 import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 import { Script, console } from "forge-std/Script.sol";
-import { RegistrationConfig, InitializationConfig } from "../utils/PoolTypes.sol";
 
 /**
  * @title Deploy Constant Sum Pool #2
@@ -17,7 +16,7 @@ import { RegistrationConfig, InitializationConfig } from "../utils/PoolTypes.sol
  * @notice Some config is set directly in this script including the pool hooks contract
  * @dev Run this script with `yarn deploy:pool2`
  */
-contract DeployConstantSumPool2 is HelperFunctions, Script {
+contract DeployConstantSumPool2 is HelperConfig, Script {
     error InvalidPrivateKey(string);
 
     function run() external virtual {

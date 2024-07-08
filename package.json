@@ -30,21 +30,14 @@
     "next:format": "yarn workspace @se-2/nextjs format",
     "next:check-types": "yarn workspace @se-2/nextjs check-types",
     "next:build": "yarn workspace @se-2/nextjs build",
-    "postinstall": "husky install",
+    "postinstall": "husky install && forge install --root packages/foundry",
     "precommit": "lint-staged",
     "vercel": "vercel",
     "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true"
   },
   "packageManager": "yarn@3.2.3",
   "devDependencies": {
-    "forge-gas-snapshot": "https://github.com/ylv-io/forge-gas-snapshot",
     "husky": "^8.0.1",
-    "lint-staged": "^13.0.3",
-    "next": "^14.0.4",
-    "permit2": "https://github.com/Uniswap/permit2.git#cc56ad0f3439c502c246fc5cfcc3db92bb8b7219",
-    "vercel": "^32.4.1"
-  },
-  "dependencies": {
-    "@balancer-labs/v3-monorepo": "https://github.com/balancer/balancer-v3-monorepo#head=scaffold-package-setup-deploy5"
+    "lint-staged": "^13.0.3"
   }
 }
