@@ -27,16 +27,16 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: yarn
 
-      - name: Install dependencies
-        run: yarn install --immutable
-
       - name: Install foundry-toolchain
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
 
+      - name: Install dependencies
+        run: yarn install --immutable
+
       - name: Run foundry node, deploy contracts (& generate contracts typescript output)
-        run: yarn fork & yarn deploy:factory
+        run: yarn fork && yarn deploy:factory
         env:
           DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
           SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
