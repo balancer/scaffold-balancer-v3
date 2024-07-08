@@ -14,8 +14,8 @@ import { VaultMockDeployer } from "@balancer-labs/v3-vault/test/foundry/utils/Va
 import { ERC20TestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import { ConstantSumPool } from "../contracts/ConstantSumPool.sol";
-import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
+import { ConstantSumPool } from "../contracts/pools/ConstantSumPool.sol";
+import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
 
 contract ConstantSumFactoryTest is Test {
     uint256 internal DEFAULT_SWAP_FEE = 1e16; // 1%
