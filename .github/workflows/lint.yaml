@@ -35,8 +35,13 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Run foundry node, deploy contracts (& generate contracts typescript output)
-        run: yarn fork && yarn deploy:factory
+      - name: Run foundry anvil fork
+        run: yarn fork
+        env:
+          SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+
+      - name: Deploy contracts to anvil fork
+        run: yarn deploy:factory
         env:
           DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
           SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
