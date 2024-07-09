@@ -40,7 +40,7 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
             block.chainid
         );
         // Grab arguments for pool deployment and initialization outside of broadcast to save gas
-        RegistrationConfig memory regConfig = getPoolConfig(token1, token2);
+        RegistrationConfig memory regConfig = getRegistrationConfig(token1, token2);
         InitializationConfig memory initConfig = getInitializationConfig(token1, token2);
 
         vm.startBroadcast(deployerPrivateKey);
@@ -77,7 +77,10 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
      * For STANDARD tokens, the rate provider address must be 0, and paysYieldFees must be false.
      * All WITH_RATE tokens need a rate provider, and may or may not be yield-bearing.
      */
-    function getPoolConfig(address token1, address token2) internal view returns (RegistrationConfig memory regConfig) {
+    function getRegistrationConfig(
+        address token1,
+        address token2
+    ) internal view returns (RegistrationConfig memory regConfig) {
         string memory name = "Constant Sum Pool #1"; // name for the pool
         string memory symbol = "CS-50scUSD-50scDAI"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory

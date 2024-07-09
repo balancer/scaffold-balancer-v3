@@ -18,10 +18,10 @@ import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantProductFactory } from "../contracts/pools/ConstantProductFactory.sol";
 
 /**
- * @title Deploy Constant Product
- * @notice Deploys mock tokens, a factory contract, a hooks contract, and a custom pool
- * @dev Set the deployment configurations in the internal getter functions below
- * @dev Run this script with `yarn deploy`
+ * @title Deploy Constant Product Pool
+ * @notice Deploys, registers, and initializes a Constant Product Pool
+ * @dev Set the registration & initialization configurations in the internal getter functions
+ * @dev This script runs as part of `yarn deploy`, but can also be run discretely with `yarn deploy:product`
  */
 contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
     function run() external virtual {
@@ -45,7 +45,7 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
             block.chainid
         );
         // Grab arguments for pool deployment and initialization outside of broadcast to save gas
-        RegistrationConfig memory regConfig = getPoolConfig(IERC20(token1), IERC20(token2));
+        RegistrationConfig memory regConfig = getRegistrationConfig(IERC20(token1), IERC20(token2));
         InitializationConfig memory initConfig = getInitializationConfig(IERC20(token1), IERC20(token2));
 
         vm.startBroadcast(deployerPrivateKey);
@@ -83,7 +83,10 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
      * For STANDARD tokens, the rate provider address must be 0, and paysYieldFees must be false.
      * All WITH_RATE tokens need a rate provider, and may or may not be yield-bearing.
      */
-    function getPoolConfig(IERC20 token1, IERC20 token2) internal view returns (RegistrationConfig memory regConfig) {
+    function getRegistrationConfig(
+        IERC20 token1,
+        IERC20 token2
+    ) internal view returns (RegistrationConfig memory regConfig) {
         string memory name = "Constant Product Pool #1"; // name for the pool
         string memory symbol = "CP-50scUSD-50scDAI"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
