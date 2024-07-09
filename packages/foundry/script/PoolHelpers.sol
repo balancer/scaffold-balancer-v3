@@ -3,23 +3,17 @@ pragma solidity ^0.8.24;
 
 import {
     TokenConfig,
-    TokenType,
     LiquidityManagement,
     PoolRoleAccounts
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
-import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
-import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
-
 import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 
 /**
  * A collection of addresses and helper functions for deploying pools
  */
-contract HelperConfig {
+contract PoolHelpers {
     // BalancerV3 Sepolia addresses (5th testnet release)
     address internal vault = 0xD5584b37D1845fFeD958C2d94bC675603DdCce68;
     address internal router = 0x1c58cc548a23956469c7C528Bb3a846c842dfaF9;

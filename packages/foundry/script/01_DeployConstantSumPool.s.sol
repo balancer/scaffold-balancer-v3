@@ -7,30 +7,25 @@ import {
     LiquidityManagement,
     PoolRoleAccounts
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
-import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-
-import { ScaffoldETHDeploy, console } from "./ScaffoldETHDeploy.s.sol";
+import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
+
+import { PoolHelpers } from "./PoolHelpers.sol";
+import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
-import { HelperConfig } from "./HelperConfig.sol";
 
 /**
  * @title Deploy Constant Sum
- * @notice Deploys mock tokens, a factory contract, a hooks contract, and a custom pool
- * @dev Set the deployment configurations in the internal getter functions below
- * @dev Run this script with `yarn deploy`
+ * @notice Deploys, registers, and initializes a Constant Sum Pool
+ * @dev Set the registration & initialization configurations in the internal getter functions below
+ * @dev This script runs as part of `yarn deploy`, but can also be run discretely with `yarn deploy:sum`
  */
-contract DeployConstantSumPool is HelperConfig, ScaffoldETHDeploy {
+contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
     function run() external virtual {
-        uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
-        if (deployerPrivateKey == 0) {
-            revert InvalidPrivateKey(
-                "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"
-            );
-        }
+        uint256 deployerPrivateKey = getDeployerPrivateKey();
+
         // Grab the latest deployment addresses for the mock tokens and constant sum factory
         address token1 = DevOpsTools.get_most_recent_deployment(
             "MockToken1", // Must match the mock token contract name

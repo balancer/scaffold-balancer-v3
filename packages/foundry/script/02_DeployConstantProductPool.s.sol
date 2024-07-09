@@ -11,12 +11,11 @@ import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-
-import { ScaffoldETHDeploy, console } from "./ScaffoldETHDeploy.s.sol";
 import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 
+import { PoolHelpers } from "./PoolHelpers.sol";
+import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantProductFactory } from "../contracts/pools/ConstantProductFactory.sol";
-import { HelperConfig } from "./HelperConfig.sol";
 
 /**
  * @title Deploy Constant Product
@@ -24,14 +23,9 @@ import { HelperConfig } from "./HelperConfig.sol";
  * @dev Set the deployment configurations in the internal getter functions below
  * @dev Run this script with `yarn deploy`
  */
-contract DeployConstantProduct is HelperConfig, ScaffoldETHDeploy {
+contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
     function run() external virtual {
-        uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
-        if (deployerPrivateKey == 0) {
-            revert InvalidPrivateKey(
-                "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"
-            );
-        }
+        uint256 deployerPrivateKey = getDeployerPrivateKey();
 
         // Grab the latest deployment addresses for the mock tokens, constant product factory, and hooks contract
         address token1 = DevOpsTools.get_most_recent_deployment(
@@ -84,7 +78,6 @@ contract DeployConstantProduct is HelperConfig, ScaffoldETHDeploy {
 
     /**
      * @dev Set all of the configurations for deploying and registering a pool here
-     * @notice
      *
      * TokenConfig encapsulates the data required for the Vault to support a token of the given type.
      * For STANDARD tokens, the rate provider address must be 0, and paysYieldFees must be false.

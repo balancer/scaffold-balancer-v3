@@ -1,20 +1,14 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {
-    TokenConfig,
-    TokenType,
-    LiquidityManagement,
-    PoolRoleAccounts
-} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
-import { ScaffoldETHDeploy, console } from "./ScaffoldETHDeploy.s.sol";
+import { PoolHelpers } from "./PoolHelpers.sol";
+import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
 import { ConstantProductFactory } from "../contracts/pools/ConstantProductFactory.sol";
 import { VeBALFeeDiscountHook } from "../contracts/hooks/VeBALFeeDiscountHook.sol";
-import { HelperConfig } from "./HelperConfig.sol";
 import { MockToken1 } from "../contracts/mocks/MockToken1.sol";
 import { MockToken2 } from "../contracts/mocks/MockToken2.sol";
 import { MockVeBAL } from "../contracts/mocks/MockVeBAL.sol";
@@ -22,19 +16,14 @@ import { MockVeBAL } from "../contracts/mocks/MockVeBAL.sol";
 /**
  * @title Deploy Setup
  * @notice Deploys mock tokens, factory contracts, and hooks contracts to be used by the pools
- * @dev Set the pauseWindowDuration for the factories below
- * @dev Run this script with `yarn deploy`
+ * @dev This script runs as part of `yarn deploy`, but can also be run discretely with `yarn deploy:setup`
+ * @dev Set the pauseWindowDuration for the factory contracts below
  */
-contract DeploySetup is HelperConfig, ScaffoldETHDeploy {
+contract DeploySetup is PoolHelpers, ScaffoldHelpers {
     function run() external virtual {
-        uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
-        if (deployerPrivateKey == 0) {
-            revert InvalidPrivateKey(
-                "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"
-            );
-        }
+        uint256 deployerPrivateKey = getDeployerPrivateKey();
 
-        uint32 pauseWindowDuration = 365 days;
+        uint32 pauseWindowDuration = 365 days; // The period during which pools can be paused and unpaused ( starting from deployment of the factory )
 
         vm.startBroadcast(deployerPrivateKey);
 
@@ -64,7 +53,7 @@ contract DeploySetup is HelperConfig, ScaffoldETHDeploy {
         vm.stopBroadcast();
 
         /**
-         * This function generates the file containing the contracts Abi definitions.
+         * This function generates the file containing the contracts Abi definitions that are carried from /foundry to /nextjs.
          * These definitions are used to derive the types needed in the custom scaffold-eth hooks, for example.
          * This function should be called last.
          */
