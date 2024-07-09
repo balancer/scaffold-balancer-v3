@@ -5,6 +5,9 @@ import { type Address, isAddress } from "viem";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useScaffoldEventHistory, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
 
+// TODO: Figure out if this can be fetched from etherscan with contract address?
+const FROM_BLOCK_NUMBER = 6278000n;
+
 /**
  * The dropdown selector for internal custom pool and the external pool address input
  */
@@ -22,20 +25,39 @@ export const PoolSelector = ({
   const pathname = usePathname();
   const isValidAddress = isAddress(inputValue);
 
-  // Fetches the history of pools deployed using the factory
-  const { data: eventsHistory, isLoading: isLoadingEventsHistory } = useScaffoldEventHistory({
+  // Fetches the history of pools deployed via factory
+  const { data: sumPoolHistory, isLoading: isLoadingSumPoolHistory } = useScaffoldEventHistory({
     contractName: "ConstantSumFactory",
     eventName: "PoolCreated",
-    fromBlock: 6200000n, // Figure out if we can fetch deployment block of factory?
+    fromBlock: FROM_BLOCK_NUMBER,
   });
 
-  // Adds pools deployed using the factory to the dropdown
+  const { data: productPoolHistory, isLoading: isLoadingProductPoolHistory } = useScaffoldEventHistory({
+    contractName: "ConstantProductFactory",
+    eventName: "PoolCreated",
+    fromBlock: FROM_BLOCK_NUMBER,
+  });
+
+  // Adds pools deployed using the factories
   useScaffoldEventSubscriber({
     contractName: "ConstantSumFactory",
     eventName: "PoolCreated",
     listener: logs => {
       logs.forEach(log => {
-        console.log("log", log);
+        const { pool } = log.args;
+        if (pool) {
+          setCreatedPools(pools => [...pools, pool]);
+        }
+      });
+    },
+  });
+
+  // Adds pools deployed using the factories
+  useScaffoldEventSubscriber({
+    contractName: "ConstantProductFactory",
+    eventName: "PoolCreated",
+    listener: logs => {
+      logs.forEach(log => {
         const { pool } = log.args;
         if (pool) {
           setCreatedPools(pools => [...pools, pool]);
@@ -45,15 +67,15 @@ export const PoolSelector = ({
   });
 
   useEffect(() => {
-    if (!createdPools?.length && !!eventsHistory?.length && !isLoadingEventsHistory) {
-      const pools = eventsHistory
+    if (!isLoadingSumPoolHistory && !isLoadingProductPoolHistory && sumPoolHistory && productPoolHistory) {
+      const pools = [...sumPoolHistory, ...productPoolHistory]
         .map(({ args }) => {
           if (args.pool && isAddress(args.pool)) return args.pool;
         })
-        .filter((pool): pool is string => typeof pool === "string");
+        .filter((pool): pool is Address => typeof pool === "string");
       setCreatedPools(pools);
     }
-  }, [createdPools.length, eventsHistory, isLoadingEventsHistory]);
+  }, [sumPoolHistory, productPoolHistory, isLoadingSumPoolHistory, isLoadingProductPoolHistory]);
 
   return (
     <section className="my-7">
@@ -62,8 +84,8 @@ export const PoolSelector = ({
           createdPools.map(pool => (
             <button
               key={pool}
-              className={`btn btn-sm flex relative pl-[35px] border-none font-normal ${
-                selectedPoolAddress === pool ? " bg-neutral-300 text-neutral-800" : ""
+              className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal ${
+                selectedPoolAddress === pool ? " bg-violet-300 text-neutral-800" : ""
               }`}
               onClick={() => {
                 setSelectedPoolAddress(pool);

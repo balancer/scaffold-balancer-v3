@@ -78,7 +78,7 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
      * All WITH_RATE tokens need a rate provider, and may or may not be yield-bearing.
      */
     function getPoolConfig(address token1, address token2) internal view returns (RegistrationConfig memory regConfig) {
-        string memory name = "Constant Sum Pool"; // name for the pool
+        string memory name = "Constant Sum Pool #1"; // name for the pool
         string memory symbol = "CS-50scUSD-50scDAI"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
         uint256 swapFeePercentage = 1e12; // 0.00001%

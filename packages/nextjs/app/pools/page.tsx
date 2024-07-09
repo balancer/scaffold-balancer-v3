@@ -44,9 +44,9 @@ const Pools: NextPage = () => {
           <div>
             <h1 className="text-3xl md:text-5xl font-semibold my-7">🌊 Custom Pools</h1>
             <p className="text-xl my-0">
-              Balancer is infinitely extensible to allow for any conceivable pool type with custom curves, logic,
-              parameters, and more. Each pool deployed to balancer is its own smart contract. This tool allows you to
-              interact with any v3 pool deployed on a given network.
+              Balancer protocol is immensely flexible and extensible, allowing for the creation of any conceivable pool
+              type with custom curves, logic, parameters, and more. This tool is a playground for interacting with
+              custom pools that are compatible with Balancer v3 contracts.
             </p>
           </div>
 
@@ -54,7 +54,7 @@ const Pools: NextPage = () => {
 
           {!poolAddress && (
             <div className="text-xl">
-              To get started, search by pool contract address or select a pool from the dropdown
+              To get started, search by pool contract address or select one of the pools deployed to your local fork
             </div>
           )}
 

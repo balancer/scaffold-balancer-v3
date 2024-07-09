@@ -365,7 +365,26 @@ const deployedContracts = {
           inputs: [],
         },
       ],
-      inheritedFunctions: {},
+      inheritedFunctions: {
+        disable: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getActionId: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getAuthorizer: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getDefaultLiquidityManagement:
+          "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getDefaultPoolHooksContract:
+          "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getDeploymentAddress:
+          "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getNewPoolPauseWindowEndTime:
+          "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getOriginalPauseWindowEndTime:
+          "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getPauseWindowDuration:
+          "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getVault: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        isDisabled: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        isPoolFromFactory: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+      },
     },
     ConstantProductFactory: {
       address: "0x3626DEff4AFB3Acd8f217288cd33FBE3a337Ce0B",
@@ -726,7 +745,26 @@ const deployedContracts = {
           inputs: [],
         },
       ],
-      inheritedFunctions: {},
+      inheritedFunctions: {
+        disable: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getActionId: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getAuthorizer: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getDefaultLiquidityManagement:
+          "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getDefaultPoolHooksContract:
+          "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getDeploymentAddress:
+          "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getNewPoolPauseWindowEndTime:
+          "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getOriginalPauseWindowEndTime:
+          "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getPauseWindowDuration:
+          "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        getVault: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        isDisabled: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+        isPoolFromFactory: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/factories/BasePoolFactory.sol",
+      },
     },
     MockToken1: {
       address: "0x69221a99e5Bc30E0cf891992e958E3Ba3815bfc6",
@@ -1074,7 +1112,17 @@ const deployedContracts = {
           ],
         },
       ],
-      inheritedFunctions: {},
+      inheritedFunctions: {
+        allowance: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        approve: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        balanceOf: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        decimals: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        name: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        symbol: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        totalSupply: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        transfer: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        transferFrom: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+      },
     },
     MockToken2: {
       address: "0x66B4cF3Be49431371E4241C462B4A75ae3a6E986",
@@ -1422,7 +1470,17 @@ const deployedContracts = {
           ],
         },
       ],
-      inheritedFunctions: {},
+      inheritedFunctions: {
+        allowance: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        approve: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        balanceOf: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        decimals: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        name: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        symbol: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        totalSupply: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        transfer: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        transferFrom: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+      },
     },
     MockVeBAL: {
       address: "0x01eE8e2C72a2Cd4C5206823ce393520758F5Bc79",
@@ -1770,7 +1828,17 @@ const deployedContracts = {
           ],
         },
       ],
-      inheritedFunctions: {},
+      inheritedFunctions: {
+        allowance: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        approve: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        balanceOf: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        decimals: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        name: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        symbol: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        totalSupply: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        transfer: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        transferFrom: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+      },
     },
     VeBALFeeDiscountHook: {
       address: "0xB93eD7BbBFfcedfA8125f0653Bc07E7D229ffE21",
@@ -2378,7 +2446,19 @@ const deployedContracts = {
           ],
         },
       ],
-      inheritedFunctions: {},
+      inheritedFunctions: {
+        getHookFlags: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
+        onAfterAddLiquidity: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
+        onAfterInitialize: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
+        onAfterRemoveLiquidity: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
+        onAfterSwap: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
+        onBeforeAddLiquidity: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
+        onBeforeInitialize: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
+        onBeforeRemoveLiquidity: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
+        onBeforeSwap: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
+        onComputeDynamicSwapFee: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
+        onRegister: "node_modules/@balancer-labs/v3-monorepo/pkg/vault/contracts/BasePoolHooks.sol",
+      },
     },
   },
 } as const;
