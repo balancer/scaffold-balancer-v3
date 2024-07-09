@@ -13,12 +13,9 @@ import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
 import { ScaffoldETHDeploy, console } from "./ScaffoldETHDeploy.s.sol";
+import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
-import { VeBALFeeDiscountHook } from "../contracts/hooks/VeBALFeeDiscountHook.sol";
 import { HelperConfig } from "./HelperConfig.sol";
-import { MockToken1 } from "../contracts/mocks/MockToken1.sol";
-import { MockToken2 } from "../contracts/mocks/MockToken2.sol";
-import { MockVeBAL } from "../contracts/mocks/MockVeBAL.sol";
 
 /**
  * @title Deploy Constant Sum
@@ -26,7 +23,7 @@ import { MockVeBAL } from "../contracts/mocks/MockVeBAL.sol";
  * @dev Set the deployment configurations in the internal getter functions below
  * @dev Run this script with `yarn deploy`
  */
-contract DeployConstantSum is HelperConfig, ScaffoldETHDeploy {
+contract DeployConstantSumPool is HelperConfig, ScaffoldETHDeploy {
     function run() external virtual {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         if (deployerPrivateKey == 0) {
@@ -34,39 +31,26 @@ contract DeployConstantSum is HelperConfig, ScaffoldETHDeploy {
                 "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"
             );
         }
-
-        uint32 pauseWindowDuration = getFactoryConfig();
-
-        vm.startBroadcast(deployerPrivateKey);
-        // Deploy a factory contract
-        ConstantSumFactory factory = new ConstantSumFactory(IVault(vault), pauseWindowDuration);
-        console.log("Deployed Factory Address: %s", address(factory));
-
-        // Deploy mock tokens
-        IERC20 token1 = new MockToken1("Mock Token 1", "MT1", 1000e18);
-        IERC20 token2 = new MockToken2("Mock Token 2", "MT2", 1000e18);
-        IERC20 veBAL = new MockVeBAL("Vote-escrow BAL", "veBAL", 1000e18);
-        console.log("Deployed MockToken1 Address: %s", address(token1));
-        console.log("Deployed MockToken2 Address: %s", address(token2));
-        console.log("Deployed Vote-escrow BAL Address: %s", address(veBAL));
-
-        // Deploy a hooks contract
-        VeBALFeeDiscountHook poolHooksContract = new VeBALFeeDiscountHook(
-            IVault(vault),
-            address(factory),
-            address(veBAL),
-            address(router)
+        // Grab the latest deployment addresses for the mock tokens and constant sum factory
+        address token1 = DevOpsTools.get_most_recent_deployment(
+            "MockToken1", // Must match the mock token contract name
+            block.chainid
         );
-        console.log("Deployed hooks contract at address: %s", address(poolHooksContract));
-        vm.stopBroadcast();
-
+        address token2 = DevOpsTools.get_most_recent_deployment(
+            "MockToken2", // Must match the mock token contract name
+            block.chainid
+        );
+        address factory = DevOpsTools.get_most_recent_deployment(
+            "ConstantSumFactory", // Must match the factory contract name
+            block.chainid
+        );
         // Grab arguments for pool deployment and initialization outside of broadcast to save gas
         RegistrationConfig memory regConfig = getPoolConfig(token1, token2);
         InitializationConfig memory initConfig = getInitializationConfig(token1, token2);
 
         vm.startBroadcast(deployerPrivateKey);
         // Deploy a pool and register it with the vault
-        address pool = factory.create(
+        address pool = ConstantSumFactory(factory).create(
             regConfig.name,
             regConfig.symbol,
             regConfig.salt,
@@ -74,10 +58,10 @@ contract DeployConstantSum is HelperConfig, ScaffoldETHDeploy {
             regConfig.swapFeePercentage,
             regConfig.protocolFeeExempt,
             regConfig.roleAccounts,
-            address(poolHooksContract),
+            regConfig.poolHooksContract,
             regConfig.liquidityManagement
         );
-        console.log("Deployed Pool Address: %s", pool);
+        console.log("Constant Sum Pool deployed at: %s", pool);
 
         // Seed the pool with initial liquidity
         initializePool(
@@ -88,22 +72,8 @@ contract DeployConstantSum is HelperConfig, ScaffoldETHDeploy {
             initConfig.wethIsEth,
             initConfig.userData
         );
-        console.log("Pool initialized successfully!");
+        console.log("Constant Sum Pool initialized successfully!");
         vm.stopBroadcast();
-
-        /**
-         * This function generates the file containing the contracts Abi definitions.
-         * These definitions are used to derive the types needed in the custom scaffold-eth hooks, for example.
-         * This function should be called last.
-         */
-        exportDeployments();
-    }
-
-    /**
-     * @dev Set the factory's pauseWindowDuration here
-     */
-    function getFactoryConfig() internal pure returns (uint32 pauseWindowDuration) {
-        pauseWindowDuration = 365 days;
     }
 
     /**
@@ -112,7 +82,7 @@ contract DeployConstantSum is HelperConfig, ScaffoldETHDeploy {
      * For STANDARD tokens, the rate provider address must be 0, and paysYieldFees must be false.
      * All WITH_RATE tokens need a rate provider, and may or may not be yield-bearing.
      */
-    function getPoolConfig(IERC20 token1, IERC20 token2) internal view returns (RegistrationConfig memory regConfig) {
+    function getPoolConfig(address token1, address token2) internal view returns (RegistrationConfig memory regConfig) {
         string memory name = "Constant Sum Pool"; // name for the pool
         string memory symbol = "CS-50scUSD-50scDAI"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
@@ -122,13 +92,13 @@ contract DeployConstantSum is HelperConfig, ScaffoldETHDeploy {
 
         TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
         tokenConfig[0] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
-            token: token1,
+            token: IERC20(token1),
             tokenType: TokenType.STANDARD, // STANDARD or WITH_RATE
             rateProvider: IRateProvider(address(0)), // The rate provider for a token (see further documentation above)
             paysYieldFees: false // Flag indicating whether yield fees should be charged on this token
         });
         tokenConfig[1] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
-            token: token2,
+            token: IERC20(token2),
             tokenType: TokenType.STANDARD, // STANDARD or WITH_RATE
             rateProvider: IRateProvider(address(0)), // The rate provider for a token (see further documentation above)
             paysYieldFees: false // Flag indicating whether yield fees should be charged on this token
@@ -163,12 +133,12 @@ contract DeployConstantSum is HelperConfig, ScaffoldETHDeploy {
      * @notice this is where the amounts of tokens to be initially added to the pool are set
      */
     function getInitializationConfig(
-        IERC20 token1,
-        IERC20 token2
+        address token1,
+        address token2
     ) internal pure returns (InitializationConfig memory poolInitConfig) {
         IERC20[] memory tokens = new IERC20[](2); // Array of tokens to be used in the pool
-        tokens[0] = token1;
-        tokens[1] = token2;
+        tokens[0] = IERC20(token1);
+        tokens[1] = IERC20(token2);
         uint256[] memory exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
         exactAmountsIn[0] = 10 ether; // amount of token1 to send during pool initialization
         exactAmountsIn[1] = 10 ether; // amount of token2 to send during pool initialization
