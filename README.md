@@ -19,7 +19,7 @@ A full stack prototyping tool for building on top of Balancer v3. Accelerate the
 1. [Create a Custom Pool 🌊](#1-create-a-custom-pool-)
 2. [Create a Pool Factory 🏭](#2-create-a-pool-factory-)
 3. [Create a Pool Hook 🪝](#3-create-a-pool-hook-)
-4. [Deploy the Contracts 🚢](#4-deploy-a-pool-factory-)
+4. [Deploy the Contracts 🚢](#4-deploy-the-contracts-)
 5. [Test the Contracts 🧪](#5-test-the-contracts-)
 
 ## 0. Environment Setup 🧑‍💻
@@ -41,15 +41,13 @@ cd scaffold-balancer-v3
 yarn install
 ```
 
-2. Set the necessary environment variables in a `packages/foundry/.env` file
+2. Set the necessary environment variables in a `packages/foundry/.env` file [^1]
+   [^1]: The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must possess enough Sepolia ETH to deploy the contracts. The `SEPOLIA_RPC_URL` facilitates running a local fork and sending transactions to sepolia testnet
 
 ```
 DEPLOYER_PRIVATE_KEY=0x...
 SEPOLIA_RPC_URL=...
 ```
-
-- The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must possess enough Sepolia ETH to deploy the contracts
-- The `SEPOLIA_RPC_URL` facilitates running a local fork and sending transactions to sepolia testnet
 
 3. Start a local anvil fork of the Sepolia testnet
 
@@ -57,25 +55,30 @@ SEPOLIA_RPC_URL=...
 yarn fork
 ```
 
-4. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts
+4. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts [^2]
+   [^2]: The `DEPLOYER_PRIVATE_KEY` wallet receives the mock tokens and resulting BPT from pool initialization
 
 ```bash
 yarn deploy
 ```
 
-- The `DEPLOYER_PRIVATE_KEY` wallet receives the mock tokens and resulting BPT from pool initialization
-
-5. Start the Frontend
+5. Start the nextjs frontend
 
 ```bash
 yarn start
 ```
 
-6. Explore the Frontend
+6. Explore the frontend
 
 - Navigate to http://localhost:3000 to see the home page
 - Visit the [Pools Page](http://localhost:3000/pools) to search by address or select using the pool buttons
 - Vist the [Debug Page](http://localhost:3000/debug) to see the mock tokens, factory, and hooks contracts
+
+7. Run the Foundry tests
+
+```
+yarn test
+```
 
 ### 🏗️ Scaffold ETH 2 Tips
 
