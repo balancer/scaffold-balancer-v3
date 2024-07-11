@@ -43,3 +43,13 @@ input[type="number"] {
   -moz-appearance: textfield; /* Firefox */
   appearance: none; /* Chrome, Safari, Edge, and other browsers */
 }
+
+/* Truncate text for hooks cards */
+.card-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* number of lines to show */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* height: 200px; adjust based on line-height and font-size */
+}

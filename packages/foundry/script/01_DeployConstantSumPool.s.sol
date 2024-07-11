@@ -17,7 +17,7 @@ import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
 
 /**
- * @title Deploy Constant Sum
+ * @title Deploy Constant Sum Pool
  * @notice Deploys, registers, and initializes a Constant Sum Pool
  * @dev Set the registration & initialization configurations in the internal getter functions below
  * @dev This script runs as part of `yarn deploy`, but can also be run discretely with `yarn deploy:sum`
@@ -85,7 +85,7 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
         string memory symbol = "CS-50scUSD-50scDAI"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
         uint256 swapFeePercentage = 1e12; // 0.00001%
-        bool protocolFeeExempt = false;
+        bool protocolFeeExempt = true;
         address poolHooksContract = address(0); // zero address if no hooks contract is needed
 
         TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.

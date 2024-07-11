@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Link from "next/link";
 import { AddLiquidityForm, RemoveLiquidityForm, SwapForm } from "./actions";
 import { erc20Abi } from "@balancer/sdk";
 import { useAccount, useContractReads, useWalletClient } from "wagmi";
@@ -49,11 +48,10 @@ export const PoolActions: React.FC<PoolActionsProps> = ({ pool, refetchPool }) =
           {address && !balance ? <Alert>Click the faucet button in the top right corner!</Alert> : null}
           {balance !== 0 && userHasNoTokens && (
             <Alert>
-              Mint some mock tokens on the{" "}
-              <Link className="link" href="/debug">
-                Debug Contracts
-              </Link>{" "}
-              page
+              Zero balance. To mint mock tokens{" "}
+              <span className="link" onClick={() => console.log("mint")}>
+                click here
+              </span>
             </Alert>
           )}
         </div>
@@ -82,7 +80,7 @@ export const PoolActions: React.FC<PoolActionsProps> = ({ pool, refetchPool }) =
 
 const Alert = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="text-neutral bg-[#fb923c40] border border-orange-400 rounded-lg py-1 px-5 flex gap-2 items-center justify-center">
+    <div className="w-full text-neutral bg-[#fb923c40] border border-orange-400 rounded-lg py-1 px-5 flex gap-2 items-center justify-center">
       <div>
         <ExclamationTriangleIcon className="w-5 h-5" />
       </div>

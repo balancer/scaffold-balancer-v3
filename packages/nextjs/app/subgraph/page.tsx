@@ -1,5 +1,5 @@
-"use client";
-
+// "use client";
+import Link from "next/link";
 // import { gql, useQuery } from "@apollo/client";
 import type { NextPage } from "next";
 
@@ -22,13 +22,11 @@ const Subgraph: NextPage = () => {
   // const { data } = useQuery(POOLS_QUERY, { fetchPolicy: "network-only" });
 
   return (
-    <div className="flex-grow bg-base-300">
-      <div className="max-w-screen-2xl mx-auto">
-        <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
-          <div className="mb-10 w-full">
-            <div className="flex flex-wrap justify-between items-center">
-              <h1 className="text-3xl md:text-5xl font-bold my-10">📡 Subgraph</h1>
-              {/* <a
+    <div className="flex items-center flex-col flex-grow py-7 px-5 md:px-10 xl:px-20">
+      <div className="mb-10 w-full">
+        <div className="flex flex-wrap justify-between items-center">
+          <h1 className="text-3xl md:text-5xl font-bold my-10">📡 Subgraph</h1>
+          {/* <a
                 href="https://api.studio.thegraph.com/proxy/31386/balancer-v3-sepolia/version/latest/graphql?query=query+AllPools+%7B%0A++pools+%7B%0A++++address%0A++++isInitialized%0A++++totalShares%0A++++tokens+%7B%0A++++++address%0A++++++balance%0A++++++name%0A++++++symbol%0A++++%7D%0A++%7D%0A%7D"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -36,13 +34,21 @@ const Subgraph: NextPage = () => {
               >
                 Explore Subgraph
               </a> */}
-            </div>
-            <p className="text-xl">
-              In order for end users to interact with a pool, the contract must first be indexed by Balancer&apos;s
-              official subgraph. Guide coming soon™️
-            </p>
-          </div>
-          {/* <div className="flex w-full">
+        </div>
+        <p className="text-xl">
+          In order for end users to interact with a pool, the contract must first be indexed by Balancer&apos;s official
+          subgraph.{" "}
+          <Link
+            className="text-blue-400 link"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://docs-v3.balancer.fi/data-and-analytics/data-and-analytics/subgraph.html"
+          >
+            Guide coming soon™️
+          </Link>
+        </p>
+      </div>
+      {/* <div className="flex w-full">
             <div className="overflow-x-auto rounded-lg bg-base-200 w-full p-5">
               {data ? (
                 <div className="border border-base-100 rounded-lg">
@@ -81,8 +87,6 @@ const Subgraph: NextPage = () => {
               )}
             </div>
           </div> */}
-        </div>
-      </div>
     </div>
   );
 };

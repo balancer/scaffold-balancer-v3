@@ -4,7 +4,14 @@ import React, { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowsRightLeftIcon, Bars3Icon, BugAntIcon, CircleStackIcon, ScaleIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowUturnUpIcon,
+  ArrowsRightLeftIcon,
+  Bars3Icon,
+  BugAntIcon,
+  CircleStackIcon,
+  ScaleIcon,
+} from "@heroicons/react/24/outline";
 import { SwitchTheme } from "~~/components/SwitchTheme";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
@@ -16,14 +23,15 @@ type HeaderMenuLink = {
 };
 
 export const menuLinks: HeaderMenuLink[] = [
-  // {
-  //   label: "Home",
-  //   href: "/",
-  // },
   {
     label: "Pools",
     href: "/pools",
     icon: <ScaleIcon className="h-5 w-5" />,
+  },
+  {
+    label: "Hooks",
+    href: "/hooks",
+    icon: <ArrowUturnUpIcon className="h-5 w-5" />,
   },
   {
     label: "Router",

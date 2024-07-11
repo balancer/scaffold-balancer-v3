@@ -872,7 +872,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "mint",
+          name: "mintAnyAmount",
           inputs: [
             {
               name: "amount",
@@ -880,6 +880,13 @@ const deployedContracts = {
               internalType: "uint256",
             },
           ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "mintFive",
+          inputs: [],
           outputs: [],
           stateMutability: "nonpayable",
         },
@@ -1230,7 +1237,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "mint",
+          name: "mintAnyAmount",
           inputs: [
             {
               name: "amount",
@@ -1238,6 +1245,13 @@ const deployedContracts = {
               internalType: "uint256",
             },
           ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "mintFive",
+          inputs: [],
           outputs: [],
           stateMutability: "nonpayable",
         },

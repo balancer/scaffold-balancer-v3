@@ -38,38 +38,34 @@ const Pools: NextPage = () => {
   }, [poolAddress]);
 
   return (
-    <div className="flex-grow bg-base-300">
-      <div className="max-w-screen-2xl mx-auto">
-        <div className="flex items-center flex-col flex-grow py-5 px-5 md:px-10 xl:px-20">
-          <div>
-            <h1 className="text-3xl md:text-5xl font-semibold my-7">🌊 Custom Pools</h1>
-            <p className="text-xl my-0">
-              Balancer protocol is immensely flexible and extensible, allowing for the creation of any conceivable pool
-              type with custom curves, logic, parameters, and more. This tool is a playground for interacting with
-              custom pools that are compatible with Balancer v3 contracts.
-            </p>
-          </div>
-
-          <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
-
-          {!poolAddress && (
-            <div className="text-xl">
-              To get started, search by pool contract address or select one of the pools deployed to your local fork
-            </div>
-          )}
-
-          {isLoading ? (
-            <PoolPageSkeleton />
-          ) : isError ? (
-            <div className="text-red-500 text-xl text-center">
-              <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
-              <div>{selectedPoolAddress}</div>
-            </div>
-          ) : (
-            isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
-          )}
-        </div>
+    <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
+      <div>
+        <h1 className="text-3xl md:text-5xl font-semibold my-7">🌊 Custom Pools</h1>
+        <p className="text-xl my-0">
+          Balancer protocol is immensely flexible and extensible, allowing for the creation of any conceivable pool type
+          with custom curves, logic, parameters, and more. This tool is a playground for interacting with custom pools
+          that are compatible with Balancer v3 contracts.
+        </p>
       </div>
+
+      <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
+
+      {!poolAddress && (
+        <div className="text-xl">
+          To get started, search by pool contract address or select one of the pools deployed to your local fork
+        </div>
+      )}
+
+      {isLoading ? (
+        <PoolPageSkeleton />
+      ) : isError ? (
+        <div className="text-red-500 text-xl text-center">
+          <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
+          <div>{selectedPoolAddress}</div>
+        </div>
+      ) : (
+        isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
+      )}
     </div>
   );
 };
