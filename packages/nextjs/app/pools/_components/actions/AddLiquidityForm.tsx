@@ -17,7 +17,12 @@ import { formatToHuman } from "~~/utils/formatToHuman";
  * 3. Send transaction to add liquidity to the pool
  * 4. Display the transaction results to the user
  */
-export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
+export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
+  pool,
+  refetchPool,
+  tokenBalances,
+  refetchTokenBalances,
+}) => {
   const initialTokenInputs = pool.poolTokens.map(token => ({
     address: token.address as `0x${string}`,
     decimals: token.decimals,
@@ -33,7 +38,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
   const [isAddingLiquidity, setIsAddingLiquidity] = useState(false);
   const [addLiquidityReceipt, setAddLiquidityReceipt] = useState<PoolActionReceipt>(null);
 
-  const { tokenAllowances, refetchTokenAllowances, tokenBalances } = useTokens(tokenInputs);
+  const { tokenAllowances, refetchTokenAllowances } = useTokens(tokenInputs);
   const { queryAddLiquidity, addLiquidity } = useAddLiquidity(pool, tokenInputs);
   const writeTx = useTransactor(); // scaffold hook for tx status toast notifications
   const publicClient = usePublicClient();
@@ -134,6 +139,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
       setIsAddingLiquidity(true);
       await addLiquidity();
       refetchTokenAllowances();
+      refetchTokenBalances();
       refetchPool();
     } catch (e) {
       console.error("error", e);
@@ -172,7 +178,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool
             }
             onAmountChange={value => handleInputChange(index, value)}
             allowance={tokenAllowances && formatToHuman(tokenAllowances[index] || 0n, token.decimals)}
-            balance={tokenBalances && formatToHuman(tokenBalances[index] || 0n, token.decimals)}
+            balance={tokenBalances && formatToHuman(tokenBalances[token.address] || 0n, token.decimals)}
           />
         ))}
       </div>

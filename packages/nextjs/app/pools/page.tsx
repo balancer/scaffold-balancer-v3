@@ -82,7 +82,9 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
             <PoolAttributes pool={pool} />
           </div>
           <div className="flex flex-col gap-7">
-            {pool.poolConfig?.isPoolInitialized && <PoolActions pool={pool} refetchPool={refetchPool} />}
+            {pool.poolConfig?.isPoolInitialized && (
+              <PoolActions key={pool.address} pool={pool} refetchPool={refetchPool} />
+            )}
             <HooksConfig pool={pool} />
             <PoolConfig pool={pool} />
           </div>

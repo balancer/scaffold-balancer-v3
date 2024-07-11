@@ -35,7 +35,7 @@ const initialSwapConfig = {
  * 3. Approve the vault for the tokenIn used in the swap transaction (if necessary)
  * 4. Send transaction to swap the tokens
  */
-export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
+export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenBalances, refetchTokenBalances }) => {
   const [queryResponse, setQueryResponse] = useState<QuerySwapResponse | null>(null);
   const [queryError, setQueryError] = useState<QueryPoolActionError>(null);
   const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
@@ -54,7 +54,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
   const { querySwap, swap } = useSwap(pool, swapConfig);
   const { approveSpenderOnToken: approvePermit2OnToken } = useApprove(tokenIn.address, PERMIT2[chainId]);
   const { approveSpenderOnPermit2: approveRouterOnPermit2 } = useApprove(tokenIn.address, BALANCER_ROUTER[chainId]);
-  const { tokenAllowance, refetchTokenAllowance, tokenBalance, refetchTokenBalance } = useToken(tokenIn.address);
+  const { tokenAllowance, refetchTokenAllowance } = useToken(tokenIn.address);
 
   const sufficientAllowance = useMemo(() => {
     return tokenAllowance && tokenAllowance >= swapConfig.tokenIn.rawAmount;
@@ -171,6 +171,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
 
   const handleSwap = async () => {
     try {
+      const tokenBalance = tokenBalances[tokenIn.address];
       if (tokenBalance === null || tokenBalance === undefined || tokenBalance < swapConfig.tokenIn.rawAmount) {
         throw new Error("Insufficient user balance");
       }
@@ -178,7 +179,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
       await swap();
       refetchPool();
       refetchTokenAllowance();
-      refetchTokenBalance();
+      refetchTokenBalances();
     } catch (e) {
       if (e instanceof Error) {
         console.error("error", e);
@@ -230,7 +231,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         setTokenDropdownOpen={setTokenInDropdownOpen}
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenIn.symbol)}
         allowance={formatToHuman(tokenAllowance, tokenIn.decimals)}
-        balance={formatToHuman(tokenBalance, tokenIn.decimals)}
+        balance={formatToHuman(tokenBalances[tokenIn.address] ?? 0n, tokenIn.decimals)}
         isHighlighted={queryResponse?.swapKind === SwapKind.GivenIn}
       />
       <TokenField
@@ -243,6 +244,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
         setTokenDropdownOpen={setTokenOutDropdownOpen}
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenOut.symbol)}
         isHighlighted={queryResponse?.swapKind === SwapKind.GivenOut}
+        balance={formatToHuman(tokenBalances[tokenOut.address] ?? 0n, tokenOut.decimals)}
       />
 
       {!expectedAmount || (expectedAmount && swapReceipt) ? (

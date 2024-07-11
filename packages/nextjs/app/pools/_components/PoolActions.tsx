@@ -3,7 +3,7 @@ import { AddLiquidityForm, RemoveLiquidityForm, SwapForm } from "./actions";
 import { useAccount } from "wagmi";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { useTokens } from "~~/hooks/balancer";
-import { type Pool } from "~~/hooks/balancer/types";
+import { type Pool, type TokenBalances } from "~~/hooks/balancer/types";
 import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
 import { useAccountBalance, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
@@ -12,12 +12,14 @@ type Action = "Swap" | "AddLiquidity" | "RemoveLiquidity";
 export interface PoolActionsProps {
   pool: Pool;
   refetchPool: RefetchPool;
+  tokenBalances: TokenBalances;
+  refetchTokenBalances: () => void;
 }
 
 /**
  * Allow user to swap, add liquidity, and remove liquidity from a pool
  */
-export const PoolActions: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
+export const PoolActions: React.FC<{ pool: Pool; refetchPool: RefetchPool }> = ({ pool, refetchPool }) => {
   const [activeTab, setActiveTab] = useState<Action>("Swap");
 
   const { address } = useAccount();
@@ -26,12 +28,12 @@ export const PoolActions: React.FC<PoolActionsProps> = ({ pool, refetchPool }) =
   const tokens = pool.poolTokens.map(token => ({
     address: token.address as `0x${string}`,
     decimals: token.decimals,
-    rawAmount: 0n,
+    rawAmount: 0n, // Quirky solution cus useTokens expects type InputAmount[] cus originally built for AddLiquidityForm :D
   }));
 
   const { tokenBalances, refetchTokenBalances } = useTokens(tokens);
 
-  const userHasNoTokens = tokenBalances?.every(balance => balance === 0n);
+  const userHasNoTokens = Object.values(tokenBalances).every(balance => balance === 0n);
 
   const { writeAsync: mintToken1 } = useScaffoldContractWrite({
     contractName: "MockToken1",
@@ -46,9 +48,30 @@ export const PoolActions: React.FC<PoolActionsProps> = ({ pool, refetchPool }) =
   });
 
   const tabs = {
-    Swap: <SwapForm pool={pool} refetchPool={refetchPool} />,
-    AddLiquidity: <AddLiquidityForm pool={pool} refetchPool={refetchPool} />,
-    RemoveLiquidity: <RemoveLiquidityForm pool={pool} refetchPool={refetchPool} />,
+    Swap: (
+      <SwapForm
+        pool={pool}
+        refetchPool={refetchPool}
+        tokenBalances={tokenBalances}
+        refetchTokenBalances={refetchTokenBalances}
+      />
+    ),
+    AddLiquidity: (
+      <AddLiquidityForm
+        pool={pool}
+        refetchPool={refetchPool}
+        tokenBalances={tokenBalances}
+        refetchTokenBalances={refetchTokenBalances}
+      />
+    ),
+    RemoveLiquidity: (
+      <RemoveLiquidityForm
+        pool={pool}
+        refetchPool={refetchPool}
+        tokenBalances={tokenBalances}
+        refetchTokenBalances={refetchTokenBalances}
+      />
+    ),
   };
 
   return (

@@ -139,10 +139,12 @@ export type UseToken = {
   refetchTokenBalance: () => void;
 };
 
+export type TokenBalances = { [key: Address]: bigint };
+
 export type UseTokens = {
   tokenAllowances: (bigint | undefined)[] | undefined;
   refetchTokenAllowances: () => void;
-  tokenBalances?: (bigint | undefined)[];
+  tokenBalances: TokenBalances;
   refetchTokenBalances: () => void;
 };
 
