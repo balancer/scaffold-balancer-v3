@@ -143,6 +143,7 @@ export type UseTokens = {
   tokenAllowances: (bigint | undefined)[] | undefined;
   refetchTokenAllowances: () => void;
   tokenBalances?: (bigint | undefined)[];
+  refetchTokenBalances: () => void;
 };
 
 export type UseApprove = {

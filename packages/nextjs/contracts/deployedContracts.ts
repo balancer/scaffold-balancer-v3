@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     ConstantSumFactory: {
-      address: "0x579bB3a775c831526D5E94EF9ccd6601F62790Bc",
+      address: "0xe91cEDac266d3A331D307CA1834A29B1156126C4",
       abi: [
         {
           type: "constructor",
@@ -387,7 +387,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactory: {
-      address: "0x3626DEff4AFB3Acd8f217288cd33FBE3a337Ce0B",
+      address: "0x4655Ed483C8aE255e2098A171624bd012aBC6b40",
       abi: [
         {
           type: "constructor",
@@ -767,7 +767,7 @@ const deployedContracts = {
       },
     },
     MockToken1: {
-      address: "0x69221a99e5Bc30E0cf891992e958E3Ba3815bfc6",
+      address: "0xC17a00DfCb10af9cB41645186e89969C96D1a3B6",
       abi: [
         {
           type: "constructor",
@@ -872,7 +872,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "mintAnyAmount",
+          name: "mint",
           inputs: [
             {
               name: "amount",
@@ -880,13 +880,6 @@ const deployedContracts = {
               internalType: "uint256",
             },
           ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "mintFive",
-          inputs: [],
           outputs: [],
           stateMutability: "nonpayable",
         },
@@ -1132,7 +1125,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x66B4cF3Be49431371E4241C462B4A75ae3a6E986",
+      address: "0xe093601b7740105Ce4f3A3740f387c9B7EBb683b",
       abi: [
         {
           type: "constructor",
@@ -1237,7 +1230,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "mintAnyAmount",
+          name: "mint",
           inputs: [
             {
               name: "amount",
@@ -1245,13 +1238,6 @@ const deployedContracts = {
               internalType: "uint256",
             },
           ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "mintFive",
-          inputs: [],
           outputs: [],
           stateMutability: "nonpayable",
         },
@@ -1497,7 +1483,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0x01eE8e2C72a2Cd4C5206823ce393520758F5Bc79",
+      address: "0x4d75F68A6b570d2FE0C84666e3Aec200e654D506",
       abi: [
         {
           type: "constructor",
@@ -1855,7 +1841,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHook: {
-      address: "0xB93eD7BbBFfcedfA8125f0653Bc07E7D229ffE21",
+      address: "0xF81277cEC0240B78aaCB542Eb0f0A1B9f6D7b5fC",
       abi: [
         {
           type: "constructor",

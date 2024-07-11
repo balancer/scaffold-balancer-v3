@@ -13,7 +13,7 @@ export const useTokens = (amountsIn: InputAmount[]): UseTokens => {
   const connectedAddress = walletClient?.account.address || zeroAddress;
   const { chainId } = useTargetFork();
 
-  const { data: balances } = useContractReads({
+  const { data: balances, refetch: refetchTokenBalances } = useContractReads({
     contracts: amountsIn.map(token => ({
       address: token.address,
       abi: erc20Abi,
@@ -54,5 +54,6 @@ export const useTokens = (amountsIn: InputAmount[]): UseTokens => {
     tokenAllowances,
     refetchTokenAllowances,
     tokenBalances,
+    refetchTokenBalances,
   };
 };

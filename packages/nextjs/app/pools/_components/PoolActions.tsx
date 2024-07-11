@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { AddLiquidityForm, RemoveLiquidityForm, SwapForm } from "./actions";
-import { erc20Abi } from "@balancer/sdk";
-import { useAccount, useContractReads, useWalletClient } from "wagmi";
+import { useAccount } from "wagmi";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { useTokens } from "~~/hooks/balancer";
 import { type Pool } from "~~/hooks/balancer/types";
 import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
-import { useAccountBalance } from "~~/hooks/scaffold-eth";
+import { useAccountBalance, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
 type Action = "Swap" | "AddLiquidity" | "RemoveLiquidity";
 
@@ -22,17 +22,28 @@ export const PoolActions: React.FC<PoolActionsProps> = ({ pool, refetchPool }) =
 
   const { address } = useAccount();
   const { balance } = useAccountBalance(address);
-  const { data: walletClient } = useWalletClient();
-  const { data: tokenBalances } = useContractReads({
-    contracts: pool.poolTokens.map(token => ({
-      address: token.address,
-      abi: erc20Abi,
-      functionName: "balanceOf",
-      args: [walletClient?.account.address as string],
-    })),
+
+  const tokens = pool.poolTokens.map(token => ({
+    address: token.address as `0x${string}`,
+    decimals: token.decimals,
+    rawAmount: 0n,
+  }));
+
+  const { tokenBalances, refetchTokenBalances } = useTokens(tokens);
+
+  const userHasNoTokens = tokenBalances?.every(balance => balance === 0n);
+
+  const { writeAsync: mintToken1 } = useScaffoldContractWrite({
+    contractName: "MockToken1",
+    functionName: "mint",
+    args: [5000000000000000000n],
   });
 
-  const userHasNoTokens = tokenBalances?.every(balance => balance.result === 0n);
+  const { writeAsync: mintToken2 } = useScaffoldContractWrite({
+    contractName: "MockToken2",
+    functionName: "mint",
+    args: [5000000000000000000n],
+  });
 
   const tabs = {
     Swap: <SwapForm pool={pool} refetchPool={refetchPool} />,
@@ -49,7 +60,14 @@ export const PoolActions: React.FC<PoolActionsProps> = ({ pool, refetchPool }) =
           {balance !== 0 && userHasNoTokens && (
             <Alert>
               Zero balance. To mint mock tokens{" "}
-              <span className="link" onClick={() => console.log("mint")}>
+              <span
+                className="link"
+                onClick={async () => {
+                  await mintToken1();
+                  await mintToken2();
+                  refetchTokenBalances();
+                }}
+              >
                 click here
               </span>
             </Alert>

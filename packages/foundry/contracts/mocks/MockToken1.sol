@@ -17,15 +17,7 @@ contract MockToken1 is ERC20 {
      * Allow any user to mint any amount of tokens to their wallet
      * This function is accessible on the frontend's "Debug" page
      */
-    function mintFive() external {
-        _mint(msg.sender, 5e18);
-    }
-
-    /**
-     * Allow any user to mint any amount of tokens to their wallet
-     * This function is accessible on the frontend's "Debug" page
-     */
-    function mintAnyAmount(uint256 amount) external {
+    function mint(uint256 amount) external {
         _mint(msg.sender, amount);
     }
 }

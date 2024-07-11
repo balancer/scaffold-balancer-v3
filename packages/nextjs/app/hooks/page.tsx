@@ -38,8 +38,8 @@ const Hooks: NextPage = () => {
 
   return (
     <div className="flex items-center flex-col flex-grow py-7 px-5 md:px-10 xl:px-20 bg-base-300">
-      <div className="mb-7 w-full">
-        <h1 className="text-3xl md:text-5xl font-bold my-10">🪝 Pool Hooks</h1>
+      <div className="mb-7 w-full text-center">
+        <h1 className="text-3xl md:text-5xl font-bold my-10 text-center">Pool Hooks</h1>
         <p className="text-xl">
           Extend the functionality of liquidity pools with hooks contracts. Consider utilizing one of the examples below
           or{" "}
@@ -74,8 +74,7 @@ const Hooks: NextPage = () => {
                     <GithubIcon />
                   </Link>
                 </div>
-
-                <div className="">Created By {hook.created_by}</div>
+                {/* <div className="">Created By {hook.created_by}</div> */}
               </div>
               <div className="text-lg card-description">{hook.description}</div>
             </div>

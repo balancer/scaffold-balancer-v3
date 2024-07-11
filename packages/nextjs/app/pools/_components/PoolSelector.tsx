@@ -78,8 +78,8 @@ export const PoolSelector = ({
   }, [sumPoolHistory, productPoolHistory, isLoadingSumPoolHistory, isLoadingProductPoolHistory]);
 
   return (
-    <section className="my-7">
-      <div className="mb-4 flex justify-center gap-3">
+    <section className="mt-5 mb-7">
+      <div className="mb-4 flex flex-wrap justify-center gap-3 border border-base-100 p-1.5 rounded-full min-h-[45px]">
         {createdPools.length > 0 &&
           createdPools.map(pool => (
             <button
@@ -121,21 +121,21 @@ export const PoolSelector = ({
                 alt=""
                 className="!rounded-full absolute top-1 left-1"
                 src={blo(inputValue as `0x${string}`)}
-                width="45"
-                height="45"
+                width="37"
+                height="37"
               />
             )}
             <input
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
-              className={`input input-bordered bg-base-200 text-center h-[52px] w-[355px] sm:w-[550px] ${
+              className={`input input-bordered bg-base-200 text-center h-[44px] w-[355px] sm:w-[550px] ${
                 inputValue && "pl-10 pr-14"
               }`}
               placeholder="Search by pool addresss"
             />
             <button
-              className={`btn w-16 absolute top-0.5 right-0.5 ${
-                isValidAddress ? "bg-violet-300 hover:bg-violet-400" : ""
+              className={`btn btn-sm w-12 absolute top-1.5 right-1.5 border-none ${
+                isValidAddress ? "bg-violet-400 hover:bg-violet-400" : ""
               }`}
               type="submit"
               disabled={!isValidAddress}

@@ -39,22 +39,14 @@ const Pools: NextPage = () => {
 
   return (
     <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
-      <div>
-        <h1 className="text-3xl md:text-5xl font-semibold my-7">🌊 Custom Pools</h1>
-        <p className="text-xl my-0">
-          Balancer protocol is immensely flexible and extensible, allowing for the creation of any conceivable pool type
-          with custom curves, logic, parameters, and more. This tool is a playground for interacting with custom pools
-          that are compatible with Balancer v3 contracts.
-        </p>
+      <div className="">
+        <h1 className="text-3xl md:text-5xl font-semibold my-7 text-center">Custom Pools</h1>
+        <div className="text-xl">
+          Select one of the pools deployed to your local fork or search by pool contract address
+        </div>
       </div>
 
       <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
-
-      {!poolAddress && (
-        <div className="text-xl">
-          To get started, search by pool contract address or select one of the pools deployed to your local fork
-        </div>
-      )}
 
       {isLoading ? (
         <PoolPageSkeleton />
