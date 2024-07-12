@@ -7,7 +7,7 @@ import {
     PoolRoleAccounts,
     TokenConfig
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import { BasePoolFactory } from "@balancer-labs/v3-vault/contracts/factories/BasePoolFactory.sol";
+import { BasePoolFactory } from "@balancer-labs/v3-pool-utils/contracts/BasePoolFactory.sol";
 
 import { ConstantSumPool } from "./ConstantSumPool.sol";
 

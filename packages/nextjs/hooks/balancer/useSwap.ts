@@ -25,6 +25,7 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): UseSwap => {
         swapKind: swapConfig.swapKind,
         paths: [
           {
+            protocolVersion: 3 as 1 | 2 | 3,
             pools: [pool.address as `0x${string}`],
             tokens: [
               {
@@ -36,7 +37,6 @@ export const useSwap = (pool: Pool, swapConfig: SwapConfig): UseSwap => {
                 decimals: tokenOut.decimals,
               }, // tokenOut
             ],
-            vaultVersion: 3 as const,
             inputAmountRaw: swapConfig.tokenIn.rawAmount,
             outputAmountRaw: swapConfig.tokenOut.rawAmount,
           },

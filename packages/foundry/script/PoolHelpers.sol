@@ -15,8 +15,8 @@ import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
  */
 contract PoolHelpers {
     // BalancerV3 Sepolia addresses (5th testnet release)
-    address internal vault = 0xD5584b37D1845fFeD958C2d94bC675603DdCce68;
-    address internal router = 0x1c58cc548a23956469c7C528Bb3a846c842dfaF9;
+    address internal vault = 0x92B5c1CB2999c45804A60d6529D77DeEF00fb839;
+    address internal router = 0xa12Da7dfD0792a10a5b05B575545Bd685798Ce35;
     address internal permit2 = 0x000000000022D473030F116dDEE9F6B43aC78BA3;
 
     struct RegistrationConfig {
