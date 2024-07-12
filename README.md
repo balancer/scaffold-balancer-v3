@@ -24,6 +24,8 @@ A full stack prototyping tool for building on top of Balancer v3. Accelerate the
 
 ## 0. Environment Setup 🧑‍💻
 
+[![image](https://github.com/user-attachments/assets/2d0d5c6d-647d-4782-8d7a-9076b39319b9)](https://www.youtube.com/watch?v=2lInvpCt2o4)
+
 ### 📜 Requirements
 
 - [Node (>= v18.17)](https://nodejs.org/en/download/)

@@ -79,7 +79,7 @@ export const PoolSelector = ({
 
   return (
     <section className="mt-5 mb-7">
-      <div className="mb-4 flex flex-wrap justify-center gap-3 border border-base-100 p-1.5 rounded-full min-h-[45px]">
+      <div className="mb-4 flex flex-wrap justify-center gap-3">
         {createdPools.length > 0 &&
           createdPools.map(pool => (
             <button
