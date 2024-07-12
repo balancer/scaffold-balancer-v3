@@ -35,16 +35,16 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      # - name: Run foundry anvil fork
-      #   run: yarn fork
-      #   env:
-      #     SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+      - name: Run foundry anvil fork
+        run: yarn fork &
+        env:
+          SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
 
-      # - name: Deploy contracts to anvil fork
-      #   run: yarn deploy:factory
-      #   env:
-      #     DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
-      #     SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+      - name: Deploy contracts to anvil fork
+        run: yarn deploy
+        env:
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
 
       - name: Run nextjs lint
         run: yarn next:lint --max-warnings=0
