@@ -4,6 +4,7 @@ import { zeroAddress } from "viem";
 import { useContractReads, useWalletClient } from "wagmi";
 import { useTargetFork } from "~~/hooks/balancer";
 import { Permit2Allowance, UseTokens } from "~~/hooks/balancer/types";
+import { type TokenBalances } from "~~/hooks/balancer/types";
 
 /**
  * Custom hook for dealing with multiple tokens
@@ -13,7 +14,7 @@ export const useTokens = (amountsIn: InputAmount[]): UseTokens => {
   const connectedAddress = walletClient?.account.address || zeroAddress;
   const { chainId } = useTargetFork();
 
-  const { data: balances } = useContractReads({
+  const { data: balances, refetch: refetchTokenBalances } = useContractReads({
     contracts: amountsIn.map(token => ({
       address: token.address,
       abi: erc20Abi,
@@ -23,13 +24,20 @@ export const useTokens = (amountsIn: InputAmount[]): UseTokens => {
   });
 
   const tokenBalances = useMemo(() => {
-    return balances?.map(balance => {
-      if (typeof balance.result === "bigint") {
-        return balance.result;
-      }
-      return undefined;
-    });
-  }, [balances]); // Only recompute if tokenAllowances changes
+    const balancesObject: TokenBalances = {};
+    if (balances) {
+      balances.forEach((res, idx) => {
+        const address = amountsIn[idx].address;
+        const balance = (res.result as bigint) ?? 0n;
+        balancesObject[address] = balance;
+      });
+    } else {
+      amountsIn.forEach(token => {
+        balancesObject[token.address] = 0n;
+      });
+    }
+    return balancesObject;
+  }, [balances, amountsIn]);
 
   const { data: allowances, refetch: refetchTokenAllowances } = useContractReads({
     contracts: amountsIn.map(token => ({
@@ -54,5 +62,6 @@ export const useTokens = (amountsIn: InputAmount[]): UseTokens => {
     tokenAllowances,
     refetchTokenAllowances,
     tokenBalances,
+    refetchTokenBalances,
   };
 };

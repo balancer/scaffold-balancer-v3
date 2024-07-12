@@ -7,7 +7,7 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 
 /**
  * @title Constant Sum Pool
- * @dev This simple example is based on the Constant Sum Pool from the Balancer v3 Docs
+ * @dev This custom pool example is based on the Constant Sum Pool from the Balancer v3 Docs
  * @notice https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html
  */
 contract ConstantSumPool is IBasePool, BalancerPoolToken {

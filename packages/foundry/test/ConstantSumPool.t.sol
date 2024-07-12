@@ -15,8 +15,8 @@ import { ArrayHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import { BaseVaultTest } from "@test/vault/test/foundry/utils/BaseVaultTest.sol";
 
-import { ConstantSumPool } from "../contracts/ConstantSumPool.sol";
-import { ConstantSumFactory } from "../contracts/ConstantSumFactory.sol";
+import { ConstantSumPool } from "../contracts/pools/ConstantSumPool.sol";
+import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**

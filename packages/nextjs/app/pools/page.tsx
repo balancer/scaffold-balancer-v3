@@ -38,38 +38,26 @@ const Pools: NextPage = () => {
   }, [poolAddress]);
 
   return (
-    <div className="flex-grow bg-base-300">
-      <div className="max-w-screen-2xl mx-auto">
-        <div className="flex items-center flex-col flex-grow py-5 px-5 md:px-10 xl:px-20">
-          <div>
-            <h1 className="text-3xl md:text-5xl font-semibold my-7">🌊 Custom Pools</h1>
-            <p className="text-xl my-0">
-              Balancer is infinitely extensible to allow for any conceivable pool type with custom curves, logic,
-              parameters, and more. Each pool deployed to balancer is its own smart contract. This tool allows you to
-              interact with any v3 pool deployed on a given network.
-            </p>
-          </div>
-
-          <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
-
-          {!poolAddress && (
-            <div className="text-xl">
-              To get started, search by pool contract address or select a pool from the dropdown
-            </div>
-          )}
-
-          {isLoading ? (
-            <PoolPageSkeleton />
-          ) : isError ? (
-            <div className="text-red-500 text-xl text-center">
-              <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
-              <div>{selectedPoolAddress}</div>
-            </div>
-          ) : (
-            isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
-          )}
+    <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
+      <div className="">
+        <h1 className="text-3xl md:text-5xl font-semibold my-7 text-center">Custom Pools</h1>
+        <div className="text-xl">
+          Select one of the pools deployed to your local fork or search by pool contract address
         </div>
       </div>
+
+      <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
+
+      {isLoading ? (
+        <PoolPageSkeleton />
+      ) : isError ? (
+        <div className="text-red-500 text-xl text-center">
+          <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
+          <div>{selectedPoolAddress}</div>
+        </div>
+      ) : (
+        isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
+      )}
     </div>
   );
 };
@@ -94,7 +82,9 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
             <PoolAttributes pool={pool} />
           </div>
           <div className="flex flex-col gap-7">
-            {pool.poolConfig?.isPoolInitialized && <PoolActions pool={pool} refetchPool={refetchPool} />}
+            {pool.poolConfig?.isPoolInitialized && (
+              <PoolActions key={pool.address} pool={pool} refetchPool={refetchPool} />
+            )}
             <HooksConfig pool={pool} />
             <PoolConfig pool={pool} />
           </div>

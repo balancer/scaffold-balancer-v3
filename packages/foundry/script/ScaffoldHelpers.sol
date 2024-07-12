@@ -1,10 +1,10 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "forge-std/Script.sol";
+import { Script, console } from "forge-std/Script.sol";
 import "forge-std/Vm.sol";
 
-contract ScaffoldETHDeploy is Script {
+contract ScaffoldHelpers is Script {
     error InvalidChain();
     error InvalidPrivateKey(string);
 
@@ -16,6 +16,15 @@ contract ScaffoldETHDeploy is Script {
     string root;
     string path;
     Deployment[] public deployments;
+
+    function getDeployerPrivateKey() internal view returns (uint256 deployerPrivateKey) {
+        deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
+        if (deployerPrivateKey == 0) {
+            revert InvalidPrivateKey(
+                "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"
+            );
+        }
+    }
 
     function setupLocalhostEnv() internal returns (uint256 localhostPrivateKey) {
         if (block.chainid == 31337) {
