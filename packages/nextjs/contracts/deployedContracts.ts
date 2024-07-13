@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     ConstantSumFactory: {
-      address: "0x579bB3a775c831526D5E94EF9ccd6601F62790Bc",
+      address: "0x54AA2E6A501137aF781AFbAC999Abc331Bd0C483",
       abi: [
         {
           type: "constructor",
@@ -391,7 +391,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactory: {
-      address: "0x3626DEff4AFB3Acd8f217288cd33FBE3a337Ce0B",
+      address: "0x5AdCb90027D061F29206D2acf1bf3F7DA70A1683",
       abi: [
         {
           type: "constructor",
@@ -775,7 +775,7 @@ const deployedContracts = {
       },
     },
     MockToken1: {
-      address: "0x69221a99e5Bc30E0cf891992e958E3Ba3815bfc6",
+      address: "0x51df3BFcD303b9B19438e40E335b246b82636569",
       abi: [
         {
           type: "constructor",
@@ -1133,7 +1133,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x66B4cF3Be49431371E4241C462B4A75ae3a6E986",
+      address: "0x4DA8240316441C9145f113E5Bab3A0Cb43ac5C29",
       abi: [
         {
           type: "constructor",
@@ -1491,7 +1491,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0x01eE8e2C72a2Cd4C5206823ce393520758F5Bc79",
+      address: "0xf29152265F3f4E2262956Ad28310Ae58d0a5E3c6",
       abi: [
         {
           type: "constructor",
@@ -1849,7 +1849,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHook: {
-      address: "0xB93eD7BbBFfcedfA8125f0653Bc07E7D229ffE21",
+      address: "0x7822a308e4c31E3Ae918FeB680468b86d6f99607",
       abi: [
         {
           type: "constructor",

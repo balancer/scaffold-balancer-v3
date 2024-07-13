@@ -1,3 +1,4 @@
+import { formatUnits } from "viem";
 import { Address } from "~~/components/scaffold-eth";
 import { Pool } from "~~/hooks/balancer/types";
 
@@ -9,7 +10,7 @@ export const PoolAttributes = ({ pool }: { pool: Pool }) => {
     { attribute: "Pool Address", detail: <Address address={pool.address} /> },
     { attribute: "Name", detail: pool.name },
     { attribute: "Symbol", detail: pool.symbol },
-    { attribute: "Total Supply", detail: pool.totalSupply.toString() },
+    { attribute: "Total Supply", detail: formatUnits(pool.totalSupply, pool.decimals) },
     { attribute: "Decimals", detail: pool.decimals },
     { attribute: "Vault Address", detail: <Address address={pool.vaultAddress} /> },
   ];

@@ -40,8 +40,8 @@ const Pools: NextPage = () => {
   return (
     <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
       <div className="">
-        <h1 className="text-3xl md:text-5xl font-semibold my-7 text-center">Custom Pools</h1>
-        <div className="text-xl">
+        <h1 className="text-3xl md:text-5xl font-semibold mb-7 text-center">Custom Pools</h1>
+        <div className="text-xl mb-7">
           Select one of the pools deployed to your local fork or search by pool contract address
         </div>
       </div>
@@ -67,13 +67,10 @@ export default Pools;
 const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: RefetchPool }) => {
   return (
     <Fragment>
-      <div className="flex justify-center text-center pb-7 w-full rounded-lg">
-        <div>
-          <h3 className="font-semibold text-3xl xl:text-4xl my-0 text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-violet-400 to-orange-500">
-            {pool.name}
-          </h3>
-        </div>
-      </div>
+      <h3 className="my-7 font-semibold text-3xl xl:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-violet-400 to-orange-500">
+        {pool.name}
+      </h3>
+
       <div className="w-full">
         <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
           <div className="flex flex-col gap-7">

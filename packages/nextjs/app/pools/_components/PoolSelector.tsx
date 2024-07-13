@@ -86,14 +86,14 @@ export const PoolSelector = ({
   }, [sumPoolHistory, productPoolHistory, isLoadingSumPoolHistory, isLoadingProductPoolHistory]);
 
   return (
-    <section className="mt-5 mb-7">
+    <section className="">
       <div className="mb-4 flex flex-wrap justify-center gap-3">
         {sumPools.length > 0 &&
           sumPools.map(pool => (
             <button
               key={pool}
-              className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal ${
-                selectedPoolAddress === pool ? " bg-violet-300 text-neutral-800" : ""
+              className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal text-lg ${
+                selectedPoolAddress === pool ? " bg-neutral text-neutral-content hover:bg-neutral" : ""
               }`}
               onClick={() => {
                 setSelectedPoolAddress(pool);
@@ -115,8 +115,8 @@ export const PoolSelector = ({
           productPools.map(pool => (
             <button
               key={pool}
-              className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal ${
-                selectedPoolAddress === pool ? " bg-violet-300 text-neutral-800" : ""
+              className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal text-lg ${
+                selectedPoolAddress === pool ? " bg-neutral text-neutral-content hover:bg-neutral" : ""
               }`}
               onClick={() => {
                 setSelectedPoolAddress(pool);

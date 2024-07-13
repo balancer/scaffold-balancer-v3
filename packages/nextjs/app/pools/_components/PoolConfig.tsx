@@ -1,5 +1,14 @@
 import { type Pool } from "~~/hooks/balancer/types";
 
+function formatPercentage(value: bigint) {
+  const scale = BigInt("1000000000000000000"); // 1e18
+  // Multiply first to maintain precision in the calculation
+  const swapFee = (value * 10000n) / scale; // Multiplying by a larger number to retain more precision
+  // Convert to number and then adjust to the percentage format
+  const percentage = Number(swapFee) / 100; // Now divide by 100 here to adjust back to a proper percentage
+  return `${percentage}%`; // Format to two decimal places
+}
+
 /**
  * Display a pool's configuration details
  */
@@ -10,9 +19,9 @@ export const PoolConfig = ({ pool }: { pool: Pool }) => {
   }
 
   const detailsRows = [
-    { key: "staticSwapFeePercentage", value: pool.poolConfig.staticSwapFeePercentage.toString() },
-    { key: "aggregateSwapFeePercentage", value: pool.poolConfig.aggregateSwapFeePercentage.toString() },
-    { key: "aggregateYieldFeePercentage", value: pool.poolConfig.aggregateYieldFeePercentage.toString() },
+    { key: "staticSwapFeePercentage", value: formatPercentage(pool.poolConfig.staticSwapFeePercentage) },
+    { key: "aggregateSwapFeePercentage", value: formatPercentage(pool.poolConfig.aggregateSwapFeePercentage) },
+    { key: "aggregateYieldFeePercentage", value: formatPercentage(pool.poolConfig.aggregateYieldFeePercentage) },
     { key: "tokenDecimalDiffs", value: pool.poolConfig.tokenDecimalDiffs.toString() },
 
     {
