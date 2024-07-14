@@ -82,7 +82,7 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
         address token2
     ) internal view returns (RegistrationConfig memory regConfig) {
         string memory name = "Constant Sum Pool"; // name for the pool
-        string memory symbol = "CS-50scUSD-50scDAI"; // symbol for the BPT
+        string memory symbol = "CSP"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
         uint256 swapFeePercentage = 0.001e18; // 0.1%
         bool protocolFeeExempt = true;

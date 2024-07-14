@@ -88,7 +88,7 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
         IERC20 token2
     ) internal view returns (RegistrationConfig memory regConfig) {
         string memory name = "Constant Product Pool"; // name for the pool
-        string memory symbol = "CP-50scUSD-50scDAI"; // symbol for the BPT
+        string memory symbol = "CPP"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
         uint256 swapFeePercentage = 0.001e18; // 0.1%
         bool protocolFeeExempt = false;
