@@ -21,6 +21,7 @@ export const PoolSelector = ({
   const [inputValue, setInputValue] = useState<string>("");
   const [sumPools, setSumPools] = useState<Address[]>([]);
   const [productPools, setProductPools] = useState<Address[]>([]);
+  const [exponentialPools, setExponentialPools] = useState<Address[]>([]);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -39,9 +40,16 @@ export const PoolSelector = ({
     fromBlock: FROM_BLOCK_NUMBER,
   });
 
-  // Adds pools deployed using the factories
+  // Fetches the history of pools deployed via factory
+  const { data: exponentialPoolHistory, isLoading: isLoadingExponentialPoolHistory } = useScaffoldEventHistory({
+    contractName: "ExponentialProductFactory",
+    eventName: "PoolCreated",
+    fromBlock: FROM_BLOCK_NUMBER,
+  });
+
+  // Adds pools deployed using the factories if user already has the page open
   useScaffoldEventSubscriber({
-    contractName: "ConstantSumFactory",
+    contractName: "ExponentialProductFactory",
     eventName: "PoolCreated",
     listener: logs => {
       logs.forEach(log => {
@@ -52,8 +60,6 @@ export const PoolSelector = ({
       });
     },
   });
-
-  // Adds pools deployed using the factories
   useScaffoldEventSubscriber({
     contractName: "ConstantProductFactory",
     eventName: "PoolCreated",
@@ -66,9 +72,28 @@ export const PoolSelector = ({
       });
     },
   });
+  useScaffoldEventSubscriber({
+    contractName: "ExponentialProductFactory",
+    eventName: "PoolCreated",
+    listener: logs => {
+      logs.forEach(log => {
+        const { pool } = log.args;
+        if (pool) {
+          setProductPools(pools => [...pools, pool]);
+        }
+      });
+    },
+  });
 
   useEffect(() => {
-    if (!isLoadingSumPoolHistory && !isLoadingProductPoolHistory && sumPoolHistory && productPoolHistory) {
+    if (
+      !isLoadingSumPoolHistory &&
+      !isLoadingProductPoolHistory &&
+      !isLoadingExponentialPoolHistory &&
+      sumPoolHistory &&
+      productPoolHistory &&
+      exponentialPoolHistory
+    ) {
       const sumPools = sumPoolHistory
         .map(({ args }) => {
           if (args.pool && isAddress(args.pool)) return args.pool;
@@ -80,13 +105,26 @@ export const PoolSelector = ({
           if (args.pool && isAddress(args.pool)) return args.pool;
         })
         .filter((pool): pool is Address => typeof pool === "string");
-      setProductPools(productPools);
+      const exponentialPools = exponentialPoolHistory
+        .map(({ args }) => {
+          if (args.pool && isAddress(args.pool)) return args.pool;
+        })
+        .filter((pool): pool is Address => typeof pool === "string");
       setSumPools(sumPools);
+      setProductPools(productPools);
+      setExponentialPools(exponentialPools);
     }
-  }, [sumPoolHistory, productPoolHistory, isLoadingSumPoolHistory, isLoadingProductPoolHistory]);
+  }, [
+    sumPoolHistory,
+    productPoolHistory,
+    exponentialPoolHistory,
+    isLoadingSumPoolHistory,
+    isLoadingProductPoolHistory,
+    isLoadingExponentialPoolHistory,
+  ]);
 
   return (
-    <section className="">
+    <section className="mb-7">
       <div className="flex flex-wrap justify-center gap-3 h-12">
         {sumPools.length > 0 &&
           sumPools.map(pool => (
@@ -132,6 +170,29 @@ export const PoolSelector = ({
                 height="25"
               />
               Constant Product
+            </button>
+          ))}
+        {exponentialPools.length > 0 &&
+          exponentialPools.map(pool => (
+            <button
+              key={pool}
+              className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal text-lg ${
+                selectedPoolAddress === pool ? " bg-neutral text-neutral-content hover:bg-neutral" : ""
+              }`}
+              onClick={() => {
+                setSelectedPoolAddress(pool);
+                router.push(`${pathname}?address=${pool}`);
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                alt=""
+                className={`!rounded-full absolute top-0.5 left-1 `}
+                src={blo(pool as `0x${string}`)}
+                width="25"
+                height="25"
+              />
+              Exponential Product
             </button>
           ))}
       </div>

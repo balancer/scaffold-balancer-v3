@@ -8,6 +8,7 @@ import { PoolHelpers } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
 import { ConstantProductFactory } from "../contracts/pools/ConstantProductFactory.sol";
+import { ExponentialProductFactory } from "../contracts/pools/ExponentialProductFactory.sol";
 import { VeBALFeeDiscountHook } from "../contracts/hooks/VeBALFeeDiscountHook.sol";
 import { MockToken1 } from "../contracts/mocks/MockToken1.sol";
 import { MockToken2 } from "../contracts/mocks/MockToken2.sol";
@@ -30,8 +31,10 @@ contract DeploySetup is PoolHelpers, ScaffoldHelpers {
         // Deploy the factory contracts
         ConstantSumFactory sumFactory = new ConstantSumFactory(IVault(vault), pauseWindowDuration);
         ConstantProductFactory productFactory = new ConstantProductFactory(IVault(vault), pauseWindowDuration);
+        ExponentialProductFactory expProductFactory = new ExponentialProductFactory(IVault(vault), pauseWindowDuration);
         console.log("Constant Sum Factory deployed at: %s", address(sumFactory));
         console.log("Constant Product Factory deployed at: %s", address(productFactory));
+        console.log("Exponential Product Factory deployed at: %s", address(expProductFactory));
 
         // Deploy mock tokens
         IERC20 token1 = new MockToken1("Mock Token 1", "MT1", 1000e18);

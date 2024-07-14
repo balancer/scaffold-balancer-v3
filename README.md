@@ -150,6 +150,7 @@ Your journey begins with planning the custom computation logic for the pool, whi
 
 ### 📖 Review the Docs
 
+- [Learn the Math for Constant Product AMM](https://www.youtube.com/watch?v=QNPyFs8Wybk)
 - [Create a custom AMM with a novel invariant](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html)
 
 ### 🔑 Recall the Key Requirements
