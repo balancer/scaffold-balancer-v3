@@ -61,7 +61,7 @@ export const PoolSelector = ({
       logs.forEach(log => {
         const { pool } = log.args;
         if (pool) {
-          setSumPools(pools => [...pools, pool]);
+          setProductPools(pools => [...pools, pool]);
         }
       });
     },
@@ -87,7 +87,7 @@ export const PoolSelector = ({
 
   return (
     <section className="">
-      <div className="mb-4 flex flex-wrap justify-center gap-3">
+      <div className="flex flex-wrap justify-center gap-3 h-12">
         {sumPools.length > 0 &&
           sumPools.map(pool => (
             <button

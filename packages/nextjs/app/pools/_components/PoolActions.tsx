@@ -35,18 +35,6 @@ export const PoolActions: React.FC<{ pool: Pool; refetchPool: RefetchPool }> = (
 
   const userHasNoTokens = Object.values(tokenBalances).every(balance => balance === 0n);
 
-  const { writeAsync: mintToken1 } = useScaffoldContractWrite({
-    contractName: "MockToken1",
-    functionName: "mint",
-    args: [5000000000000000000n],
-  });
-
-  const { writeAsync: mintToken2 } = useScaffoldContractWrite({
-    contractName: "MockToken2",
-    functionName: "mint",
-    args: [5000000000000000000n],
-  });
-
   const tabs = {
     Swap: (
       <SwapForm
@@ -80,21 +68,7 @@ export const PoolActions: React.FC<{ pool: Pool; refetchPool: RefetchPool }> = (
         <div className="flex mb-3 items-center gap-5">
           <h5 className="text-xl font-bold text-nowrap">Pool Actions</h5>
           {address && !balance ? <Alert>Click the faucet button in the top right corner!</Alert> : null}
-          {balance !== 0 && userHasNoTokens && (
-            <Alert>
-              Zero balance. To mint mock tokens{" "}
-              <span
-                className="link"
-                onClick={async () => {
-                  await mintToken1();
-                  await mintToken2();
-                  refetchTokenBalances();
-                }}
-              >
-                click here
-              </span>
-            </Alert>
-          )}
+          {balance !== 0 && userHasNoTokens && <ZeroTokensAlert refetchTokenBalances={refetchTokenBalances} />}
         </div>
         <div className="border border-base-100 rounded-lg">
           <div className="flex">
@@ -119,9 +93,39 @@ export const PoolActions: React.FC<{ pool: Pool; refetchPool: RefetchPool }> = (
   );
 };
 
+const ZeroTokensAlert = ({ refetchTokenBalances }: { refetchTokenBalances: () => void }) => {
+  const { writeAsync: mintToken1 } = useScaffoldContractWrite({
+    contractName: "MockToken1",
+    functionName: "mint",
+    args: [10000000000000000000n],
+  });
+
+  const { writeAsync: mintToken2 } = useScaffoldContractWrite({
+    contractName: "MockToken2",
+    functionName: "mint",
+    args: [10000000000000000000n],
+  });
+
+  return (
+    <Alert>
+      Zero token balances. To mint some{" "}
+      <span
+        className="link"
+        onClick={async () => {
+          await mintToken1();
+          await mintToken2();
+          refetchTokenBalances();
+        }}
+      >
+        click here
+      </span>
+    </Alert>
+  );
+};
+
 const Alert = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="w-full text-neutral bg-[#fb923c40] border border-orange-400 rounded-lg py-1 px-5 flex gap-2 items-center justify-center">
+    <div className="w-full text-base-content bg-[#fb923c40] border border-orange-400 rounded-lg py-1 px-5 flex gap-2 items-center justify-center">
       <div>
         <ExclamationTriangleIcon className="w-5 h-5" />
       </div>

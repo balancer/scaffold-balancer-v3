@@ -51,8 +51,9 @@ contract VeBALFeeDiscountHook is BaseHooks {
 
     function onComputeDynamicSwapFee(
         IBasePool.PoolSwapParams calldata params,
+        address,
         uint256 staticSwapFeePercentage
-    ) external view returns (bool, uint256) {
+    ) external view override returns (bool, uint256) {
         // If the router is not trusted, does not apply the veBAL discount because getSender() may be manipulated by a
         // malicious router.
         if (params.router != _trustedRouter) {

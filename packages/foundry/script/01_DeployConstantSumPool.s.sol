@@ -141,7 +141,7 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
         uint256[] memory exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
         exactAmountsIn[0] = 50e18; // amount of token1 to send during pool initialization
         exactAmountsIn[1] = 50e18; // amount of token2 to send during pool initialization
-        uint256 minBptAmountOut = 1 ether; // Minimum amount of pool tokens to be received
+        uint256 minBptAmountOut = 99e18; // Minimum amount of pool tokens to be received
         bool wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
         bytes memory userData = bytes(""); // Additional (optional) data required for adding initial liquidity
 
