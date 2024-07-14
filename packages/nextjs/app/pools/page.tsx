@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   HooksConfig,
@@ -46,18 +46,20 @@ const Pools: NextPage = () => {
         </div>
       </div>
 
-      <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
+      <Suspense fallback={<PoolPageSkeleton />}>
+        <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
 
-      {isLoading ? (
-        <PoolPageSkeleton />
-      ) : isError ? (
-        <div className="text-red-500 text-xl text-center">
-          <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
-          <div>{selectedPoolAddress}</div>
-        </div>
-      ) : (
-        isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
-      )}
+        {isLoading ? (
+          <PoolPageSkeleton />
+        ) : isError ? (
+          <div className="text-red-500 text-xl text-center">
+            <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
+            <div>{selectedPoolAddress}</div>
+          </div>
+        ) : (
+          isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
+        )}
+      </Suspense>
     </div>
   );
 };
