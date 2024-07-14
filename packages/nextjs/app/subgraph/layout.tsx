@@ -2,7 +2,7 @@ import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 export const metadata = getMetadata({
   title: "Subgraph",
-  description: "...",
+  description: "Balancer subgraph integration guide",
 });
 
 const SubgraphLayout = ({ children }: { children: React.ReactNode }) => {

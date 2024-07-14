@@ -2,7 +2,7 @@ import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 export const metadata = getMetadata({
   title: "Pool Hooks",
-  description: "...",
+  description: "Discover example hooks contracts",
 });
 
 const HooksLayout = ({ children }: { children: React.ReactNode }) => {
