@@ -9,14 +9,13 @@ import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
 /**
  * @title Exponential Product Pool
- * @notice If tokens out of balance, much more punishing than constant product pools!
+ * @notice If pool is out of balance, much more punishing than constant product pools!
  */
 contract ExponentialProductPool is IBasePool, BalancerPoolToken {
     using FixedPoint for uint256;
 
     uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 0;
     uint256 private constant _MAX_SWAP_FEE_PERCENTAGE = 0.1e18; // 10%
-    uint256 private constant EXPONENT = FixedPoint.TWO; // Exponent used for both tokens to control the price impact
 
     constructor(IVault vault, string memory name, string memory symbol) BalancerPoolToken(vault, name, symbol) {}
 
@@ -26,12 +25,12 @@ contract ExponentialProductPool is IBasePool, BalancerPoolToken {
      * @return amountCalculatedScaled18 Calculated amount for the swap
      */
     function onSwap(PoolSwapParams calldata params) external pure returns (uint256 amountCalculatedScaled18) {
-        uint256 balanceOutPowered = params.balancesScaled18[params.indexOut].powUp(EXPONENT);
-        uint256 balanceInPowered = params.balancesScaled18[params.indexIn].powUp(EXPONENT);
+        uint256 poolBalanceTokenOut = params.balancesScaled18[params.indexOut];
+        uint256 poolBalanceTokenIn = params.balancesScaled18[params.indexIn];
+        uint256 amountTokenIn = params.amountGivenScaled18;
 
-        amountCalculatedScaled18 =
-            (balanceOutPowered * params.amountGivenScaled18) /
-            (balanceInPowered + params.amountGivenScaled18);
+        // How to make swaps in unbalanced pools more punishing than normal constant product AMM?
+        amountCalculatedScaled18 = (poolBalanceTokenOut * amountTokenIn) / ((poolBalanceTokenIn + amountTokenIn));
     }
 
     /**
@@ -42,9 +41,9 @@ contract ExponentialProductPool is IBasePool, BalancerPoolToken {
      */
     function computeInvariant(uint256[] memory balancesLiveScaled18) public pure returns (uint256 invariant) {
         // expected to work with 2 tokens only
-        invariant = FixedPoint.ONE;
+        invariant = FixedPoint.TWO; // double the invariant results in getting more BPT minted per token added
         for (uint256 i = 0; i < balancesLiveScaled18.length; ++i) {
-            invariant = invariant.mulDown(balancesLiveScaled18[i].powUp(EXPONENT));
+            invariant = invariant.mulDown(balancesLiveScaled18[i]);
         }
         // scale the invariant to 1e18
         invariant = Math.sqrt(invariant) * 1e9;
@@ -67,7 +66,9 @@ contract ExponentialProductPool is IBasePool, BalancerPoolToken {
 
         uint256 newInvariant = computeInvariant(balancesLiveScaled18).mulDown(invariantRatio);
 
-        newBalance = ((newInvariant * newInvariant) / balancesLiveScaled18[otherTokenIndex].powUp(EXPONENT));
+        uint256 otherTokenBalance = balancesLiveScaled18[otherTokenIndex];
+
+        newBalance = ((newInvariant * newInvariant) / otherTokenBalance);
     }
 
     /// @return minimumSwapFeePercentage The minimum swap fee percentage for a pool

@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     ConstantSumFactory: {
-      address: "0x24bBAAC0fB3d404aA31D35407b0B53da75dFDaCd",
+      address: "0x02A946Ae0Ef668161d1FBb743A89d85c026E6721",
       abi: [
         {
           type: "constructor",
@@ -391,7 +391,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactory: {
-      address: "0x5FeD71a9f805C3cD7E7D089d7F706109D9240b66",
+      address: "0xD78467C228Ffb47D6f0436F9703861d88069A895",
       abi: [
         {
           type: "constructor",
@@ -775,7 +775,7 @@ const deployedContracts = {
       },
     },
     ExponentialProductFactory: {
-      address: "0x8e8cB505973E04200554Bd98741086C7Eca9f42a",
+      address: "0xa2822f977661d304Ae5D2608Bf82EF9fd5369B89",
       abi: [
         {
           type: "constructor",
@@ -1143,23 +1143,10 @@ const deployedContracts = {
           inputs: [],
         },
       ],
-      inheritedFunctions: {
-        disable: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getActionId: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getAuthorizer: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDefaultLiquidityManagement: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDefaultPoolHooksContract: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDeploymentAddress: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getNewPoolPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getOriginalPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getPauseWindowDuration: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getVault: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        isDisabled: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        isPoolFromFactory: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-      },
+      inheritedFunctions: {},
     },
     MockToken1: {
-      address: "0xC2D1A7c03C0459a8d0Ee885283CE828DE5fFf617",
+      address: "0x9c0EC549415DaEaE6eD51179d04a42649e1d46dE",
       abi: [
         {
           type: "constructor",
@@ -1517,7 +1504,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x906e3a6d1baf80e3e3fa3D57A5DA73099Da86C4c",
+      address: "0xd42DD8b9725522b22835c2413122f5d6400E6Dd5",
       abi: [
         {
           type: "constructor",
@@ -1875,7 +1862,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0x68c87F9fB214Bb4856a13c9123f9b0624944D1A6",
+      address: "0xF2C201Fb84b59d21e3872302d2E8B40a50E454bd",
       abi: [
         {
           type: "constructor",
@@ -2233,7 +2220,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHook: {
-      address: "0xBcd2152CD06E3e65f88f3f21aeBDc5473d8EAef4",
+      address: "0xe367D38756467BC9a038A6a0614020ff7bbeD0f0",
       abi: [
         {
           type: "constructor",
