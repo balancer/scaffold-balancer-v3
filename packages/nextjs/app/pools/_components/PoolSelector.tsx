@@ -56,6 +56,7 @@ export const PoolSelector = ({
         const { pool } = log.args;
         if (pool) {
           setSumPools(pools => [...pools, pool]);
+          setSumPools(pools => [...pools, pool]);
         }
       });
     },

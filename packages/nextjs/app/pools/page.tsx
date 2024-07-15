@@ -42,22 +42,25 @@ const Pools: NextPage = () => {
       <div className="">
         <h1 className="text-3xl md:text-5xl font-semibold mb-7 text-center">Custom Pools</h1>
         <div className="text-xl mb-7">
-          Select one of the pools deployed to your local fork or search by pool contract address
+          <h1 className="text-3xl md:text-5xl font-semibold mb-7 text-center">Custom Pools</h1>
+          <div className="text-xl mb-7">
+            Select one of the pools deployed to your local fork or search by pool contract address
+          </div>
         </div>
+
+        <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
+
+        {isLoading ? (
+          <PoolPageSkeleton />
+        ) : isError ? (
+          <div className="text-red-500 text-xl text-center">
+            <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
+            <div>{selectedPoolAddress}</div>
+          </div>
+        ) : (
+          isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
+        )}
       </div>
-
-      <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
-
-      {isLoading ? (
-        <PoolPageSkeleton />
-      ) : isError ? (
-        <div className="text-red-500 text-xl text-center">
-          <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
-          <div>{selectedPoolAddress}</div>
-        </div>
-      ) : (
-        isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
-      )}
     </div>
   );
 };
