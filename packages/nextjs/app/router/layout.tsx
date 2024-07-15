@@ -2,7 +2,7 @@ import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 export const metadata = getMetadata({
   title: "Smart Order Router",
-  description: "...",
+  description: "Integrate pools with the Smart Order Router",
 });
 
 const RouterLayout = ({ children }: { children: React.ReactNode }) => {

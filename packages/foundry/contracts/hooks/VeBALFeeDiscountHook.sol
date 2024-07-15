@@ -3,12 +3,12 @@
 pragma solidity ^0.8.24;
 
 import {
-    BasePoolHooks,
+    BaseHooks,
     IVault,
     IHooks,
     TokenConfig,
     LiquidityManagement
-} from "@balancer-labs/v3-vault/contracts/BasePoolHooks.sol";
+} from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
 import { IBasePool } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
 import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
@@ -17,7 +17,7 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /**
  * @title VeBAL Fee Discount Hook
  */
-contract VeBALFeeDiscountHook is BasePoolHooks {
+contract VeBALFeeDiscountHook is BaseHooks {
     // only pools from the allowedFactory are able to register and use this hook
     address private immutable _allowedFactory;
     // only calls from a trusted routers are allowed to call this hook, because the hook relies on the getSender
@@ -25,7 +25,7 @@ contract VeBALFeeDiscountHook is BasePoolHooks {
     address private immutable _trustedRouter;
     IERC20 private immutable _veBAL;
 
-    constructor(IVault vault, address allowedFactory, address veBAL, address trustedRouter) BasePoolHooks(vault) {
+    constructor(IVault vault, address allowedFactory, address veBAL, address trustedRouter) BaseHooks(vault) {
         _allowedFactory = allowedFactory;
         _trustedRouter = trustedRouter;
         _veBAL = IERC20(veBAL);
@@ -49,9 +49,9 @@ contract VeBALFeeDiscountHook is BasePoolHooks {
         return factory == _allowedFactory && IBasePoolFactory(factory).isPoolFromFactory(pool);
     }
 
-    /// @inheritdoc IHooks
     function onComputeDynamicSwapFee(
         IBasePool.PoolSwapParams calldata params,
+        address,
         uint256 staticSwapFeePercentage
     ) external view override returns (bool, uint256) {
         // If the router is not trusted, does not apply the veBAL discount because getSender() may be manipulated by a

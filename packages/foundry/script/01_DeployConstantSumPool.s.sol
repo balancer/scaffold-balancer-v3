@@ -81,10 +81,10 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
         address token1,
         address token2
     ) internal view returns (RegistrationConfig memory regConfig) {
-        string memory name = "Constant Sum Pool #1"; // name for the pool
-        string memory symbol = "CS-50scUSD-50scDAI"; // symbol for the BPT
+        string memory name = "Constant Sum Pool"; // name for the pool
+        string memory symbol = "CSP"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
-        uint256 swapFeePercentage = 1e12; // 0.00001%
+        uint256 swapFeePercentage = 0.001e18; // 0.1%
         bool protocolFeeExempt = true;
         address poolHooksContract = address(0); // zero address if no hooks contract is needed
 
@@ -110,7 +110,8 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
         LiquidityManagement memory liquidityManagement = LiquidityManagement({
             disableUnbalancedLiquidity: false,
             enableAddLiquidityCustom: false,
-            enableRemoveLiquidityCustom: false
+            enableRemoveLiquidityCustom: false,
+            enableDonation: false
         });
 
         regConfig = RegistrationConfig({
@@ -138,9 +139,9 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
         tokens[0] = IERC20(token1);
         tokens[1] = IERC20(token2);
         uint256[] memory exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
-        exactAmountsIn[0] = 10 ether; // amount of token1 to send during pool initialization
-        exactAmountsIn[1] = 10 ether; // amount of token2 to send during pool initialization
-        uint256 minBptAmountOut = 1 ether; // Minimum amount of pool tokens to be received
+        exactAmountsIn[0] = 50e18; // amount of token1 to send during pool initialization
+        exactAmountsIn[1] = 50e18; // amount of token2 to send during pool initialization
+        uint256 minBptAmountOut = 99e18; // Minimum amount of pool tokens to be received
         bool wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
         bytes memory userData = bytes(""); // Additional (optional) data required for adding initial liquidity
 

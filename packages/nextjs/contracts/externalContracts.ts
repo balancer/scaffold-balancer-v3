@@ -3,7 +3,7 @@ import {
   BALANCER_ROUTER,
   VAULT_V3,
   balancerRouterAbi,
-  vaultExtensionV3Abi,
+  vaultExtensionV3Abi, // balancerBatchRouterAbi  // Batch Router not exported from balancer sdk?
 } from "@balancer/sdk";
 import scaffoldConfig from "~~/scaffold.config";
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";

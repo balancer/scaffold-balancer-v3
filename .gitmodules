@@ -13,3 +13,6 @@
 [submodule "packages/foundry/lib/permit2"]
 	path = packages/foundry/lib/permit2
 	url = https://github.com/uniswap/permit2
+[submodule "packages/foundry/lib/balancer-v3-monorepo"]
+	path = packages/foundry/lib/balancer-v3-monorepo
+	url = https://github.com/balancer/balancer-v3-monorepo

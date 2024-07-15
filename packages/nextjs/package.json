@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.9.7",
-    "@balancer/sdk": "^0.18.0",
+    "@balancer/sdk": "^0.20.0",
     "@ethersproject/providers": "^5.7.2",
     "@heroicons/react": "^2.0.11",
     "@rainbow-me/rainbowkit": "1.3.5",

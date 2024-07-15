@@ -19,7 +19,8 @@ export const PoolSelector = ({
   selectedPoolAddress: Address | null;
 }) => {
   const [inputValue, setInputValue] = useState<string>("");
-  const [createdPools, setCreatedPools] = useState<Address[]>([]);
+  const [sumPools, setSumPools] = useState<Address[]>([]);
+  const [productPools, setProductPools] = useState<Address[]>([]);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -46,7 +47,7 @@ export const PoolSelector = ({
       logs.forEach(log => {
         const { pool } = log.args;
         if (pool) {
-          setCreatedPools(pools => [...pools, pool]);
+          setSumPools(pools => [...pools, pool]);
         }
       });
     },
@@ -60,7 +61,7 @@ export const PoolSelector = ({
       logs.forEach(log => {
         const { pool } = log.args;
         if (pool) {
-          setCreatedPools(pools => [...pools, pool]);
+          setProductPools(pools => [...pools, pool]);
         }
       });
     },
@@ -68,24 +69,31 @@ export const PoolSelector = ({
 
   useEffect(() => {
     if (!isLoadingSumPoolHistory && !isLoadingProductPoolHistory && sumPoolHistory && productPoolHistory) {
-      const pools = [...sumPoolHistory, ...productPoolHistory]
+      const sumPools = sumPoolHistory
         .map(({ args }) => {
           if (args.pool && isAddress(args.pool)) return args.pool;
         })
         .filter((pool): pool is Address => typeof pool === "string");
-      setCreatedPools(pools);
+
+      const productPools = productPoolHistory
+        .map(({ args }) => {
+          if (args.pool && isAddress(args.pool)) return args.pool;
+        })
+        .filter((pool): pool is Address => typeof pool === "string");
+      setProductPools(productPools);
+      setSumPools(sumPools);
     }
   }, [sumPoolHistory, productPoolHistory, isLoadingSumPoolHistory, isLoadingProductPoolHistory]);
 
   return (
-    <section className="mt-5 mb-7">
-      <div className="mb-4 flex flex-wrap justify-center gap-3">
-        {createdPools.length > 0 &&
-          createdPools.map(pool => (
+    <section className="">
+      <div className="flex flex-wrap justify-center gap-3 h-12">
+        {sumPools.length > 0 &&
+          sumPools.map(pool => (
             <button
               key={pool}
-              className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal ${
-                selectedPoolAddress === pool ? " bg-violet-300 text-neutral-800" : ""
+              className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal text-lg ${
+                selectedPoolAddress === pool ? " bg-neutral text-neutral-content hover:bg-neutral" : ""
               }`}
               onClick={() => {
                 setSelectedPoolAddress(pool);
@@ -100,7 +108,30 @@ export const PoolSelector = ({
                 width="25"
                 height="25"
               />
-              {pool?.slice(0, 6) + "..." + pool?.slice(-4)}
+              Constant Sum
+            </button>
+          ))}
+        {productPools.length > 0 &&
+          productPools.map(pool => (
+            <button
+              key={pool}
+              className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal text-lg ${
+                selectedPoolAddress === pool ? " bg-neutral text-neutral-content hover:bg-neutral" : ""
+              }`}
+              onClick={() => {
+                setSelectedPoolAddress(pool);
+                router.push(`${pathname}?address=${pool}`);
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                alt=""
+                className={`!rounded-full absolute top-0.5 left-1 `}
+                src={blo(pool as `0x${string}`)}
+                width="25"
+                height="25"
+              />
+              Constant Product
             </button>
           ))}
       </div>

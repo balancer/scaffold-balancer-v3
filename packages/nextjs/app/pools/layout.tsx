@@ -2,7 +2,7 @@ import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 export const metadata = getMetadata({
   title: "Custom Pools",
-  description: "...",
+  description: "Explore and interact with custom pools",
 });
 
 const PoolsLayout = ({ children }: { children: React.ReactNode }) => {

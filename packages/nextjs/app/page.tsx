@@ -14,18 +14,18 @@ const TOOLS = [
     href: "/hooks",
     description: "Extend pool functionality with hooks",
   },
-  {
-    emoji: "🧭",
-    title: "Smart Order Router",
-    href: "/router",
-    description: "Integrate pools with the smart order router",
-  },
-  {
-    emoji: "📡",
-    title: "Subgraph",
-    href: "/subgraph",
-    description: "Integrate pools with the Balancer subgraph",
-  },
+  // {
+  //   emoji: "🧭",
+  //   title: "Smart Order Router",
+  //   href: "/router",
+  //   description: "Integrate pools with the smart order router",
+  // },
+  // {
+  //   emoji: "📡",
+  //   title: "Subgraph",
+  //   href: "/subgraph",
+  //   description: "Integrate pools with the Balancer subgraph",
+  // },
 ];
 
 const Home: NextPage = () => {

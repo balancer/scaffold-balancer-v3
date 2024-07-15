@@ -5,11 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ArrowUturnUpIcon,
-  ArrowsRightLeftIcon,
+  ArrowUturnUpIcon, // ArrowsRightLeftIcon,
   Bars3Icon,
-  BugAntIcon,
-  CircleStackIcon,
+  BugAntIcon, // CircleStackIcon,
   ScaleIcon,
 } from "@heroicons/react/24/outline";
 import { SwitchTheme } from "~~/components/SwitchTheme";
@@ -33,16 +31,16 @@ export const menuLinks: HeaderMenuLink[] = [
     href: "/hooks",
     icon: <ArrowUturnUpIcon className="h-5 w-5" />,
   },
-  {
-    label: "Router",
-    href: "/router",
-    icon: <ArrowsRightLeftIcon className="h-5 w-5" />,
-  },
-  {
-    label: "Subgraph",
-    href: "/subgraph",
-    icon: <CircleStackIcon className="h-5 w-5" />,
-  },
+  // {
+  //   label: "Router",
+  //   href: "/router",
+  //   icon: <ArrowsRightLeftIcon className="h-5 w-5" />,
+  // },
+  // {
+  //   label: "Subgraph",
+  //   href: "/subgraph",
+  //   icon: <CircleStackIcon className="h-5 w-5" />,
+  // },
   {
     label: "Debug Contracts",
     href: "/debug",
