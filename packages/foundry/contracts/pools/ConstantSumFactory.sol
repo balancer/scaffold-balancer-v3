@@ -1,19 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.24;
 
-import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import {
     LiquidityManagement,
     PoolRoleAccounts,
     TokenConfig
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import { BasePoolFactory } from "@balancer-labs/v3-pool-utils/contracts/BasePoolFactory.sol";
 
 import { ConstantSumPool } from "./ConstantSumPool.sol";
 
 /**
  * @title Constant Sum Factory
- * @dev Deploying pools via a factory is the preferred pattern as opposed to deploying a pool directly without a factory
+ * @notice This custom pool factory is based on the example from the Balancer v3 docs
+ * https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/deploy-custom-amm-using-factory.html
  */
 contract ConstantSumFactory is BasePoolFactory {
     /**

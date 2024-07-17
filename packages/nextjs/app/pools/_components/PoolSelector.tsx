@@ -86,7 +86,7 @@ export const PoolSelector = ({
   }, [sumPoolHistory, productPoolHistory, isLoadingSumPoolHistory, isLoadingProductPoolHistory]);
 
   return (
-    <section className="">
+    <section className="mb-7">
       <div className="flex flex-wrap justify-center gap-3 h-12">
         {sumPools.length > 0 &&
           sumPools.map(pool => (
