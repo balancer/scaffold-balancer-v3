@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     ConstantSumFactory: {
-      address: "0x579bB3a775c831526D5E94EF9ccd6601F62790Bc",
+      address: "0x8e8cB505973E04200554Bd98741086C7Eca9f42a",
       abi: [
         {
           type: "constructor",
@@ -375,23 +375,10 @@ const deployedContracts = {
           inputs: [],
         },
       ],
-      inheritedFunctions: {
-        disable: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getActionId: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getAuthorizer: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDefaultLiquidityManagement: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDefaultPoolHooksContract: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDeploymentAddress: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getNewPoolPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getOriginalPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getPauseWindowDuration: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getVault: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        isDisabled: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        isPoolFromFactory: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-      },
+      inheritedFunctions: {},
     },
     ConstantProductFactory: {
-      address: "0x3626DEff4AFB3Acd8f217288cd33FBE3a337Ce0B",
+      address: "0xC2D1A7c03C0459a8d0Ee885283CE828DE5fFf617",
       abi: [
         {
           type: "constructor",
@@ -759,23 +746,10 @@ const deployedContracts = {
           inputs: [],
         },
       ],
-      inheritedFunctions: {
-        disable: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getActionId: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getAuthorizer: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDefaultLiquidityManagement: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDefaultPoolHooksContract: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDeploymentAddress: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getNewPoolPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getOriginalPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getPauseWindowDuration: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getVault: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        isDisabled: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        isPoolFromFactory: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-      },
+      inheritedFunctions: {},
     },
     MockToken1: {
-      address: "0x69221a99e5Bc30E0cf891992e958E3Ba3815bfc6",
+      address: "0x906e3a6d1baf80e3e3fa3D57A5DA73099Da86C4c",
       abi: [
         {
           type: "constructor",
@@ -1133,7 +1107,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x66B4cF3Be49431371E4241C462B4A75ae3a6E986",
+      address: "0x68c87F9fB214Bb4856a13c9123f9b0624944D1A6",
       abi: [
         {
           type: "constructor",
@@ -1491,7 +1465,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0x01eE8e2C72a2Cd4C5206823ce393520758F5Bc79",
+      address: "0xBcd2152CD06E3e65f88f3f21aeBDc5473d8EAef4",
       abi: [
         {
           type: "constructor",
@@ -1849,7 +1823,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHook: {
-      address: "0xB93eD7BbBFfcedfA8125f0653Bc07E7D229ffE21",
+      address: "0x0A6338Be5da861e4F864C2B4a8dC219C2A20AA27",
       abi: [
         {
           type: "constructor",

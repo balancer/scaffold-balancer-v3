@@ -13,7 +13,8 @@ import { ConstantProductPool } from "./ConstantProductPool.sol";
 
 /**
  * @title Constant Product Factory
- * @dev Deploying pools via a factory is the preferred pattern as opposed to deploying a pool directly without a factory
+ * @notice This custom pool factory is based on the example from the Balancer v3 docs
+ * https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/deploy-custom-amm-using-factory.html
  */
 contract ConstantProductFactory is BasePoolFactory {
     /**
