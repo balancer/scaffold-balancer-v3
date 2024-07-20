@@ -73,9 +73,10 @@ contract ConstantSumFactoryTest is Test {
     function testPoolCreation__Fuzz(bytes32 salt) public {
         vm.assume(salt > 0);
 
-        ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenA, tokenB, bytes32(0));
+        ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenA, tokenB, salt);
         assertEq(pool.name(), "Constant Sum Pool #1", "Wrong pool name");
         assertEq(pool.symbol(), "CSP1", "Wrong pool symbol");
+        assertEq(pool.decimals(), 18, "Wrong pool decimals");
     }
 
     function testPoolSalt__Fuzz(bytes32 salt) public {

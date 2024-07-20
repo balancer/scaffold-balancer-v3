@@ -19,9 +19,6 @@ import { ConstantSumPool } from "../contracts/pools/ConstantSumPool.sol";
 import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-/**
- * @dev This test roughly mirrors how weighted pools are tested within BalancerV3 monorepo
- */
 contract ConstantSumPoolTest is BaseVaultTest {
     using ArrayHelpers for *;
 

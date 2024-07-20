@@ -206,7 +206,7 @@ The deploy scripts are all located in the [foundry/script/](https://github.com/b
 
 #### `00_DeploySetup.s.sol`
 
-Deploys mock tokens, factory contracts, and hooks contracts to be used by pools
+Deploy mock tokens, factory contracts, and hooks contracts to be used by pools
 
 - Set the `pauseWindowDuration` for the factory contracts
 - Set the mock token names, symbols, and supply
@@ -214,14 +214,14 @@ Deploys mock tokens, factory contracts, and hooks contracts to be used by pools
 
 #### `01_DeployConstantSumPool.s.sol`
 
-Deploys, registers, and initializes a Constant Sum Pool
+Deploy, register, and initialize a Constant Sum Pool
 
 - Set the pool registration config in the `getRegistrationConfig()` function
 - Set the pool initialization config in the `getInitializationConfig()` function
 
 #### `02_DeployConstantProductPool.s.sol`
 
-Deploys, registers, and initializes a Constant Product Pool
+Deploy, register, and initialize a Constant Product Pool
 
 - Set the pool registration config in the `getRegistrationConfig()` function
 - Set the pool initialization config in the `getInitializationConfig()` function
@@ -257,7 +257,7 @@ yarn deploy:product
 
 ## 5. Test the Contracts 🧪
 
-Sample tests for the `ConstantSumPool` and `ConstantSumFactory` are provided as examples to help you get started writing your own tests.
+The [balancer-v3-monorepo](https://github.com/balancer/balancer-v3-monorepo) provides testing utility contracts like [BaseVaultTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/test/foundry/utils/BaseVaultTest.sol). Therefore, the best way to begin writing tests for custom factory, pool, and hook contracts is to utilize the patterns and methods established by the source code.
 
 ### 👨‍🔬 Testing Factories
 
@@ -278,4 +278,8 @@ yarn test --match-contract ConstantSumPoolTest
 
 ### 🎣 Testing Hooks
 
-- Coming soon™️ after update to 6th testnet deployment of v3
+The `VeBALFeeDiscountHookTest` mirrors the [VeBALFeeDiscountHookExampleTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-hooks/test/foundry/VeBALFeeDiscountHookExample.t.sol)
+
+```
+yarn test --match-contract VeBALFeeDiscountHookTest
+```
