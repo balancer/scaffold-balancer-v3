@@ -15,7 +15,7 @@ import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRou
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
- * @title VeBAL Fee Discount Hook
+ * @title VeBAL Fee Discount Hook Example
  */
 contract VeBALFeeDiscountHook is BaseHooks {
     // only pools from the allowedFactory are able to register and use this hook
@@ -54,8 +54,7 @@ contract VeBALFeeDiscountHook is BaseHooks {
         address,
         uint256 staticSwapFeePercentage
     ) external view override returns (bool, uint256) {
-        // If the router is not trusted, does not apply the veBAL discount because getSender() may be manipulated by a
-        // malicious router.
+        // If the router is not trusted, does not apply the veBAL discount because getSender() may be manipulated by a malicious router.
         if (params.router != _trustedRouter) {
             return (true, staticSwapFeePercentage);
         }
