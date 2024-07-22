@@ -11,7 +11,6 @@ import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 
 import { PoolHelpers } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
@@ -19,11 +18,11 @@ import { VeBALFeeDiscountHook } from "../contracts/hooks/VeBALFeeDiscountHook.so
 import { ConstantProductFactory } from "../contracts/pools/ConstantProductFactory.sol";
 
 /**
- * @title Deploy Constant Product Pool
- * @notice Deploys a factory and hooks contract before deploying, registering, and initializing a Constant Product Pool
+ * @title Deploy Constant Product
+ * @notice Deploys a factory and hooks contract and then deploys, registers, and initializes a constant product pool
  */
-contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
-    function deployConstantProductPool(IERC20 token1, IERC20 token2, IERC20 veBAL) internal {
+contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
+    function deployConstantProduct(IERC20 token1, IERC20 token2, IERC20 veBAL) internal {
         // Set the deployment configurations
         uint32 pauseWindowDuration = 365 days;
         RegistrationConfig memory regConfig = getPoolRegistrationConfig(token1, token2);
@@ -37,7 +36,7 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
         ConstantProductFactory factory = new ConstantProductFactory(IVault(vault), pauseWindowDuration);
         console.log("Constant Product Factory deployed at: %s", address(factory));
 
-        // Deploy a hooks contract that permits pools created by the Constant Product factory
+        // Deploy a hooks contract
         VeBALFeeDiscountHook poolHooksContract = new VeBALFeeDiscountHook(
             IVault(vault),
             address(factory),

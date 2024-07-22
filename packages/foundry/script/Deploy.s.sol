@@ -1,30 +1,27 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-// import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
-import { PoolHelpers } from "./PoolHelpers.sol";
-import { ScaffoldHelpers } from "./ScaffoldHelpers.sol";
 import { DeployMockTokens } from "./DeployMockTokens.s.sol";
-import { DeployConstantSumPool } from "./DeployConstantSumPool.s.sol";
-import { DeployConstantProductPool } from "./DeployConstantProductPool.s.sol";
+import { DeployConstantSum } from "./DeployConstantSum.s.sol";
+import { DeployConstantProduct } from "./DeployConstantProduct.s.sol";
 
 /**
  * @title Deploy Script
- * @notice Deploys mock tokens, a constant sum pool, and a constant product pool
+ * @notice Import all deploy scripts here so that scaffold can exportDeployments()
  * @dev Run this script with `yarn deploy`
  */
-contract DeployScript is DeployMockTokens, DeployConstantSumPool, DeployConstantProductPool {
+contract DeployScript is DeployMockTokens, DeployConstantSum, DeployConstantProduct {
     function run() external virtual {
-        // Deploy the mock tokens
+        // Deploy mock tokens to be used for pools and hooks contracts
         (IERC20 mockToken1, IERC20 mockToken2, IERC20 mockVeBAL) = deployMockTokens();
 
-        // Deploy a constant sum factory pool
-        deployConstantSumPool(mockToken1, mockToken2);
+        // Deploy a constant sum factory and a pool
+        deployConstantSum(mockToken1, mockToken2);
 
-        // Deploy a constant product pool
-        deployConstantProductPool(mockToken1, mockToken2, mockVeBAL);
+        // Deploy a constant product factory, a hooks contract, and a pool
+        deployConstantProduct(mockToken1, mockToken2, mockVeBAL);
 
         /**
          * This function generates the file containing the contracts Abi definitions that are carried from /foundry to /nextjs.

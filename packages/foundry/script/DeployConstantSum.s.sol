@@ -11,18 +11,17 @@ import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRat
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 
 import { PoolHelpers } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
 
 /**
- * @title Deploy Constant Sum Pool
+ * @title Deploy Constant Sum
  * @notice Deploys, registers, and initializes a Constant Sum Pool
  */
-contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
-    function deployConstantSumPool(IERC20 token1, IERC20 token2) internal {
+contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
+    function deployConstantSum(IERC20 token1, IERC20 token2) internal {
         // Set the deployment configurations
         uint32 pauseWindowDuration = 365 days;
         RegistrationConfig memory regConfig = getRegistrationConfig(token1, token2);
