@@ -15,7 +15,8 @@ import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRou
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
- * @title VeBAL Fee Discount Hook Example
+ * @title VeBAL Fee Discount Hook
+ * @notice Applies a 50% discount to the swap fee for users holding veBAL tokens
  */
 contract VeBALFeeDiscountHook is BaseHooks {
     // only pools from the allowedFactory are able to register and use this hook
