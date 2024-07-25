@@ -14,7 +14,7 @@ import { MockVeBAL } from "../contracts/mocks/MockVeBAL.sol";
  * @notice Deploys mock tokens for use with pools and hooks
  */
 contract DeployMockTokens is ScaffoldHelpers {
-    function deployMockTokens() internal returns (IERC20 mockToken1, IERC20 mockToken2, IERC20 mockVeBAL) {
+    function run() external virtual returns (IERC20 mockToken1, IERC20 mockToken2, IERC20 mockVeBAL) {
         uint256 deployerPrivateKey = getDeployerPrivateKey();
 
         vm.startBroadcast(deployerPrivateKey);

@@ -22,11 +22,11 @@ import { ConstantProductFactory } from "../contracts/pools/ConstantProductFactor
  * @notice Deploys a factory and hooks contract and then deploys, registers, and initializes a constant product pool
  */
 contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
-    function deployConstantProduct(IERC20 token1, IERC20 token2, IERC20 veBAL) internal {
+    function run(IERC20 token1, IERC20 token2, IERC20 veBAL) external virtual {
         // Set the deployment configurations
         uint32 pauseWindowDuration = 365 days;
-        RegistrationConfig memory regConfig = getPoolRegistrationConfig(token1, token2);
-        InitializationConfig memory initConfig = getPoolInitializationConfig(token1, token2);
+        PoolRegistrationConfig memory regConfig = getPoolRegistrationConfig(token1, token2);
+        PoolInitializationConfig memory initConfig = getPoolInitializationConfig(token1, token2);
 
         // Start creating the transactions
         uint256 deployerPrivateKey = getDeployerPrivateKey();
@@ -40,8 +40,8 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
         VeBALFeeDiscountHook poolHooksContract = new VeBALFeeDiscountHook(
             IVault(vault),
             address(factory),
-            address(veBAL),
-            address(router)
+            address(router),
+            IERC20(veBAL)
         );
         console.log("VeBALFeeDiscountHook deployed at address: %s", address(poolHooksContract));
 
@@ -59,8 +59,14 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
         );
         console.log("Constant Product Pool deployed at: %s", pool);
 
+        // Approve Permit2 contract to spend tokens on behalf of deployer
+        approveSpenderOnToken(address(permit2), initConfig.tokens);
+
+        // Approve Router contract to spend tokens using Permit2
+        approveSpenderOnPermit2(address(router), initConfig.tokens);
+
         // Seed the pool with initial liquidity
-        initializePool(
+        router.initialize(
             pool,
             initConfig.tokens,
             initConfig.exactAmountsIn,
@@ -74,15 +80,14 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
 
     /**
      * @dev Set all of the configurations for deploying and registering a pool here
-     *
-     * TokenConfig encapsulates the data required for the Vault to support a token of the given type.
+     * @notice TokenConfig encapsulates the data required for the Vault to support a token of the given type.
      * For STANDARD tokens, the rate provider address must be 0, and paysYieldFees must be false.
      * All WITH_RATE tokens need a rate provider, and may or may not be yield-bearing.
      */
     function getPoolRegistrationConfig(
         IERC20 token1,
         IERC20 token2
-    ) internal view returns (RegistrationConfig memory regConfig) {
+    ) internal view returns (PoolRegistrationConfig memory config) {
         string memory name = "Constant Product Pool"; // name for the pool
         string memory symbol = "CPP"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
@@ -90,7 +95,7 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
         bool protocolFeeExempt = false;
         address poolHooksContract = address(0); // zero address if no hooks contract is needed
 
-        TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
+        TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage
         tokenConfig[0] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
             token: token1,
             tokenType: TokenType.STANDARD, // STANDARD or WITH_RATE
@@ -116,7 +121,7 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
             enableDonation: false
         });
 
-        regConfig = RegistrationConfig({
+        config = PoolRegistrationConfig({
             name: name,
             symbol: symbol,
             salt: salt,
@@ -136,7 +141,7 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
     function getPoolInitializationConfig(
         IERC20 token1,
         IERC20 token2
-    ) internal pure returns (InitializationConfig memory poolInitConfig) {
+    ) internal pure returns (PoolInitializationConfig memory config) {
         IERC20[] memory tokens = new IERC20[](2); // Array of tokens to be used in the pool
         tokens[0] = token1;
         tokens[1] = token2;
@@ -147,7 +152,7 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
         bool wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
         bytes memory userData = bytes(""); // Additional (optional) data required for adding initial liquidity
 
-        poolInitConfig = InitializationConfig({
+        config = PoolInitializationConfig({
             tokens: InputHelpers.sortTokens(tokens),
             exactAmountsIn: exactAmountsIn,
             minBptAmountOut: minBptAmountOut,

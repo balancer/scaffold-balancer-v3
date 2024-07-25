@@ -1865,14 +1865,14 @@ const deployedContracts = {
               internalType: "address",
             },
             {
-              name: "veBAL",
+              name: "trustedRouter",
               type: "address",
               internalType: "address",
             },
             {
-              name: "trustedRouter",
+              name: "veBAL",
               type: "address",
-              internalType: "address",
+              internalType: "contract IERC20",
             },
           ],
           stateMutability: "nonpayable",
@@ -2417,12 +2417,12 @@ const deployedContracts = {
           ],
           outputs: [
             {
-              name: "",
+              name: "success",
               type: "bool",
               internalType: "bool",
             },
             {
-              name: "",
+              name: "dynamicSwapFee",
               type: "uint256",
               internalType: "uint256",
             },
@@ -2519,19 +2519,7 @@ const deployedContracts = {
           ],
         },
       ],
-      inheritedFunctions: {
-        getHookFlags: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
-        onAfterAddLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
-        onAfterInitialize: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
-        onAfterRemoveLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
-        onAfterSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
-        onBeforeAddLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
-        onBeforeInitialize: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
-        onBeforeRemoveLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
-        onBeforeSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
-        onComputeDynamicSwapFee: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
-        onRegister: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
-      },
+      inheritedFunctions: {},
     },
   },
 } as const;

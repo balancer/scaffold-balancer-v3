@@ -10,7 +10,6 @@ import {
 import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
 import { PoolHelpers } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
@@ -21,18 +20,18 @@ import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
  * @notice Deploys, registers, and initializes a Constant Sum Pool
  */
 contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
-    function deployConstantSum(IERC20 token1, IERC20 token2) internal {
+    function run(IERC20 token1, IERC20 token2) external virtual {
         // Set the deployment configurations
         uint32 pauseWindowDuration = 365 days;
-        RegistrationConfig memory regConfig = getRegistrationConfig(token1, token2);
-        InitializationConfig memory initConfig = getInitializationConfig(token1, token2);
+        PoolRegistrationConfig memory regConfig = getPoolRegistrationConfig(token1, token2);
+        PoolInitializationConfig memory initConfig = getPoolInitializationConfig(token1, token2);
 
         // Start creating the transactions
         uint256 deployerPrivateKey = getDeployerPrivateKey();
         vm.startBroadcast(deployerPrivateKey);
 
         // Deploy a constant sum factory contract
-        ConstantSumFactory factory = new ConstantSumFactory(IVault(vault), pauseWindowDuration);
+        ConstantSumFactory factory = new ConstantSumFactory(vault, pauseWindowDuration);
         console.log("Constant Sum Factory deployed at: %s", address(factory));
 
         // Deploy a pool and register it with the vault
@@ -49,8 +48,14 @@ contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
         );
         console.log("Constant Sum Pool deployed at: %s", pool);
 
+        // Approve Permit2 contract to spend tokens on behalf of deployer
+        approveSpenderOnToken(address(permit2), initConfig.tokens);
+
+        // Approve Router contract to spend tokens using Permit2
+        approveSpenderOnPermit2(address(router), initConfig.tokens);
+
         // Seed the pool with initial liquidity
-        initializePool(
+        router.initialize(
             pool,
             initConfig.tokens,
             initConfig.exactAmountsIn,
@@ -68,10 +73,10 @@ contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
      * For STANDARD tokens, the rate provider address must be 0, and paysYieldFees must be false.
      * All WITH_RATE tokens need a rate provider, and may or may not be yield-bearing.
      */
-    function getRegistrationConfig(
+    function getPoolRegistrationConfig(
         IERC20 token1,
         IERC20 token2
-    ) internal view returns (RegistrationConfig memory regConfig) {
+    ) internal view returns (PoolRegistrationConfig memory config) {
         string memory name = "Constant Sum Pool"; // name for the pool
         string memory symbol = "CSP"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
@@ -105,7 +110,7 @@ contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
             enableDonation: false
         });
 
-        regConfig = RegistrationConfig({
+        config = PoolRegistrationConfig({
             name: name,
             symbol: symbol,
             salt: salt,
@@ -122,10 +127,10 @@ contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
      * @dev Set the pool initialization configurations here
      * @notice this is where the amounts of tokens to be initially added to the pool are set
      */
-    function getInitializationConfig(
+    function getPoolInitializationConfig(
         IERC20 token1,
         IERC20 token2
-    ) internal pure returns (InitializationConfig memory poolInitConfig) {
+    ) internal pure returns (PoolInitializationConfig memory config) {
         IERC20[] memory tokens = new IERC20[](2); // Array of tokens to be used in the pool
         tokens[0] = token1;
         tokens[1] = token2;
@@ -136,7 +141,7 @@ contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
         bool wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
         bytes memory userData = bytes(""); // Additional (optional) data required for adding initial liquidity
 
-        poolInitConfig = InitializationConfig({
+        config = PoolInitializationConfig({
             tokens: InputHelpers.sortTokens(tokens),
             exactAmountsIn: exactAmountsIn,
             minBptAmountOut: minBptAmountOut,
