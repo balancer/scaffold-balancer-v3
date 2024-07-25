@@ -23,6 +23,7 @@ import { PoolFactoryMock } from "@balancer-labs/v3-vault/contracts/test/PoolFact
 import { RouterMock } from "@balancer-labs/v3-vault/contracts/test/RouterMock.sol";
 
 import { VeBALFeeDiscountHook } from "../contracts/hooks/VeBALFeeDiscountHook.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract VeBALFeeDiscountHookTest is BaseVaultTest {
     using FixedPoint for uint256;
@@ -48,7 +49,7 @@ contract VeBALFeeDiscountHookTest is BaseVaultTest {
         // lp will be the owner of the hook. Only LP is able to set hook fee percentages.
         vm.prank(lp);
         address veBalFeeHook = address(
-            new VeBALFeeDiscountHook(IVault(address(vault)), address(factoryMock), address(veBAL), trustedRouter)
+            new VeBALFeeDiscountHook(IVault(address(vault)), address(factoryMock), trustedRouter, IERC20(veBAL))
         );
         vm.label(veBalFeeHook, "VeBAL Fee Hook");
         return veBalFeeHook;

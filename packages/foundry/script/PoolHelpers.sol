@@ -9,17 +9,15 @@ import {
 import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
 import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
 
 /**
- * A collection of addresses and helper functions for deploying pools
+ * @title Pool Helpers
+ * @notice Helpful types, interface instances, and functions for deploying pools on Balancer v3
  */
 contract PoolHelpers {
-    // BalancerV3 Sepolia addresses (5th testnet release)
-    address internal vault = 0x92B5c1CB2999c45804A60d6529D77DeEF00fb839;
-    address internal router = 0xa12Da7dfD0792a10a5b05B575545Bd685798Ce35;
-    address internal permit2 = 0x000000000022D473030F116dDEE9F6B43aC78BA3;
-
-    struct RegistrationConfig {
+    struct PoolRegistrationConfig {
         string name;
         string symbol;
         bytes32 salt;
@@ -31,7 +29,7 @@ contract PoolHelpers {
         LiquidityManagement liquidityManagement;
     }
 
-    struct InitializationConfig {
+    struct PoolInitializationConfig {
         IERC20[] tokens;
         uint256[] exactAmountsIn;
         uint256 minBptAmountOut;
@@ -39,24 +37,10 @@ contract PoolHelpers {
         bytes userData;
     }
 
-    /**
-     * @notice Approves the vault to spend tokens and then initializes the pool
-     */
-    function initializePool(
-        address pool,
-        IERC20[] memory tokens,
-        uint256[] memory exactAmountsIn,
-        uint256 minBptAmountOut,
-        bool wethIsEth,
-        bytes memory userData
-    ) internal {
-        // Approve Permit2 to spend account tokens
-        approveSpenderOnToken(address(permit2), tokens);
-        // Approve Router to spend account tokens using Permit2
-        approveSpenderOnPermit2(address(router), tokens);
-        // Initialize pool with the tokens that have been permitted
-        IRouter(router).initialize(pool, tokens, exactAmountsIn, minBptAmountOut, wethIsEth, userData);
-    }
+    // BalancerV3 Sepolia addresses (6th testnet release)
+    IVault internal vault = IVault(0x92B5c1CB2999c45804A60d6529D77DeEF00fb839);
+    IRouter internal router = IRouter(0xa12Da7dfD0792a10a5b05B575545Bd685798Ce35);
+    IPermit2 internal permit2 = IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
 
     /**
      * Sorts the tokenConfig array into alphanumeric order
@@ -94,7 +78,7 @@ contract PoolHelpers {
         uint160 maxAmount = type(uint160).max;
         uint48 maxExpiration = type(uint48).max;
         for (uint256 i = 0; i < tokens.length; ++i) {
-            IPermit2(permit2).approve(address(tokens[i]), spender, maxAmount, maxExpiration);
+            permit2.approve(address(tokens[i]), spender, maxAmount, maxExpiration);
         }
     }
 }
