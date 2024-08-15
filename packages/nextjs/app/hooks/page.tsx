@@ -39,7 +39,15 @@ const Hooks: NextPage = async () => {
           .
         </p>
       </div>
-      {hooks ? <HooksCards hooks={hooks} /> : <div className="text-xl text-error">Error fetching hooks data!</div>}
+      <div className="w-full flex flex-col gap-3">
+        <div className="w-full grid grid-cols-8">
+          <div className="col-start-1 col-end-3">Name</div>
+          <div className="col-start-4 col-end-6">Repo URL</div>
+          <div className="col-start-7 col-end-7">Category</div>
+          <div className="col-start-8 col-end-8">Created By</div>
+        </div>
+        {hooks ? <HooksCards hooks={hooks} /> : <div className="text-xl text-error">Error fetching hooks data!</div>}
+      </div>
     </div>
   );
 };

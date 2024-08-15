@@ -36,26 +36,26 @@ export const HooksCards = ({ hooks }: { hooks: HookDetails[] }) => {
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-5 w-full">
-        {hooks.map(hook => (
-          <div
-            key={hook.id}
-            className="bg-base-200 hover:bg-base-100 p-5 rounded-lg w-full hover:cursor-pointer"
-            onClick={() => setActiveModal(hook.id)}
+      {hooks.map(hook => (
+        <div
+          key={hook.id}
+          className="bg-base-200 hover:bg-base-100 p-5 rounded-lg w-full hover:cursor-pointer grid grid-cols-8"
+          onClick={() => setActiveModal(hook.id)}
+        >
+          <div className="col-start-1 col-end-3 text-xl font-bold ">{hook.title}</div>
+          <Link
+            className="col-start-3 col-end-6 flex gap-2 items-center text-nowrap overflow-hidden whitespace-nowrap"
+            target="_blank"
+            rel="noopener noreferrer"
+            href={hook.github}
           >
-            <div className="mb-3">
-              <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold mb-0">{hook.title}</h1>
-                <Link target="_blank" rel="noopener noreferrer" href={hook.github}>
-                  <GithubIcon />
-                </Link>
-              </div>
-              {/* <div className="">Created By {hook.created_by}</div> */}
-            </div>
-            <div className="text-lg card-description">{hook.description}</div>
-          </div>
-        ))}
-      </div>
+            <GithubIcon />
+            {hook.github.slice(0, 40)}...
+          </Link>
+          <div className="col-start-7 col-end-7">{hook.category}</div>
+          <div className="col-start-8 col-end-8">{hook.created_by}</div>
+        </div>
+      ))}
 
       {activeModal && (
         <Modal isOpen={activeModal !== null} onClose={() => setActiveModal(null)}>
