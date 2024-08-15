@@ -1885,7 +1885,7 @@ const deployedContracts = {
             {
               name: "hookFlags",
               type: "tuple",
-              internalType: "struct IHooks.HookFlags",
+              internalType: "struct HookFlags",
               components: [
                 {
                   name: "enableHookAdjustedAmounts",
@@ -2096,7 +2096,7 @@ const deployedContracts = {
             {
               name: "",
               type: "tuple",
-              internalType: "struct IHooks.AfterSwapParams",
+              internalType: "struct AfterSwapParams",
               components: [
                 {
                   name: "kind",
@@ -2304,7 +2304,7 @@ const deployedContracts = {
             {
               name: "",
               type: "tuple",
-              internalType: "struct IBasePool.PoolSwapParams",
+              internalType: "struct PoolSwapParams",
               components: [
                 {
                   name: "kind",
@@ -2360,12 +2360,12 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "onComputeDynamicSwapFee",
+          name: "onComputeDynamicSwapFeePercentage",
           inputs: [
             {
               name: "params",
               type: "tuple",
-              internalType: "struct IBasePool.PoolSwapParams",
+              internalType: "struct PoolSwapParams",
               components: [
                 {
                   name: "kind",
@@ -2505,21 +2505,22 @@ const deployedContracts = {
               internalType: "bool",
             },
           ],
-          stateMutability: "view",
-        },
-        {
-          type: "error",
-          name: "SenderIsNotVault",
-          inputs: [
-            {
-              name: "sender",
-              type: "address",
-              internalType: "address",
-            },
-          ],
+          stateMutability: "nonpayable",
         },
       ],
-      inheritedFunctions: {},
+      inheritedFunctions: {
+        getHookFlags: "vault/contracts/BaseHooks.sol",
+        onAfterAddLiquidity: "vault/contracts/BaseHooks.sol",
+        onAfterInitialize: "vault/contracts/BaseHooks.sol",
+        onAfterRemoveLiquidity: "vault/contracts/BaseHooks.sol",
+        onAfterSwap: "vault/contracts/BaseHooks.sol",
+        onBeforeAddLiquidity: "vault/contracts/BaseHooks.sol",
+        onBeforeInitialize: "vault/contracts/BaseHooks.sol",
+        onBeforeRemoveLiquidity: "vault/contracts/BaseHooks.sol",
+        onBeforeSwap: "vault/contracts/BaseHooks.sol",
+        onComputeDynamicSwapFeePercentage: "vault/contracts/BaseHooks.sol",
+        onRegister: "vault/contracts/BaseHooks.sol",
+      },
     },
   },
 } as const;

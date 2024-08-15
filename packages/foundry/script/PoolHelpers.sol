@@ -17,29 +17,9 @@ import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.so
  * @notice Helpful types, interface instances, and functions for deploying pools on Balancer v3
  */
 contract PoolHelpers {
-    struct PoolRegistrationConfig {
-        string name;
-        string symbol;
-        bytes32 salt;
-        TokenConfig[] tokenConfig;
-        uint256 swapFeePercentage;
-        bool protocolFeeExempt;
-        PoolRoleAccounts roleAccounts;
-        address poolHooksContract;
-        LiquidityManagement liquidityManagement;
-    }
-
-    struct PoolInitializationConfig {
-        IERC20[] tokens;
-        uint256[] exactAmountsIn;
-        uint256 minBptAmountOut;
-        bool wethIsEth;
-        bytes userData;
-    }
-
-    // BalancerV3 Sepolia addresses (6th testnet release)
-    IVault internal vault = IVault(0x92B5c1CB2999c45804A60d6529D77DeEF00fb839);
-    IRouter internal router = IRouter(0xa12Da7dfD0792a10a5b05B575545Bd685798Ce35);
+    // BalancerV3 Sepolia addresses (7th testnet release)
+    IVault internal vault = IVault(0x7966FE92C59295EcE7FB5D9EfDB271967BFe2fbA);
+    IRouter internal router = IRouter(0xDd10aDF05379D7C0Ee4bC9c72ecc5C01c40E25b8);
     IPermit2 internal permit2 = IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
 
     /**
@@ -81,4 +61,24 @@ contract PoolHelpers {
             permit2.approve(address(tokens[i]), spender, maxAmount, maxExpiration);
         }
     }
+}
+
+struct PoolRegistrationConfig {
+    string name;
+    string symbol;
+    bytes32 salt;
+    TokenConfig[] tokenConfig;
+    uint256 swapFeePercentage;
+    bool protocolFeeExempt;
+    PoolRoleAccounts roleAccounts;
+    address poolHooksContract;
+    LiquidityManagement liquidityManagement;
+}
+
+struct PoolInitializationConfig {
+    IERC20[] tokens;
+    uint256[] exactAmountsIn;
+    uint256 minBptAmountOut;
+    bool wethIsEth;
+    bytes userData;
 }

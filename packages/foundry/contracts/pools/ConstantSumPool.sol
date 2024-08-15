@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import { BalancerPoolToken } from "@balancer-labs/v3-vault/contracts/BalancerPoolToken.sol";
 import { IBasePool, ISwapFeePercentageBounds } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
+import { PoolSwapParams } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
 /**
@@ -11,6 +12,10 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
  * https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html
  */
 contract ConstantSumPool is IBasePool, BalancerPoolToken {
+    // Invariant growth limit: non-proportional add cannot cause the invariant to increase by more than this ratio.
+    uint256 private constant _MAX_INVARIANT_RATIO = 300e16; // 300%
+    // Invariant shrink limit: non-proportional remove cannot cause the invariant to decrease by less than this ratio.
+    uint256 private constant _MIN_INVARIANT_RATIO = 70e16; // 70%
     uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 1e12; // 0.00001%
     uint256 private constant _MAX_SWAP_FEE_PERCENTAGE = 0.1e18; // 10%
 
@@ -50,6 +55,16 @@ contract ConstantSumPool is IBasePool, BalancerPoolToken {
         uint256 invariant = computeInvariant(balancesLiveScaled18);
 
         newBalance = (balancesLiveScaled18[tokenInIndex] + invariant * (invariantRatio)) - invariant;
+    }
+
+    /// @return minimumInvariantRatio The minimum invariant ratio for a pool during unbalanced remove liquidity
+    function getMinimumInvariantRatio() external view returns (uint256) {
+        return _MIN_INVARIANT_RATIO;
+    }
+
+    /// @return maximumInvariantRatio The maximum invariant ratio for a pool during unbalanced add liquidity
+    function getMaximumInvariantRatio() external view returns (uint256) {
+        return _MAX_INVARIANT_RATIO;
     }
 
     /// @inheritdoc ISwapFeePercentageBounds
