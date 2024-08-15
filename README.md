@@ -15,16 +15,17 @@ A full stack prototyping tool for building on top of Balancer v3. Accelerate the
 
 ### 🪧 Table Of Contents
 
-0. [Environment Setup 🧑‍💻](#0-environment-setup-)
-1. [Create a Custom Pool 🌊](#1-create-a-custom-pool-)
-2. [Create a Pool Factory 🏭](#2-create-a-pool-factory-)
-3. [Create a Pool Hook 🪝](#3-create-a-pool-hook-)
-4. [Deploy the Contracts 🚢](#4-deploy-the-contracts-)
-5. [Test the Contracts 🧪](#5-test-the-contracts-)
+- [🧑‍💻 Environment Setup](#0-environment-setup-)
+- [🌊 Create a Custom Pool](#1-create-a-custom-pool-)
+- [🏭 Create a Pool Factory](#2-create-a-pool-factory-)
+- [🪝 Create a Pool Hook](#3-create-a-pool-hook-)
+- [🚢 Deploy the Contracts](#4-deploy-the-contracts-)
+- [🧪 Test the Contracts](#5-test-the-contracts-)
 
-## 0. Environment Setup 🧑‍💻
+## 🧑‍💻 Environment Setup
 
-[![image](https://github.com/user-attachments/assets/2d0d5c6d-647d-4782-8d7a-9076b39319b9)](https://www.youtube.com/watch?v=2lInvpCt2o4)
+<!-- TODO: Record Updated Video -->
+<!-- [![image](https://github.com/user-attachments/assets/2d0d5c6d-647d-4782-8d7a-9076b39319b9)](https://www.youtube.com/watch?v=2lInvpCt2o4) -->
 
 ### 📜 Requirements
 
@@ -144,7 +145,7 @@ const scaffoldConfig = {
 
 </details>
 
-## 1. Create a Custom Pool 🌊
+## 🌊 Create a Custom Pool
 
 Your journey begins with planning the custom computation logic for the pool, which defines how an AMM exchanges one asset for another.
 
@@ -162,7 +163,7 @@ Your journey begins with planning the custom computation logic for the pool, whi
 
 - To get started, edit the`ConstantSumPool.sol` contract directly or make a copy
 
-## 2. Create a Pool Factory 🏭
+## 🏭 Create a Pool Factory
 
 After designing a pool contract, the next step is to prepare a factory contract because Balancer's off-chain infrastructure uses the factory address as a means to identify the type of pool, which is important for integration into the UI, SDK, and external aggregators
 
@@ -180,7 +181,7 @@ After designing a pool contract, the next step is to prepare a factory contract 
 
 - To get started, edit the`ConstantSumFactory.sol` contract directly or make a copy
 
-## 3. Create a Pool Hook 🪝
+## 🪝 Create a Pool Hook
 
 Next, consider further extending the functionality of the custom pool contract with a hooks contract. If your custom pool does not need a hooks contract, use the zero address during pool registration
 
@@ -198,33 +199,39 @@ Next, consider further extending the functionality of the custom pool contract w
 
 - To get started, edit the `VeBALFeeDiscountHook.sol` contract directly or make a copy
 
-## 4. Deploy the Contracts 🚢
+## 🚢 Deploy the Contracts
 
-The deploy scripts are all located in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory and are prefixed with a number based on the order the order they're intended to be run. The mock tokens, factories, and hooks contracts must be deployed before the pools. On the frontend, the [Pools](http://localhost:3000/pools) page will automatically add a button above the search bar for any pools deployed using the latest factory contract
+The deploy scripts are all located in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory. All deploy scripts should be run inside of `Deploy.s.sol` so that the `export` modifier can automate the transfer of deployed contract info to `nextjs/contracts/depoloyedContracts.ts`
 
-### 🛠️ Adjust the Deploy Scripts
+### 👯 Follow the Pattern
 
-#### `00_DeploySetup.s.sol`
+To add a new deploy script, import it into `Deploy.s.sol`, create a new instance of it, and run it
 
-Deploy mock tokens, factory contracts, and hooks contracts to be used by pools
+```
+function run() external virtual export {
+        DeployYourContract deployYourContract = new DeployYourContract();
+        deployYourContract.run();
+}
+```
 
-- Set the `pauseWindowDuration` for the factory contracts
-- Set the mock token names, symbols, and supply
-- Set any hooks contracts constructor args
+### 🛠️ Examine the Example Deploy Scripts
 
-#### `01_DeployConstantSumPool.s.sol`
+#### `00_DeployMockTokens.s.sol`
 
-Deploy, register, and initialize a Constant Sum Pool
+1. Deploys mock tokens that are used to register and initialize pools
+2. Deploys a mock token used for the example `VeBALFeeDiscountHook` contract
 
-- Set the pool registration config in the `getRegistrationConfig()` function
-- Set the pool initialization config in the `getInitializationConfig()` function
+#### `01_DeployConstantSum.s.sol`
 
-#### `02_DeployConstantProductPool.s.sol`
+1. Deploys a `ConstantSumFactory`
+2. Deploys and registers a `ConstantSumPool`
+3. Initializes the `ConstantSumPool` using mock tokens
 
-Deploy, register, and initialize a Constant Product Pool
+#### `02_DeployConstantProduct.s.sol`
 
-- Set the pool registration config in the `getRegistrationConfig()` function
-- Set the pool initialization config in the `getInitializationConfig()` function
+1. Deploys a `ConstantProductFactory`
+2. Deploys and registers a `ConstantProductPool`
+3. Initializes the `ConstantProductPool` using mock tokens
 
 ### 📡 Broadcast the Transactions
 
@@ -234,28 +241,9 @@ To run all the deploy scripts
 yarn deploy
 ```
 
-To run only the `DeploySetup` script
-
-```bash
-yarn deploy:setup
-```
-
-To run only the `DeployConstantSumPool` script
-
-```bash
-yarn deploy:sum
-```
-
-To run only the `DeployConstantProductPool` script
-
-```bash
-yarn deploy:product
-```
-
 🛈 To deploy to the live sepolia testnet, add the `--network sepolia` flag
-🛈 To modify the yarn commands, edit the "scripts" section of the [/foundry/package.json](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/package.json)
 
-## 5. Test the Contracts 🧪
+## 🧪 Test the Contracts
 
 The [balancer-v3-monorepo](https://github.com/balancer/balancer-v3-monorepo) provides testing utility contracts like [BaseVaultTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/test/foundry/utils/BaseVaultTest.sol). Therefore, the best way to begin writing tests for custom factory, pool, and hook contracts is to utilize the patterns and methods established by the source code.
 
