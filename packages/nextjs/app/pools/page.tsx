@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   HooksConfig,
@@ -24,6 +24,25 @@ import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
  * 3. Perform actions within the selected pool by swapping and adding/removing liquidity
  */
 const Pools: NextPage = () => {
+  return (
+    <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
+      <div className="">
+        <h1 className="text-3xl md:text-5xl font-semibold mb-7 text-center">Custom Pools</h1>
+        <div className="text-xl mb-7">
+          Select one of the pools deployed to your local fork or search by pool contract address
+        </div>
+      </div>
+
+      <Suspense fallback={<PoolPageSkeleton />}>
+        <PoolPageContent />
+      </Suspense>
+    </div>
+  );
+};
+
+export default Pools;
+
+const PoolPageContent = () => {
   const [selectedPoolAddress, setSelectedPoolAddress] = useState<Address | null>(null);
 
   const { data: pool, refetch: refetchPool, isLoading, isError, isSuccess } = usePoolContract(selectedPoolAddress);
@@ -38,16 +57,8 @@ const Pools: NextPage = () => {
   }, [poolAddress]);
 
   return (
-    <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
-      <div className="">
-        <h1 className="text-3xl md:text-5xl font-semibold mb-7 text-center">Custom Pools</h1>
-        <div className="text-xl mb-7">
-          Select one of the pools deployed to your local fork or search by pool contract address
-        </div>
-      </div>
-
+    <Fragment>
       <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
-
       {isLoading ? (
         <PoolPageSkeleton />
       ) : isError ? (
@@ -58,11 +69,9 @@ const Pools: NextPage = () => {
       ) : (
         isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
       )}
-    </div>
+    </Fragment>
   );
 };
-
-export default Pools;
 
 const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: RefetchPool }) => {
   return (

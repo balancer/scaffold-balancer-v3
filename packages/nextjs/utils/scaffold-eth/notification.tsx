@@ -57,7 +57,7 @@ const Notification = ({
         <div className="absolute -inset-1.5 rounded-xl bg-gradient-to-r from-orange-500 via-orage-300 to-purple-600 opacity-75 blur-lg"></div>
 
         {/* Solid Background Layer */}
-        <div className="absolute inset-0 rounded-xl bg-base-100 text opacity-100"></div>
+        <div className="absolute inset-0 rounded-xl bg-neutral text opacity-100"></div>
 
         {/* Notification Content */}
         <div className="relative flex flex-row items-start justify-between w-full rounded-xl p-4 space-x-2 z-10">

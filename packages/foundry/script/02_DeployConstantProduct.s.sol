@@ -22,7 +22,7 @@ import { ConstantProductFactory } from "../contracts/pools/ConstantProductFactor
  * @notice Deploys a factory and hooks contract and then deploys, registers, and initializes a constant product pool
  */
 contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
-    function run(IERC20 token1, IERC20 token2, IERC20 veBAL) external virtual {
+    function run(IERC20 token1, IERC20 token2, IERC20 veBAL) external {
         // Set the deployment configurations
         uint32 pauseWindowDuration = 365 days;
         PoolRegistrationConfig memory regConfig = getPoolRegistrationConfig(token1, token2);

@@ -13,7 +13,7 @@ import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
  * @dev Run this script with `yarn deploy`
  */
 contract DeployScript is ScaffoldHelpers {
-    function run() external virtual export {
+    function run() external export {
         // Deploy mock tokens to be used for pools and hooks contracts
         DeployMockTokens deployMockTokens = new DeployMockTokens();
         (IERC20 mockToken1, IERC20 mockToken2, IERC20 mockVeBAL) = deployMockTokens.run();

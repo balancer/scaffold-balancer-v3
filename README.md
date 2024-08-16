@@ -210,22 +210,23 @@ The deploy scripts are located in the [foundry/script/](https://github.com/balan
 
 ### 1. Examine the Example Deploy Scripts 🕵️
 
-#### `00_DeployMockTokens.s.sol`
+#### [00_DeployMockTokens.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/00_DeployMockTokens.s.sol)
 
 1. Deploys mock tokens that are used to register and initialize pools
 2. Deploys a mock token used for the example `VeBALFeeDiscountHook` contract
 
-#### `01_DeployConstantSum.s.sol`
+#### [01_DeployConstantSum.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/01_DeployConstantSum.s.sol)
 
 1. Deploys a `ConstantSumFactory`
 2. Deploys and registers a `ConstantSumPool`
 3. Initializes the `ConstantSumPool` using mock tokens
 
-#### `02_DeployConstantProduct.s.sol`
+#### [02_DeployConstantProduct.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/02_DeployConstantProduct.s.sol)
 
 1. Deploys a `ConstantProductFactory`
-2. Deploys and registers a `ConstantProductPool`
-3. Initializes the `ConstantProductPool` using mock tokens
+2. Deploys a `VeBALFeeDiscountHook` that allows pools created by the `ConstantProductFactory`
+3. Deploys and registers a `ConstantProductPool` that uses the `VeBALFeeDiscountHook`
+4. Initializes the `ConstantProductPool` using mock tokens
 
 ### 2. Broadcast the Transactions 📡
 

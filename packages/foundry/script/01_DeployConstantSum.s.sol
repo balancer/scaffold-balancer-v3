@@ -20,7 +20,7 @@ import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
  * @notice Deploys, registers, and initializes a Constant Sum Pool
  */
 contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
-    function run(IERC20 token1, IERC20 token2) external virtual {
+    function run(IERC20 token1, IERC20 token2) external {
         // Set the deployment configurations
         uint32 pauseWindowDuration = 365 days;
         PoolRegistrationConfig memory regConfig = getPoolRegistrationConfig(token1, token2);
