@@ -11,11 +11,11 @@ export const PoolComposition = ({ pool }: { pool: Pool }) => {
   }
   return (
     <div className="w-full flex flex-col">
-      <div className="bg-base-200 p-4 rounded-lg ">
+      <div className="bg-base-200 p-5 rounded-lg shadow-lg">
         <h5 className="text-xl font-bold mb-3">Pool Composition</h5>
 
-        <div className="border border-base-100 rounded-lg">
-          <div className="p-3 flex flex-col gap-3">
+        <div className="bg-neutral rounded-lg">
+          <div className="p-4 flex flex-col gap-4">
             {pool.poolTokens.map(token => (
               <div key={token.address} className="flex justify-between items-center">
                 <div>

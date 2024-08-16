@@ -64,13 +64,13 @@ export const PoolActions: React.FC<{ pool: Pool; refetchPool: RefetchPool }> = (
 
   return (
     <div>
-      <div className="w-full bg-base-200 rounded-xl p-5">
+      <div className="w-full bg-base-200 rounded-xl p-5 shadow-lg">
         <div className="flex mb-3 items-center gap-5">
           <h5 className="text-xl font-bold text-nowrap">Pool Actions</h5>
           {address && !balance ? <Alert>Click the faucet button in the top right corner!</Alert> : null}
           {balance !== 0 && userHasNoTokens && <ZeroTokensAlert refetchTokenBalances={refetchTokenBalances} />}
         </div>
-        <div className="border border-base-100 rounded-lg">
+        <div className="bg-neutral rounded-lg">
           <div className="flex">
             {Object.keys(tabs).map(tab => (
               <button
@@ -78,8 +78,8 @@ export const PoolActions: React.FC<{ pool: Pool; refetchPool: RefetchPool }> = (
                 onClick={() => setActiveTab(tab as Action)}
                 className={`font-bold py-3 flex-1  ${
                   activeTab === tab
-                    ? "border border-neutral rounded-tl-lg rounded-tr-lg bg-base-100"
-                    : "border-b border-base-100 hover:bg-base-100 hover:border hover:border-base-100 rounded-tl-lg rounded-tr-lg"
+                    ? "rounded-tl-lg rounded-tr-lg text-neutral-700 bg-gradient-to-b from-custom-beige-start to-custom-beige-end to-100%"
+                    : "border-b border-base-300 hover:bg-base-300 rounded-tl-lg rounded-tr-lg"
                 } focus:outline-none`}
               >
                 {tab}

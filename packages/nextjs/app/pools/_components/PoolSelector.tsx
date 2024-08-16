@@ -89,34 +89,42 @@ export const PoolSelector = ({
     <section className="mb-7">
       <div className="flex flex-wrap justify-center gap-3 h-12">
         {sumPools.length > 0 &&
-          sumPools.map(pool => (
-            <button
-              key={pool}
-              className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal text-lg ${
-                selectedPoolAddress === pool ? " bg-neutral text-neutral-content hover:bg-neutral" : ""
-              }`}
-              onClick={() => {
-                setSelectedPoolAddress(pool);
-                router.push(`${pathname}?address=${pool}`);
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                alt=""
-                className={`!rounded-full absolute top-0.5 left-1 `}
-                src={blo(pool as `0x${string}`)}
-                width="25"
-                height="25"
-              />
-              Constant Sum
-            </button>
-          ))}
+          sumPools.map(pool => {
+            console.log("selectedPoolAddress", selectedPoolAddress);
+            console.log("pool", pool);
+            return (
+              <button
+                key={pool}
+                className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal text-lg ${
+                  selectedPoolAddress === pool
+                    ? " text-neutral-700 bg-gradient-to-b from-custom-beige-start to-custom-beige-end to-100%"
+                    : ""
+                }`}
+                onClick={() => {
+                  setSelectedPoolAddress(pool);
+                  router.push(`${pathname}?address=${pool}`);
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  alt=""
+                  className={`!rounded-full absolute top-0.5 left-1 `}
+                  src={blo(pool as `0x${string}`)}
+                  width="25"
+                  height="25"
+                />
+                Constant Sum
+              </button>
+            );
+          })}
         {productPools.length > 0 &&
           productPools.map(pool => (
             <button
               key={pool}
               className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal text-lg ${
-                selectedPoolAddress === pool ? " bg-neutral text-neutral-content hover:bg-neutral" : ""
+                selectedPoolAddress === pool
+                  ? "text-neutral-700 bg-gradient-to-b from-custom-beige-start to-custom-beige-end to-100%"
+                  : ""
               }`}
               onClick={() => {
                 setSelectedPoolAddress(pool);
@@ -165,7 +173,7 @@ export const PoolSelector = ({
               placeholder="Search by pool addresss"
             />
             <button
-              className={`btn btn-sm w-12 absolute top-1.5 right-1.5 border-none ${
+              className={`btn btn-sm bg-neutral w-12 absolute top-1.5 right-1.5 border-none ${
                 isValidAddress ? "bg-violet-400 hover:bg-violet-400" : ""
               }`}
               type="submit"

@@ -33,12 +33,12 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
   }
 
   return (
-    <div className="w-full flex flex-col">
-      <div className="bg-base-200 p-4 rounded-lg ">
+    <div className="w-full flex flex-col shadow-lg">
+      <div className="bg-base-200 p-5 rounded-lg">
         <h5 className="text-xl font-bold mb-3">My Liquidity</h5>
 
-        <div className="border border-base-100 rounded-lg">
-          <div className="flex justify-between border-base-100 border-b p-3 items-center">
+        <div className="bg-neutral rounded-lg">
+          <div className="flex justify-between border-base-300 border-b p-4 items-center">
             <div>
               <div className="font-bold">BPT</div>
               <div className="text-sm">{pool.name}</div>
@@ -48,7 +48,7 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
               <div className="text-sm">{pool.userBalance?.toString()}</div>
             </div>
           </div>
-          <div className="p-3 flex flex-col gap-3">
+          <div className="p-4 flex flex-col gap-4">
             {pool.poolTokens.map((token, index) => (
               <div key={token.address} className="flex justify-between items-center">
                 <div>

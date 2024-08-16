@@ -42,7 +42,7 @@ export const TokenField: React.FC<TokenFieldProps> = ({
   return (
     <div className="mb-5">
       {label && (
-        <div className="ml-2 mb-0.5">
+        <div className="ml-2 mb-0.5 font-bold">
           <label>{label}</label>
         </div>
       )}
@@ -52,7 +52,7 @@ export const TokenField: React.FC<TokenFieldProps> = ({
           value={value}
           onChange={e => onAmountChange(e.target.value)}
           placeholder="0.0"
-          className={`text-right text-2xl w-full input input-bordered rounded-lg bg-base-200 p-10 ${
+          className={`text-right text-2xl w-full input shadow-inner rounded-lg bg-base-300 p-10 ${
             isHighlighted ? "ring-1 ring-purple-500" : ""
           }`}
         />
@@ -63,7 +63,7 @@ export const TokenField: React.FC<TokenFieldProps> = ({
                 onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)}
                 tabIndex={0}
                 role="button"
-                className="hover:bg-base-100 border border-neutral rounded-lg w-28 flex items-center justify-center gap-2 font-bold h-[58px] p-2"
+                className="bg-neutral hover:bg-base-100 rounded-lg w-28 flex items-center justify-center gap-2 font-bold h-[58px] p-2"
               >
                 {tokenSymbol} <ChevronDownIcon className="w-4 h-4" />
               </div>
@@ -83,7 +83,7 @@ export const TokenField: React.FC<TokenFieldProps> = ({
             </div>
           ) : (
             <div>
-              <div className="min-w-[100px] border border-neutral rounded-lg flex items-center justify-center gap-2 font-bold h-[58px] px-5">
+              <div className="min-w-[100px] bg-neutral rounded-lg flex items-center justify-center gap-2 font-bold h-[58px] px-5">
                 {tokenSymbol}
               </div>
             </div>

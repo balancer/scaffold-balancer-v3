@@ -21,9 +21,9 @@ type queryData = {
  */
 export const QueryResponseAlert: React.FC<QueryResponseAlertProps> = ({ title, data }) => {
   return (
-    <div>
+    <div className="">
       <h5 className="mt-5 mb-1 ml-2">{title}</h5>
-      <div className="bg-[#fb923c40] border border-orange-300 rounded-lg p-5">
+      <div className="bg-warning-tint text-warning border border-warning rounded-lg p-5">
         {data &&
           data.map((item, idx) => (
             <div key={idx} className={`flex justify-between ${idx !== data.length - 1 ? "mb-3" : ""}`}>
@@ -47,9 +47,9 @@ export const QueryResponseAlert: React.FC<QueryResponseAlertProps> = ({ title, d
  */
 export const QueryErrorAlert: React.FC<{ message: string }> = ({ message }) => {
   return (
-    <div className="mt-3 text-red-500">
+    <div className="mt-3">
       <div className="ml-2 mb-1">Error</div>
-      <div className="bg-[#d64e4e2b] border border-red-500 rounded-lg p-5 overflow-auto">
+      <div className="bg-error-tint border border-error rounded-lg p-5 overflow-auto text-error">
         <div>{message}</div>
       </div>
     </div>
@@ -85,7 +85,7 @@ export const TransactionReceiptAlert: React.FC<TransactionReceiptAlertProps> = (
         )}
       </div>
 
-      <div className="bg-[#22c55e2b] border border-green-400 rounded-lg p-5">
+      <div className="bg-success-tint border border-success text-success rounded-lg p-5">
         {data &&
           data.map((token, idx) => (
             <div key={idx} className={`flex justify-between ${idx !== data.length - 1 ? "mb-3" : ""}`}>
