@@ -46,7 +46,7 @@ contract VeBALFeeDiscountHook is BaseHooks {
         address pool,
         TokenConfig[] memory,
         LiquidityManagement calldata
-    ) public override returns (bool) {
+    ) public view override returns (bool) {
         // Only pools deployed by an allowed factory may register
         return factory == _allowedFactory && IBasePoolFactory(factory).isPoolFromFactory(pool);
     }

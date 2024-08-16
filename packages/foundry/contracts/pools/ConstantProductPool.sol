@@ -71,12 +71,12 @@ contract ConstantProductPool is BalancerPoolToken, IBasePool {
     }
 
     /// @return minimumInvariantRatio The minimum invariant ratio for a pool during unbalanced remove liquidity
-    function getMinimumInvariantRatio() external view returns (uint256) {
+    function getMinimumInvariantRatio() external pure returns (uint256) {
         return _MIN_INVARIANT_RATIO;
     }
 
     /// @return maximumInvariantRatio The maximum invariant ratio for a pool during unbalanced add liquidity
-    function getMaximumInvariantRatio() external view returns (uint256) {
+    function getMaximumInvariantRatio() external pure returns (uint256) {
         return _MAX_INVARIANT_RATIO;
     }
 
