@@ -14,16 +14,16 @@ module.exports = {
           "secondary-content": "rgb(45, 55, 72)",
           accent: "#525252",
           "accent-content": "#ffffff",
-          neutral: "#d4d4d4",
+          neutral: "#ffffff",
           "neutral-content": "rgb(45, 55, 72)",
           "base-100": "#d4d4d4",
           "base-200": "rgb(245, 243, 239)",
           "base-300": "#EBE8E0", // bg color
           "base-content": "rgb(45, 55, 72)",
-          info: "#93BBFB",
-          success: "#34EEB6",
-          warning: "#fdba74",
-          error: "#FF8863",
+          info: "#0e7490",
+          success: "#047857",
+          warning: "#b45309",
+          error: "#b91c1c",
 
           "--rounded-btn": "9999rem",
 
@@ -46,16 +46,16 @@ module.exports = {
           "secondary-content": "#F9FBFF",
           accent: "#94a3b8",
           "accent-content": "#F9FBFF",
-          neutral: "rgb(229, 211, 190)",
-          "neutral-content": "rgb(70, 77, 88)",
+          neutral: "rgb(70, 77, 88)",
+          "neutral-content": "rgb(229, 211, 190)",
           "base-100": "#6b7280",
           "base-200": "rgb(63, 70, 80)",
           "base-300": "rgb(56, 62, 71)", // bg color
           "base-content": "rgb(229, 211, 190)",
-          info: "#93BBFB",
-          success: "#34EEB6",
-          warning: "#FFCF72",
-          error: "#FF8863",
+          info: "#67e8f9",
+          success: "#34d399",
+          warning: "#fcd34d",
+          error: "#fca5a5",
 
           "--rounded-btn": "9999rem",
 
@@ -80,9 +80,18 @@ module.exports = {
       },
       boxShadow: {
         center: "0 0 12px -2px rgb(0 0 0 / 0.05)",
+        inner: "inset 0 6px 12px 4px rgba(0, 4, 8, 0.075)", // More aggressive "shadow-inner"
       },
       animation: {
         "pulse-fast": "pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
+      colors: {
+        "custom-beige-start": "#e5d3be",
+        "custom-beige-end": "#e6c6a0",
+        "error-tint": "#ef444433",
+        "warning-tint": "#f59e0b33",
+        "success-tint": "#10b98133",
+        "info-tint": "#06b6d433",
       },
     },
   },

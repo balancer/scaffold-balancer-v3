@@ -25,21 +25,16 @@ export const HooksConfig = ({ pool }: { pool: Pool }) => {
   const filteredRows = detailsRows.filter(({ value }) => value !== "false");
 
   return (
-    <div className="w-full">
-      <div className="overflow-x-auto rounded-lg bg-base-200 p-5">
-        <h5 className="text-xl font-bold mb-3">Hooks Config</h5>
-        <dl className="border border-base-100 rounded-lg">
-          {filteredRows.map(({ key, value }, index) => (
-            <div
-              key={key}
-              className={`grid grid-cols-2 ${index == filteredRows.length - 1 ? "" : "border-b border-base-100"}`}
-            >
-              <dt className="p-3 border-r border-base-100">{key}</dt>
-              <dd className="p-3">{value}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
+    <div className="overflow-x-auto rounded-lg bg-base-200 p-5 shadow-lg">
+      <h5 className="text-xl font-bold mb-3">Hooks Config</h5>
+      <dl className=" rounded-lg">
+        {filteredRows.map(({ key, value }, index) => (
+          <div key={key} className={`grid grid-cols-2 ${index == filteredRows.length - 1 ? "" : ""}`}>
+            <dt className="px-3 py-2">{key}:</dt>
+            <dd className="px-3 py-2">{value}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 };

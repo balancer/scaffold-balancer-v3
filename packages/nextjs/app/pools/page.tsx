@@ -76,14 +76,14 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
           <div className="flex flex-col gap-7">
             <UserLiquidity pool={pool} />
             <PoolComposition pool={pool} />
-            <PoolAttributes pool={pool} />
+            <HooksConfig pool={pool} />
+            <PoolConfig pool={pool} />
           </div>
           <div className="flex flex-col gap-7">
             {pool.poolConfig?.isPoolInitialized && (
               <PoolActions key={pool.address} pool={pool} refetchPool={refetchPool} />
             )}
-            <HooksConfig pool={pool} />
-            <PoolConfig pool={pool} />
+            <PoolAttributes pool={pool} />
           </div>
         </div>
       </div>

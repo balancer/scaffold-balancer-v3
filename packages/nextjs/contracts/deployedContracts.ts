@@ -1449,20 +1449,7 @@ const deployedContracts = {
           inputs: [],
         },
       ],
-      inheritedFunctions: {
-        disable: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getActionId: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getAuthorizer: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDefaultLiquidityManagement: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDefaultPoolHooksContract: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDeploymentAddress: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getNewPoolPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getOriginalPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getPauseWindowDuration: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getVault: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        isDisabled: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        isPoolFromFactory: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-      },
+      inheritedFunctions: {},
     },
     ConstantProductFactory: {
       address: "0x98Ae3884f844035F02d1eEbE94E54C25bCb53794",
@@ -1833,20 +1820,7 @@ const deployedContracts = {
           inputs: [],
         },
       ],
-      inheritedFunctions: {
-        disable: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getActionId: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getAuthorizer: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDefaultLiquidityManagement: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDefaultPoolHooksContract: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getDeploymentAddress: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getNewPoolPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getOriginalPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getPauseWindowDuration: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        getVault: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        isDisabled: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-        isPoolFromFactory: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
-      },
+      inheritedFunctions: {},
     },
     VeBALFeeDiscountHook: {
       address: "0x7798AD4e898a948FFCf426fb2aAdffbD01087085",
@@ -1885,7 +1859,7 @@ const deployedContracts = {
             {
               name: "hookFlags",
               type: "tuple",
-              internalType: "struct IHooks.HookFlags",
+              internalType: "struct HookFlags",
               components: [
                 {
                   name: "enableHookAdjustedAmounts",
@@ -2096,7 +2070,7 @@ const deployedContracts = {
             {
               name: "",
               type: "tuple",
-              internalType: "struct IHooks.AfterSwapParams",
+              internalType: "struct AfterSwapParams",
               components: [
                 {
                   name: "kind",
@@ -2304,7 +2278,7 @@ const deployedContracts = {
             {
               name: "",
               type: "tuple",
-              internalType: "struct IBasePool.PoolSwapParams",
+              internalType: "struct PoolSwapParams",
               components: [
                 {
                   name: "kind",
@@ -2360,12 +2334,12 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "onComputeDynamicSwapFee",
+          name: "onComputeDynamicSwapFeePercentage",
           inputs: [
             {
               name: "params",
               type: "tuple",
-              internalType: "struct IBasePool.PoolSwapParams",
+              internalType: "struct PoolSwapParams",
               components: [
                 {
                   name: "kind",
@@ -2506,17 +2480,6 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
-        },
-        {
-          type: "error",
-          name: "SenderIsNotVault",
-          inputs: [
-            {
-              name: "sender",
-              type: "address",
-              internalType: "address",
-            },
-          ],
         },
       ],
       inheritedFunctions: {},

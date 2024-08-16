@@ -43,15 +43,18 @@ export const HooksCards = ({ hooks }: { hooks: HookDetails[] }) => {
           onClick={() => setActiveModal(hook.id)}
         >
           <div className="col-start-1 col-end-3 text-xl font-bold ">{hook.title}</div>
-          <Link
-            className="col-start-3 col-end-6 flex gap-2 items-center text-nowrap overflow-hidden whitespace-nowrap"
-            target="_blank"
-            rel="noopener noreferrer"
-            href={hook.github}
-          >
-            <GithubIcon />
-            {hook.github.slice(0, 40)}...
-          </Link>
+
+          <div className="hidden md:flex col-start-4 col-end-6 text-center">
+            <Link
+              className="flex gap-2 items-center text-nowrap overflow-hidden whitespace-nowrap"
+              target="_blank"
+              rel="noopener noreferrer"
+              href={hook.github}
+            >
+              {hook.github.slice(0, 40)}...
+            </Link>
+          </div>
+
           <div className="col-start-7 col-end-7">{hook.category}</div>
           <div className="col-start-8 col-end-8">{hook.created_by}</div>
         </div>

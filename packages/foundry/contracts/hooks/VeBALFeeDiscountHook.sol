@@ -2,17 +2,20 @@
 
 pragma solidity ^0.8.24;
 
-import {
-    BaseHooks,
-    IVault,
-    IHooks,
-    TokenConfig,
-    LiquidityManagement
-} from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
-import { IBasePool } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
-import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
-import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
+import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
+import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import {
+    LiquidityManagement,
+    TokenConfig,
+    PoolSwapParams,
+    HookFlags
+} from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+
+import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 
 /**
  * @title VeBAL Fee Discount Hook
@@ -43,7 +46,7 @@ contract VeBALFeeDiscountHook is BaseHooks {
         address pool,
         TokenConfig[] memory,
         LiquidityManagement calldata
-    ) external view override returns (bool) {
+    ) public view override returns (bool) {
         // Only pools deployed by an allowed factory may register
         return factory == _allowedFactory && IBasePoolFactory(factory).isPoolFromFactory(pool);
     }
@@ -52,7 +55,7 @@ contract VeBALFeeDiscountHook is BaseHooks {
      * @notice Returns flags informing which hooks are implemented in the contract.
      * @return hookFlags Flags indicating which hooks the contract supports
      */
-    function getHookFlags() external pure override returns (IHooks.HookFlags memory hookFlags) {
+    function getHookFlags() public pure override returns (HookFlags memory hookFlags) {
         // Support the `onComputeDynamicSwapFeePercentage` hook
         hookFlags.shouldCallComputeDynamicSwapFee = true;
     }
@@ -64,11 +67,11 @@ contract VeBALFeeDiscountHook is BaseHooks {
      * @return success True if the pool wishes to proceed with settlement
      * @return dynamicSwapFee Value of the swap fee
      */
-    function onComputeDynamicSwapFee(
-        IBasePool.PoolSwapParams calldata params,
+    function onComputeDynamicSwapFeePercentage(
+        PoolSwapParams calldata params,
         address, // pool
         uint256 staticSwapFeePercentage
-    ) external view override returns (bool success, uint256 dynamicSwapFee) {
+    ) public view override returns (bool success, uint256 dynamicSwapFee) {
         // If the router is not trusted, do not apply a fee discount
         if (params.router != _trustedRouter) {
             return (true, staticSwapFeePercentage);
