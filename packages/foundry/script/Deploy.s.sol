@@ -20,11 +20,11 @@ contract DeployScript is ScaffoldHelpers {
 
         // Deploy a constant sum factory and a pool
         DeployConstantSum deployConstantSum = new DeployConstantSum();
-        deployConstantSum.run(mockToken1, mockToken2);
+        deployConstantSum.run(address(mockToken1), address(mockToken2));
 
         // Deploy a constant product factory, a hooks contract, and a pool
         DeployConstantProduct deployConstantProduct = new DeployConstantProduct();
-        deployConstantProduct.run(mockToken1, mockToken2, mockVeBAL);
+        deployConstantProduct.run(address(mockToken1), address(mockToken2), address(mockVeBAL));
     }
 
     modifier export() {

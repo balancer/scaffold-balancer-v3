@@ -22,7 +22,7 @@ import { ConstantProductFactory } from "../contracts/pools/ConstantProductFactor
  * @notice Deploys a factory and hooks contract and then deploys, registers, and initializes a constant product pool
  */
 contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
-    function run(IERC20 token1, IERC20 token2, IERC20 veBAL) external {
+    function run(address token1, address token2, address veBAL) external {
         // Set the deployment configurations
         uint32 pauseWindowDuration = 365 days;
         PoolRegistrationConfig memory regConfig = getPoolRegistrationConfig(token1, token2);
@@ -41,7 +41,7 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
             IVault(vault),
             address(factory),
             address(router),
-            IERC20(veBAL)
+            veBAL
         );
         console.log("VeBALFeeDiscountHook deployed at address: %s", address(poolHooksContract));
 
@@ -85,8 +85,8 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
      * All WITH_RATE tokens need a rate provider, and may or may not be yield-bearing.
      */
     function getPoolRegistrationConfig(
-        IERC20 token1,
-        IERC20 token2
+        address token1,
+        address token2
     ) internal view returns (PoolRegistrationConfig memory config) {
         string memory name = "Constant Product Pool"; // name for the pool
         string memory symbol = "CPP"; // symbol for the BPT
@@ -97,13 +97,13 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
 
         TokenConfig[] memory tokenConfig = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage
         tokenConfig[0] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
-            token: token1,
+            token: IERC20(token1),
             tokenType: TokenType.STANDARD, // STANDARD or WITH_RATE
             rateProvider: IRateProvider(address(0)), // The rate provider for a token (see further documentation above)
             paysYieldFees: false // Flag indicating whether yield fees should be charged on this token
         });
         tokenConfig[1] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
-            token: token2,
+            token: IERC20(token2),
             tokenType: TokenType.STANDARD, // STANDARD or WITH_RATE
             rateProvider: IRateProvider(address(0)), // The rate provider for a token (see further documentation above)
             paysYieldFees: false // Flag indicating whether yield fees should be charged on this token
@@ -139,12 +139,12 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
      * @notice This is where the amounts of tokens to seed the pool with initial liquidity are set
      */
     function getPoolInitializationConfig(
-        IERC20 token1,
-        IERC20 token2
+        address token1,
+        address token2
     ) internal pure returns (PoolInitializationConfig memory config) {
         IERC20[] memory tokens = new IERC20[](2); // Array of tokens to be used in the pool
-        tokens[0] = token1;
-        tokens[1] = token2;
+        tokens[0] = IERC20(token1);
+        tokens[1] = IERC20(token2);
         uint256[] memory exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
         exactAmountsIn[0] = 50e18; // amount of token1 to send during pool initialization
         exactAmountsIn[1] = 50e18; // amount of token2 to send during pool initialization
