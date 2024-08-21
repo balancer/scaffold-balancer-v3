@@ -41,7 +41,7 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
             IVault(vault),
             address(factory),
             address(router),
-            veBAL
+            IERC20(veBAL)
         );
         console.log("VeBALFeeDiscountHook deployed at address: %s", address(poolHooksContract));
 
