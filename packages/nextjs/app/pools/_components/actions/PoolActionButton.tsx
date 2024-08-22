@@ -13,7 +13,7 @@ interface PoolActionButtonProps {
  * Swap, AddLiquidity, and RemoveLiquidity buttons are solid gradient style
  */
 export const PoolActionButton: React.FC<PoolActionButtonProps> = ({ onClick, children, isDisabled, isFormEmpty }) => {
-  const outlined = `border border-neutral hover:bg-base-100`;
+  const outlined = `border border-base-100 hover:bg-base-100`;
   const gradient = `bg-gradient-to-r from-violet-400 via-orange-100 to-orange-300 hover:from-violet-300 hover:via-orange-100 hover:to-orange-400 text-neutral-700 `;
 
   const colorStyles =

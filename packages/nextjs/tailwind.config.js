@@ -16,7 +16,7 @@ module.exports = {
           "accent-content": "#ffffff",
           neutral: "#ffffff",
           "neutral-content": "rgb(45, 55, 72)",
-          "base-100": "#d4d4d4",
+          "base-100": "#E4E1DA",
           "base-200": "rgb(245, 243, 239)",
           "base-300": "#EBE8E0", // bg color
           "base-content": "rgb(45, 55, 72)",

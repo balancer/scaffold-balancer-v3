@@ -21,7 +21,7 @@ contract ConstantProductPool is BalancerPoolToken, IBasePool {
     // Invariant shrink limit: non-proportional remove cannot cause the invariant to decrease by less than this ratio.
     uint256 private constant _MIN_INVARIANT_RATIO = 70e16; // 70%
     uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 0.001e18; // 0.1%
-    uint256 private constant _MAX_SWAP_FEE_PERCENTAGE = 0.02e18; // 2%
+    uint256 private constant _MAX_SWAP_FEE_PERCENTAGE = 0.10e18; // 10%
 
     constructor(IVault vault, string memory name, string memory symbol) BalancerPoolToken(vault, name, symbol) {}
 
