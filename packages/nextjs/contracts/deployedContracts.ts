@@ -1849,7 +1849,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHook: {
-      address: "0x231485A6fd6b18387781D8173C73Ea616142B400",
+      address: "0xEaEACf0637773DDC12d70D9D9F1FFBd024f0A984",
       abi: [
         {
           type: "constructor",
@@ -2520,6 +2520,411 @@ const deployedContracts = {
         onBeforeSwap: "vault/contracts/BaseHooks.sol",
         onComputeDynamicSwapFeePercentage: "vault/contracts/BaseHooks.sol",
         onRegister: "vault/contracts/BaseHooks.sol",
+      },
+    },
+    WeightedPoolFactory: {
+      address: "0xCa6741DE35F309dB09097FC8C853bCe4e10431F3",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "vault",
+              type: "address",
+              internalType: "contract IVault",
+            },
+            {
+              name: "pauseWindowDuration",
+              type: "uint32",
+              internalType: "uint32",
+            },
+            {
+              name: "factoryVersion",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "poolVersion",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "create",
+          inputs: [
+            {
+              name: "name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "symbol",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "tokens",
+              type: "tuple[]",
+              internalType: "struct TokenConfig[]",
+              components: [
+                {
+                  name: "token",
+                  type: "address",
+                  internalType: "contract IERC20",
+                },
+                {
+                  name: "tokenType",
+                  type: "uint8",
+                  internalType: "enum TokenType",
+                },
+                {
+                  name: "rateProvider",
+                  type: "address",
+                  internalType: "contract IRateProvider",
+                },
+                {
+                  name: "paysYieldFees",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+            {
+              name: "normalizedWeights",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "roleAccounts",
+              type: "tuple",
+              internalType: "struct PoolRoleAccounts",
+              components: [
+                {
+                  name: "pauseManager",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "swapFeeManager",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "poolCreator",
+                  type: "address",
+                  internalType: "address",
+                },
+              ],
+            },
+            {
+              name: "swapFeePercentage",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "poolHooksContract",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "enableDonation",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "disableUnbalancedLiquidity",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "pool",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "disable",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getActionId",
+          inputs: [
+            {
+              name: "selector",
+              type: "bytes4",
+              internalType: "bytes4",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getAuthorizer",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract IAuthorizer",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getDefaultLiquidityManagement",
+          inputs: [],
+          outputs: [
+            {
+              name: "liquidityManagement",
+              type: "tuple",
+              internalType: "struct LiquidityManagement",
+              components: [
+                {
+                  name: "disableUnbalancedLiquidity",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableAddLiquidityCustom",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableRemoveLiquidityCustom",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableDonation",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "getDefaultPoolHooksContract",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "getDeploymentAddress",
+          inputs: [
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getNewPoolPauseWindowEndTime",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint32",
+              internalType: "uint32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getOriginalPauseWindowEndTime",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint32",
+              internalType: "uint32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getPauseWindowDuration",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint32",
+              internalType: "uint32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getPoolVersion",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getVault",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract IVault",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "isDisabled",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "isPoolFromFactory",
+          inputs: [
+            {
+              name: "pool",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "version",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "FactoryDisabled",
+          inputs: [],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "PoolCreated",
+          inputs: [
+            {
+              name: "pool",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "Disabled",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "PoolPauseWindowDurationOverflow",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "SenderNotAllowed",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "StandardPoolWithCreator",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {
+        getPoolVersion: "lib/balancer-v3-monorepo/pkg/interfaces/contracts/solidity-utils/helpers/IPoolVersion.sol",
+        disable: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getActionId: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getAuthorizer: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getDefaultLiquidityManagement: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getDefaultPoolHooksContract: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getDeploymentAddress: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getNewPoolPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getOriginalPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getPauseWindowDuration: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getVault: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        isDisabled: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        isPoolFromFactory: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        version: "lib/balancer-v3-monorepo/pkg/solidity-utils/contracts/helpers/Version.sol",
       },
     },
   },
