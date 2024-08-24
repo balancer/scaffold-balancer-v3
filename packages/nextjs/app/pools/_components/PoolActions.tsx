@@ -4,7 +4,7 @@ import { useAccount } from "wagmi";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { useTokens } from "~~/hooks/balancer";
 import { type Pool, type TokenBalances } from "~~/hooks/balancer/types";
-import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
+import { type RefetchPool } from "~~/hooks/balancer/useReadPool";
 import { useAccountBalance, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
 type Action = "Swap" | "AddLiquidity" | "RemoveLiquidity";

@@ -8,7 +8,7 @@ import { useTargetFork } from "~~/hooks/balancer";
 /**
  * Fetch all relevant details for a pool
  */
-export const usePoolContract = (pool: Address | null) => {
+export const useReadPool = (pool: Address | null) => {
   const client = usePublicClient();
   const { data: walletClient } = useWalletClient();
   const { chainId } = useTargetFork();
@@ -154,4 +154,4 @@ export const usePoolContract = (pool: Address | null) => {
   );
 };
 
-export type RefetchPool = ReturnType<typeof usePoolContract>["refetch"];
+export type RefetchPool = ReturnType<typeof useReadPool>["refetch"];

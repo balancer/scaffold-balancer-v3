@@ -57,7 +57,7 @@ contract DeployWeighted is PoolHelpers, ScaffoldHelpers {
             false, // bool disableUnbalancedLiquidity
             keccak256(abi.encode(block.number)) // bytes32 salt
         );
-        console.log("Constant Product Pool deployed at: %s", pool);
+        console.log("Weighted Pool deployed at: %s", pool);
 
         // Approve Permit2 contract to spend tokens on behalf of deployer
         approveSpenderOnToken(address(permit2), initConfig.tokens);
@@ -74,7 +74,7 @@ contract DeployWeighted is PoolHelpers, ScaffoldHelpers {
             initConfig.wethIsEth,
             initConfig.userData
         );
-        console.log("Constant Product Pool initialized successfully!");
+        console.log("Weighted Pool initialized successfully!");
         vm.stopBroadcast();
     }
 

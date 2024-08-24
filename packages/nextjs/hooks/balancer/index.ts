@@ -1,4 +1,4 @@
-export * from "./usePoolContract";
+export * from "./useReadPool";
 export * from "./types";
 export * from "./useSwap";
 export * from "./useAddLiquidity";
@@ -7,3 +7,4 @@ export * from "./useTargetFork";
 export * from "./useToken";
 export * from "./useTokens";
 export * from "./useApprove";
+export * from "./useFactoryHistory";

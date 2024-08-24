@@ -14,9 +14,9 @@ import {
 import { type NextPage } from "next";
 import { type Address } from "viem";
 import { SkeletonLoader } from "~~/components/common";
-import { usePoolContract } from "~~/hooks/balancer";
+import { useReadPool } from "~~/hooks/balancer";
 import { type Pool } from "~~/hooks/balancer/types";
-import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
+import { type RefetchPool } from "~~/hooks/balancer/useReadPool";
 
 /**
  * 1. Search by pool address or select from dropdown
@@ -45,7 +45,7 @@ export default Pools;
 const PoolPageContent = () => {
   const [selectedPoolAddress, setSelectedPoolAddress] = useState<Address | null>(null);
 
-  const { data: pool, refetch: refetchPool, isLoading, isError, isSuccess } = usePoolContract(selectedPoolAddress);
+  const { data: pool, refetch: refetchPool, isLoading, isError, isSuccess } = useReadPool(selectedPoolAddress);
 
   const searchParams = useSearchParams();
   const poolAddress = searchParams.get("address");
