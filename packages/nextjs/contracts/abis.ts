@@ -1,5 +1,5 @@
 /**
- * @notice Grabbed the Pool abi from `foundry/out/ConstantSumPool.sol`
+ * @notice Grabbed the Pool abi from `foundry/out/ConstantProductPool.sol`
  * @notice The Vault abi is actually the `VaultExtension` abi
  */
 export const abis = {
@@ -119,7 +119,21 @@ export const abis = {
       },
       {
         type: "function",
+        name: "getMaximumInvariantRatio",
+        inputs: [],
+        outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+        stateMutability: "pure",
+      },
+      {
+        type: "function",
         name: "getMaximumSwapFeePercentage",
+        inputs: [],
+        outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+        stateMutability: "pure",
+      },
+      {
+        type: "function",
+        name: "getMinimumInvariantRatio",
         inputs: [],
         outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
         stateMutability: "pure",
@@ -166,7 +180,7 @@ export const abis = {
           {
             name: "params",
             type: "tuple",
-            internalType: "struct IBasePool.PoolSwapParams",
+            internalType: "struct PoolSwapParams",
             components: [
               { name: "kind", type: "uint8", internalType: "enum SwapKind" },
               { name: "amountGivenScaled18", type: "uint256", internalType: "uint256" },

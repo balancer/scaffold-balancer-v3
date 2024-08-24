@@ -11,6 +11,10 @@ export const PoolAttributes = ({ pool }: { pool: Pool }) => {
     { attribute: "Symbol", detail: pool.symbol },
     { attribute: "Decimals", detail: pool.decimals },
     { attribute: "Total Supply", detail: formatUnits(pool.totalSupply, pool.decimals) },
+    { attribute: "Mininum Swap Fee %", detail: pool.minSwapFeePercentage.toString() },
+    { attribute: "Maximum Swap Fee %", detail: pool.maxSwapFeePercentage.toString() },
+    { attribute: "Mininum Invariant Ratio", detail: pool.minInvariantRatio.toString() },
+    { attribute: "Maximum Invariant Ratio", detail: pool.maxInvariantRatio.toString() },
     { attribute: "Pool Address", detail: <Address address={pool.address} /> },
     { attribute: "Vault Address", detail: <Address address={pool.vaultAddress} /> },
   ];
@@ -21,7 +25,7 @@ export const PoolAttributes = ({ pool }: { pool: Pool }) => {
 
         <dl className="rounded-lg">
           {detailsRows.map(({ attribute, detail }, index) => (
-            <div key={attribute} className={`grid grid-cols-2 ${index == detailsRows.length - 1 ? "" : ""}`}>
+            <div key={attribute} className={`flex justify-between ${index == detailsRows.length - 1 ? "" : ""}`}>
               <dt className="px-3 py-2 ">{attribute}:</dt>
               <dd className="px-3 py-2">{detail}</dd>
             </div>

@@ -5,9 +5,6 @@ import { erc20ABI, usePublicClient, useQuery, useWalletClient } from "wagmi";
 import abis from "~~/contracts/abis";
 import { useTargetFork } from "~~/hooks/balancer";
 
-/**
- * Fetch all relevant details for a pool
- */
 export const useReadPool = (pool: Address | null) => {
   const client = usePublicClient();
   const { data: walletClient } = useWalletClient();
@@ -28,6 +25,10 @@ export const useReadPool = (pool: Address | null) => {
         totalSupply,
         decimals,
         vaultAddress,
+        minInvariantRatio,
+        maxInvariantRatio,
+        minSwapFeePercentage,
+        maxSwapFeePercentage,
         userBalance,
         isRegistered,
         poolTokenInfo,
@@ -60,6 +61,26 @@ export const useReadPool = (pool: Address | null) => {
           address: pool,
           functionName: "getVault",
         }) as Promise<string>,
+        client.readContract({
+          abi: poolAbi,
+          address: pool,
+          functionName: "getMinimumInvariantRatio",
+        }) as Promise<bigint>,
+        client.readContract({
+          abi: poolAbi,
+          address: pool,
+          functionName: "getMaximumInvariantRatio",
+        }) as Promise<bigint>,
+        client.readContract({
+          abi: poolAbi,
+          address: pool,
+          functionName: "getMinimumSwapFeePercentage",
+        }) as Promise<bigint>,
+        client.readContract({
+          abi: poolAbi,
+          address: pool,
+          functionName: "getMaximumSwapFeePercentage",
+        }) as Promise<bigint>,
         client
           .readContract({
             abi: poolAbi,
@@ -136,6 +157,10 @@ export const useReadPool = (pool: Address | null) => {
         }),
       );
 
+      console.log("minInvariantRatio", minInvariantRatio);
+      console.log("maxInvariantRatio", maxInvariantRatio);
+      console.log("minSwapFeePercentage", minSwapFeePercentage);
+
       return {
         address: pool,
         symbol,
@@ -144,6 +169,10 @@ export const useReadPool = (pool: Address | null) => {
         totalSupply,
         decimals,
         vaultAddress,
+        minInvariantRatio,
+        maxInvariantRatio,
+        minSwapFeePercentage,
+        maxSwapFeePercentage,
         userBalance,
         poolTokens,
         poolConfig,
