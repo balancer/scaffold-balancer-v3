@@ -63,11 +63,11 @@ contract PoolHelpers {
     }
 }
 
-struct PoolRegistrationConfig {
+struct CustomPoolConfig {
     string name;
     string symbol;
     bytes32 salt;
-    TokenConfig[] tokenConfig;
+    TokenConfig[] tokenConfigs;
     uint256 swapFeePercentage;
     bool protocolFeeExempt;
     PoolRoleAccounts roleAccounts;
@@ -75,7 +75,20 @@ struct PoolRegistrationConfig {
     LiquidityManagement liquidityManagement;
 }
 
-struct PoolInitializationConfig {
+struct WeightedPoolConfig {
+    string name;
+    string symbol;
+    TokenConfig[] tokenConfigs;
+    uint256[] normalizedWeights;
+    PoolRoleAccounts roleAccounts;
+    uint256 swapFeePercentage;
+    address poolHooksContract;
+    bool enableDonation;
+    bool disableUnbalancedLiquidity;
+    bytes32 salt;
+}
+
+struct InitializationConfig {
     IERC20[] tokens;
     uint256[] exactAmountsIn;
     uint256 minBptAmountOut;

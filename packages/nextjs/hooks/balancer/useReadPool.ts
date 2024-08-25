@@ -5,10 +5,7 @@ import { erc20ABI, usePublicClient, useQuery, useWalletClient } from "wagmi";
 import abis from "~~/contracts/abis";
 import { useTargetFork } from "~~/hooks/balancer";
 
-/**
- * Fetch all relevant details for a pool
- */
-export const usePoolContract = (pool: Address | null) => {
+export const useReadPool = (pool: Address | null) => {
   const client = usePublicClient();
   const { data: walletClient } = useWalletClient();
   const { chainId } = useTargetFork();
@@ -28,6 +25,10 @@ export const usePoolContract = (pool: Address | null) => {
         totalSupply,
         decimals,
         vaultAddress,
+        minInvariantRatio,
+        maxInvariantRatio,
+        minSwapFeePercentage,
+        maxSwapFeePercentage,
         userBalance,
         isRegistered,
         poolTokenInfo,
@@ -60,6 +61,26 @@ export const usePoolContract = (pool: Address | null) => {
           address: pool,
           functionName: "getVault",
         }) as Promise<string>,
+        client.readContract({
+          abi: poolAbi,
+          address: pool,
+          functionName: "getMinimumInvariantRatio",
+        }) as Promise<bigint>,
+        client.readContract({
+          abi: poolAbi,
+          address: pool,
+          functionName: "getMaximumInvariantRatio",
+        }) as Promise<bigint>,
+        client.readContract({
+          abi: poolAbi,
+          address: pool,
+          functionName: "getMinimumSwapFeePercentage",
+        }) as Promise<bigint>,
+        client.readContract({
+          abi: poolAbi,
+          address: pool,
+          functionName: "getMaximumSwapFeePercentage",
+        }) as Promise<bigint>,
         client
           .readContract({
             abi: poolAbi,
@@ -144,6 +165,10 @@ export const usePoolContract = (pool: Address | null) => {
         totalSupply,
         decimals,
         vaultAddress,
+        minInvariantRatio,
+        maxInvariantRatio,
+        minSwapFeePercentage,
+        maxSwapFeePercentage,
         userBalance,
         poolTokens,
         poolConfig,
@@ -154,4 +179,4 @@ export const usePoolContract = (pool: Address | null) => {
   );
 };
 
-export type RefetchPool = ReturnType<typeof usePoolContract>["refetch"];
+export type RefetchPool = ReturnType<typeof useReadPool>["refetch"];

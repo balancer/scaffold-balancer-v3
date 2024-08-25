@@ -3,7 +3,7 @@ import { type TokenAmount } from "@balancer/sdk";
 import { useAccount } from "wagmi";
 import { useRemoveLiquidity } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
-import { formatToHuman } from "~~/utils/formatToHuman";
+import { formatToHuman } from "~~/utils/";
 
 /**
  * If there is a connected user, display their liquidity within the pool
@@ -40,7 +40,7 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
         <div className="bg-neutral rounded-lg">
           <div className="flex justify-between border-base-300 border-b p-4 items-center">
             <div>
-              <div className="font-bold">BPT</div>
+              <div className="font-bold">{pool.symbol}</div>
               <div className="text-sm">{pool.name}</div>
             </div>
             <div className="text-end">

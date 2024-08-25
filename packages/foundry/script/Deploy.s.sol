@@ -5,6 +5,7 @@ import { ScaffoldHelpers } from "./ScaffoldHelpers.sol";
 import { DeployMockTokens } from "./00_DeployMockTokens.s.sol";
 import { DeployConstantSum } from "./01_DeployConstantSum.s.sol";
 import { DeployConstantProduct } from "./02_DeployConstantProduct.s.sol";
+import { DeployWeighted } from "./03_DeployWeighted.s.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 /**
@@ -25,6 +26,10 @@ contract DeployScript is ScaffoldHelpers {
         // Deploy a constant product factory, a hooks contract, and a pool
         DeployConstantProduct deployConstantProduct = new DeployConstantProduct();
         deployConstantProduct.run(address(mockToken1), address(mockToken2), address(mockVeBAL));
+
+        // Deploy a weighted pool factory, a hooks contract, and a pool
+        DeployWeighted deployWeighted = new DeployWeighted();
+        deployWeighted.run(address(mockToken1), address(mockToken2), address(mockVeBAL));
     }
 
     modifier export() {

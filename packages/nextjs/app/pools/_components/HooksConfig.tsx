@@ -11,7 +11,7 @@ export const HooksConfig = ({ pool }: { pool: Pool }) => {
   }
 
   const detailsRows = [
-    { key: "hooksContract", value: <Address address={pool.hooksConfig.hooksContract} /> },
+    { key: "Hooks Address", value: <Address address={pool.hooksConfig.hooksContract} /> },
     { key: "shouldCallBeforeInitialize", value: pool.hooksConfig.shouldCallBeforeInitialize.toString() },
     { key: "shouldCallAfterInitialize", value: pool.hooksConfig.shouldCallAfterInitialize.toString() },
     { key: "shouldCallComputeDynamicSwapFee", value: pool.hooksConfig.shouldCallComputeDynamicSwapFee.toString() },

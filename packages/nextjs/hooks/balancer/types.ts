@@ -11,6 +11,10 @@ export type Pool = {
   isRegistered: boolean;
   name: string;
   symbol: string;
+  minSwapFeePercentage: bigint;
+  maxSwapFeePercentage: bigint;
+  minInvariantRatio: bigint;
+  maxInvariantRatio: bigint;
   userBalance: bigint;
   poolConfig: PoolConfig | undefined;
   hooksConfig: HooksConfig | undefined;
@@ -32,6 +36,7 @@ export type PoolConfig = {
     disableUnbalancedLiquidity: boolean;
     enableAddLiquidityCustom: boolean;
     enableRemoveLiquidityCustom: boolean;
+    enableDonation: boolean;
   };
   staticSwapFeePercentage: bigint;
   aggregateSwapFeePercentage: bigint;

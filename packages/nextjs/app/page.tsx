@@ -4,15 +4,15 @@ import type { NextPage } from "next";
 const TOOLS = [
   {
     emoji: "🌊",
-    title: "Custom Pools",
+    title: "Liquidity Pools",
     href: "/pools",
-    description: "Create and explore custom pools",
+    description: "Explore and interact with liquidity pools",
   },
   {
     emoji: "🪝",
     title: "Pool Hooks",
     href: "/hooks",
-    description: "Extend pool functionality with hooks",
+    description: "Extend liquidity pool functionality with hooks",
   },
   // {
   //   emoji: "🧭",
