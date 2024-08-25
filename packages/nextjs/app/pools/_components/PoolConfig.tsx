@@ -1,17 +1,6 @@
 import { type Pool } from "~~/hooks/balancer/types";
+import { formatToPercentage } from "~~/utils/";
 
-function formatPercentage(value: bigint) {
-  const scale = BigInt("1000000000000000000"); // 1e18
-  // Multiply first to maintain precision in the calculation
-  const swapFee = (value * 10000n) / scale; // Multiplying by a larger number to retain more precision
-  // Convert to number and then adjust to the percentage format
-  const percentage = Number(swapFee) / 100; // Now divide by 100 here to adjust back to a proper percentage
-  return `${percentage}%`; // Format to two decimal places
-}
-
-/**
- * Display a pool's configuration details
- */
 export const PoolConfig = ({ pool }: { pool: Pool }) => {
   // only render the component if the pool has a poolConfig
   if (!pool.poolConfig) {
@@ -19,24 +8,28 @@ export const PoolConfig = ({ pool }: { pool: Pool }) => {
   }
 
   const detailsRows = [
-    { key: "staticSwapFeePercentage", value: formatPercentage(pool.poolConfig.staticSwapFeePercentage) },
-    { key: "aggregateSwapFeePercentage", value: formatPercentage(pool.poolConfig.aggregateSwapFeePercentage) },
-    { key: "aggregateYieldFeePercentage", value: formatPercentage(pool.poolConfig.aggregateYieldFeePercentage) },
-    { key: "tokenDecimalDiffs", value: pool.poolConfig.tokenDecimalDiffs.toString() },
+    { key: "Static Swap Fee %", value: formatToPercentage(pool.poolConfig.staticSwapFeePercentage) },
+    { key: "Aggregate Swap Fee %", value: formatToPercentage(pool.poolConfig.aggregateSwapFeePercentage) },
+    { key: "Aggregate Yield Fee %", value: formatToPercentage(pool.poolConfig.aggregateYieldFeePercentage) },
+    { key: "Token Decimal Diffs", value: pool.poolConfig.tokenDecimalDiffs.toString() },
     {
-      key: "disableUnbalancedLiquidity",
+      key: "Disable Unbalanced Liquidity",
       value: pool.poolConfig.liquidityManagement.disableUnbalancedLiquidity.toString(),
     },
     {
-      key: "enableAddLiquidityCustom",
+      key: "Enable Add Liquidity Custom",
       value: pool.poolConfig.liquidityManagement.enableAddLiquidityCustom.toString(),
     },
     {
-      key: "enableRemoveLiquidityCustom",
+      key: "Enable Remove Liquidity Custom",
       value: pool.poolConfig.liquidityManagement.enableRemoveLiquidityCustom.toString(),
     },
-    { key: "isPoolPaused", value: pool.poolConfig.isPoolPaused.toString() },
-    { key: "isPoolInRecoveryMode", value: pool.poolConfig.isPoolInRecoveryMode.toString() },
+    {
+      key: "Enable Donation",
+      value: pool.poolConfig.liquidityManagement.enableDonation.toString(),
+    },
+    { key: "Is Pool Paused", value: pool.poolConfig.isPoolPaused.toString() },
+    { key: "Is Pool In Recovery Mode", value: pool.poolConfig.isPoolInRecoveryMode.toString() },
   ];
 
   return (

@@ -51,7 +51,7 @@ contract DeployWeighted is PoolHelpers, ScaffoldHelpers {
             getTokenConfigs(token1, token2), // TokenConfig[] tokenConfigs
             getNormailzedWeights(), // uint256[] normalizedWeights
             getRoleAccounts(), // PoolRoleAccounts roleAccounts
-            0.05e18, // uint256 swapFeePercentage (5%)
+            0.03e18, // uint256 swapFeePercentage (3%)
             address(poolHooksContract), // address poolHooksContract
             true, //bool enableDonation
             false, // bool disableUnbalancedLiquidity

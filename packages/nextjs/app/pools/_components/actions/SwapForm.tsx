@@ -13,7 +13,7 @@ import {
   TokenInfo,
 } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
-import { formatToHuman } from "~~/utils/formatToHuman";
+import { formatToHuman } from "~~/utils/";
 
 const initialSwapConfig = {
   tokenIn: {

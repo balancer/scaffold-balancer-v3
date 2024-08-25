@@ -97,18 +97,18 @@ const ZeroTokensAlert = ({ refetchTokenBalances }: { refetchTokenBalances: () =>
   const { writeAsync: mintToken1 } = useScaffoldContractWrite({
     contractName: "MockToken1",
     functionName: "mint",
-    args: [10000000000000000000n],
+    args: [100000000000000000000n],
   });
 
   const { writeAsync: mintToken2 } = useScaffoldContractWrite({
     contractName: "MockToken2",
     functionName: "mint",
-    args: [10000000000000000000n],
+    args: [100000000000000000000n],
   });
 
   return (
     <Alert>
-      Zero token balances. To mint some{" "}
+      No balances! To mint 100 of each mock token{" "}
       <span
         className="link"
         onClick={async () => {

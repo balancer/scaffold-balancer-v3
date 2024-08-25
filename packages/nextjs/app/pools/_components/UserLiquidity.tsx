@@ -3,7 +3,7 @@ import { type TokenAmount } from "@balancer/sdk";
 import { useAccount } from "wagmi";
 import { useRemoveLiquidity } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
-import { formatToHuman } from "~~/utils/formatToHuman";
+import { formatToHuman } from "~~/utils/";
 
 /**
  * If there is a connected user, display their liquidity within the pool

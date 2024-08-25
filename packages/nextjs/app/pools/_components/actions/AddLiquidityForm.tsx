@@ -8,8 +8,8 @@ import abis from "~~/contracts/abis";
 import { useAddLiquidity, useTargetFork, useTokens } from "~~/hooks/balancer/";
 import { PoolActionReceipt, QueryAddLiquidityResponse, QueryPoolActionError, TokenInfo } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
+import { formatToHuman } from "~~/utils/";
 import { MaxUint48, MaxUint160, MaxUint256 } from "~~/utils/constants";
-import { formatToHuman } from "~~/utils/formatToHuman";
 
 /**
  * 1. Query adding some amount of liquidity to the pool

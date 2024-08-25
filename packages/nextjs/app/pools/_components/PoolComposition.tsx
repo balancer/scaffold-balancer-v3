@@ -1,5 +1,5 @@
 import { type Pool } from "~~/hooks/balancer/types";
-import { formatToHuman } from "~~/utils/formatToHuman";
+import { formatToHuman } from "~~/utils/";
 
 /**
  * Display a pool's token composition including the tokens' symbols, names, and balances

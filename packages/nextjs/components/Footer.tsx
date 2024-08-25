@@ -8,7 +8,7 @@ export const Footer = () => {
     <div className="min-h-0 py-5 px-1 mb-11 lg:mb-0 bg-base-300 border-t border-1 border-base-200">
       <div className="w-full">
         <ul className="menu menu-horizontal w-full">
-          <div className="flex justify-center items-center gap-2 text-lg w-full">
+          <div className="flex justify-center items-center gap-5 text-xl w-full">
             <div className="text-center">
               <a
                 href="https://github.com/balancer/scaffold-balancer-v3"

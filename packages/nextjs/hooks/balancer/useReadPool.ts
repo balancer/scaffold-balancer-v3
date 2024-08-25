@@ -157,10 +157,6 @@ export const useReadPool = (pool: Address | null) => {
         }),
       );
 
-      console.log("minInvariantRatio", minInvariantRatio);
-      console.log("maxInvariantRatio", maxInvariantRatio);
-      console.log("minSwapFeePercentage", minSwapFeePercentage);
-
       return {
         address: pool,
         symbol,

@@ -77,7 +77,7 @@ contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
         string memory name = "Constant Sum Pool"; // name for the pool
         string memory symbol = "CSP"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
-        uint256 swapFeePercentage = 0.001e18; // 0.1%
+        uint256 swapFeePercentage = 0.01e18; // 1%
         bool protocolFeeExempt = true;
         address poolHooksContract = address(0); // zero address if no hooks contract is needed
 
