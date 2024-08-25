@@ -14,20 +14,20 @@ import { MockVeBAL } from "../contracts/mocks/MockVeBAL.sol";
  * @notice Deploys mock tokens for use with pools and hooks
  */
 contract DeployMockTokens is ScaffoldHelpers {
-    function run() external returns (IERC20 mockToken1, IERC20 mockToken2, IERC20 mockVeBAL) {
+    function run() external returns (address mockToken1, address mockToken2, address mockVeBAL) {
+        // Start creating the transactions
         uint256 deployerPrivateKey = getDeployerPrivateKey();
-
         vm.startBroadcast(deployerPrivateKey);
 
-        // For use with pool contracts
-        mockToken1 = new MockToken1("Mock Token 1", "MT1", 1000e18);
-        mockToken2 = new MockToken2("Mock Token 2", "MT2", 1000e18);
-        console.log("MockToken1 deployed at: %s", address(mockToken1));
-        console.log("MockToken2 deployed at: %s", address(mockToken2));
+        // Used to register & initialize pool contracts
+        mockToken1 = address(new MockToken1("Mock Token 1", "MT1", 1000e18));
+        mockToken2 = address(new MockToken2("Mock Token 2", "MT2", 1000e18));
+        console.log("MockToken1 deployed at: %s", mockToken1);
+        console.log("MockToken2 deployed at: %s", mockToken2);
 
-        // For use with VeBALFeeDiscountHook
-        mockVeBAL = new MockVeBAL("Vote-escrow BAL", "veBAL", 1000e18);
-        console.log("Mock Vote-escrow BAL deployed at: %s", address(mockVeBAL));
+        // Used for the VeBALFeeDiscountHook
+        mockVeBAL = address(new MockVeBAL("Vote-escrow BAL", "veBAL", 1000e18));
+        console.log("Mock Vote-escrow BAL deployed at: %s", mockVeBAL);
 
         vm.stopBroadcast();
     }

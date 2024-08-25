@@ -17,7 +17,7 @@ contract DeployPoolFactories is ScaffoldHelpers, PoolHelpers {
         external
         returns (address constantSumFactory, address constantProductFactory, address weightedFactory)
     {
-        // Set the deployment configurations
+        // Set factory constructor config
         uint32 pauseWindowDuration = 365 days;
         string memory factoryVersion = "Factory v1";
         string memory poolVersion = " Pool v1";
@@ -34,7 +34,7 @@ contract DeployPoolFactories is ScaffoldHelpers, PoolHelpers {
         constantProductFactory = address(new ConstantProductFactory(vault, pauseWindowDuration));
         console.log("Constant Product Factory deployed at: %s", constantProductFactory);
 
-        // Deploy a weighted pool factory contract
+        // Deploy a weighted pool factory
         weightedFactory = address(new WeightedPoolFactory(vault, pauseWindowDuration, factoryVersion, poolVersion));
         console.log("Weighted Pool Factory deployed at: %s", weightedFactory);
 

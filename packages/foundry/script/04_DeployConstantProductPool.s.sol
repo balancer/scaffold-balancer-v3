@@ -47,7 +47,6 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
 
         // Approve Permit2 contract to spend tokens on behalf of deployer
         approveSpenderOnToken(address(permit2), initConfig.tokens);
-
         // Approve Router contract to spend tokens using Permit2
         approveSpenderOnPermit2(address(router), initConfig.tokens);
 

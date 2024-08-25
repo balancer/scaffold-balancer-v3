@@ -19,33 +19,27 @@ contract DeployScript is ScaffoldHelpers {
     function run() external export {
         // Deploy mock tokens to be used for pools and hooks contracts
         DeployMockTokens deployMockTokens = new DeployMockTokens();
-        (IERC20 mockToken1, IERC20 mockToken2, IERC20 mockVeBAL) = deployMockTokens.run();
+        (address mockToken1, address mockToken2, address mockVeBAL) = deployMockTokens.run();
 
         // Deploy factories that will be used to create & register pools
-        DeployPoolFactories deployPoolFactories = new DeployPoolFactories();
-        (address constantSumFactory, address constantProductFactory, address weightedFactory) = deployPoolFactories
-            .run();
+        DeployPoolFactories deployFactories = new DeployPoolFactories();
+        (address constantSumFactory, address constantProductFactory, address weightedFactory) = deployFactories.run();
 
         // Deploy pool hooks
         DeployPoolHooks deployPoolHooks = new DeployPoolHooks();
         address veBalFeeDiscountHook = deployPoolHooks.run(constantProductFactory, mockVeBAL);
 
         // Deploy, register, and initialize a constant sum pool
-        DeployConstantSumPool deployConstantSum = new DeployConstantSumPool();
-        deployConstantSum.run(constantSumFactory, address(mockToken1), address(mockToken2));
+        DeployConstantSumPool depoloySumPool = new DeployConstantSumPool();
+        depoloySumPool.run(constantSumFactory, address(mockToken1), address(mockToken2));
 
         // Deploy, register, and initialize a constant product pool
-        DeployConstantProductPool deployConstantProduct = new DeployConstantProductPool();
-        deployConstantProduct.run(
-            constantProductFactory,
-            veBalFeeDiscountHook,
-            address(mockToken1),
-            address(mockToken2)
-        );
+        DeployConstantProductPool deployProductPool = new DeployConstantProductPool();
+        deployProductPool.run(constantProductFactory, veBalFeeDiscountHook, mockToken1, mockToken2);
 
         // Deploy, register, and initialize a weighted pool
-        DeployWeightedPool deployWeighted = new DeployWeightedPool();
-        deployWeighted.run(weightedFactory, address(mockToken1), address(mockToken2));
+        DeployWeightedPool deployWeightedPool = new DeployWeightedPool();
+        deployWeightedPool.run(weightedFactory, address(mockToken1), address(mockToken2));
     }
 
     modifier export() {

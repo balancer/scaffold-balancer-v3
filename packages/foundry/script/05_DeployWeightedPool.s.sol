@@ -18,12 +18,12 @@ import { VeBALFeeDiscountHook } from "../contracts/hooks/VeBALFeeDiscountHook.so
 import { WeightedPoolFactory } from "@balancer-labs/v3-pool-weighted/contracts/WeightedPoolFactory.sol";
 
 /**
- * @title Deploy Weighted
- * @notice Deploys a factory and hooks contract and then deploys, registers, and initializes a weighted pool
+ * @title Deploy Weighted Pool
+ * @notice Deploys, registers, and initializes a 50/50 weighted pool
  */
 contract DeployWeightedPool is PoolHelpers, ScaffoldHelpers {
     function run(address factory, address token1, address token2) external {
-        // Set the pool configurations
+        // Set the pool initialization config
         InitializationConfig memory initConfig = getInitializationConfig(token1, token2);
 
         // Start creating the transactions
@@ -31,6 +31,7 @@ contract DeployWeightedPool is PoolHelpers, ScaffoldHelpers {
         vm.startBroadcast(deployerPrivateKey);
 
         // Deploy a pool and register it with the vault
+        /// @notice had to pass args directly to avoid stack too deep error
         address pool = WeightedPoolFactory(factory).create(
             "50/50 Weighted Pool", // string name
             "50-50-WP", // string symbol
@@ -47,7 +48,6 @@ contract DeployWeightedPool is PoolHelpers, ScaffoldHelpers {
 
         // Approve Permit2 contract to spend tokens on behalf of deployer
         approveSpenderOnToken(address(permit2), initConfig.tokens);
-
         // Approve Router contract to spend tokens using Permit2
         approveSpenderOnPermit2(address(router), initConfig.tokens);
 

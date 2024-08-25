@@ -2,20 +2,18 @@
 
 pragma solidity ^0.8.24;
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
-import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
-import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
-import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import {
     LiquidityManagement,
     TokenConfig,
     PoolSwapParams,
     HookFlags
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
+import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
+import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
+import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
 /**
  * @title VeBAL Fee Discount Hook
@@ -24,9 +22,9 @@ import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 contract VeBALFeeDiscountHook is BaseHooks {
     address private immutable _allowedFactory;
     address private immutable _trustedRouter;
-    IERC20 private immutable _veBAL;
+    address private immutable _veBAL;
 
-    constructor(IVault vault, address allowedFactory, address trustedRouter, IERC20 veBAL) BaseHooks(vault) {
+    constructor(IVault vault, address allowedFactory, address trustedRouter, address veBAL) BaseHooks(vault) {
         _allowedFactory = allowedFactory;
         _trustedRouter = trustedRouter;
         _veBAL = veBAL;
@@ -81,7 +79,7 @@ contract VeBALFeeDiscountHook is BaseHooks {
         address user = IRouterCommon(params.router).getSender();
 
         // If the user owns veBAL, apply a 50% discount to the swap fee
-        if (_veBAL.balanceOf(user) > 0) {
+        if (IERC20(_veBAL).balanceOf(user) > 0) {
             return (true, staticSwapFeePercentage / 2);
         }
 

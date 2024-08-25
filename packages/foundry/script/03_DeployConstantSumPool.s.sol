@@ -16,12 +16,12 @@ import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.sol";
 
 /**
- * @title Deploy Constant Sum
+ * @title Deploy Constant Sum Pool
  * @notice Deploys, registers, and initializes a Constant Sum Pool
  */
 contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
     function run(address factory, address token1, address token2) external {
-        // Set the deployment configurations
+        // Set the pool's deployment, registration, and initialization config
         CustomPoolConfig memory poolConfig = getPoolConfig(token1, token2);
         InitializationConfig memory initConfig = getInitializationConfig(token1, token2);
 
@@ -45,7 +45,6 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
 
         // Approve Permit2 contract to spend tokens on behalf of deployer
         approveSpenderOnToken(address(permit2), initConfig.tokens);
-
         // Approve Router contract to spend tokens using Permit2
         approveSpenderOnPermit2(address(router), initConfig.tokens);
 
