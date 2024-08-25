@@ -15,16 +15,15 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { VeBALFeeDiscountHook } from "../contracts/hooks/VeBALFeeDiscountHook.sol";
-import { ConstantProductFactory } from "../contracts/pools/ConstantProductFactory.sol";
+import { ConstantProductFactory } from "../contracts/factories/ConstantProductFactory.sol";
 
 /**
- * @title Deploy Constant Product
- * @notice Deploys a factory and hooks contract and then deploys, registers, and initializes a constant product pool
+ * @title Deploy Constant Product Pool
+ * @notice Deploys, registers, and initializes a constant product pool
  */
-contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
-    function run(address token1, address token2, address veBAL) external {
+contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
+    function run(address factory, address poolHooksContract, address token1, address token2) external {
         // Set the deployment configurations
-        uint32 pauseWindowDuration = 365 days;
         CustomPoolConfig memory poolConfig = getPoolConfig(token1, token2);
         InitializationConfig memory initConfig = getInitializationConfig(token1, token2);
 
@@ -32,21 +31,8 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
         uint256 deployerPrivateKey = getDeployerPrivateKey();
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy a constant sum factory contract
-        ConstantProductFactory factory = new ConstantProductFactory(IVault(vault), pauseWindowDuration);
-        console.log("Constant Product Factory deployed at: %s", address(factory));
-
-        // Deploy a hooks contract
-        VeBALFeeDiscountHook poolHooksContract = new VeBALFeeDiscountHook(
-            IVault(vault),
-            address(factory),
-            address(router),
-            IERC20(veBAL)
-        );
-        console.log("VeBALFeeDiscountHook deployed at address: %s", address(poolHooksContract));
-
         // Deploy a pool and register it with the vault
-        address pool = factory.create(
+        address pool = ConstantProductFactory(factory).create(
             poolConfig.name,
             poolConfig.symbol,
             poolConfig.salt,
@@ -54,7 +40,7 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
             poolConfig.swapFeePercentage,
             poolConfig.protocolFeeExempt,
             poolConfig.roleAccounts,
-            address(poolHooksContract),
+            poolHooksContract,
             poolConfig.liquidityManagement
         );
         console.log("Constant Product Pool deployed at: %s", pool);
