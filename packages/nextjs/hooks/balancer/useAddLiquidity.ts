@@ -32,12 +32,15 @@ export const useAddLiquidity = (pool: Pool, amountsIn: InputAmount[]): UseAddLiq
       const poolId = pool.address as `0x${string}`;
       const poolState: PoolState = await onchainProvider.pools.fetchPoolState(poolId, "CustomPool");
 
+      // TODO: Figure out how to use AddLiquidityKind.Proportional for pools with poolConfig.liquidityManagement.disableUnbalancedLiquidity: true
+      const kind = AddLiquidityKind.Unbalanced;
+
       // Construct the addLiquidity input object
       const addLiquidityInput: AddLiquidityInput = {
         amountsIn,
         chainId,
         rpcUrl,
-        kind: AddLiquidityKind.Unbalanced,
+        kind,
       };
 
       // Query addLiquidity to get the amount of BPT out

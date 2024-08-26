@@ -14,13 +14,14 @@ import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.sol";
+import { LotteryHook } from "../contracts/hooks/LotteryHook.sol";
 
 /**
  * @title Deploy Constant Sum Pool
- * @notice Deploys, registers, and initializes a Constant Sum Pool
+ * @notice Deploys, registers, and initializes a constant sum pool that uses the Lottery Hook
  */
 contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
-    function run(address factory, address token1, address token2) external {
+    function run(address token1, address token2) external {
         // Set the pool's deployment, registration, and initialization config
         CustomPoolConfig memory poolConfig = getPoolConfig(token1, token2);
         InitializationConfig memory initConfig = getInitializationConfig(token1, token2);
@@ -29,8 +30,18 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
         uint256 deployerPrivateKey = getDeployerPrivateKey();
         vm.startBroadcast(deployerPrivateKey);
 
+        console.log("msg.sender: %s", msg.sender);
+
+        // Deploy a factory
+        ConstantSumFactory factory = new ConstantSumFactory(vault, 365 days); // pauseWindowDuration
+        console.log("Constant Sum Factory deployed at: %s", address(factory));
+
+        // Deploy a hook
+        address lotteryHook = address(new LotteryHook(vault, address(router)));
+        console.log("LotteryHook deployed at address: %s", lotteryHook);
+
         // Deploy a pool and register it with the vault
-        address pool = ConstantSumFactory(factory).create(
+        address pool = factory.create(
             poolConfig.name,
             poolConfig.symbol,
             poolConfig.salt,
@@ -38,7 +49,7 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
             poolConfig.swapFeePercentage,
             poolConfig.protocolFeeExempt,
             poolConfig.roleAccounts,
-            poolConfig.poolHooksContract,
+            lotteryHook, // poolHooksContract
             poolConfig.liquidityManagement
         );
         console.log("Constant Sum Pool deployed at: %s", pool);
@@ -95,7 +106,7 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
             poolCreator: address(0) // Account empowered to set the pool creator fee percentage
         });
         LiquidityManagement memory liquidityManagement = LiquidityManagement({
-            disableUnbalancedLiquidity: false,
+            disableUnbalancedLiquidity: true, // Must be true to register with the Lottery Hook
             enableAddLiquidityCustom: false,
             enableRemoveLiquidityCustom: false,
             enableDonation: false
