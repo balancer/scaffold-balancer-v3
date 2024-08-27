@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MockToken1: {
-      address: "0x83f953D2461C6352120E06f5f8EcCD3e4d66d042",
+      address: "0xA771fE4afEf7A16243AB045cc0F1aeb627428d54",
       abi: [
         {
           type: "constructor",
@@ -365,7 +365,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x9d57eDCe10b7BdDA98997613c33ff7f3e34F4eAd",
+      address: "0xCeA42315FBfc3C23dfF6d158BcA5a370AcA4D7c0",
       abi: [
         {
           type: "constructor",
@@ -723,7 +723,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0x36F225dB9570eF972B3f2fACE74F472133606cc0",
+      address: "0x53e55cFD4141455862A46F98F9Dfe3Aa561EA797",
       abi: [
         {
           type: "constructor",
@@ -1081,7 +1081,7 @@ const deployedContracts = {
       },
     },
     ConstantSumFactory: {
-      address: "0x679F1F7a4F18975C1295BC411947E83d711E63a4",
+      address: "0x58c09BB978cfe368f638C74641dD0d7Fed7c3974",
       abi: [
         {
           type: "constructor",
@@ -1465,7 +1465,7 @@ const deployedContracts = {
       },
     },
     LotteryHook: {
-      address: "0x814E334C3CAcE7aB317B65F58F62aAD277637dB3",
+      address: "0xA2f3fE5972995b015392fC9499F22dDe9eB09ee7",
       abi: [
         {
           type: "constructor",
@@ -2325,7 +2325,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactory: {
-      address: "0x0576265d57700093a9Eb3Dc8777bAfE5C649913D",
+      address: "0x231485A6fd6b18387781D8173C73Ea616142B400",
       abi: [
         {
           type: "constructor",
@@ -2709,7 +2709,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHook: {
-      address: "0x538D4d1F18d6Ce7B30C683Dd3ab8f5b93b673B95",
+      address: "0x6496Ca5D0d8986A806478f2f976b48b20C692D55",
       abi: [
         {
           type: "constructor",
@@ -3282,7 +3282,7 @@ const deployedContracts = {
               internalType: "bool",
             },
             {
-              name: "dynamicSwapFee",
+              name: "dynamicSwapFeePercentage",
               type: "uint256",
               internalType: "uint256",
             },
@@ -3368,22 +3368,10 @@ const deployedContracts = {
           stateMutability: "view",
         },
       ],
-      inheritedFunctions: {
-        getHookFlags: "vault/contracts/BaseHooks.sol",
-        onAfterAddLiquidity: "vault/contracts/BaseHooks.sol",
-        onAfterInitialize: "vault/contracts/BaseHooks.sol",
-        onAfterRemoveLiquidity: "vault/contracts/BaseHooks.sol",
-        onAfterSwap: "vault/contracts/BaseHooks.sol",
-        onBeforeAddLiquidity: "vault/contracts/BaseHooks.sol",
-        onBeforeInitialize: "vault/contracts/BaseHooks.sol",
-        onBeforeRemoveLiquidity: "vault/contracts/BaseHooks.sol",
-        onBeforeSwap: "vault/contracts/BaseHooks.sol",
-        onComputeDynamicSwapFeePercentage: "vault/contracts/BaseHooks.sol",
-        onRegister: "vault/contracts/BaseHooks.sol",
-      },
+      inheritedFunctions: {},
     },
     WeightedPoolFactory: {
-      address: "0x37eFddF706dcbD55ad4E8b5D4DDAcf970d4c2e93",
+      address: "0xEaEACf0637773DDC12d70D9D9F1FFBd024f0A984",
       abi: [
         {
           type: "constructor",
@@ -3788,7 +3776,7 @@ const deployedContracts = {
       },
     },
     ExitFeeHook: {
-      address: "0x0e8eBBd5590E4aD7fA19297eceaA238aa0361898",
+      address: "0x1716c987F768c18babbFCfc02A550a9bd1BC0647",
       abi: [
         {
           type: "constructor",
@@ -7012,7 +7000,7 @@ const deployedContracts = {
               internalType: "bool",
             },
             {
-              name: "dynamicSwapFee",
+              name: "dynamicSwapFeePercentage",
               type: "uint256",
               internalType: "uint256",
             },
@@ -7098,19 +7086,7 @@ const deployedContracts = {
           stateMutability: "view",
         },
       ],
-      inheritedFunctions: {
-        getHookFlags: "vault/contracts/BaseHooks.sol",
-        onAfterAddLiquidity: "vault/contracts/BaseHooks.sol",
-        onAfterInitialize: "vault/contracts/BaseHooks.sol",
-        onAfterRemoveLiquidity: "vault/contracts/BaseHooks.sol",
-        onAfterSwap: "vault/contracts/BaseHooks.sol",
-        onBeforeAddLiquidity: "vault/contracts/BaseHooks.sol",
-        onBeforeInitialize: "vault/contracts/BaseHooks.sol",
-        onBeforeRemoveLiquidity: "vault/contracts/BaseHooks.sol",
-        onBeforeSwap: "vault/contracts/BaseHooks.sol",
-        onComputeDynamicSwapFeePercentage: "vault/contracts/BaseHooks.sol",
-        onRegister: "vault/contracts/BaseHooks.sol",
-      },
+      inheritedFunctions: {},
     },
   },
 } as const;

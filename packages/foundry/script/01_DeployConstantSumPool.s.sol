@@ -30,8 +30,6 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
         uint256 deployerPrivateKey = getDeployerPrivateKey();
         vm.startBroadcast(deployerPrivateKey);
 
-        console.log("msg.sender: %s", msg.sender);
-
         // Deploy a factory
         ConstantSumFactory factory = new ConstantSumFactory(vault, 365 days); // pauseWindowDuration
         console.log("Constant Sum Factory deployed at: %s", address(factory));

@@ -17,7 +17,6 @@ export const PoolAttributes = ({ pool }: { pool: Pool }) => {
     { attribute: "Vault Address", detail: <Address address={pool.vaultAddress} /> },
   ];
 
-  console.log("weightedPool", pool);
   return (
     <div className="w-full">
       <div className="overflow-x-auto rounded-lg bg-base-200 p-5 shadow-lg">

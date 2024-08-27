@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { WalletIcon } from "@heroicons/react/24/outline";
 import { type PoolTokens } from "~~/hooks/balancer/types";
 
 interface TokenFieldProps {
@@ -17,12 +18,6 @@ interface TokenFieldProps {
   setMaxAmount?: () => void;
 }
 
-/**
- * Input field for token amounts
- * (optional dropdown for swap token selection)
- * (optional allowance and balance displays)
- * (optional setMaxAmount button)
- */
 export const TokenField: React.FC<TokenFieldProps> = ({
   label,
   value,
@@ -32,12 +27,12 @@ export const TokenField: React.FC<TokenFieldProps> = ({
   tokenDropdownOpen,
   setTokenDropdownOpen,
   selectableTokens,
-  allowance,
+  // allowance,
   balance,
   isHighlighted,
   setMaxAmount,
 }) => {
-  const isTokenSwapField = !!(setTokenDropdownOpen && onTokenSelect && selectableTokens);
+  const isSwap = !!(setTokenDropdownOpen && onTokenSelect && selectableTokens);
 
   return (
     <div className="mb-5">
@@ -52,69 +47,45 @@ export const TokenField: React.FC<TokenFieldProps> = ({
           value={value}
           onChange={e => onAmountChange(e.target.value)}
           placeholder="0.0"
-          className={`text-right text-2xl w-full input shadow-inner rounded-lg bg-base-300 p-10 ${
+          className={`text-right text-3xl w-full input shadow-inner rounded-lg bg-base-300 h-24 ${
             isHighlighted ? "ring-1 ring-purple-500" : ""
           }`}
         />
         <div className="absolute top-0 left-0 flex gap-3 p-3">
-          {isTokenSwapField ? (
-            <div className="relative">
-              <div
-                onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)}
-                tabIndex={0}
-                role="button"
-                className="bg-neutral hover:bg-base-100 rounded-lg w-28 flex items-center justify-center gap-2 font-bold h-[58px] p-2"
-              >
-                {tokenSymbol} <ChevronDownIcon className="w-4 h-4" />
-              </div>
-              {tokenDropdownOpen && (
-                <ul tabIndex={0} className="mt-2 dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-                  {selectableTokens.map(token => (
+          <div className="relative">
+            <button
+              onClick={() => setTokenDropdownOpen && setTokenDropdownOpen(!tokenDropdownOpen)}
+              tabIndex={0}
+              role="button"
+              disabled={!isSwap}
+              className={`${
+                isSwap && "hover:bg-base-100 "
+              } text-lg bg-neutral rounded-lg px-5 flex items-center justify-center gap-2 font-bold h-[55px] mb-0.5`}
+            >
+              {tokenSymbol} {isSwap && <ChevronDownIcon className="w-5 h-5" />}
+            </button>
+            {tokenDropdownOpen ? (
+              <ul tabIndex={0} className="mt-2 dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                {selectableTokens &&
+                  onTokenSelect &&
+                  selectableTokens.map(token => (
                     <li
                       key={token.symbol}
                       onClick={() => onTokenSelect(token.symbol)}
-                      className="hover:bg-neutral-400 hover:bg-opacity-40 rounded-xl"
+                      className="hover:bg-neutral-400 hover:bg-opacity-40 rounded-xl text-lg"
                     >
                       <a className="font-bold">{token.symbol}</a>
                     </li>
                   ))}
-                </ul>
-              )}
-            </div>
-          ) : (
-            <div>
-              <div className="min-w-[100px] bg-neutral rounded-lg flex items-center justify-center gap-2 font-bold h-[58px] px-5">
-                {tokenSymbol}
-              </div>
-            </div>
-          )}
-          {!tokenDropdownOpen && (
-            <div className="flex flex-col gap-1 justify-center text-sm">
-              <table className="">
-                <tbody className="">
-                  {allowance && (
-                    <tr>
-                      <td className="align-top">Allowed :</td>
-                      <td className="pl-1">{allowance}</td>
-                    </tr>
-                  )}
-                  {balance && (
-                    <tr>
-                      <td className="align-top">Balance :</td>
-                      <td className="pl-1">
-                        {balance}{" "}
-                        {setMaxAmount && (
-                          <button className="text-violet-400" onClick={setMaxAmount}>
-                            Max
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
+              </ul>
+            ) : (
+              balance && (
+                <div onClick={setMaxAmount} className="flex items-center gap-1 hover:text-accent hover:cursor-pointer">
+                  <WalletIcon className="h-4 w-4 mt-0.5" /> {balance}
+                </div>
+              )
+            )}
+          </div>
         </div>
       </div>
     </div>
