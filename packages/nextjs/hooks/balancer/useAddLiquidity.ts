@@ -40,7 +40,7 @@ export const useAddLiquidity = (pool: Pool, amountsIn: InputAmount[]): UseAddLiq
       if (pool.poolConfig?.liquidityManagement.disableUnbalancedLiquidity) {
         const poolStateWithBalances = {
           address: poolState.address,
-          // the pool's total supply from on chain read?
+          // use the pool's total supply from on chain read?
           totalShares: formatUnits(pool.totalSupply, pool.decimals) as `${number}`,
           tokens: pool.poolTokens.map(token => ({
             address: token.address as `0x${string}`,
@@ -49,7 +49,7 @@ export const useAddLiquidity = (pool: Pool, amountsIn: InputAmount[]): UseAddLiq
             balance: formatUnits(token.balance, token.decimals) as `${number}`,
           })),
         };
-        // What should referenceAmount be??? (the 2nd arg)
+        // How should referenceAmount actually be determined?
         const { bptAmount } = calculateProportionalAmounts(poolStateWithBalances, amountsIn[0]);
 
         addLiquidityInput = {
