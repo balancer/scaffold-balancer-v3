@@ -18,7 +18,7 @@ import { formatToHuman } from "~~/utils/";
  * 2. Send transaction to remove liquidity from the pool
  * 3. Display the transaction results to the user
  */
-export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
+export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, refetchTokenBalances }) => {
   const [queryResponse, setQueryResponse] = useState<QueryRemoveLiquidityResponse | null>(null);
   const [queryError, setQueryError] = useState<QueryPoolActionError>(null);
   const [isQuerying, setIsQuerying] = useState(false);
@@ -62,6 +62,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
       await approveRouterOnToken();
       await removeLiquidity();
       refetchPool();
+      refetchTokenBalances();
     } catch (error) {
       console.error("Error removing liquidity", error);
     } finally {
