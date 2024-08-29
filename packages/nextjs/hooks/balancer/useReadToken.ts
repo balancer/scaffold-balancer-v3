@@ -7,7 +7,7 @@ import { UseToken } from "~~/hooks/balancer/types";
 /**
  * Custom hook for dealing with a single token
  */
-export const useToken = (token: Address): UseToken => {
+export const useReadToken = (token: Address): UseToken => {
   const { data: walletClient } = useWalletClient();
   const connectedAddress = walletClient?.account.address || zeroAddress;
   const { chainId } = useTargetFork();

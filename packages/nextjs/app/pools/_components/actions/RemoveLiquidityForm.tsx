@@ -1,16 +1,12 @@
 import { useState } from "react";
 import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { BALANCER_ROUTER, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
+import { BALANCER_ROUTER, RemoveLiquidityBuildCallOutput, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
+import { useQueryClient } from "@tanstack/react-query";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
-import { useApprove, useRemoveLiquidity, useTargetFork } from "~~/hooks/balancer/";
-import {
-  PoolActionReceipt,
-  QueryPoolActionError,
-  QueryRemoveLiquidityResponse,
-  TokenInfo,
-} from "~~/hooks/balancer/types";
+import { useApprove, useQueryRemoveLiquidity, useRemoveLiquidity, useTargetFork } from "~~/hooks/balancer/";
+import { PoolActionReceipt, TokenInfo } from "~~/hooks/balancer/types";
 import { formatToHuman } from "~~/utils/";
 
 /**
@@ -19,63 +15,57 @@ import { formatToHuman } from "~~/utils/";
  * 3. Display the transaction results to the user
  */
 export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, refetchTokenBalances }) => {
-  const [queryResponse, setQueryResponse] = useState<QueryRemoveLiquidityResponse | null>(null);
-  const [queryError, setQueryError] = useState<QueryPoolActionError>(null);
-  const [isQuerying, setIsQuerying] = useState(false);
-  const [isRemovingLiquidity, setIsRemovingLiquidity] = useState(false);
+  const [call, setCall] = useState<RemoveLiquidityBuildCallOutput>();
   const [removeLiquidityReceipt, setRemoveLiquidityReceipt] = useState<PoolActionReceipt>(null);
-  const [bptIn, setBptIn] = useState({
+  const [bptInput, setBptInput] = useState({
     rawAmount: 0n,
     displayValue: "",
   });
 
-  const { queryRemoveLiquidity, removeLiquidity } = useRemoveLiquidity(pool);
+  const queryClient = useQueryClient();
   const { chainId } = useTargetFork();
   const { approveSpenderOnToken: approveRouterOnToken } = useApprove(pool.address, BALANCER_ROUTER[chainId]);
+  const {
+    data: queryResponse,
+    isFetching: isQueryFetching,
+    error: queryError,
+    refetch: refetchQuery,
+  } = useQueryRemoveLiquidity("queryRemoveAmount", pool, bptInput.rawAmount, setCall);
+  const {
+    mutate: removeLiquidity,
+    isLoading: isRemoveLiquidityPending,
+    error: removeLiquidityError,
+  } = useRemoveLiquidity();
 
   const handleAmountChange = (amount: string) => {
-    setQueryError(null);
+    queryClient.removeQueries(["queryRemoveLiquidity"]);
     setRemoveLiquidityReceipt(null);
     const rawAmount = parseUnits(amount, pool.decimals);
-    setBptIn({ rawAmount, displayValue: amount });
-    setQueryResponse(null);
+    setBptInput({ rawAmount, displayValue: amount });
   };
 
-  const handleQuery = async () => {
-    setQueryError(null);
+  const handleQuery = () => {
+    queryClient.removeQueries(["queryRemoveLiquidity"]);
     setRemoveLiquidityReceipt(null);
-    setIsQuerying(true);
-    const response = await queryRemoveLiquidity(bptIn.rawAmount);
-    if (response.error) {
-      setQueryError(response.error);
-    } else {
-      const { expectedAmountsOut, minAmountsOut } = response;
-      setQueryResponse({ expectedAmountsOut, minAmountsOut });
-    }
-    setIsQuerying(false);
+    refetchQuery();
   };
 
   const handleRemoveLiquidity = async () => {
-    try {
-      setIsRemovingLiquidity(true);
-      // Before removing liquidity, must approve Router to spend account's BPT
-      await approveRouterOnToken();
-      await removeLiquidity();
-      refetchPool();
-      refetchTokenBalances();
-    } catch (error) {
-      console.error("Error removing liquidity", error);
-    } finally {
-      setIsRemovingLiquidity(false);
-    }
+    await approveRouterOnToken();
+
+    removeLiquidity(call, {
+      onSuccess: () => {
+        refetchPool();
+        refetchTokenBalances();
+      },
+    });
   };
 
   const setMaxAmount = () => {
-    setBptIn({
+    setBptInput({
       rawAmount: pool.userBalance,
       displayValue: formatToHuman(pool.userBalance || 0n, pool.decimals),
     });
-    setQueryResponse(null);
   };
 
   useContractEvent({
@@ -93,28 +83,40 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
     },
   });
 
-  const { expectedAmountsOut } = queryResponse ?? {};
+  const error = queryError || removeLiquidityError;
+  const isFormEmpty = bptInput.displayValue === "";
 
   return (
     <section>
       <TokenField
         label="BPT In"
         token={{ address: pool.address, symbol: pool.symbol, decimals: pool.decimals }}
-        value={bptIn.displayValue}
+        value={bptInput.displayValue}
         onAmountChange={handleAmountChange}
         userBalance={pool.userBalance}
         setMaxAmount={setMaxAmount}
       />
 
-      {!expectedAmountsOut || (expectedAmountsOut && removeLiquidityReceipt) ? (
-        <PoolActionButton
-          label="Query"
-          onClick={handleQuery}
-          isDisabled={isQuerying}
-          isFormEmpty={bptIn.displayValue === ""}
-        />
+      {!queryResponse || removeLiquidityReceipt || isFormEmpty ? (
+        <PoolActionButton label="Query" onClick={handleQuery} isDisabled={isQueryFetching} isFormEmpty={isFormEmpty} />
       ) : (
-        <PoolActionButton label="Remove Liquidity" isDisabled={isRemovingLiquidity} onClick={handleRemoveLiquidity} />
+        <PoolActionButton
+          label="Remove Liquidity"
+          isDisabled={isRemoveLiquidityPending}
+          onClick={handleRemoveLiquidity}
+        />
+      )}
+
+      {queryResponse && !isFormEmpty && (
+        <QueryResponseAlert
+          title="Expected Tokens Out"
+          data={pool.poolTokens.map((token, index) => ({
+            type: token.symbol,
+            description: token.name,
+            rawAmount: queryResponse.amountsOut[index].amount,
+            decimals: token.decimals,
+          }))}
+        />
       )}
 
       {removeLiquidityReceipt && (
@@ -125,19 +127,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
         />
       )}
 
-      {expectedAmountsOut && (
-        <QueryResponseAlert
-          title="Expected Tokens Out"
-          data={pool.poolTokens.map((token, index) => ({
-            type: token.symbol,
-            description: token.name,
-            rawAmount: expectedAmountsOut[index].amount,
-            decimals: token.decimals,
-          }))}
-        />
-      )}
-
-      {queryError && <QueryErrorAlert message={queryError.message} />}
+      {(error as Error) && <QueryErrorAlert message={(error as Error).message} />}
     </section>
   );
 };

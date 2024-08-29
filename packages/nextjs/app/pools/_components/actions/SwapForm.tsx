@@ -4,7 +4,7 @@ import { PoolActionsProps } from "../PoolActions";
 import { BALANCER_ROUTER, PERMIT2, SwapKind, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
-import { useApprove, useSwap, useTargetFork, useToken } from "~~/hooks/balancer/";
+import { useApprove, useReadToken, useSwap, useTargetFork } from "~~/hooks/balancer/";
 import {
   PoolActionReceipt,
   QueryPoolActionError,
@@ -54,7 +54,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
   const { querySwap, swap } = useSwap(pool, swapConfig);
   const { approveSpenderOnToken: approvePermit2OnToken } = useApprove(tokenIn.address, PERMIT2[chainId]);
   const { approveSpenderOnPermit2: approveRouterOnPermit2 } = useApprove(tokenIn.address, BALANCER_ROUTER[chainId]);
-  const { tokenAllowance, refetchTokenAllowance } = useToken(tokenIn.address);
+  const { tokenAllowance, refetchTokenAllowance } = useReadToken(tokenIn.address);
 
   const sufficientAllowance = useMemo(() => {
     return tokenAllowance && tokenAllowance >= swapConfig.tokenIn.rawAmount;

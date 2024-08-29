@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AddLiquidityForm, RemoveLiquidityForm, SwapForm } from "./actions";
 import { useAccount } from "wagmi";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { useTokens } from "~~/hooks/balancer";
+import { useReadTokens } from "~~/hooks/balancer";
 import { type Pool, type TokenBalances } from "~~/hooks/balancer/types";
 import { type RefetchPool } from "~~/hooks/balancer/useReadPool";
 import { useAccountBalance, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
@@ -28,10 +28,10 @@ export const PoolActions: React.FC<{ pool: Pool; refetchPool: RefetchPool }> = (
   const tokens = pool.poolTokens.map(token => ({
     address: token.address as `0x${string}`,
     decimals: token.decimals,
-    rawAmount: 0n, // Quirky solution cus useTokens expects type InputAmount[] cus originally built for AddLiquidityForm :D
+    rawAmount: 0n, // Quirky solution cus useReadTokens expects type InputAmount[] cus originally built for AddLiquidityForm :D
   }));
 
-  const { tokenBalances, refetchTokenBalances } = useTokens(tokens);
+  const { tokenBalances, refetchTokenBalances } = useReadTokens(tokens);
 
   const userHasNoTokens = Object.values(tokenBalances).every(balance => balance === 0n);
 
@@ -72,7 +72,7 @@ export const PoolActions: React.FC<{ pool: Pool; refetchPool: RefetchPool }> = (
           ) : balance !== 0 && userHasNoTokens ? (
             <ZeroTokensAlert refetchTokenBalances={refetchTokenBalances} />
           ) : pool.poolConfig?.liquidityManagement.disableUnbalancedLiquidity ? (
-            <Alert>This pool only allows adding liquidity proportionally</Alert>
+            <Alert>This pool only allows proportional liquidity operations</Alert>
           ) : null}
         </div>
         <div className="bg-neutral rounded-lg">

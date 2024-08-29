@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-import { type TokenAmount } from "@balancer/sdk";
+import { useEffect } from "react";
 import { useAccount } from "wagmi";
-import { useRemoveLiquidity } from "~~/hooks/balancer/";
+import { useQueryRemoveLiquidity } from "~~/hooks/balancer/";
 import { type Pool } from "~~/hooks/balancer/types";
 import { formatToHuman } from "~~/utils/";
 
@@ -9,23 +8,17 @@ import { formatToHuman } from "~~/utils/";
  * If there is a connected user, display their liquidity within the pool
  */
 export const UserLiquidity = ({ pool }: { pool: Pool }) => {
-  const [expectedAmountsOut, setExpectedAmountsOut] = useState<TokenAmount[] | undefined>();
-
   const { isConnected } = useAccount();
-  const { queryRemoveLiquidity } = useRemoveLiquidity(pool);
+  const { data: queryResponse, refetch: refetchQueryRemove } = useQueryRemoveLiquidity(
+    "queryRemoveMax",
+    pool,
+    pool.userBalance,
+  );
 
+  // Hacky solution to display user's proportional token balances within the pool
   useEffect(() => {
-    async function sendQuery() {
-      if (pool.userBalance > 0n) {
-        const { expectedAmountsOut } = await queryRemoveLiquidity(pool.userBalance);
-        setExpectedAmountsOut(expectedAmountsOut);
-      } else {
-        setExpectedAmountsOut(undefined);
-      }
-    }
-    sendQuery();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pool.userBalance]); // excluded queryRemoveLiquidity from deps array because it causes infinite re-renders
+    refetchQueryRemove();
+  }, [pool.userBalance, refetchQueryRemove]);
 
   // only render the component if the pool is initialized and the user is connected
   if (!isConnected || !pool?.poolConfig?.isPoolInitialized) {
@@ -58,10 +51,10 @@ export const UserLiquidity = ({ pool }: { pool: Pool }) => {
 
                 <div className="text-end">
                   <div className="font-bold text-end">
-                    {expectedAmountsOut ? formatToHuman(expectedAmountsOut[index].amount, token.decimals) : "0.0000"}
+                    {queryResponse ? formatToHuman(queryResponse.amountsOut[index].amount, token.decimals) : "0.0000"}
                   </div>
                   <div className="text-sm">
-                    {expectedAmountsOut ? expectedAmountsOut[index].amount.toString() : "0"}
+                    {queryResponse ? queryResponse.amountsOut[index].amount.toString() : "0"}
                   </div>
                 </div>
               </div>
