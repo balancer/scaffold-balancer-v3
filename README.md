@@ -201,14 +201,11 @@ Next, consider further extending the functionality of the custom pool contract w
 
 ## 🚢 Deploy the Contracts
 
-The deploy scripts are located in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory. All deploy scripts should be run inside of `Deploy.s.sol` so that the `export` modifier can automate the transfer of deployed contract info to `nextjs/contracts/depoloyedContracts.ts`. To add a new deploy script, import it into `Deploy.s.sol`, create a new instance of it, and run it
+The deploy scripts are located in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory.
 
-```
-        DeployYourContract deployYourContract = new DeployYourContract();
-        deployYourContract.run();
-```
 
-### 1. Examine the Example Deploy Scripts 🕵️
+
+### 1. Examine the Deploy Scripts 🕵️
 
 #### [00_DeployMockTokens.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/00_DeployMockTokens.s.sol)
 
@@ -235,7 +232,16 @@ The deploy scripts are located in the [foundry/script/](https://github.com/balan
 3. Deploys and registers a `WeightedPool` with 80/20 weights
 4. Initializes the `WeightedPool` using mock tokens
 
-### 2. Broadcast the Transactions 📡
+### 2. Modify the Deploy Scripts 🛠️
+
+Each deploy scripts should be run inside of `Deploy.s.sol` so that the `scaffoldExport` modifier can automate the transfer of deployed contract info to the nextjs front-end. To add a new deploy script, import it into `Deploy.s.sol`, create a new instance of it, and run it
+
+```
+        DeployYourContract deployYourContract = new DeployYourContract();
+        deployYourContract.run();
+```
+
+### 3. Broadcast the Transactions 📡
 
 To run all the deploy scripts
 
