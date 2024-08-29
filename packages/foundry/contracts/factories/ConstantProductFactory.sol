@@ -9,14 +9,14 @@ import {
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import { BasePoolFactory } from "@balancer-labs/v3-pool-utils/contracts/BasePoolFactory.sol";
 
-import { ConstantSumPool } from "./ConstantSumPool.sol";
+import { ConstantProductPool } from "../pools/ConstantProductPool.sol";
 
 /**
- * @title Constant Sum Factory
+ * @title Constant Product Factory
  * @notice This custom pool factory is based on the example from the Balancer v3 docs
  * https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/deploy-custom-amm-using-factory.html
  */
-contract ConstantSumFactory is BasePoolFactory {
+contract ConstantProductFactory is BasePoolFactory {
     /**
      * @dev The pool's creationCode is used to deploy pools via CREATE3
      * @notice The pool creationCode cannot be changed after the factory has been deployed
@@ -26,7 +26,7 @@ contract ConstantSumFactory is BasePoolFactory {
     constructor(
         IVault vault,
         uint32 pauseWindowDuration
-    ) BasePoolFactory(vault, pauseWindowDuration, type(ConstantSumPool).creationCode) {}
+    ) BasePoolFactory(vault, pauseWindowDuration, type(ConstantProductPool).creationCode) {}
 
     /**
      * @notice Deploys a new pool and registers it with the vault

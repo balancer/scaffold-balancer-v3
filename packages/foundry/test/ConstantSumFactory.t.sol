@@ -15,7 +15,7 @@ import { ERC20TestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { ConstantSumPool } from "../contracts/pools/ConstantSumPool.sol";
-import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
+import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.sol";
 
 contract ConstantSumFactoryTest is Test {
     uint256 internal DEFAULT_SWAP_FEE = 1e16; // 1%

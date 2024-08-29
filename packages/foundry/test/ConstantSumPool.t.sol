@@ -20,7 +20,7 @@ import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers
 import { PoolHooksMock } from "@balancer-labs/v3-vault/contracts/test/PoolHooksMock.sol";
 import { BasePoolTest } from "@balancer-labs/v3-vault/test/foundry/utils/BasePoolTest.sol";
 
-import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
+import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.sol";
 import { ConstantSumPool } from "../contracts/pools/ConstantSumPool.sol";
 
 contract ConstantSumPoolTest is BasePoolTest {

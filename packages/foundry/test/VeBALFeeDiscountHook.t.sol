@@ -54,7 +54,7 @@ contract VeBALFeeDiscountHookTest is BaseVaultTest {
         // lp will be the owner of the hook. Only LP is able to set hook fee percentages.
         vm.prank(lp);
         address veBalFeeHook = address(
-            new VeBALFeeDiscountHook(IVault(address(vault)), address(factoryMock), trustedRouter, IERC20(veBAL))
+            new VeBALFeeDiscountHook(IVault(address(vault)), address(factoryMock), trustedRouter, address(veBAL))
         );
         vm.label(veBalFeeHook, "VeBAL Fee Hook");
         return veBalFeeHook;

@@ -103,23 +103,20 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
 const PoolPageSkeleton = () => {
   return (
     <div className="w-full">
-      <div className="flex h-20 mb-7">
-        <SkeletonLoader />
-      </div>
-      <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
+      <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5 mt-20">
         <div className="flex flex-col gap-7">
-          <div className="w-full h-60">
+          <div className="w-full h-72">
             <SkeletonLoader />
           </div>
-          <div className="w-full h-60">
+          <div className="w-full h-48">
             <SkeletonLoader />
           </div>
-          <div className="w-full h-60">
+          <div className="w-full h-96">
             <SkeletonLoader />
           </div>
         </div>
         <div className="flex flex-col gap-7">
-          <div className="w-full h-72">
+          <div className="w-full h-96">
             <SkeletonLoader />
           </div>
           <div className="w-full h-72">

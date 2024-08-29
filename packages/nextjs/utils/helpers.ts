@@ -1,7 +1,7 @@
 import { formatUnits } from "viem";
 
-export const formatToHuman = (amount: bigint, decimals: number): string => {
-  return Number(formatUnits(amount || 0n, decimals)).toFixed(4);
+export const formatToHuman = (amount: bigint, decimals: number, to = 4): string => {
+  return Number(formatUnits(amount || 0n, decimals)).toFixed(to);
 };
 
 export const formatToPercentage = (value: bigint) => {

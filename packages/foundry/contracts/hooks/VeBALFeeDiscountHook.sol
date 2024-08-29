@@ -2,20 +2,18 @@
 
 pragma solidity ^0.8.24;
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
-import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
-import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
-import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import {
     LiquidityManagement,
     TokenConfig,
     PoolSwapParams,
     HookFlags
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
+import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
+import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
+import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
 /**
  * @title VeBAL Fee Discount Hook
@@ -24,23 +22,15 @@ import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 contract VeBALFeeDiscountHook is BaseHooks {
     address private immutable _allowedFactory;
     address private immutable _trustedRouter;
-    IERC20 private immutable _veBAL;
+    address private immutable _veBAL;
 
-    constructor(IVault vault, address allowedFactory, address trustedRouter, IERC20 veBAL) BaseHooks(vault) {
+    constructor(IVault vault, address allowedFactory, address trustedRouter, address veBAL) BaseHooks(vault) {
         _allowedFactory = allowedFactory;
         _trustedRouter = trustedRouter;
         _veBAL = veBAL;
     }
 
-    /**
-     * @notice Hook executed when pool is registered
-     * @dev Return true if registration was successful
-     * @dev Return false to revert the registration of the pool
-     * @dev Vault address can be accessed with msg.sender
-     * @param factory Address of the pool factory
-     * @param pool Address of the pool
-     * @return success True if the hook allowed the registration, false otherwise
-     */
+    // Determines if a pool is allowed to register using this hook
     function onRegister(
         address factory,
         address pool,
@@ -51,41 +41,31 @@ contract VeBALFeeDiscountHook is BaseHooks {
         return factory == _allowedFactory && IBasePoolFactory(factory).isPoolFromFactory(pool);
     }
 
-    /**
-     * @notice Returns flags informing which hooks are implemented in the contract.
-     * @return hookFlags Flags indicating which hooks the contract supports
-     */
+    // Return HookFlags struct that indicates which hooks this contract supports
     function getHookFlags() public pure override returns (HookFlags memory hookFlags) {
         // Support the `onComputeDynamicSwapFeePercentage` hook
         hookFlags.shouldCallComputeDynamicSwapFee = true;
     }
 
-    /**
-     * @notice Called before `onBeforeSwap` if the pool has dynamic fees.
-     * @param params Swap parameters (see IBasePool.PoolSwapParams for struct definition)
-     * @param staticSwapFeePercentage Value of the static swap fee, for reference
-     * @return success True if the pool wishes to proceed with settlement
-     * @return dynamicSwapFee Value of the swap fee
-     */
+    // Alter the swap fee percentage
     function onComputeDynamicSwapFeePercentage(
         PoolSwapParams calldata params,
         address, // pool
         uint256 staticSwapFeePercentage
-    ) public view override returns (bool success, uint256 dynamicSwapFee) {
+    ) public view override returns (bool success, uint256 dynamicSwapFeePercentage) {
         // If the router is not trusted, do not apply a fee discount
         if (params.router != _trustedRouter) {
             return (true, staticSwapFeePercentage);
         }
 
-        // Find the user's address
+        // If the user owns veBAL, apply a 50% discount to the swap fee
         address user = IRouterCommon(params.router).getSender();
 
-        // If the user owns veBAL, apply a 50% discount to the swap fee
-        if (_veBAL.balanceOf(user) > 0) {
+        if (IERC20(_veBAL).balanceOf(user) > 0) {
             return (true, staticSwapFeePercentage / 2);
         }
 
-        // Otherwise, do not apply the discount
+        // If the user holds zero veBAL, no discount
         return (true, staticSwapFeePercentage);
     }
 }

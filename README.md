@@ -215,18 +215,25 @@ The deploy scripts are located in the [foundry/script/](https://github.com/balan
 1. Deploys mock tokens that are used to register and initialize pools
 2. Deploys a mock token used for the example `VeBALFeeDiscountHook` contract
 
-#### [01_DeployConstantSum.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/01_DeployConstantSum.s.sol)
+#### [01_DeployConstantSumPool.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/01_DeployConstantSumPool.s.sol)
 
 1. Deploys a `ConstantSumFactory`
 2. Deploys and registers a `ConstantSumPool`
 3. Initializes the `ConstantSumPool` using mock tokens
 
-#### [02_DeployConstantProduct.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/02_DeployConstantProduct.s.sol)
+#### [02_DeployConstantProductPool.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/02_DeployConstantProductPool.s.sol)
 
 1. Deploys a `ConstantProductFactory`
-2. Deploys a `VeBALFeeDiscountHook` that allows pools created by the `ConstantProductFactory`
-3. Deploys and registers a `ConstantProductPool` that uses the `VeBALFeeDiscountHook`
+2. Deploys a `VeBALFeeDiscountHook` that can only be used by pools created by the `ConstantProductFactory`
+3. Deploys and registers a `ConstantProductPool`
 4. Initializes the `ConstantProductPool` using mock tokens
+
+#### [03_DeployWeightedPool8020.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/03_DeployWeightedPool8020.s.sol)
+
+1. Deploys a `WeightedPoolFactory`
+2. Deploys an `ExitFeeHook`
+3. Deploys and registers a `WeightedPool` with 80/20 weights
+4. Initializes the `WeightedPool` using mock tokens
 
 ### 2. Broadcast the Transactions 📡
 

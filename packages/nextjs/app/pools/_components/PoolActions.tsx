@@ -64,11 +64,16 @@ export const PoolActions: React.FC<{ pool: Pool; refetchPool: RefetchPool }> = (
 
   return (
     <div>
-      <div className="w-full bg-base-200 rounded-xl p-5 shadow-lg">
-        <div className="flex mb-3 items-center gap-5">
+      <div className="w-full bg-base-200 rounded-xl p-5 shadow-lg min-h-[516px]">
+        <div className="flex mb-3 items-center justify-between gap-5">
           <h5 className="text-xl font-bold text-nowrap">Pool Actions</h5>
-          {address && !balance ? <Alert>Click the faucet button in the top right corner!</Alert> : null}
-          {balance !== 0 && userHasNoTokens && <ZeroTokensAlert refetchTokenBalances={refetchTokenBalances} />}
+          {address && !balance ? (
+            <Alert>Click the faucet button in the top right corner!</Alert>
+          ) : balance !== 0 && userHasNoTokens ? (
+            <ZeroTokensAlert refetchTokenBalances={refetchTokenBalances} />
+          ) : pool.poolConfig?.liquidityManagement.disableUnbalancedLiquidity ? (
+            <Alert>This pool only allows adding liquidity proportionally</Alert>
+          ) : null}
         </div>
         <div className="bg-neutral rounded-lg">
           <div className="flex">
@@ -108,7 +113,7 @@ const ZeroTokensAlert = ({ refetchTokenBalances }: { refetchTokenBalances: () =>
 
   return (
     <Alert>
-      No balances! To mint 100 of each mock token{" "}
+      To mint 100 of each mock token{" "}
       <span
         className="link"
         onClick={async () => {
@@ -125,7 +130,7 @@ const ZeroTokensAlert = ({ refetchTokenBalances }: { refetchTokenBalances: () =>
 
 const Alert = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="w-full text-base-content bg-[#fb923c40] border border-orange-400 rounded-lg py-1 px-5 flex gap-2 items-center justify-center">
+    <div className="text-warning bg-warning-tint border border-warning rounded-lg py-1 px-5 flex gap-2 items-center justify-center">
       <div>
         <ExclamationTriangleIcon className="w-5 h-5" />
       </div>

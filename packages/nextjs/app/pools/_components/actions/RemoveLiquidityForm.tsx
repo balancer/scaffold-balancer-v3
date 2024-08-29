@@ -18,7 +18,7 @@ import { formatToHuman } from "~~/utils/";
  * 2. Send transaction to remove liquidity from the pool
  * 3. Display the transaction results to the user
  */
-export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool }) => {
+export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, refetchTokenBalances }) => {
   const [queryResponse, setQueryResponse] = useState<QueryRemoveLiquidityResponse | null>(null);
   const [queryError, setQueryError] = useState<QueryPoolActionError>(null);
   const [isQuerying, setIsQuerying] = useState(false);
@@ -62,6 +62,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
       await approveRouterOnToken();
       await removeLiquidity();
       refetchPool();
+      refetchTokenBalances();
     } catch (error) {
       console.error("Error removing liquidity", error);
     } finally {
@@ -98,21 +99,22 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
     <section>
       <TokenField
         label="BPT In"
-        tokenSymbol={pool.symbol}
+        token={{ address: pool.address, symbol: pool.symbol, decimals: pool.decimals }}
         value={bptIn.displayValue}
         onAmountChange={handleAmountChange}
-        balance={formatToHuman(pool.userBalance, pool.decimals)}
+        userBalance={pool.userBalance}
         setMaxAmount={setMaxAmount}
       />
 
       {!expectedAmountsOut || (expectedAmountsOut && removeLiquidityReceipt) ? (
-        <PoolActionButton onClick={handleQuery} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
-          Query
-        </PoolActionButton>
+        <PoolActionButton
+          label="Query"
+          onClick={handleQuery}
+          isDisabled={isQuerying}
+          isFormEmpty={bptIn.displayValue === ""}
+        />
       ) : (
-        <PoolActionButton isDisabled={isRemovingLiquidity} onClick={handleRemoveLiquidity}>
-          Remove Liquidity
-        </PoolActionButton>
+        <PoolActionButton label="Remove Liquidity" isDisabled={isRemovingLiquidity} onClick={handleRemoveLiquidity} />
       )}
 
       {removeLiquidityReceipt && (

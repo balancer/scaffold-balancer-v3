@@ -7,50 +7,55 @@ import {
     LiquidityManagement,
     PoolRoleAccounts
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
-import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
-import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpers.sol";
+import { PoolHelpers, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
-import { ConstantSumFactory } from "../contracts/pools/ConstantSumFactory.sol";
+import { WeightedPoolFactory } from "@balancer-labs/v3-pool-weighted/contracts/WeightedPoolFactory.sol";
+import { ExitFeeHook } from "../contracts/hooks/ExitFeeHook.sol";
 
 /**
- * @title Deploy Constant Sum
- * @notice Deploys, registers, and initializes a Constant Sum Pool
+ * @title Deploy Weighted Pool 80/20
+ * @notice Deploys, registers, and initializes a 80/20 weighted pool that uses the Exit Fee Hook
  */
-contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
+contract DeployWeightedPool8020 is PoolHelpers, ScaffoldHelpers {
     function run(address token1, address token2) external {
-        // Set the deployment configurations
-        uint32 pauseWindowDuration = 365 days;
-        CustomPoolConfig memory poolConfig = getPoolConfig(token1, token2);
+        // Set the pool initialization config
         InitializationConfig memory initConfig = getInitializationConfig(token1, token2);
 
         // Start creating the transactions
         uint256 deployerPrivateKey = getDeployerPrivateKey();
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy a constant sum factory contract
-        ConstantSumFactory factory = new ConstantSumFactory(vault, pauseWindowDuration);
-        console.log("Constant Sum Factory deployed at: %s", address(factory));
+        // Deploy a  factory
+        WeightedPoolFactory factory = new WeightedPoolFactory(vault, 365 days, "Factory v1", "Pool v1");
+        console.log("Weighted Pool Factory deployed at: %s", address(factory));
+
+        // Deploy a hook
+        address exitFeeHook = address(new ExitFeeHook(vault));
+        console.log("ExitFeeHook deployed at address: %s", exitFeeHook);
 
         // Deploy a pool and register it with the vault
+        /// @notice passing args directly to avoid stack too deep error
         address pool = factory.create(
-            poolConfig.name,
-            poolConfig.symbol,
-            poolConfig.salt,
-            poolConfig.tokenConfigs,
-            poolConfig.swapFeePercentage,
-            poolConfig.protocolFeeExempt,
-            poolConfig.roleAccounts,
-            poolConfig.poolHooksContract,
-            poolConfig.liquidityManagement
+            "80/20 Weighted Pool", // string name
+            "80-20-WP", // string symbol
+            getTokenConfigs(token1, token2), // TokenConfig[] tokenConfigs
+            getNormailzedWeights(), // uint256[] normalizedWeights
+            getRoleAccounts(), // PoolRoleAccounts roleAccounts
+            0.03e18, // uint256 swapFeePercentage (3%)
+            exitFeeHook, // address poolHooksContract
+            true, //bool enableDonation
+            true, // bool disableUnbalancedLiquidity (must be true for the ExitFee Hook)
+            keccak256(abi.encode(block.number)) // bytes32 salt
         );
-        console.log("Constant Sum Pool deployed at: %s", pool);
+        console.log("Weighted Pool deployed at: %s", pool);
 
         // Approve Permit2 contract to spend tokens on behalf of deployer
         approveSpenderOnToken(address(permit2), initConfig.tokens);
-
         // Approve Router contract to spend tokens using Permit2
         approveSpenderOnPermit2(address(router), initConfig.tokens);
 
@@ -63,25 +68,18 @@ contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
             initConfig.wethIsEth,
             initConfig.userData
         );
-        console.log("Constant Sum Pool initialized successfully!");
+        console.log("Weighted Pool initialized successfully!");
         vm.stopBroadcast();
     }
 
     /**
-     * @dev Set all of the configurations for deploying and registering a pool here
+     * @dev Set the token configs for the pool
      * @notice TokenConfig encapsulates the data required for the Vault to support a token of the given type.
      * For STANDARD tokens, the rate provider address must be 0, and paysYieldFees must be false.
      * All WITH_RATE tokens need a rate provider, and may or may not be yield-bearing.
      */
-    function getPoolConfig(address token1, address token2) internal view returns (CustomPoolConfig memory config) {
-        string memory name = "Constant Sum Pool"; // name for the pool
-        string memory symbol = "CSP"; // symbol for the BPT
-        bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
-        uint256 swapFeePercentage = 0.01e18; // 1%
-        bool protocolFeeExempt = true;
-        address poolHooksContract = address(0); // zero address if no hooks contract is needed
-
-        TokenConfig[] memory tokenConfigs = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
+    function getTokenConfigs(address token1, address token2) internal pure returns (TokenConfig[] memory tokenConfigs) {
+        tokenConfigs = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage
         tokenConfigs[0] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
             token: IERC20(token1),
             tokenType: TokenType.STANDARD, // STANDARD or WITH_RATE
@@ -94,36 +92,26 @@ contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
             rateProvider: IRateProvider(address(0)), // The rate provider for a token (see further documentation above)
             paysYieldFees: false // Flag indicating whether yield fees should be charged on this token
         });
+        sortTokenConfig(tokenConfigs);
+    }
 
-        PoolRoleAccounts memory roleAccounts = PoolRoleAccounts({
+    /// @dev Set the weights for each token in the pool
+    function getNormailzedWeights() internal pure returns (uint256[] memory normalizedWeights) {
+        normalizedWeights = new uint256[](2);
+        normalizedWeights[0] = uint256(80e16);
+        normalizedWeights[1] = uint256(20e16);
+    }
+
+    /// @dev Set the role accounts for the pool
+    function getRoleAccounts() internal pure returns (PoolRoleAccounts memory roleAccounts) {
+        roleAccounts = PoolRoleAccounts({
             pauseManager: address(0), // Account empowered to pause/unpause the pool (or 0 to delegate to governance)
             swapFeeManager: address(0), // Account empowered to set static swap fees for a pool (or 0 to delegate to goverance)
             poolCreator: address(0) // Account empowered to set the pool creator fee percentage
         });
-        LiquidityManagement memory liquidityManagement = LiquidityManagement({
-            disableUnbalancedLiquidity: false,
-            enableAddLiquidityCustom: false,
-            enableRemoveLiquidityCustom: false,
-            enableDonation: false
-        });
-
-        config = CustomPoolConfig({
-            name: name,
-            symbol: symbol,
-            salt: salt,
-            tokenConfigs: sortTokenConfig(tokenConfigs),
-            swapFeePercentage: swapFeePercentage,
-            protocolFeeExempt: protocolFeeExempt,
-            roleAccounts: roleAccounts,
-            poolHooksContract: poolHooksContract,
-            liquidityManagement: liquidityManagement
-        });
     }
 
-    /**
-     * @dev Set the pool initialization configurations here
-     * @notice this is where the amounts of tokens to be initially added to the pool are set
-     */
+    /// @dev Set the initialization config for the pool (i.e. the amount of tokens to be added)
     function getInitializationConfig(
         address token1,
         address token2
@@ -132,9 +120,9 @@ contract DeployConstantSum is PoolHelpers, ScaffoldHelpers {
         tokens[0] = IERC20(token1);
         tokens[1] = IERC20(token2);
         uint256[] memory exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
-        exactAmountsIn[0] = 50e18; // amount of token1 to send during pool initialization
-        exactAmountsIn[1] = 50e18; // amount of token2 to send during pool initialization
-        uint256 minBptAmountOut = 99e18; // Minimum amount of pool tokens to be received
+        exactAmountsIn[0] = 80e18; // amount of token1 to send during pool initialization
+        exactAmountsIn[1] = 20e18; // amount of token2 to send during pool initialization
+        uint256 minBptAmountOut = 49e18; // Minimum amount of pool tokens to be received
         bool wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
         bytes memory userData = bytes(""); // Additional (optional) data required for adding initial liquidity
 

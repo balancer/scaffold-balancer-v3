@@ -25,20 +25,27 @@ export const useAddLiquidity = (pool: Pool, amountsIn: InputAmount[]): UseAddLiq
   const { rpcUrl, chainId } = useTargetFork();
   const writeTx = useTransactor();
 
-  const queryAddLiquidity = async () => {
+  const queryAddLiquidity = async (bptOut: InputAmount) => {
     try {
       const slippage = Slippage.fromPercentage("1"); // 1%
       const onchainProvider = new OnChainProvider(rpcUrl, chainId);
       const poolId = pool.address as `0x${string}`;
       const poolState: PoolState = await onchainProvider.pools.fetchPoolState(poolId, "CustomPool");
 
-      // Construct the addLiquidity input object
-      const addLiquidityInput: AddLiquidityInput = {
-        amountsIn,
-        chainId,
-        rpcUrl,
-        kind: AddLiquidityKind.Unbalanced,
-      };
+      // Construct the addLiquidity input object based on if pool allows unbalanced liquidity operations
+      const addLiquidityInput: AddLiquidityInput = pool.poolConfig?.liquidityManagement.disableUnbalancedLiquidity
+        ? {
+            kind: AddLiquidityKind.Proportional,
+            bptOut,
+            chainId,
+            rpcUrl,
+          }
+        : {
+            kind: AddLiquidityKind.Unbalanced,
+            amountsIn,
+            chainId,
+            rpcUrl,
+          };
 
       // Query addLiquidity to get the amount of BPT out
       const addLiquidity = new AddLiquidity();

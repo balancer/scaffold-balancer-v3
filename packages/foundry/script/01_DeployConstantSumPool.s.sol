@@ -7,24 +7,22 @@ import {
     LiquidityManagement,
     PoolRoleAccounts
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
-import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
-import { VeBALFeeDiscountHook } from "../contracts/hooks/VeBALFeeDiscountHook.sol";
-import { ConstantProductFactory } from "../contracts/pools/ConstantProductFactory.sol";
+import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.sol";
+import { LotteryHook } from "../contracts/hooks/LotteryHook.sol";
 
 /**
- * @title Deploy Constant Product
- * @notice Deploys a factory and hooks contract and then deploys, registers, and initializes a constant product pool
+ * @title Deploy Constant Sum Pool
+ * @notice Deploys, registers, and initializes a constant sum pool that uses the Lottery Hook
  */
-contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
-    function run(address token1, address token2, address veBAL) external {
-        // Set the deployment configurations
-        uint32 pauseWindowDuration = 365 days;
+contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
+    function run(address token1, address token2) external {
+        // Set the pool's deployment, registration, and initialization config
         CustomPoolConfig memory poolConfig = getPoolConfig(token1, token2);
         InitializationConfig memory initConfig = getInitializationConfig(token1, token2);
 
@@ -32,18 +30,13 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
         uint256 deployerPrivateKey = getDeployerPrivateKey();
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy a constant sum factory contract
-        ConstantProductFactory factory = new ConstantProductFactory(IVault(vault), pauseWindowDuration);
-        console.log("Constant Product Factory deployed at: %s", address(factory));
+        // Deploy a factory
+        ConstantSumFactory factory = new ConstantSumFactory(vault, 365 days); // pauseWindowDuration
+        console.log("Constant Sum Factory deployed at: %s", address(factory));
 
-        // Deploy a hooks contract
-        VeBALFeeDiscountHook poolHooksContract = new VeBALFeeDiscountHook(
-            IVault(vault),
-            address(factory),
-            address(router),
-            IERC20(veBAL)
-        );
-        console.log("VeBALFeeDiscountHook deployed at address: %s", address(poolHooksContract));
+        // Deploy a hook
+        address lotteryHook = address(new LotteryHook(vault, address(router)));
+        console.log("LotteryHook deployed at address: %s", lotteryHook);
 
         // Deploy a pool and register it with the vault
         address pool = factory.create(
@@ -54,14 +47,13 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
             poolConfig.swapFeePercentage,
             poolConfig.protocolFeeExempt,
             poolConfig.roleAccounts,
-            address(poolHooksContract),
+            lotteryHook, // poolHooksContract
             poolConfig.liquidityManagement
         );
-        console.log("Constant Product Pool deployed at: %s", pool);
+        console.log("Constant Sum Pool deployed at: %s", pool);
 
         // Approve Permit2 contract to spend tokens on behalf of deployer
         approveSpenderOnToken(address(permit2), initConfig.tokens);
-
         // Approve Router contract to spend tokens using Permit2
         approveSpenderOnPermit2(address(router), initConfig.tokens);
 
@@ -74,7 +66,7 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
             initConfig.wethIsEth,
             initConfig.userData
         );
-        console.log("Constant Product Pool initialized successfully!");
+        console.log("Constant Sum Pool initialized successfully!");
         vm.stopBroadcast();
     }
 
@@ -85,14 +77,14 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
      * All WITH_RATE tokens need a rate provider, and may or may not be yield-bearing.
      */
     function getPoolConfig(address token1, address token2) internal view returns (CustomPoolConfig memory config) {
-        string memory name = "Constant Product Pool"; // name for the pool
-        string memory symbol = "CPP"; // symbol for the BPT
+        string memory name = "Constant Sum Pool"; // name for the pool
+        string memory symbol = "CSP"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
-        uint256 swapFeePercentage = 0.02e18; // 2%
-        bool protocolFeeExempt = false;
+        uint256 swapFeePercentage = 0.01e18; // 1%
+        bool protocolFeeExempt = true;
         address poolHooksContract = address(0); // zero address if no hooks contract is needed
 
-        TokenConfig[] memory tokenConfigs = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage
+        TokenConfig[] memory tokenConfigs = new TokenConfig[](2); // An array of descriptors for the tokens the pool will manage.
         tokenConfigs[0] = TokenConfig({ // Make sure to have proper token order (alphanumeric)
             token: IERC20(token1),
             tokenType: TokenType.STANDARD, // STANDARD or WITH_RATE
@@ -112,7 +104,7 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
             poolCreator: address(0) // Account empowered to set the pool creator fee percentage
         });
         LiquidityManagement memory liquidityManagement = LiquidityManagement({
-            disableUnbalancedLiquidity: false,
+            disableUnbalancedLiquidity: true, // Must be true to register with the Lottery Hook
             enableAddLiquidityCustom: false,
             enableRemoveLiquidityCustom: false,
             enableDonation: false
@@ -133,7 +125,7 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
 
     /**
      * @dev Set the pool initialization configurations here
-     * @notice This is where the amounts of tokens to seed the pool with initial liquidity are set
+     * @notice this is where the amounts of tokens to be initially added to the pool are set
      */
     function getInitializationConfig(
         address token1,
@@ -145,7 +137,7 @@ contract DeployConstantProduct is PoolHelpers, ScaffoldHelpers {
         uint256[] memory exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
         exactAmountsIn[0] = 50e18; // amount of token1 to send during pool initialization
         exactAmountsIn[1] = 50e18; // amount of token2 to send during pool initialization
-        uint256 minBptAmountOut = 49e18; // Minimum amount of pool tokens to be received
+        uint256 minBptAmountOut = 99e18; // Minimum amount of pool tokens to be received
         bool wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
         bytes memory userData = bytes(""); // Additional (optional) data required for adding initial liquidity
 
