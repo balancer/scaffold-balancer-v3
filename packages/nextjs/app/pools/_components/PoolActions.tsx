@@ -64,7 +64,7 @@ export const PoolActions: React.FC<{ pool: Pool; refetchPool: RefetchPool }> = (
 
   return (
     <div>
-      <div className="w-full bg-base-200 rounded-xl p-5 shadow-lg">
+      <div className="w-full bg-base-200 rounded-xl p-5 shadow-lg min-h-[516px]">
         <div className="flex mb-3 items-center justify-between gap-5">
           <h5 className="text-xl font-bold text-nowrap">Pool Actions</h5>
           {address && !balance ? (
