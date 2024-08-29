@@ -1,4 +1,5 @@
 import { SwapKind, TokenAmount } from "@balancer/sdk";
+import { InputAmount } from "@balancer/sdk";
 import { WriteContractResult } from "@wagmi/core";
 import { type Address } from "viem";
 
@@ -72,7 +73,7 @@ export type UseSwap = {
 };
 
 export type UseAddLiquidity = {
-  queryAddLiquidity: () => Promise<QueryAddLiquidityResponse>;
+  queryAddLiquidity: (bptOut: InputAmount) => Promise<QueryAddLiquidityResponse>;
   addLiquidity: () => Promise<TransactionHash>;
 };
 

@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
 import { BALANCER_ROUTER, InputAmount, PERMIT2, erc20Abi, permit2Abi } from "@balancer/sdk";
+import { calculateProportionalAmounts } from "@balancer/sdk";
 import { formatUnits, parseUnits } from "viem";
 import { useContractEvent, usePublicClient, useWalletClient } from "wagmi";
 import abis from "~~/contracts/abis";
 import { useAddLiquidity, useTargetFork, useTokens } from "~~/hooks/balancer/";
 import { PoolActionReceipt, QueryAddLiquidityResponse, QueryPoolActionError, TokenInfo } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
-import { formatToHuman } from "~~/utils/";
 import { MaxUint48, MaxUint160, MaxUint256 } from "~~/utils/constants";
 
 /**
@@ -37,6 +37,11 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   const [isQuerying, setIsQuerying] = useState(false);
   const [isAddingLiquidity, setIsAddingLiquidity] = useState(false);
   const [addLiquidityReceipt, setAddLiquidityReceipt] = useState<PoolActionReceipt>(null);
+  const [bptOut, setBptOut] = useState<InputAmount>({
+    rawAmount: 0n,
+    decimals: pool.decimals,
+    address: pool.address as `0x${string}`,
+  });
 
   const { tokenAllowances, refetchTokenAllowances } = useTokens(tokenInputs);
   const { queryAddLiquidity, addLiquidity } = useAddLiquidity(pool, tokenInputs);
@@ -69,20 +74,39 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
     setQueryError(null);
     setQueryResponse(null);
     setAddLiquidityReceipt(null);
+
     const updatedTokens = tokenInputs.map((token, idx) => {
       if (idx === index) {
         return { ...token, rawAmount: parseUnits(value, token.decimals) };
       }
       return token;
     });
-    setTokenInputs(updatedTokens);
+
+    if (pool.poolConfig?.liquidityManagement.disableUnbalancedLiquidity) {
+      // Read pool supply and token balances on-chain
+      const poolStateWithBalances = {
+        address: pool.address as `0x${string}`,
+        totalShares: formatUnits(pool.totalSupply, pool.decimals) as `${number}`,
+        tokens: pool.poolTokens.map(token => ({
+          address: token.address as `0x${string}`,
+          decimals: token.decimals,
+          balance: formatUnits(token.balance, token.decimals) as `${number}`,
+        })),
+      };
+      const referenceAmount = updatedTokens[index];
+      const { bptAmount, tokenAmounts } = calculateProportionalAmounts(poolStateWithBalances, referenceAmount);
+      setBptOut(bptAmount);
+      setTokenInputs(tokenAmounts);
+    } else {
+      setTokenInputs(updatedTokens);
+    }
   };
 
-  const handlequeryAddLiquidity = async () => {
+  const handleQueryAddLiquidity = async () => {
     setQueryResponse(null);
     setAddLiquidityReceipt(null);
     setIsQuerying(true);
-    const response = await queryAddLiquidity();
+    const response = await queryAddLiquidity(bptOut);
     if (response.error) {
       setQueryError(response.error);
     } else {
@@ -110,7 +134,6 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
             console.log("Approved permit2 contract to spend max amount of", token.address);
           },
         });
-
         // Approve Router to spend account's tokens using Permit2.approve(token, spender, amount, deadline)
         const { request: approveSpenderOnPermit2 } = await publicClient.simulateContract({
           address: PERMIT2[chainId],
@@ -168,37 +191,32 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   return (
     <section>
       <div className="mb-5">
-        {tokenInputs.map((token, index) => (
-          <TokenField
-            key={token.address}
-            label={index === 0 ? "Tokens In" : undefined}
-            tokenSymbol={pool.poolTokens[index].symbol}
-            value={
-              formatUnits(token.rawAmount, token.decimals) === "0" ? "" : formatUnits(token.rawAmount, token.decimals)
-            }
-            onAmountChange={value => handleInputChange(index, value)}
-            allowance={tokenAllowances && formatToHuman(tokenAllowances[index] || 0n, token.decimals)}
-            balance={tokenBalances && formatToHuman(tokenBalances[token.address] || 0n, token.decimals)}
-          />
-        ))}
+        {tokenInputs.map((token, index) => {
+          const humanInputAmount = formatUnits(token.rawAmount, token.decimals);
+          return (
+            <TokenField
+              key={token.address}
+              label={index === 0 ? "Tokens In" : undefined}
+              token={pool.poolTokens[index]}
+              userBalance={tokenBalances[token.address]}
+              value={humanInputAmount != "0" ? humanInputAmount : ""}
+              onAmountChange={value => handleInputChange(index, value)}
+            />
+          );
+        })}
       </div>
 
       {!expectedBptOut || (expectedBptOut && addLiquidityReceipt) ? (
         <PoolActionButton
-          onClick={handlequeryAddLiquidity}
+          label="Query"
+          onClick={handleQueryAddLiquidity}
           isDisabled={isQuerying}
           isFormEmpty={tokenInputs.every(token => token.rawAmount === 0n)}
-        >
-          Query
-        </PoolActionButton>
+        />
       ) : !sufficientAllowances ? (
-        <PoolActionButton isDisabled={isApproving} onClick={handleApprove}>
-          Approve
-        </PoolActionButton>
+        <PoolActionButton label="Approve" isDisabled={isApproving} onClick={handleApprove} />
       ) : (
-        <PoolActionButton isDisabled={isAddingLiquidity} onClick={handleAddLiquidity}>
-          Add Liquidity
-        </PoolActionButton>
+        <PoolActionButton label="Add Liquidity" isDisabled={isAddingLiquidity} onClick={handleAddLiquidity} />
       )}
 
       {addLiquidityReceipt && (

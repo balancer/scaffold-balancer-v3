@@ -8,9 +8,7 @@ import {
   OnChainProvider,
   PoolState,
   Slippage,
-  calculateProportionalAmounts,
 } from "@balancer/sdk";
-import { formatUnits } from "viem";
 import { useWalletClient } from "wagmi";
 import { useTargetFork } from "~~/hooks/balancer";
 import { Pool, UseAddLiquidity } from "~~/hooks/balancer/types";
@@ -27,45 +25,27 @@ export const useAddLiquidity = (pool: Pool, amountsIn: InputAmount[]): UseAddLiq
   const { rpcUrl, chainId } = useTargetFork();
   const writeTx = useTransactor();
 
-  const queryAddLiquidity = async () => {
+  const queryAddLiquidity = async (bptOut: InputAmount) => {
     try {
       const slippage = Slippage.fromPercentage("1"); // 1%
       const onchainProvider = new OnChainProvider(rpcUrl, chainId);
       const poolId = pool.address as `0x${string}`;
       const poolState: PoolState = await onchainProvider.pools.fetchPoolState(poolId, "CustomPool");
 
-      // Construct the addLiquidity input object
-      let addLiquidityInput: AddLiquidityInput;
-
-      if (pool.poolConfig?.liquidityManagement.disableUnbalancedLiquidity) {
-        const poolStateWithBalances = {
-          address: poolState.address,
-          // use the pool's total supply from on chain read?
-          totalShares: formatUnits(pool.totalSupply, pool.decimals) as `${number}`,
-          tokens: pool.poolTokens.map(token => ({
-            address: token.address as `0x${string}`,
-            decimals: token.decimals,
-            // use the pools token balances from on chain read?
-            balance: formatUnits(token.balance, token.decimals) as `${number}`,
-          })),
-        };
-        // How should referenceAmount actually be determined?
-        const { bptAmount } = calculateProportionalAmounts(poolStateWithBalances, amountsIn[0]);
-
-        addLiquidityInput = {
-          bptOut: bptAmount,
-          chainId,
-          rpcUrl,
-          kind: AddLiquidityKind.Proportional,
-        };
-      } else {
-        addLiquidityInput = {
-          amountsIn,
-          chainId,
-          rpcUrl,
-          kind: AddLiquidityKind.Unbalanced,
-        };
-      }
+      // Construct the addLiquidity input object based on if pool allows unbalanced liquidity operations
+      const addLiquidityInput: AddLiquidityInput = pool.poolConfig?.liquidityManagement.disableUnbalancedLiquidity
+        ? {
+            kind: AddLiquidityKind.Proportional,
+            bptOut,
+            chainId,
+            rpcUrl,
+          }
+        : {
+            kind: AddLiquidityKind.Unbalanced,
+            amountsIn,
+            chainId,
+            rpcUrl,
+          };
 
       // Query addLiquidity to get the amount of BPT out
       const addLiquidity = new AddLiquidity();

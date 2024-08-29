@@ -223,20 +223,20 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
     <section>
       <TokenField
         label="Token In"
-        tokenSymbol={tokenIn.symbol}
+        token={tokenIn}
+        userBalance={tokenBalances[tokenIn.address]}
         value={swapConfig.tokenIn.amount}
         onAmountChange={value => handleTokenAmountChange(value, "tokenIn")}
         onTokenSelect={symbol => handleTokenSelection(symbol, "tokenIn")}
         tokenDropdownOpen={isTokenInDropdownOpen}
         setTokenDropdownOpen={setTokenInDropdownOpen}
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenIn.symbol)}
-        allowance={formatToHuman(tokenAllowance, tokenIn.decimals)}
-        balance={formatToHuman(tokenBalances[tokenIn.address] ?? 0n, tokenIn.decimals)}
         isHighlighted={queryResponse?.swapKind === SwapKind.GivenIn}
       />
       <TokenField
         label="Token Out"
-        tokenSymbol={tokenOut.symbol}
+        token={tokenOut}
+        userBalance={tokenBalances[tokenOut.address]}
         value={swapConfig.tokenOut.amount}
         onAmountChange={value => handleTokenAmountChange(value, "tokenOut")}
         onTokenSelect={symbol => handleTokenSelection(symbol, "tokenOut")}
@@ -244,25 +244,19 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
         setTokenDropdownOpen={setTokenOutDropdownOpen}
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenOut.symbol)}
         isHighlighted={queryResponse?.swapKind === SwapKind.GivenOut}
-        balance={formatToHuman(tokenBalances[tokenOut.address] ?? 0n, tokenOut.decimals)}
       />
 
       {!expectedAmount || (expectedAmount && swapReceipt) ? (
         <PoolActionButton
+          label="Query"
           onClick={handleQuerySwap}
           isDisabled={isQuerying}
           isFormEmpty={swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === ""}
-        >
-          Query
-        </PoolActionButton>
+        />
       ) : !sufficientAllowance ? (
-        <PoolActionButton isDisabled={isApproving} onClick={handleApprove}>
-          Approve
-        </PoolActionButton>
+        <PoolActionButton label="Approve" isDisabled={isApproving} onClick={handleApprove} />
       ) : (
-        <PoolActionButton isDisabled={isSwapping} onClick={handleSwap}>
-          Swap
-        </PoolActionButton>
+        <PoolActionButton label="Swap" isDisabled={isSwapping} onClick={handleSwap} />
       )}
 
       {queryError && <QueryErrorAlert message={queryError.message} />}

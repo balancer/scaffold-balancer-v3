@@ -98,21 +98,22 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
     <section>
       <TokenField
         label="BPT In"
-        tokenSymbol={pool.symbol}
+        token={{ address: pool.address, symbol: pool.symbol, decimals: pool.decimals }}
         value={bptIn.displayValue}
         onAmountChange={handleAmountChange}
-        balance={formatToHuman(pool.userBalance, pool.decimals)}
+        userBalance={pool.userBalance}
         setMaxAmount={setMaxAmount}
       />
 
       {!expectedAmountsOut || (expectedAmountsOut && removeLiquidityReceipt) ? (
-        <PoolActionButton onClick={handleQuery} isDisabled={isQuerying} isFormEmpty={bptIn.displayValue === ""}>
-          Query
-        </PoolActionButton>
+        <PoolActionButton
+          label="Query"
+          onClick={handleQuery}
+          isDisabled={isQuerying}
+          isFormEmpty={bptIn.displayValue === ""}
+        />
       ) : (
-        <PoolActionButton isDisabled={isRemovingLiquidity} onClick={handleRemoveLiquidity}>
-          Remove Liquidity
-        </PoolActionButton>
+        <PoolActionButton label="Remove Liquidity" isDisabled={isRemovingLiquidity} onClick={handleRemoveLiquidity} />
       )}
 
       {removeLiquidityReceipt && (

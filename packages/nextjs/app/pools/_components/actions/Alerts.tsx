@@ -23,7 +23,7 @@ export const QueryResponseAlert: React.FC<QueryResponseAlertProps> = ({ title, d
   return (
     <div className="">
       <h5 className="mt-5 mb-1 ml-2">{title}</h5>
-      <div className="bg-warning-tint text-warning border border-warning rounded-lg p-5">
+      <div className="bg-warning-tint border border-warning rounded-lg p-5">
         {data &&
           data.map((item, idx) => (
             <div key={idx} className={`flex justify-between ${idx !== data.length - 1 ? "mb-3" : ""}`}>
@@ -85,7 +85,7 @@ export const TransactionReceiptAlert: React.FC<TransactionReceiptAlertProps> = (
         )}
       </div>
 
-      <div className="bg-success-tint border border-success text-success rounded-lg p-5">
+      <div className="bg-success-tint border border-success rounded-lg p-5">
         {data &&
           data.map((token, idx) => (
             <div key={idx} className={`flex justify-between ${idx !== data.length - 1 ? "mb-3" : ""}`}>
