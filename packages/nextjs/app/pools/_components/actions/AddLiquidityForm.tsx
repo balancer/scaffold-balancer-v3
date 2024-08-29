@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { BALANCER_ROUTER, InputAmount, PERMIT2, erc20Abi, permit2Abi } from "@balancer/sdk";
-import { calculateProportionalAmounts } from "@balancer/sdk";
+import {
+  AddLiquidityBuildCallOutput,
+  BALANCER_ROUTER,
+  InputAmount,
+  PERMIT2,
+  calculateProportionalAmounts,
+  erc20Abi,
+  permit2Abi,
+} from "@balancer/sdk";
+import { useQueryClient } from "@tanstack/react-query";
 import { formatUnits, parseUnits } from "viem";
 import { useContractEvent, usePublicClient, useWalletClient } from "wagmi";
 import abis from "~~/contracts/abis";
-import { useAddLiquidity, useTargetFork, useTokens } from "~~/hooks/balancer/";
-import { PoolActionReceipt, QueryAddLiquidityResponse, QueryPoolActionError, TokenInfo } from "~~/hooks/balancer/types";
+import { useAddLiquidity, useQueryAddLiquidity, useTargetFork, useTokens } from "~~/hooks/balancer/";
+import { PoolActionReceipt, TokenInfo } from "~~/hooks/balancer/types";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { MaxUint48, MaxUint160, MaxUint256 } from "~~/utils/constants";
 
@@ -23,58 +31,38 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   tokenBalances,
   refetchTokenBalances,
 }) => {
+  const [call, setCall] = useState<AddLiquidityBuildCallOutput>();
+
   const initialTokenInputs = pool.poolTokens.map(token => ({
     address: token.address as `0x${string}`,
     decimals: token.decimals,
     rawAmount: 0n,
   }));
-  const [tokensToApprove, setTokensToApprove] = useState<InputAmount[]>([]);
   const [tokenInputs, setTokenInputs] = useState<InputAmount[]>(initialTokenInputs);
-  const [queryResponse, setQueryResponse] = useState<QueryAddLiquidityResponse | null>(null);
+  const [tokensToApprove, setTokensToApprove] = useState<InputAmount[]>([]);
   const [sufficientAllowances, setSufficientAllowances] = useState(false);
-  const [queryError, setQueryError] = useState<QueryPoolActionError>();
   const [isApproving, setIsApproving] = useState(false);
-  const [isQuerying, setIsQuerying] = useState(false);
-  const [isAddingLiquidity, setIsAddingLiquidity] = useState(false);
   const [addLiquidityReceipt, setAddLiquidityReceipt] = useState<PoolActionReceipt>(null);
-  const [bptOut, setBptOut] = useState<InputAmount>({
-    rawAmount: 0n,
-    decimals: pool.decimals,
-    address: pool.address as `0x${string}`,
-  });
+  const [bptOut, setBptOut] = useState<InputAmount>(); // only for the proportional add liquidity case
 
   const { tokenAllowances, refetchTokenAllowances } = useTokens(tokenInputs);
-  const { queryAddLiquidity, addLiquidity } = useAddLiquidity(pool, tokenInputs);
   const writeTx = useTransactor(); // scaffold hook for tx status toast notifications
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
   const { chainId } = useTargetFork();
 
-  useEffect(() => {
-    // Determine which tokens need to be approved
-    async function determineTokensToApprove() {
-      if (tokenAllowances) {
-        const tokensNeedingApproval = tokenInputs.filter((token, index) => {
-          const allowance = tokenAllowances[index] || 0n;
-          return allowance < token.rawAmount;
-        });
-        setTokensToApprove(tokensNeedingApproval);
-        // Check if all tokens have sufficient tokenAllowances
-        if (tokensNeedingApproval.length > 0) {
-          setSufficientAllowances(false);
-        } else {
-          setSufficientAllowances(true);
-        }
-      }
-    }
-    determineTokensToApprove();
-  }, [tokenInputs, tokenAllowances]);
+  const {
+    data: queryResponse,
+    isFetching: isQueryFetching,
+    error: queryError,
+    refetch: refetchQueryAddLiquidity,
+  } = useQueryAddLiquidity(pool, tokenInputs, setCall, bptOut);
+  const { mutate: addLiquidity, isLoading: isAddLiquidityPending, error: addLiquidityError } = useAddLiquidity();
+  const queryClient = useQueryClient();
 
   const handleInputChange = (index: number, value: string) => {
-    setQueryError(null);
-    setQueryResponse(null);
+    queryClient.removeQueries(["queryAddLiquidity"]);
     setAddLiquidityReceipt(null);
-
     const updatedTokens = tokenInputs.map((token, idx) => {
       if (idx === index) {
         return { ...token, rawAmount: parseUnits(value, token.decimals) };
@@ -100,19 +88,6 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
     } else {
       setTokenInputs(updatedTokens);
     }
-  };
-
-  const handleQueryAddLiquidity = async () => {
-    setQueryResponse(null);
-    setAddLiquidityReceipt(null);
-    setIsQuerying(true);
-    const response = await queryAddLiquidity(bptOut);
-    if (response.error) {
-      setQueryError(response.error);
-    } else {
-      setQueryResponse(response);
-    }
-    setIsQuerying(false);
   };
 
   const handleApprove = async () => {
@@ -157,20 +132,27 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
     });
   };
 
-  const handleAddLiquidity = async () => {
-    try {
-      setIsAddingLiquidity(true);
-      await addLiquidity();
-      refetchTokenAllowances();
-      refetchTokenBalances();
-      refetchPool();
-    } catch (e) {
-      console.error("error", e);
-    } finally {
-      setIsAddingLiquidity(false);
+  useEffect(() => {
+    // Determine which tokens need to be approved
+    async function determineTokensToApprove() {
+      if (tokenAllowances) {
+        const tokensNeedingApproval = tokenInputs.filter((token, index) => {
+          const allowance = tokenAllowances[index] || 0n;
+          return allowance < token.rawAmount;
+        });
+        setTokensToApprove(tokensNeedingApproval);
+        // Check if all tokens have sufficient tokenAllowances
+        if (tokensNeedingApproval.length > 0) {
+          setSufficientAllowances(false);
+        } else {
+          setSufficientAllowances(true);
+        }
+      }
     }
-  };
+    determineTokensToApprove();
+  }, [tokenInputs, tokenAllowances]);
 
+  // Listen for Transfer events to update the UI with the actual BPT out amount
   useContractEvent({
     address: pool.address,
     abi: abis.balancer.Pool,
@@ -186,7 +168,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
     },
   });
 
-  const { expectedBptOut, minBptOut } = queryResponse || {};
+  const error = queryError || addLiquidityError;
 
   return (
     <section>
@@ -206,17 +188,53 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
         })}
       </div>
 
-      {!expectedBptOut || (expectedBptOut && addLiquidityReceipt) ? (
+      {!queryResponse || addLiquidityReceipt ? (
         <PoolActionButton
           label="Query"
-          onClick={handleQueryAddLiquidity}
-          isDisabled={isQuerying}
+          onClick={() => {
+            queryClient.removeQueries(["queryAddLiquidity"]);
+            refetchQueryAddLiquidity();
+            setAddLiquidityReceipt(null);
+          }}
+          isDisabled={isQueryFetching}
           isFormEmpty={tokenInputs.every(token => token.rawAmount === 0n)}
         />
       ) : !sufficientAllowances ? (
         <PoolActionButton label="Approve" isDisabled={isApproving} onClick={handleApprove} />
       ) : (
-        <PoolActionButton label="Add Liquidity" isDisabled={isAddingLiquidity} onClick={handleAddLiquidity} />
+        <PoolActionButton
+          label="Add Liquidity"
+          isDisabled={isAddLiquidityPending}
+          onClick={() => {
+            addLiquidity(call, {
+              onSuccess: () => {
+                refetchTokenAllowances();
+                refetchTokenBalances();
+                refetchPool();
+              },
+            });
+          }}
+        />
+      )}
+
+      {queryResponse && call && (
+        <QueryResponseAlert
+          title="Expected BPT Out"
+          data={[
+            {
+              type: pool.symbol,
+              description: pool.name,
+              rawAmount: queryResponse.bptOut.amount,
+              decimals: pool.decimals,
+            },
+            // {
+            //   type: "Minimum",
+            //   description: "Minimum BPT Out",
+            //   rawAmount: call.minBptOut.amount,
+            //   decimals: pool.decimals,
+            // },
+          ]}
+        />
       )}
 
       {addLiquidityReceipt && (
@@ -227,27 +245,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
         />
       )}
 
-      {expectedBptOut && minBptOut && (
-        <QueryResponseAlert
-          title="BPT Out"
-          data={[
-            {
-              type: "Expected",
-              description: "Expected BPT Out",
-              rawAmount: expectedBptOut.amount,
-              decimals: pool.decimals,
-            },
-            {
-              type: "Minimum",
-              description: "Minimum BPT Out",
-              rawAmount: minBptOut.amount,
-              decimals: pool.decimals,
-            },
-          ]}
-        />
-      )}
-
-      {queryError && <QueryErrorAlert message={queryError.message} />}
+      {(error as Error) && <QueryErrorAlert message={(error as Error).message} />}
     </section>
   );
 };

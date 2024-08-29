@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
 import { Toaster } from "react-hot-toast";
 import { WagmiConfig } from "wagmi";
@@ -26,6 +26,14 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 export const ScaffoldEthAppWithProviders = ({ children }: { children: React.ReactNode }) => {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -35,14 +43,8 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
     setMounted(true);
   }, []);
 
-  const subgraphUri = "https://api.studio.thegraph.com/query/31386/balancer-v3-sepolia/version/latest";
-  const apolloClient = new ApolloClient({
-    uri: subgraphUri,
-    cache: new InMemoryCache(),
-  });
-
   return (
-    <ApolloProvider client={apolloClient}>
+    <QueryClientProvider client={queryClient}>
       <WagmiConfig config={wagmiConfig}>
         <ProgressBar />
         <RainbowKitProvider
@@ -53,6 +55,6 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
           <ScaffoldEthApp>{children}</ScaffoldEthApp>
         </RainbowKitProvider>
       </WagmiConfig>
-    </ApolloProvider>
+    </QueryClientProvider>
   );
 };
