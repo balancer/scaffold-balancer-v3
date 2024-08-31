@@ -1,28 +1,20 @@
 import {
   AddLiquidity,
-  AddLiquidityBuildCallOutput, //   AddLiquidityBuildCallOutput,
   AddLiquidityInput,
   AddLiquidityKind,
   InputAmount,
   OnChainProvider,
   PoolState,
-  Slippage,
 } from "@balancer/sdk";
 import { useQuery } from "@tanstack/react-query";
 import { useTargetFork } from "~~/hooks/balancer";
 import { Pool } from "~~/hooks/balancer/types";
 
-export const useQueryAddLiquidity = (
-  pool: Pool,
-  amountsIn: InputAmount[],
-  setCall: React.Dispatch<React.SetStateAction<AddLiquidityBuildCallOutput | undefined>>,
-  bptOut?: InputAmount,
-) => {
+export const useQueryAddLiquidity = (pool: Pool, amountsIn: InputAmount[], bptOut?: InputAmount) => {
   const { rpcUrl, chainId } = useTargetFork();
 
   const queryAddLiquidity = async () => {
     console.log("Fetching query...");
-    const slippage = Slippage.fromPercentage("1"); // 1%
     const onchainProvider = new OnChainProvider(rpcUrl, chainId);
     const poolId = pool.address as `0x${string}`;
     const poolState: PoolState = await onchainProvider.pools.fetchPoolState(poolId, "CustomPool");
@@ -46,16 +38,6 @@ export const useQueryAddLiquidity = (
     // Query addLiquidity to get the amount of BPT out
     const addLiquidity = new AddLiquidity();
     const queryOutput = await addLiquidity.query(addLiquidityInput, poolState);
-
-    // Applies slippage to the BPT out amount and constructs the call
-    const call = addLiquidity.buildCall({
-      ...queryOutput,
-      slippage,
-      chainId,
-      wethIsEth: false,
-    });
-
-    setCall(call);
 
     return queryOutput;
   };

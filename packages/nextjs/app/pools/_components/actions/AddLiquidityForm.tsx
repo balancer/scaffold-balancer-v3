@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { AddLiquidityBuildCallOutput, InputAmount, calculateProportionalAmounts } from "@balancer/sdk";
+import { InputAmount, calculateProportionalAmounts } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatUnits, parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
@@ -29,14 +29,13 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   const [tokenInputs, setTokenInputs] = useState<InputAmount[]>(initialTokenInputs);
   const [addLiquidityReceipt, setAddLiquidityReceipt] = useState<PoolActionReceipt>(null);
   const [bptOut, setBptOut] = useState<InputAmount>(); // only for the proportional add liquidity case
-  const [call, setCall] = useState<AddLiquidityBuildCallOutput>(); // call data used to execute the add liquidity transaction
 
   const {
     data: queryResponse,
     isFetching: isQueryFetching,
     error: queryError,
     refetch: refetchQueryAddLiquidity,
-  } = useQueryAddLiquidity(pool, tokenInputs, setCall, bptOut);
+  } = useQueryAddLiquidity(pool, tokenInputs, bptOut);
   const { sufficientAllowances, isApproving, approveTokens } = useApproveTokens(tokenInputs);
   const { mutate: addLiquidity, isLoading: isAddLiquidityPending, error: addLiquidityError } = useAddLiquidity();
   const { refetchTokenAllowances } = useReadTokens(tokenInputs);
@@ -70,6 +69,22 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
     } else {
       setTokenInputs(updatedTokens);
     }
+  };
+
+  const handleQueryAddLiquidity = () => {
+    queryClient.removeQueries(["queryAddLiquidity"]);
+    refetchQueryAddLiquidity();
+    setAddLiquidityReceipt(null);
+  };
+
+  const handleAddLiquidity = () => {
+    addLiquidity(queryResponse, {
+      onSuccess: () => {
+        refetchTokenAllowances();
+        refetchTokenBalances();
+        refetchPool();
+      },
+    });
   };
 
   // Listen for Transfer events to update the UI with the actual BPT out amount
@@ -112,33 +127,17 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
       {!queryResponse || addLiquidityReceipt || isFormEmpty ? (
         <PoolActionButton
           label="Query"
-          onClick={() => {
-            queryClient.removeQueries(["queryAddLiquidity"]);
-            refetchQueryAddLiquidity();
-            setAddLiquidityReceipt(null);
-          }}
+          onClick={handleQueryAddLiquidity}
           isDisabled={isQueryFetching}
-          isFormEmpty={tokenInputs.every(token => token.rawAmount === 0n)}
+          isFormEmpty={isFormEmpty}
         />
       ) : !sufficientAllowances ? (
         <PoolActionButton label="Approve" isDisabled={isApproving} onClick={approveTokens} />
       ) : (
-        <PoolActionButton
-          label="Add Liquidity"
-          isDisabled={isAddLiquidityPending}
-          onClick={() => {
-            addLiquidity(call, {
-              onSuccess: () => {
-                refetchTokenAllowances();
-                refetchTokenBalances();
-                refetchPool();
-              },
-            });
-          }}
-        />
+        <PoolActionButton label="Add Liquidity" isDisabled={isAddLiquidityPending} onClick={handleAddLiquidity} />
       )}
 
-      {queryResponse && call && (
+      {queryResponse && (
         <QueryResponseAlert
           title="Expected BPT Out"
           data={[
@@ -148,12 +147,6 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
               rawAmount: queryResponse.bptOut.amount,
               decimals: pool.decimals,
             },
-            // {
-            //   type: "Minimum",
-            //   description: "Minimum BPT Out",
-            //   rawAmount: call.minBptOut.amount,
-            //   decimals: pool.decimals,
-            // },
           ]}
         />
       )}

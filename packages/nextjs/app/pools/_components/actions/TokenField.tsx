@@ -1,7 +1,7 @@
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { ChevronDownIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { WalletIcon } from "@heroicons/react/24/outline";
-import { type PoolTokens } from "~~/hooks/balancer/types";
+import { Pool, type PoolTokens, SwapConfig } from "~~/hooks/balancer/types";
 import { formatToHuman } from "~~/utils";
 
 interface TokenFieldProps {
@@ -9,13 +9,12 @@ interface TokenFieldProps {
   token: { address: string; symbol: string; decimals: number };
   value: string;
   onAmountChange: (value: string) => void;
-  onTokenSelect?: (symbol: string) => void;
-  tokenDropdownOpen?: boolean;
-  setTokenDropdownOpen?: Dispatch<SetStateAction<boolean>>;
   selectableTokens?: PoolTokens[];
   userBalance?: bigint;
   isHighlighted?: boolean;
   setMaxAmount?: () => void;
+  setSwapConfig?: Dispatch<SetStateAction<SwapConfig>>;
+  pool?: Pool;
 }
 
 export const TokenField: React.FC<TokenFieldProps> = ({
@@ -23,17 +22,44 @@ export const TokenField: React.FC<TokenFieldProps> = ({
   token,
   value,
   onAmountChange,
-  onTokenSelect,
-  tokenDropdownOpen,
-  setTokenDropdownOpen,
+  setSwapConfig,
   selectableTokens,
   userBalance,
   isHighlighted,
   setMaxAmount,
+  pool,
 }) => {
-  const isSwap = !!(setTokenDropdownOpen && onTokenSelect && selectableTokens);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const isSwap = !!(setSwapConfig && selectableTokens);
+
+  const swapConfigKey = label === "Token In" ? "tokenIn" : "tokenOut";
 
   const humanUserBalance = formatToHuman(userBalance ?? 0n, token.decimals);
+
+  // Handle swap tokens selection feature
+  const handleTokenSelect = (selectedSymbol: string) => {
+    if (pool === undefined) return;
+    if (setSwapConfig === undefined) return;
+    const selectedIndex = pool.poolTokens.findIndex(token => token.symbol === selectedSymbol);
+    const otherIndex = pool.poolTokens.length === 2 ? (selectedIndex === 0 ? 1 : 0) : -1;
+
+    setSwapConfig(prev => ({
+      ...prev,
+      [swapConfigKey]: {
+        ...prev.tokenIn,
+        poolTokensIndex: selectedIndex,
+        amount: "",
+        rawAmount: 0n,
+      },
+      [swapConfigKey === "tokenIn" ? "tokenOut" : "tokenIn"]: {
+        poolTokensIndex: otherIndex,
+        amount: "",
+        rawAmount: 0n,
+      },
+    }));
+    setIsDropdownOpen(false);
+  };
 
   return (
     <div className="mb-5">
@@ -55,7 +81,7 @@ export const TokenField: React.FC<TokenFieldProps> = ({
         <div className="absolute top-0 left-0 flex gap-3 p-3">
           <div className="relative">
             <button
-              onClick={() => setTokenDropdownOpen && setTokenDropdownOpen(!tokenDropdownOpen)}
+              onClick={() => selectableTokens && setIsDropdownOpen(!isDropdownOpen)}
               tabIndex={0}
               role="button"
               disabled={!isSwap}
@@ -65,14 +91,13 @@ export const TokenField: React.FC<TokenFieldProps> = ({
             >
               {token.symbol} {isSwap && <ChevronDownIcon className="w-5 h-5" />}
             </button>
-            {tokenDropdownOpen ? (
+            {isDropdownOpen ? (
               <ul tabIndex={0} className="mt-2 dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
                 {selectableTokens &&
-                  onTokenSelect &&
                   selectableTokens.map(token => (
                     <li
                       key={token.symbol}
-                      onClick={() => onTokenSelect(token.symbol)}
+                      onClick={() => handleTokenSelect(token.symbol)}
                       className="hover:bg-neutral-400 hover:bg-opacity-40 rounded-xl text-lg"
                     >
                       <a className="font-bold">{token.symbol}</a>

@@ -1,16 +1,28 @@
-import { RemoveLiquidityBuildCallOutput } from "@balancer/sdk";
+import { RemoveLiquidity, RemoveLiquidityQueryOutput, Slippage } from "@balancer/sdk";
 import { useMutation } from "@tanstack/react-query";
 import { useWalletClient } from "wagmi";
+import { useTargetFork } from "~~/hooks/balancer";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 export const useRemoveLiquidity = () => {
   const { data: walletClient } = useWalletClient();
+  const removeLiquidity = new RemoveLiquidity();
+  const { chainId } = useTargetFork();
   const writeTx = useTransactor();
 
-  const removeLiquidity = async (call: RemoveLiquidityBuildCallOutput | undefined) => {
+  const doRemoveLiquidity = async (queryOutput: RemoveLiquidityQueryOutput | undefined) => {
     if (!walletClient) throw new Error("Must connect a wallet to send a transaction");
-    if (!call) throw new Error("tx call object is undefined");
+    if (!queryOutput) throw new Error("Query output is required to remove liquidity");
+
+    const slippage = Slippage.fromPercentage("1"); // 1%
+    // Construct call object for transaction
+    const call = removeLiquidity.buildCall({
+      ...queryOutput,
+      slippage,
+      chainId,
+      wethIsEth: false,
+    });
 
     const txHash = await writeTx(
       () =>
@@ -24,12 +36,11 @@ export const useRemoveLiquidity = () => {
     );
     if (!txHash) throw new Error("Transaction failed");
 
-    const chainId = await walletClient.getChainId();
     const blockExplorerTxURL = getBlockExplorerTxLink(chainId, txHash);
     return blockExplorerTxURL;
   };
 
   return useMutation({
-    mutationFn: (call: RemoveLiquidityBuildCallOutput | undefined) => removeLiquidity(call),
+    mutationFn: (queryOutput: RemoveLiquidityQueryOutput | undefined) => doRemoveLiquidity(queryOutput),
   });
 };

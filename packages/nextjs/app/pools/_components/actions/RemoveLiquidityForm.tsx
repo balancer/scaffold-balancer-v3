@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { BALANCER_ROUTER, RemoveLiquidityBuildCallOutput, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
+import { BALANCER_ROUTER, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
-import { useApprove, useQueryRemoveLiquidity, useRemoveLiquidity, useTargetFork } from "~~/hooks/balancer/";
+import { useQueryRemoveLiquidity, useRemoveLiquidity, useTargetFork } from "~~/hooks/balancer/";
+import { useAllowanceOnToken, useApproveOnToken } from "~~/hooks/balancer/token";
 import { PoolActionReceipt, TokenInfo } from "~~/hooks/balancer/types";
 import { formatToHuman } from "~~/utils/";
 
@@ -15,7 +16,6 @@ import { formatToHuman } from "~~/utils/";
  * 3. Display the transaction results to the user
  */
 export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, refetchTokenBalances }) => {
-  const [call, setCall] = useState<RemoveLiquidityBuildCallOutput>();
   const [removeLiquidityReceipt, setRemoveLiquidityReceipt] = useState<PoolActionReceipt>(null);
   const [bptInput, setBptInput] = useState({
     rawAmount: 0n,
@@ -24,13 +24,14 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
 
   const queryClient = useQueryClient();
   const { chainId } = useTargetFork();
-  const { approveSpenderOnToken: approveRouterOnToken } = useApprove(pool.address, BALANCER_ROUTER[chainId]);
   const {
     data: queryResponse,
     isFetching: isQueryFetching,
     error: queryError,
     refetch: refetchQuery,
-  } = useQueryRemoveLiquidity("queryRemoveAmount", pool, bptInput.rawAmount, setCall);
+  } = useQueryRemoveLiquidity("queryRemoveAmount", pool, bptInput.rawAmount);
+  const { data: allowance } = useAllowanceOnToken(pool.address, BALANCER_ROUTER[chainId]);
+  const { mutateAsync: approveRouter, error: approveError } = useApproveOnToken(pool.address, BALANCER_ROUTER[chainId]);
   const {
     mutate: removeLiquidity,
     isLoading: isRemoveLiquidityPending,
@@ -51,9 +52,9 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
   };
 
   const handleRemoveLiquidity = async () => {
-    await approveRouterOnToken();
+    if (allowance !== undefined && allowance < bptInput.rawAmount) await approveRouter();
 
-    removeLiquidity(call, {
+    removeLiquidity(queryResponse, {
       onSuccess: () => {
         refetchPool();
         refetchTokenBalances();
@@ -83,7 +84,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
     },
   });
 
-  const error = queryError || removeLiquidityError;
+  const error = queryError || removeLiquidityError || approveError;
   const isFormEmpty = bptInput.displayValue === "";
 
   return (

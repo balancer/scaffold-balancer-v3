@@ -1,19 +1,18 @@
 import { useMemo, useState } from "react";
 import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
 import { PoolActionsProps } from "../PoolActions";
-import { BALANCER_ROUTER, PERMIT2, SwapKind, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
+import { PERMIT2, SwapKind, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
+import { useQueryClient } from "@tanstack/react-query";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
-import { useApprove, useReadToken, useSwap, useTargetFork } from "~~/hooks/balancer/";
+import { useQuerySwap, useSwap, useTargetFork } from "~~/hooks/balancer/";
 import {
-  PoolActionReceipt,
-  QueryPoolActionError,
-  QuerySwapResponse,
-  SwapConfig,
-  TokenInfo,
-} from "~~/hooks/balancer/types";
-import { useTransactor } from "~~/hooks/scaffold-eth";
-import { formatToHuman } from "~~/utils/";
+  useAllowanceOnPermit2,
+  useAllowanceOnToken,
+  useApproveOnPermit2,
+  useApproveOnToken,
+} from "~~/hooks/balancer/token";
+import { PoolActionReceipt, SwapConfig, TokenInfo } from "~~/hooks/balancer/types";
 
 const initialSwapConfig = {
   tokenIn: {
@@ -36,35 +35,65 @@ const initialSwapConfig = {
  * 4. Send transaction to swap the tokens
  */
 export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenBalances, refetchTokenBalances }) => {
-  const [queryResponse, setQueryResponse] = useState<QuerySwapResponse | null>(null);
-  const [queryError, setQueryError] = useState<QueryPoolActionError>(null);
   const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
-  const [isTokenOutDropdownOpen, setTokenOutDropdownOpen] = useState(false);
-  const [isTokenInDropdownOpen, setTokenInDropdownOpen] = useState(false);
   const [swapReceipt, setSwapReceipt] = useState<PoolActionReceipt>(null);
-  const [isApproving, setIsApproving] = useState(false);
-  const [isSwapping, setIsSwapping] = useState(false);
-  const [isQuerying, setIsQuerying] = useState(false);
+
+  const { chainId } = useTargetFork();
+  const queryClient = useQueryClient();
 
   const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
   const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
 
-  const writeTx = useTransactor();
-  const { chainId } = useTargetFork();
-  const { querySwap, swap } = useSwap(pool, swapConfig);
-  const { approveSpenderOnToken: approvePermit2OnToken } = useApprove(tokenIn.address, PERMIT2[chainId]);
-  const { approveSpenderOnPermit2: approveRouterOnPermit2 } = useApprove(tokenIn.address, BALANCER_ROUTER[chainId]);
-  const { tokenAllowance, refetchTokenAllowance } = useReadToken(tokenIn.address);
+  const swapInput = {
+    chainId: chainId,
+    swapKind: swapConfig.swapKind,
+    paths: [
+      {
+        pools: [pool.address as `0x${string}`],
+        tokens: [
+          {
+            address: tokenIn.address as `0x${string}`,
+            decimals: tokenIn.decimals,
+          }, // tokenIn
+          {
+            address: tokenOut.address as `0x${string}`,
+            decimals: tokenOut.decimals,
+          }, // tokenOut
+        ],
+        protocolVersion: 3 as const,
+        inputAmountRaw: swapConfig.tokenIn.rawAmount,
+        outputAmountRaw: swapConfig.tokenOut.rawAmount,
+      },
+    ],
+  };
 
-  const sufficientAllowance = useMemo(() => {
-    return tokenAllowance && tokenAllowance >= swapConfig.tokenIn.rawAmount;
-  }, [tokenAllowance, swapConfig.tokenIn.rawAmount]);
+  const {
+    data: queryResponse,
+    isFetching: isQueryFetching,
+    error: queryError,
+    refetch: refetchQuerySwap,
+  } = useQuerySwap(swapInput, setSwapConfig);
+  const { data: allowanceOnPermit2, refetch: refetchAllowanceOnPermit2 } = useAllowanceOnPermit2(tokenIn.address);
+  const { data: allowanceOnToken, refetch: refetchAllowanceOnToken } = useAllowanceOnToken(
+    tokenIn.address,
+    PERMIT2[chainId],
+  );
+  const {
+    mutateAsync: approveRouter,
+    isLoading: isApproveRouterPending,
+    error: approveRouterError,
+  } = useApproveOnToken(tokenIn.address, PERMIT2[chainId]);
+  const {
+    mutateAsync: approvePermit2,
+    isLoading: isApprovePermit2Pending,
+    error: approvePermit2Error,
+  } = useApproveOnPermit2(tokenIn.address);
+  const { mutate: swap, isLoading: isSwapPending, error: swapError } = useSwap(swapInput);
 
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
-    // Clean up UI to prepare for new query
-    setQueryResponse(null);
+    // Clear previous results when the amount changes
+    queryClient.removeQueries(["querySwap"]);
     setSwapReceipt(null);
-    setQueryError(null);
     // Update the focused input amount with new value and reset the other input amount
     setSwapConfig(prevConfig => ({
       tokenIn: {
@@ -81,117 +110,37 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
     }));
   };
 
-  const handleTokenSelection = (selectedSymbol: string, swapConfigKey: "tokenIn" | "tokenOut") => {
-    const selectedIndex = pool.poolTokens.findIndex(token => token.symbol === selectedSymbol);
-    const otherIndex = pool.poolTokens.length === 2 ? (selectedIndex === 0 ? 1 : 0) : -1;
-
-    setSwapConfig(prevConfig => ({
-      ...prevConfig,
-      [swapConfigKey]: {
-        // Update the selected token with the new index and reset the amount
-        poolTokensIndex: selectedIndex,
-        amount: "",
-      },
-      // If there are only two tokens in pool, automatically set the other token
-      ...(pool.poolTokens.length === 2 && {
-        [swapConfigKey === "tokenIn" ? "tokenOut" : "tokenIn"]: {
-          poolTokensIndex: otherIndex,
-          amount: "",
-        },
-      }),
-    }));
-
-    setTokenInDropdownOpen(false);
-    setTokenOutDropdownOpen(false);
-    setQueryResponse(null);
-  };
-
   const handleQuerySwap = async () => {
-    setQueryResponse(null);
+    queryClient.removeQueries(["querySwap"]);
     setSwapReceipt(null);
-    setIsQuerying(true);
-    const response = await querySwap();
-    if (response.error) {
-      setQueryError(response.error);
-    } else {
-      const { swapKind, expectedAmount, minOrMaxAmount } = response;
-      setQueryResponse({
-        expectedAmount,
-        minOrMaxAmount,
-        swapKind,
-      });
-
-      // update the unfilled token input field appropriately
-      const rawExpectedAmount = expectedAmount?.amount ?? 0n;
-      if (swapKind === SwapKind.GivenIn) {
-        setSwapConfig(prevConfig => ({
-          ...prevConfig,
-          tokenOut: {
-            ...prevConfig.tokenOut,
-            amount: formatToHuman(rawExpectedAmount, tokenOut.decimals),
-            rawAmount: rawExpectedAmount,
-          },
-        }));
-      } else {
-        setSwapConfig(prevConfig => ({
-          ...prevConfig,
-          tokenIn: {
-            ...prevConfig.tokenIn,
-            amount: formatToHuman(rawExpectedAmount, tokenIn.decimals),
-            rawAmount: rawExpectedAmount,
-          },
-        }));
-      }
-    }
-    setIsQuerying(false);
+    refetchQuerySwap();
   };
 
   const handleApprove = async () => {
-    try {
-      setIsApproving(true);
-      await writeTx(approvePermit2OnToken, {
-        blockConfirmations: 1,
-        onBlockConfirmation: () => {
-          refetchTokenAllowance();
-          setIsApproving(false);
-        },
-      });
-      await writeTx(approveRouterOnPermit2, {
-        blockConfirmations: 1,
-        onBlockConfirmation: () => {
-          refetchTokenAllowance();
-          setIsApproving(false);
-        },
-      });
-    } catch (err) {
-      console.error("error", err);
-      setIsApproving(false);
+    if (allowanceOnPermit2 && allowanceOnPermit2[0] < swapConfig.tokenIn.rawAmount) {
+      if (allowanceOnToken !== undefined && allowanceOnToken < swapConfig.tokenIn.rawAmount) {
+        console.log("approving on token");
+        await approveRouter();
+        refetchAllowanceOnToken();
+      }
+      console.log("approving on permit2");
+      await approvePermit2();
+      refetchAllowanceOnPermit2();
     }
   };
 
   const handleSwap = async () => {
-    try {
-      const tokenBalance = tokenBalances[tokenIn.address];
-      if (tokenBalance === null || tokenBalance === undefined || tokenBalance < swapConfig.tokenIn.rawAmount) {
-        throw new Error("Insufficient user balance");
-      }
-      setIsSwapping(true);
-      await swap();
-      refetchPool();
-      refetchTokenAllowance();
-      refetchTokenBalances();
-    } catch (e) {
-      if (e instanceof Error) {
-        console.error("error", e);
-        setQueryError({ message: e.message });
-      } else {
-        console.error("An unexpected error occurred", e);
-        setQueryError({ message: "An unexpected error occurred" });
-      }
-    } finally {
-      setIsSwapping(false);
-    }
+    swap(queryResponse, {
+      onSuccess: () => {
+        refetchPool();
+        refetchTokenBalances();
+      },
+    });
   };
+
+  const sufficientAllowance = useMemo(() => {
+    return allowanceOnPermit2 && allowanceOnPermit2[0] >= swapConfig.tokenIn.rawAmount;
+  }, [allowanceOnPermit2, swapConfig.tokenIn.rawAmount]);
 
   useContractEvent({
     address: VAULT_V3[chainId],
@@ -217,73 +166,74 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
     },
   });
 
-  const { expectedAmount, minOrMaxAmount } = queryResponse ?? {};
+  const isFormEmpty = swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === "";
+  const error = queryError || swapError || approveRouterError || approvePermit2Error;
 
   return (
     <section>
       <TokenField
         label="Token In"
         token={tokenIn}
+        pool={pool}
         userBalance={tokenBalances[tokenIn.address]}
         value={swapConfig.tokenIn.amount}
         onAmountChange={value => handleTokenAmountChange(value, "tokenIn")}
-        onTokenSelect={symbol => handleTokenSelection(symbol, "tokenIn")}
-        tokenDropdownOpen={isTokenInDropdownOpen}
-        setTokenDropdownOpen={setTokenInDropdownOpen}
+        setSwapConfig={setSwapConfig}
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenIn.symbol)}
         isHighlighted={queryResponse?.swapKind === SwapKind.GivenIn}
       />
       <TokenField
         label="Token Out"
         token={tokenOut}
+        pool={pool}
         userBalance={tokenBalances[tokenOut.address]}
         value={swapConfig.tokenOut.amount}
         onAmountChange={value => handleTokenAmountChange(value, "tokenOut")}
-        onTokenSelect={symbol => handleTokenSelection(symbol, "tokenOut")}
-        tokenDropdownOpen={isTokenOutDropdownOpen}
-        setTokenDropdownOpen={setTokenOutDropdownOpen}
+        setSwapConfig={setSwapConfig}
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenOut.symbol)}
         isHighlighted={queryResponse?.swapKind === SwapKind.GivenOut}
       />
 
-      {!expectedAmount || (expectedAmount && swapReceipt) ? (
+      {!queryResponse || isFormEmpty || swapReceipt ? (
         <PoolActionButton
           label="Query"
           onClick={handleQuerySwap}
-          isDisabled={isQuerying}
-          isFormEmpty={swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === ""}
+          isDisabled={isQueryFetching}
+          isFormEmpty={isFormEmpty}
         />
       ) : !sufficientAllowance ? (
-        <PoolActionButton label="Approve" isDisabled={isApproving} onClick={handleApprove} />
+        <PoolActionButton
+          label="Approve"
+          isDisabled={isApprovePermit2Pending || isApproveRouterPending}
+          onClick={handleApprove}
+        />
       ) : (
-        <PoolActionButton label="Swap" isDisabled={isSwapping} onClick={handleSwap} />
+        <PoolActionButton label="Swap" isDisabled={isSwapPending} onClick={handleSwap} />
       )}
 
-      {queryError && <QueryErrorAlert message={queryError.message} />}
+      {(error as Error) && <QueryErrorAlert message={(error as Error).message} />}
+
+      {queryResponse && (
+        <QueryResponseAlert
+          title={`Expected Amount ${queryResponse?.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}
+          data={[
+            {
+              type: queryResponse.swapKind === SwapKind.GivenIn ? tokenIn.symbol : tokenOut.symbol,
+              rawAmount: "amountIn" in queryResponse ? queryResponse.amountIn.amount : queryResponse.amountOut.amount,
+              decimals:
+                "amountIn" in queryResponse
+                  ? queryResponse.amountIn.token.decimals
+                  : queryResponse.amountOut.token.decimals,
+            },
+          ]}
+        />
+      )}
 
       {swapReceipt && (
         <TransactionReceiptAlert
           title={`Transaction Receipt`}
           transactionHash={swapReceipt.transactionHash}
           data={swapReceipt.data}
-        />
-      )}
-
-      {expectedAmount && minOrMaxAmount && (
-        <QueryResponseAlert
-          title={`Query Amount ${queryResponse?.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}
-          data={[
-            {
-              type: queryResponse?.swapKind === SwapKind.GivenIn ? "Expected" : "Minimum",
-              rawAmount: expectedAmount.amount,
-              decimals: expectedAmount.token.decimals,
-            },
-            {
-              type: queryResponse?.swapKind === SwapKind.GivenIn ? "Minimum" : "Maximum",
-              rawAmount: minOrMaxAmount.amount,
-              decimals: minOrMaxAmount.token.decimals,
-            },
-          ]}
         />
       )}
     </section>

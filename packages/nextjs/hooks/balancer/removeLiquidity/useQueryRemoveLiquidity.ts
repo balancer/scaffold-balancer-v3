@@ -3,24 +3,16 @@ import {
   OnChainProvider,
   PoolState,
   RemoveLiquidity,
-  RemoveLiquidityBuildCallOutput,
   RemoveLiquidityInput,
   RemoveLiquidityKind,
-  Slippage,
 } from "@balancer/sdk";
 import { useQuery } from "@tanstack/react-query";
 import { Pool, useTargetFork } from "~~/hooks/balancer";
 
-export const useQueryRemoveLiquidity = (
-  queryKey: string,
-  pool: Pool,
-  rawAmount: bigint,
-  setCall?: React.Dispatch<React.SetStateAction<RemoveLiquidityBuildCallOutput | undefined>>,
-) => {
+export const useQueryRemoveLiquidity = (queryKey: string, pool: Pool, rawAmount: bigint) => {
   const { rpcUrl, chainId } = useTargetFork();
 
   const queryRemoveLiquidity = async () => {
-    const slippage = Slippage.fromPercentage("1"); // 1%
     const onchainProvider = new OnChainProvider(rpcUrl, chainId);
     const poolId = pool.address as `0x${string}`;
     const poolState: PoolState = await onchainProvider.pools.fetchPoolState(poolId, "CustomPool");
@@ -43,16 +35,6 @@ export const useQueryRemoveLiquidity = (
     // Query removeLiquidity to get the token out amounts
     const removeLiquidity = new RemoveLiquidity();
     const queryOutput = await removeLiquidity.query(removeLiquidityInput, poolState);
-
-    // Construct call object for transaction
-    const call = removeLiquidity.buildCall({
-      ...queryOutput,
-      slippage,
-      chainId,
-      wethIsEth: false,
-    });
-    console.log("call", call);
-    if (setCall) setCall(call); // save to state for use in removeLiquidity()
 
     return queryOutput;
   };
