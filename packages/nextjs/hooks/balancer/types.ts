@@ -1,3 +1,4 @@
+import { RefetchPool } from "./useReadPool";
 import { SwapKind } from "@balancer/sdk";
 import { WriteContractResult } from "@wagmi/core";
 import { type Address } from "viem";
@@ -65,6 +66,14 @@ export type HooksConfig = {
 ///////////////////
 // Pool Action Forms
 //////////////////
+
+export interface PoolActionsProps {
+  pool: Pool;
+  refetchPool: RefetchPool;
+  tokenBalances: TokenBalances;
+  refetchTokenBalances: () => void;
+}
+
 export type SwapConfig = {
   tokenIn: {
     poolTokensIndex: number;
@@ -79,15 +88,15 @@ export type SwapConfig = {
   swapKind: SwapKind;
 };
 
-export type TokenInfo = {
+export type TokenAmountDetails = {
   symbol: string;
   name: string;
   rawAmount: bigint;
   decimals: number;
 };
 
-export type PoolActionReceipt = {
-  data: TokenInfo[];
+export type PoolOperationReceipt = {
+  data: TokenAmountDetails[];
   transactionHash: string;
 } | null;
 

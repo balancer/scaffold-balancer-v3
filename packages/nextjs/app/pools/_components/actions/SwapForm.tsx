@@ -1,18 +1,24 @@
 import { useMemo, useState } from "react";
-import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
-import { PoolActionsProps } from "../PoolActions";
+import { PoolActionButton, ResultsDisplay, TokenField } from ".";
 import { PERMIT2, SwapKind, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
-import { useQuerySwap, useSwap, useTargetFork } from "~~/hooks/balancer/";
+import { Alert } from "~~/components/common";
+import {
+  PoolActionsProps,
+  PoolOperationReceipt,
+  SwapConfig,
+  useQuerySwap,
+  useSwap,
+  useTargetFork,
+} from "~~/hooks/balancer/";
 import {
   useAllowanceOnPermit2,
   useAllowanceOnToken,
   useApproveOnPermit2,
   useApproveOnToken,
 } from "~~/hooks/balancer/token";
-import { PoolActionReceipt, SwapConfig, TokenInfo } from "~~/hooks/balancer/types";
 
 const initialSwapConfig = {
   tokenIn: {
@@ -36,7 +42,7 @@ const initialSwapConfig = {
  */
 export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenBalances, refetchTokenBalances }) => {
   const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
-  const [swapReceipt, setSwapReceipt] = useState<PoolActionReceipt>(null);
+  const [swapReceipt, setSwapReceipt] = useState<PoolOperationReceipt>(null);
 
   const { chainId } = useTargetFork();
   const queryClient = useQueryClient();
@@ -45,7 +51,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
   const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
 
   const swapInput = {
-    chainId: chainId,
+    chainId,
     swapKind: swapConfig.swapKind,
     paths: [
       {
@@ -139,18 +145,18 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
     abi: vaultV3Abi,
     eventName: "Swap",
     listener(log: any[]) {
-      const data: TokenInfo[] = [
-        {
-          decimals: tokenIn.decimals,
-          rawAmount: log[0].args.amountIn,
-          symbol: `${tokenIn.symbol} In`,
-          name: tokenIn.name,
-        },
+      const data = [
         {
           decimals: tokenOut.decimals,
           rawAmount: log[0].args.amountOut,
-          symbol: `${tokenOut.symbol} Out`,
+          symbol: tokenOut.symbol,
           name: tokenOut.name,
+        },
+        {
+          decimals: tokenIn.decimals,
+          rawAmount: log[0].args.amountIn,
+          symbol: tokenIn.symbol,
+          name: tokenIn.name,
         },
       ];
 
@@ -161,10 +167,8 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
   const isFormEmpty = swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === "";
   const error = queryError || swapError || approveRouterError || approvePermit2Error;
 
-  console.log("queryResponse", queryResponse);
-
   return (
-    <section>
+    <section className="flex flex-col gap-5">
       <TokenField
         label="Token In"
         token={tokenIn}
@@ -205,32 +209,30 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
         <PoolActionButton label="Swap" isDisabled={isSwapPending} onClick={handleSwap} />
       )}
 
-      {(error as Error) && <QueryErrorAlert message={(error as Error).message} />}
+      {(error as Error) && <Alert type="error">{(error as Error).message} / </Alert>}
 
       {queryResponse && (
-        <QueryResponseAlert
-          title={`Expected Amount ${queryResponse?.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}
+        <ResultsDisplay
+          label={`Expected Amount ${queryResponse?.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}
           data={[
             {
-              type: queryResponse.swapKind === SwapKind.GivenIn ? tokenOut.symbol : tokenIn.symbol,
+              symbol: queryResponse?.swapKind === SwapKind.GivenIn ? tokenOut.symbol : tokenIn.symbol,
+              name: queryResponse?.swapKind === SwapKind.GivenIn ? tokenOut.name : tokenIn.name,
+              decimals: queryResponse?.swapKind === SwapKind.GivenIn ? tokenOut.decimals : tokenIn.decimals,
               rawAmount:
-                queryResponse.swapKind === SwapKind.GivenIn
+                queryResponse?.swapKind === SwapKind.GivenIn
                   ? queryResponse.expectedAmountOut.amount
                   : queryResponse.expectedAmountIn.amount,
-              decimals:
-                "amountIn" in queryResponse
-                  ? queryResponse.expectedAmountOut.token.decimals
-                  : queryResponse.expectedAmountIn.token.decimals,
             },
           ]}
         />
       )}
 
       {swapReceipt && (
-        <TransactionReceiptAlert
-          title={`Transaction Receipt`}
+        <ResultsDisplay
+          label={`Actual Amount ${swapConfig.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}
           transactionHash={swapReceipt.transactionHash}
-          data={swapReceipt.data}
+          data={swapConfig.swapKind === SwapKind.GivenIn ? [swapReceipt.data[0]] : [swapReceipt.data[1]]}
         />
       )}
     </section>

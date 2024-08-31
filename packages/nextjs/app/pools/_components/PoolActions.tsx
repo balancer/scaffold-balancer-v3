@@ -3,18 +3,10 @@ import { AddLiquidityForm, RemoveLiquidityForm, SwapForm } from "./actions";
 import { useAccount } from "wagmi";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { useReadTokens } from "~~/hooks/balancer";
-import { type Pool, type TokenBalances } from "~~/hooks/balancer/types";
-import { type RefetchPool } from "~~/hooks/balancer/useReadPool";
+import { type Pool, RefetchPool } from "~~/hooks/balancer";
 import { useAccountBalance, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
 type Action = "Swap" | "AddLiquidity" | "RemoveLiquidity";
-
-export interface PoolActionsProps {
-  pool: Pool;
-  refetchPool: RefetchPool;
-  tokenBalances: TokenBalances;
-  refetchTokenBalances: () => void;
-}
 
 /**
  * Allow user to swap, add liquidity, and remove liquidity from a pool

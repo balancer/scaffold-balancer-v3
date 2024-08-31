@@ -1,13 +1,20 @@
 import { useState } from "react";
-import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
-import { PoolActionsProps } from "../PoolActions";
+import { PoolActionButton, ResultsDisplay, TokenField } from ".";
 import { BALANCER_ROUTER, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
-import { useQueryRemoveLiquidity, useRemoveLiquidity, useTargetFork } from "~~/hooks/balancer/";
-import { useAllowanceOnToken, useApproveOnToken } from "~~/hooks/balancer/token";
-import { PoolActionReceipt, TokenInfo } from "~~/hooks/balancer/types";
+import { Alert } from "~~/components/common/";
+import {
+  PoolActionsProps,
+  PoolOperationReceipt,
+  TokenAmountDetails,
+  useAllowanceOnToken,
+  useApproveOnToken,
+  useQueryRemoveLiquidity,
+  useRemoveLiquidity,
+  useTargetFork,
+} from "~~/hooks/balancer/";
 import { formatToHuman } from "~~/utils/";
 
 /**
@@ -16,7 +23,7 @@ import { formatToHuman } from "~~/utils/";
  * 3. Display the transaction results to the user
  */
 export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, refetchTokenBalances }) => {
-  const [removeLiquidityReceipt, setRemoveLiquidityReceipt] = useState<PoolActionReceipt>(null);
+  const [removeLiquidityReceipt, setRemoveLiquidityReceipt] = useState<PoolOperationReceipt>(null);
   const [bptInput, setBptInput] = useState({
     rawAmount: 0n,
     displayValue: "",
@@ -74,7 +81,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
     abi: vaultV3Abi,
     eventName: "PoolBalanceChanged",
     listener(log: any[]) {
-      const data: TokenInfo[] = log[0].args.deltas.map((delta: bigint, idx: number) => ({
+      const data: TokenAmountDetails[] = log[0].args.deltas.map((delta: bigint, idx: number) => ({
         symbol: pool.poolTokens[idx].symbol,
         name: pool.poolTokens[idx].name,
         rawAmount: -delta,
@@ -88,7 +95,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
   const isFormEmpty = bptInput.displayValue === "";
 
   return (
-    <section>
+    <section className="flex flex-col gap-5">
       <TokenField
         label="BPT In"
         token={{ address: pool.address, symbol: pool.symbol, decimals: pool.decimals }}
@@ -109,11 +116,11 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
       )}
 
       {queryResponse && !isFormEmpty && (
-        <QueryResponseAlert
-          title="Expected Tokens Out"
+        <ResultsDisplay
+          label="Expected Tokens Out"
           data={pool.poolTokens.map((token, index) => ({
-            type: token.symbol,
-            description: token.name,
+            symbol: token.symbol,
+            name: token.name,
             rawAmount: queryResponse.amountsOut[index].amount,
             decimals: token.decimals,
           }))}
@@ -121,14 +128,14 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
       )}
 
       {removeLiquidityReceipt && (
-        <TransactionReceiptAlert
-          title="Actual Tokens Out"
+        <ResultsDisplay
+          label="Actual Tokens Out"
           transactionHash={removeLiquidityReceipt.transactionHash}
           data={removeLiquidityReceipt.data}
         />
       )}
 
-      {(error as Error) && <QueryErrorAlert message={(error as Error).message} />}
+      {(error as Error) && <Alert type="error">{(error as Error).message}</Alert>}
     </section>
   );
 };

@@ -3,4 +3,4 @@ export * from "./AddLiquidityForm";
 export * from "./SwapForm";
 export * from "./TokenField";
 export * from "./PoolActionButton";
-export * from "./Alerts";
+export * from "./ResultsDisplay";

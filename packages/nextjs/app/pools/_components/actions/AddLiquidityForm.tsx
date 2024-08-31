@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { PoolActionButton, QueryErrorAlert, QueryResponseAlert, TokenField, TransactionReceiptAlert } from ".";
-import { PoolActionsProps } from "../PoolActions";
+import { PoolActionButton, ResultsDisplay, TokenField } from ".";
 import { InputAmount, calculateProportionalAmounts } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatUnits, parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
+import { Alert } from "~~/components/common/";
 import abis from "~~/contracts/abis";
 import { useAddLiquidity, useApproveTokens, useQueryAddLiquidity, useReadTokens } from "~~/hooks/balancer/";
-import { PoolActionReceipt, TokenInfo } from "~~/hooks/balancer/types";
+import { PoolActionsProps, PoolOperationReceipt, TokenAmountDetails } from "~~/hooks/balancer/types";
 
 /**
  * 1. Query adding some amount of liquidity to the pool
@@ -27,7 +27,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
     rawAmount: 0n,
   }));
   const [tokenInputs, setTokenInputs] = useState<InputAmount[]>(initialTokenInputs);
-  const [addLiquidityReceipt, setAddLiquidityReceipt] = useState<PoolActionReceipt>(null);
+  const [addLiquidityReceipt, setAddLiquidityReceipt] = useState<PoolOperationReceipt>(null);
   const [bptOut, setBptOut] = useState<InputAmount>(); // only for the proportional add liquidity case
 
   const {
@@ -93,7 +93,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
     abi: abis.balancer.Pool,
     eventName: "Transfer",
     listener(log: any[]) {
-      const data: TokenInfo = {
+      const data: TokenAmountDetails = {
         symbol: pool.symbol,
         name: pool.name,
         decimals: pool.decimals,
@@ -107,22 +107,20 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   const isFormEmpty = tokenInputs.every(token => token.rawAmount === 0n);
 
   return (
-    <section>
-      <div className="mb-5">
-        {tokenInputs.map((token, index) => {
-          const humanInputAmount = formatUnits(token.rawAmount, token.decimals);
-          return (
-            <TokenField
-              key={token.address}
-              label={index === 0 ? "Tokens In" : undefined}
-              token={pool.poolTokens[index]}
-              userBalance={tokenBalances[token.address]}
-              value={humanInputAmount != "0" ? humanInputAmount : ""}
-              onAmountChange={value => handleInputChange(index, value)}
-            />
-          );
-        })}
-      </div>
+    <section className="flex flex-col gap-5">
+      {tokenInputs.map((token, index) => {
+        const humanInputAmount = formatUnits(token.rawAmount, token.decimals);
+        return (
+          <TokenField
+            key={token.address}
+            label={index === 0 ? "Tokens In" : undefined}
+            token={pool.poolTokens[index]}
+            userBalance={tokenBalances[token.address]}
+            value={humanInputAmount != "0" ? humanInputAmount : ""}
+            onAmountChange={value => handleInputChange(index, value)}
+          />
+        );
+      })}
 
       {!queryResponse || addLiquidityReceipt || isFormEmpty ? (
         <PoolActionButton
@@ -138,12 +136,12 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
       )}
 
       {queryResponse && (
-        <QueryResponseAlert
-          title="Expected BPT Out"
+        <ResultsDisplay
+          label="Expected BPT Out"
           data={[
             {
-              type: pool.symbol,
-              description: pool.name,
+              symbol: pool.symbol,
+              name: pool.name,
               rawAmount: queryResponse.bptOut.amount,
               decimals: pool.decimals,
             },
@@ -152,14 +150,14 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
       )}
 
       {addLiquidityReceipt && (
-        <TransactionReceiptAlert
-          title="Actual BPT Out"
+        <ResultsDisplay
+          label="Actual BPT Out"
           transactionHash={addLiquidityReceipt.transactionHash}
           data={addLiquidityReceipt.data}
         />
       )}
 
-      {(error as Error) && <QueryErrorAlert message={(error as Error).message} />}
+      {(error as Error) && <Alert type="error">{(error as Error).message}</Alert>}
     </section>
   );
 };

@@ -62,7 +62,7 @@ export const TokenField: React.FC<TokenFieldProps> = ({
   };
 
   return (
-    <div className="mb-5">
+    <div>
       {label && (
         <div className="ml-2 mb-0.5 font-bold">
           <label>{label}</label>
