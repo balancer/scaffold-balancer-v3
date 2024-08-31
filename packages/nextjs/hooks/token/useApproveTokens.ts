@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { useReadTokens } from ".";
 import { BALANCER_ROUTER, InputAmount, PERMIT2, erc20Abi, permit2Abi } from "@balancer/sdk";
 import { usePublicClient, useWalletClient } from "wagmi";
-import { useReadTokens, useTargetFork } from "~~/hooks/balancer";
+import { useTargetFork } from "~~/hooks/balancer";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { MaxUint48, MaxUint160, MaxUint256 } from "~~/utils/constants";
 

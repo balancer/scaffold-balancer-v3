@@ -21,7 +21,7 @@ const alertTypeMap = {
 export const Alert: React.FC<AlertProps> = ({ children, type, showIcon = true }) => {
   const { styles, icon } = alertTypeMap[type];
   return (
-    <div className={`${styles} border flex items-center gap-2 rounded-lg p-3 overflow-auto w-full`}>
+    <div className={`${styles} border flex items-center gap-2 p-2 rounded-lg overflow-auto`}>
       {showIcon && <div>{icon}</div>}
       <div>{children}</div>
     </div>

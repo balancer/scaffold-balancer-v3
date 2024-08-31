@@ -1,20 +1,13 @@
 import { useState } from "react";
-import { PoolActionButton, ResultsDisplay, TokenField } from ".";
+import { ResultsDisplay, TokenField, TransactionButton } from ".";
 import { BALANCER_ROUTER, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
 import { Alert } from "~~/components/common/";
-import {
-  PoolActionsProps,
-  PoolOperationReceipt,
-  TokenAmountDetails,
-  useAllowanceOnToken,
-  useApproveOnToken,
-  useQueryRemoveLiquidity,
-  useRemoveLiquidity,
-  useTargetFork,
-} from "~~/hooks/balancer/";
+import { useQueryRemoveLiquidity, useRemoveLiquidity, useTargetFork } from "~~/hooks/balancer/";
+import { PoolActionsProps, PoolOperationReceipt, TokenAmountDetails } from "~~/hooks/balancer/types";
+import { useAllowanceOnToken, useApproveOnToken } from "~~/hooks/token";
 import { formatToHuman } from "~~/utils/";
 
 /**
@@ -106,9 +99,9 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
       />
 
       {!queryResponse || removeLiquidityReceipt || isFormEmpty ? (
-        <PoolActionButton label="Query" onClick={handleQuery} isDisabled={isQueryFetching} isFormEmpty={isFormEmpty} />
+        <TransactionButton label="Query" onClick={handleQuery} isDisabled={isQueryFetching} isFormEmpty={isFormEmpty} />
       ) : (
-        <PoolActionButton
+        <TransactionButton
           label="Remove Liquidity"
           isDisabled={isRemoveLiquidityPending}
           onClick={handleRemoveLiquidity}

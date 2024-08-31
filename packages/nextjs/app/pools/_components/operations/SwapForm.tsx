@@ -1,24 +1,13 @@
 import { useMemo, useState } from "react";
-import { PoolActionButton, ResultsDisplay, TokenField } from ".";
+import { ResultsDisplay, TokenField, TransactionButton } from ".";
 import { PERMIT2, SwapKind, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
 import { Alert } from "~~/components/common";
-import {
-  PoolActionsProps,
-  PoolOperationReceipt,
-  SwapConfig,
-  useQuerySwap,
-  useSwap,
-  useTargetFork,
-} from "~~/hooks/balancer/";
-import {
-  useAllowanceOnPermit2,
-  useAllowanceOnToken,
-  useApproveOnPermit2,
-  useApproveOnToken,
-} from "~~/hooks/balancer/token";
+import { useQuerySwap, useSwap, useTargetFork } from "~~/hooks/balancer/";
+import { PoolActionsProps, PoolOperationReceipt, SwapConfig } from "~~/hooks/balancer/types";
+import { useAllowanceOnPermit2, useAllowanceOnToken, useApproveOnPermit2, useApproveOnToken } from "~~/hooks/token";
 
 const initialSwapConfig = {
   tokenIn: {
@@ -193,20 +182,20 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
       />
 
       {!queryResponse || isFormEmpty || swapReceipt ? (
-        <PoolActionButton
+        <TransactionButton
           label="Query"
           onClick={handleQuerySwap}
           isDisabled={isQueryFetching}
           isFormEmpty={isFormEmpty}
         />
       ) : !sufficientAllowance ? (
-        <PoolActionButton
+        <TransactionButton
           label="Approve"
           isDisabled={isApprovePermit2Pending || isApproveRouterPending}
           onClick={handleApprove}
         />
       ) : (
-        <PoolActionButton label="Swap" isDisabled={isSwapPending} onClick={handleSwap} />
+        <TransactionButton label="Swap" isDisabled={isSwapPending} onClick={handleSwap} />
       )}
 
       {(error as Error) && <Alert type="error">{(error as Error).message} / </Alert>}

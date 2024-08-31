@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { PoolActionButton, ResultsDisplay, TokenField } from ".";
+import { ResultsDisplay, TokenField, TransactionButton } from ".";
 import { InputAmount, calculateProportionalAmounts } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatUnits, parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
 import { Alert } from "~~/components/common/";
 import abis from "~~/contracts/abis";
-import { useAddLiquidity, useApproveTokens, useQueryAddLiquidity, useReadTokens } from "~~/hooks/balancer/";
+import { useAddLiquidity, useQueryAddLiquidity } from "~~/hooks/balancer/";
 import { PoolActionsProps, PoolOperationReceipt, TokenAmountDetails } from "~~/hooks/balancer/types";
+import { useApproveTokens, useReadTokens } from "~~/hooks/token/";
 
 /**
  * 1. Query adding some amount of liquidity to the pool
@@ -123,16 +124,16 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
       })}
 
       {!queryResponse || addLiquidityReceipt || isFormEmpty ? (
-        <PoolActionButton
+        <TransactionButton
           label="Query"
           onClick={handleQueryAddLiquidity}
           isDisabled={isQueryFetching}
           isFormEmpty={isFormEmpty}
         />
       ) : !sufficientAllowances ? (
-        <PoolActionButton label="Approve" isDisabled={isApproving} onClick={approveTokens} />
+        <TransactionButton label="Approve" isDisabled={isApproving} onClick={approveTokens} />
       ) : (
-        <PoolActionButton label="Add Liquidity" isDisabled={isAddLiquidityPending} onClick={handleAddLiquidity} />
+        <TransactionButton label="Add Liquidity" isDisabled={isAddLiquidityPending} onClick={handleAddLiquidity} />
       )}
 
       {queryResponse && (

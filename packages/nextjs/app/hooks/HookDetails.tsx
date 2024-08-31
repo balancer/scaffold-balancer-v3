@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { type HookDetails } from "../page";
+import { type HookInfo } from "./page";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import Modal from "~~/components/common/Modal";
 
-export const HooksCards = ({ hooks }: { hooks: HookDetails[] }) => {
+export const HooksDetails = ({ hooks }: { hooks: HookInfo[] }) => {
   const [activeModal, setActiveModal] = useState<number | null>(null);
 
   const modalContent = (id: number) => {
@@ -14,12 +15,16 @@ export const HooksCards = ({ hooks }: { hooks: HookDetails[] }) => {
     if (!hook) return null;
     const categories = hook.category.join(", ");
     return (
-      <div className="text-lg">
-        <h1 className="text-3xl font-bold mb-1">{hook.title}</h1>
-        <div className="">Created By {hook.created_by}</div>
-        <p className="text-xl">{hook.description}</p>
-        <div>Audited: {hook.audited}</div>
+      <div className="text-lg  flex flex-col gap-10">
+        <div>
+          <h1 className="text-3xl font-bold mb-1">{hook.title}</h1>
+          <div>Created By {hook.created_by}</div>
+        </div>
+
+        <div className="text-xl">{hook.description}</div>
+
         <div className="flex justify-between">
+          <div>Audited: {hook.audited}</div>
           <div>Categories: {categories}</div>
           <Link
             href={hook.github}
@@ -39,24 +44,24 @@ export const HooksCards = ({ hooks }: { hooks: HookDetails[] }) => {
       {hooks.map(hook => (
         <div
           key={hook.id}
-          className="bg-base-200 hover:bg-base-100 p-5 rounded-lg w-full hover:cursor-pointer grid grid-cols-8"
+          className="text-lg bg-base-200 hover:bg-base-100 p-5 rounded-lg w-full hover:cursor-pointer  grid grid-cols-5 shadow-md"
           onClick={() => setActiveModal(hook.id)}
         >
-          <div className="col-start-1 col-end-3 text-xl font-bold ">{hook.title}</div>
+          <div className="col-span-full lg:col-start-1 lg:col-end-3 text-xl font-bold ">{hook.title}</div>
 
-          <div className="hidden md:flex col-start-4 col-end-6 text-center">
+          <div className="hidden lg:flex text-center">
             <Link
-              className="flex gap-2 items-center text-nowrap overflow-hidden whitespace-nowrap"
+              className="hover:underline flex gap-2 items-center text-nowrap overflow-hidden whitespace-nowrap"
               target="_blank"
               rel="noopener noreferrer"
               href={hook.github}
             >
-              {hook.github.slice(0, 40)}...
+              github <ArrowTopRightOnSquareIcon className="w-4 h-4" />
             </Link>
           </div>
 
-          <div className="col-start-7 col-end-7">{hook.category}</div>
-          <div className="col-start-8 col-end-8">{hook.created_by}</div>
+          <div className="hidden lg:flex">{hook.category}</div>
+          <div className="hidden lg:flex">{hook.created_by}</div>
         </div>
       ))}
 
