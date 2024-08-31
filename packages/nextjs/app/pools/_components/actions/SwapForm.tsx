@@ -51,14 +51,8 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
       {
         pools: [pool.address as `0x${string}`],
         tokens: [
-          {
-            address: tokenIn.address as `0x${string}`,
-            decimals: tokenIn.decimals,
-          }, // tokenIn
-          {
-            address: tokenOut.address as `0x${string}`,
-            decimals: tokenOut.decimals,
-          }, // tokenOut
+          { address: tokenIn.address as `0x${string}`, decimals: tokenIn.decimals }, // tokenIn
+          { address: tokenOut.address as `0x${string}`, decimals: tokenOut.decimals }, // tokenOut
         ],
         protocolVersion: 3 as const,
         inputAmountRaw: swapConfig.tokenIn.rawAmount,
@@ -90,6 +84,32 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
   } = useApproveOnPermit2(tokenIn.address);
   const { mutate: swap, isLoading: isSwapPending, error: swapError } = useSwap(swapInput);
 
+  const handleQuerySwap = async () => {
+    queryClient.removeQueries(["querySwap"]);
+    setSwapReceipt(null);
+    refetchQuerySwap();
+  };
+
+  const handleApprove = async () => {
+    if (allowanceOnPermit2 && allowanceOnPermit2[0] < swapConfig.tokenIn.rawAmount) {
+      if (allowanceOnToken !== undefined && allowanceOnToken < swapConfig.tokenIn.rawAmount) {
+        await approveRouter();
+        refetchAllowanceOnToken();
+      }
+      await approvePermit2();
+      refetchAllowanceOnPermit2();
+    }
+  };
+
+  const handleSwap = async () => {
+    swap(queryResponse, {
+      onSuccess: () => {
+        refetchPool();
+        refetchTokenBalances();
+      },
+    });
+  };
+
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
     // Clear previous results when the amount changes
     queryClient.removeQueries(["querySwap"]);
@@ -108,34 +128,6 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
       },
       swapKind: swapConfigKey === "tokenIn" ? SwapKind.GivenIn : SwapKind.GivenOut,
     }));
-  };
-
-  const handleQuerySwap = async () => {
-    queryClient.removeQueries(["querySwap"]);
-    setSwapReceipt(null);
-    refetchQuerySwap();
-  };
-
-  const handleApprove = async () => {
-    if (allowanceOnPermit2 && allowanceOnPermit2[0] < swapConfig.tokenIn.rawAmount) {
-      if (allowanceOnToken !== undefined && allowanceOnToken < swapConfig.tokenIn.rawAmount) {
-        console.log("approving on token");
-        await approveRouter();
-        refetchAllowanceOnToken();
-      }
-      console.log("approving on permit2");
-      await approvePermit2();
-      refetchAllowanceOnPermit2();
-    }
-  };
-
-  const handleSwap = async () => {
-    swap(queryResponse, {
-      onSuccess: () => {
-        refetchPool();
-        refetchTokenBalances();
-      },
-    });
   };
 
   const sufficientAllowance = useMemo(() => {
@@ -168,6 +160,8 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
 
   const isFormEmpty = swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === "";
   const error = queryError || swapError || approveRouterError || approvePermit2Error;
+
+  console.log("queryResponse", queryResponse);
 
   return (
     <section>
@@ -218,12 +212,15 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
           title={`Expected Amount ${queryResponse?.swapKind === SwapKind.GivenIn ? "Out" : "In"}`}
           data={[
             {
-              type: queryResponse.swapKind === SwapKind.GivenIn ? tokenIn.symbol : tokenOut.symbol,
-              rawAmount: "amountIn" in queryResponse ? queryResponse.amountIn.amount : queryResponse.amountOut.amount,
+              type: queryResponse.swapKind === SwapKind.GivenIn ? tokenOut.symbol : tokenIn.symbol,
+              rawAmount:
+                queryResponse.swapKind === SwapKind.GivenIn
+                  ? queryResponse.expectedAmountOut.amount
+                  : queryResponse.expectedAmountIn.amount,
               decimals:
                 "amountIn" in queryResponse
-                  ? queryResponse.amountIn.token.decimals
-                  : queryResponse.amountOut.token.decimals,
+                  ? queryResponse.expectedAmountOut.token.decimals
+                  : queryResponse.expectedAmountIn.token.decimals,
             },
           ]}
         />
