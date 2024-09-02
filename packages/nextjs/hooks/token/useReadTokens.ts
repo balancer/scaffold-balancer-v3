@@ -8,8 +8,9 @@ import { type TokenBalances } from "~~/hooks/balancer/types";
 
 /**
  * Custom hook for dealing with multiple tokens
+ * Should refactor this mess one day :D
  */
-export const useTokens = (amountsIn: InputAmount[]): UseTokens => {
+export const useReadTokens = (amountsIn: InputAmount[]): UseTokens => {
   const { data: walletClient } = useWalletClient();
   const connectedAddress = walletClient?.account.address || zeroAddress;
   const { chainId } = useTargetFork();

@@ -12,7 +12,7 @@ interface PoolActionButtonProps {
  * Approve button is outlined style
  * Swap, AddLiquidity, and RemoveLiquidity buttons are solid gradient style
  */
-export const PoolActionButton: React.FC<PoolActionButtonProps> = ({ onClick, label, isDisabled, isFormEmpty }) => {
+export const TransactionButton: React.FC<PoolActionButtonProps> = ({ onClick, label, isDisabled, isFormEmpty }) => {
   const outlined = `border border-base-100 hover:bg-base-100`;
   const gradient = `shadow-md bg-gradient-to-r from-violet-400 via-orange-100 to-orange-300 hover:from-violet-300 hover:via-orange-100 hover:to-orange-400 text-neutral-700 `;
 

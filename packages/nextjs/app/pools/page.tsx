@@ -1,22 +1,13 @@
 "use client";
 
-import { Fragment, Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  HooksConfig,
-  PoolActions,
-  PoolAttributes,
-  PoolComposition,
-  PoolConfig,
-  PoolSelector,
-  UserLiquidity,
-} from "./_components/";
+import { PoolOperations, PoolPageSkeleton, PoolSelector } from "./_components/";
+import { HooksConfig, PoolAttributes, PoolComposition, PoolConfig, UserLiquidity } from "./_components/info";
 import { type NextPage } from "next";
 import { type Address } from "viem";
-import { SkeletonLoader } from "~~/components/common";
-import { useReadPool } from "~~/hooks/balancer";
-import { type Pool } from "~~/hooks/balancer/types";
-import { type RefetchPool } from "~~/hooks/balancer/useReadPool";
+import { Alert } from "~~/components/common";
+import { type Pool, type RefetchPool, useReadPool } from "~~/hooks/balancer/";
 
 /**
  * 1. Search by pool address or select from dropdown
@@ -57,25 +48,22 @@ const PoolPageContent = () => {
   }, [poolAddress]);
 
   return (
-    <Fragment>
+    <>
       <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
       {isLoading ? (
         <PoolPageSkeleton />
       ) : isError ? (
-        <div className="text-red-500 text-xl text-center">
-          <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
-          <div>{selectedPoolAddress}</div>
-        </div>
+        <Alert type="error">Error attempting to fetch pool data for {selectedPoolAddress}</Alert>
       ) : (
         isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
       )}
-    </Fragment>
+    </>
   );
 };
 
 const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: RefetchPool }) => {
   return (
-    <Fragment>
+    <>
       <h3 className="mb-7 font-semibold text-3xl xl:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-violet-400 to-orange-500">
         {pool.name}
       </h3>
@@ -90,40 +78,12 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
           </div>
           <div className="flex flex-col gap-7">
             {pool.poolConfig?.isPoolInitialized && (
-              <PoolActions key={pool.address} pool={pool} refetchPool={refetchPool} />
+              <PoolOperations key={pool.address} pool={pool} refetchPool={refetchPool} />
             )}
             <PoolAttributes pool={pool} />
           </div>
         </div>
       </div>
-    </Fragment>
-  );
-};
-
-const PoolPageSkeleton = () => {
-  return (
-    <div className="w-full">
-      <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5 mt-20">
-        <div className="flex flex-col gap-7">
-          <div className="w-full h-72">
-            <SkeletonLoader />
-          </div>
-          <div className="w-full h-48">
-            <SkeletonLoader />
-          </div>
-          <div className="w-full h-96">
-            <SkeletonLoader />
-          </div>
-        </div>
-        <div className="flex flex-col gap-7">
-          <div className="w-full h-96">
-            <SkeletonLoader />
-          </div>
-          <div className="w-full h-72">
-            <SkeletonLoader />
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   );
 };

@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { HooksCards } from "./_components/HooksCards";
+import { HooksDetails } from "./HookDetails";
 import type { NextPage } from "next";
 
-export type HookDetails = {
+export type HookInfo = {
   id: number;
   title: string;
   source: string;
@@ -15,7 +15,7 @@ export type HookDetails = {
 };
 
 const Hooks: NextPage = async () => {
-  let hooks: HookDetails[] | null = null;
+  let hooks: HookInfo[] | null = null;
   const response = await fetch("https://raw.githubusercontent.com/burns2854/balancer-hooks/main/hook-data.json");
   if (response.ok) {
     hooks = await response.json();
@@ -40,13 +40,13 @@ const Hooks: NextPage = async () => {
         </div>
       </div>
       <div className="w-full flex flex-col gap-3">
-        <div className="w-full grid grid-cols-8 font-bold text-lg">
-          <div className="col-start-1 col-end-4">Name</div>
-          <div className="col-start-4 col-end-6 text-start hidden md:flex">Repo URL</div>
-          <div className="col-start-7 col-end-7">Category</div>
-          <div className="col-start-8 col-end-8">Created By</div>
+        <div className="w-full grid grid-cols-5 font-bold text-lg">
+          <div className="col-auto lg:col-start-1 lg:col-end-3">Name</div>
+          <div className="hidden lg:flex">Repo URL</div>
+          <div className="hidden lg:flex">Category</div>
+          <div className="hidden lg:flex">Created By</div>
         </div>
-        {hooks ? <HooksCards hooks={hooks} /> : <div className="text-xl text-error">Error fetching hooks data!</div>}
+        {hooks ? <HooksDetails hooks={hooks} /> : <div className="text-xl text-error">Error fetching hooks data!</div>}
       </div>
     </div>
   );
