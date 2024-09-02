@@ -29,21 +29,21 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   }));
   const [tokenInputs, setTokenInputs] = useState<InputAmount[]>(initialTokenInputs);
   const [addLiquidityReceipt, setAddLiquidityReceipt] = useState<PoolOperationReceipt>(null);
-  const [bptOut, setBptOut] = useState<InputAmount>(); // only for the proportional add liquidity case
+  const [referenceAmount, setReferenceAmount] = useState<InputAmount>(); // only for the proportional add liquidity case
 
   const {
     data: queryResponse,
     isFetching: isQueryFetching,
     error: queryError,
     refetch: refetchQueryAddLiquidity,
-  } = useQueryAddLiquidity(pool, tokenInputs, bptOut);
+  } = useQueryAddLiquidity(pool, tokenInputs, referenceAmount);
   const { sufficientAllowances, isApproving, approveTokens } = useApproveTokens(tokenInputs);
-  const { mutate: addLiquidity, isLoading: isAddLiquidityPending, error: addLiquidityError } = useAddLiquidity();
+  const { mutate: addLiquidity, isPending: isAddLiquidityPending, error: addLiquidityError } = useAddLiquidity();
   const { refetchTokenAllowances } = useReadTokens(tokenInputs);
   const queryClient = useQueryClient();
 
   const handleInputChange = (index: number, value: string) => {
-    queryClient.removeQueries(["queryAddLiquidity"]);
+    queryClient.removeQueries({ queryKey: ["queryAddLiquidity"] });
     setAddLiquidityReceipt(null);
     const updatedTokens = tokenInputs.map((token, idx) => {
       if (idx === index) {
@@ -63,9 +63,10 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
           balance: formatUnits(token.balance, token.decimals) as `${number}`,
         })),
       };
+
       const referenceAmount = updatedTokens[index];
       const { bptAmount, tokenAmounts } = calculateProportionalAmounts(poolStateWithBalances, referenceAmount);
-      setBptOut(bptAmount);
+      setReferenceAmount(bptAmount);
       setTokenInputs(tokenAmounts);
     } else {
       setTokenInputs(updatedTokens);
@@ -73,7 +74,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   };
 
   const handleQueryAddLiquidity = () => {
-    queryClient.removeQueries(["queryAddLiquidity"]);
+    queryClient.removeQueries({ queryKey: ["queryAddLiquidity"] });
     refetchQueryAddLiquidity();
     setAddLiquidityReceipt(null);
   };
@@ -105,7 +106,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   });
 
   const error = queryError || addLiquidityError;
-  const isFormEmpty = tokenInputs.every(token => token.rawAmount === 0n);
+  const isFormEmpty = tokenInputs.some(token => token.rawAmount === 0n);
 
   return (
     <section className="flex flex-col gap-5">

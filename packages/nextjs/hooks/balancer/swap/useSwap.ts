@@ -1,12 +1,16 @@
-import { ExactInQueryOutput, ExactOutQueryOutput, Slippage, Swap, SwapInput } from "@balancer/sdk";
+import {
+  ExactInQueryOutput,
+  ExactOutQueryOutput, //  Permit2Helper,
+  Slippage,
+  Swap,
+  SwapInput,
+} from "@balancer/sdk";
 import { useMutation } from "@tanstack/react-query";
 import { useWalletClient } from "wagmi";
-// import { useTargetFork } from "~~/hooks/balancer";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 
 export const useSwap = (swapInput: SwapInput) => {
   const { data: walletClient } = useWalletClient();
-  // const { chainId } = useTargetFork();
   const writeTx = useTransactor();
 
   const swap = new Swap(swapInput);
@@ -18,12 +22,24 @@ export const useSwap = (swapInput: SwapInput) => {
     const deadline = 999999999999999999n; // Deadline for the swap, in this case infinite
     const slippage = Slippage.fromPercentage("0.1"); // 0.1%
 
-    const call = swap.buildCall({
+    const buildCallInput = {
       slippage,
       deadline,
       queryOutput,
       wethIsEth: false,
-    });
+    };
+
+    const call = swap.buildCall(buildCallInput);
+
+    // buildCallWithPermit2 requires viem/wagmi v2 because Client types and methods change
+
+    // const permit2 = await Permit2Helper.signSwapApproval({
+    //   ...buildCallInput,
+    //   client: walletClient,
+    //   owner: walletClient.account.address as `0x${string}`,
+    // });
+
+    // const call = swap.buildCallWithPermit2(buildCallInput, permit2);
 
     const txHashPromise = () =>
       walletClient.sendTransaction({

@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTargetFork } from "~~/hooks/balancer";
 import { Pool } from "~~/hooks/balancer/types";
 
-export const useQueryAddLiquidity = (pool: Pool, amountsIn: InputAmount[], bptOut?: InputAmount) => {
+export const useQueryAddLiquidity = (pool: Pool, amountsIn: InputAmount[], referenceAmount?: InputAmount) => {
   const { rpcUrl, chainId } = useTargetFork();
 
   const queryAddLiquidity = async () => {
@@ -21,10 +21,10 @@ export const useQueryAddLiquidity = (pool: Pool, amountsIn: InputAmount[], bptOu
 
     // Construct the addLiquidity input object based on if pool allows unbalanced liquidity operations
     const addLiquidityInput: AddLiquidityInput =
-      pool.poolConfig?.liquidityManagement.disableUnbalancedLiquidity && bptOut
+      pool.poolConfig?.liquidityManagement.disableUnbalancedLiquidity && referenceAmount
         ? {
             kind: AddLiquidityKind.Proportional,
-            bptOut,
+            referenceAmount,
             chainId,
             rpcUrl,
           }

@@ -69,18 +69,18 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
   );
   const {
     mutateAsync: approveRouter,
-    isLoading: isApproveRouterPending,
+    isPending: isApproveRouterPending,
     error: approveRouterError,
   } = useApproveOnToken(tokenIn.address, PERMIT2[chainId]);
   const {
     mutateAsync: approvePermit2,
-    isLoading: isApprovePermit2Pending,
+    isPending: isApprovePermit2Pending,
     error: approvePermit2Error,
   } = useApproveOnPermit2(tokenIn.address);
-  const { mutate: swap, isLoading: isSwapPending, error: swapError } = useSwap(swapInput);
+  const { mutate: swap, isPending: isSwapPending, error: swapError } = useSwap(swapInput);
 
   const handleQuerySwap = async () => {
-    queryClient.removeQueries(["querySwap"]);
+    queryClient.removeQueries({ queryKey: ["querySwap"] });
     setSwapReceipt(null);
     refetchQuerySwap();
   };
@@ -107,7 +107,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
 
   const handleTokenAmountChange = (amount: string, swapConfigKey: "tokenIn" | "tokenOut") => {
     // Clear previous results when the amount changes
-    queryClient.removeQueries(["querySwap"]);
+    queryClient.removeQueries({ queryKey: ["querySwap"] });
     setSwapReceipt(null);
     // Update the focused input amount with new value and reset the other input amount
     setSwapConfig(prevConfig => ({

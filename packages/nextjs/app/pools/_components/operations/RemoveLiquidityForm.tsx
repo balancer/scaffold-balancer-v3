@@ -30,30 +30,40 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
     error: queryError,
     refetch: refetchQuery,
   } = useQueryRemoveLiquidity("queryRemoveAmount", pool, bptInput.rawAmount);
-  const { data: allowance } = useAllowanceOnToken(pool.address, BALANCER_ROUTER[chainId]);
-  const { mutateAsync: approveRouter, error: approveError } = useApproveOnToken(pool.address, BALANCER_ROUTER[chainId]);
+  const { data: allowance, refetch: refetchAllowance } = useAllowanceOnToken(pool.address, BALANCER_ROUTER[chainId]);
+  const {
+    mutate: approveRouter,
+    isPending: isApprovePending,
+    error: approveError,
+  } = useApproveOnToken(pool.address, BALANCER_ROUTER[chainId]);
   const {
     mutate: removeLiquidity,
-    isLoading: isRemoveLiquidityPending,
+    isPending: isRemoveLiquidityPending,
     error: removeLiquidityError,
   } = useRemoveLiquidity();
 
   const handleAmountChange = (amount: string) => {
-    queryClient.removeQueries(["queryRemoveLiquidity"]);
+    queryClient.removeQueries({ queryKey: ["queryRemoveLiquidity"] });
     setRemoveLiquidityReceipt(null);
     const rawAmount = parseUnits(amount, pool.decimals);
     setBptInput({ rawAmount, displayValue: amount });
   };
 
   const handleQuery = () => {
-    queryClient.removeQueries(["queryRemoveLiquidity"]);
+    queryClient.removeQueries({ queryKey: ["queryRemoveLiquidity"] });
     setRemoveLiquidityReceipt(null);
     refetchQuery();
   };
 
-  const handleRemoveLiquidity = async () => {
-    if (allowance !== undefined && allowance < bptInput.rawAmount) await approveRouter();
+  const handleApprove = () => {
+    approveRouter(undefined, {
+      onSuccess: () => {
+        refetchAllowance();
+      },
+    });
+  };
 
+  const handleRemoveLiquidity = () => {
     removeLiquidity(queryResponse, {
       onSuccess: () => {
         refetchPool();
@@ -86,6 +96,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
 
   const error = queryError || removeLiquidityError || approveError;
   const isFormEmpty = bptInput.displayValue === "";
+  const isSufficientAllowance = allowance !== undefined && allowance >= bptInput.rawAmount;
 
   return (
     <section className="flex flex-col gap-5">
@@ -100,6 +111,8 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
 
       {!queryResponse || removeLiquidityReceipt || isFormEmpty ? (
         <TransactionButton label="Query" onClick={handleQuery} isDisabled={isQueryFetching} isFormEmpty={isFormEmpty} />
+      ) : !isSufficientAllowance ? (
+        <TransactionButton label="Approve" isDisabled={isApprovePending} onClick={handleApprove} />
       ) : (
         <TransactionButton
           label="Remove Liquidity"
