@@ -4,7 +4,7 @@ import { useAccount } from "wagmi";
 import { Alert } from "~~/components/common";
 import { Pool, RefetchPool, TokenBalances } from "~~/hooks/balancer";
 import { useAccountBalance, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-import { useReadTokens } from "~~/hooks/token";
+import { useTokenBalancesOfUser } from "~~/hooks/token";
 
 type Operation = "Swap" | "AddLiquidity" | "RemoveLiquidity";
 
@@ -14,13 +14,7 @@ type Operation = "Swap" | "AddLiquidity" | "RemoveLiquidity";
 export const PoolOperations: React.FC<{ pool: Pool; refetchPool: RefetchPool }> = ({ pool, refetchPool }) => {
   const [activeTab, setActiveTab] = useState<Operation>("Swap");
 
-  const tokens = pool.poolTokens.map(token => ({
-    address: token.address as `0x${string}`,
-    decimals: token.decimals,
-    rawAmount: 0n, // Quirky solution cus useReadTokens expects type InputAmount[] cus originally built for AddLiquidityForm :D
-  }));
-
-  const { tokenBalances, refetchTokenBalances } = useReadTokens(tokens);
+  const { tokenBalances, refetchTokenBalances } = useTokenBalancesOfUser(pool.poolTokens);
 
   const tabs = {
     Swap: (

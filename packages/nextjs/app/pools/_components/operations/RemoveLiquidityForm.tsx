@@ -112,7 +112,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
       {!queryResponse || removeLiquidityReceipt || isFormEmpty ? (
         <TransactionButton label="Query" onClick={handleQuery} isDisabled={isQueryFetching} isFormEmpty={isFormEmpty} />
       ) : !isSufficientAllowance ? (
-        <TransactionButton label="Approve" isDisabled={isApprovePending} onClick={handleApprove} />
+        <TransactionButton label={`Approve ${pool.symbol}`} isDisabled={isApprovePending} onClick={handleApprove} />
       ) : (
         <TransactionButton
           label="Remove Liquidity"

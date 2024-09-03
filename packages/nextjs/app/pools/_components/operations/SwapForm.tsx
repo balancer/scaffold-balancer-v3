@@ -67,9 +67,9 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
     PERMIT2[chainId],
   );
   const {
-    mutateAsync: approveRouter,
-    isPending: isApproveRouterPending,
-    error: approveRouterError,
+    mutateAsync: approveOnToken,
+    isPending: isApprovePending,
+    error: approveError,
   } = useApproveOnToken(tokenIn.address, PERMIT2[chainId]);
   const { mutate: swap, isPending: isSwapPending, error: swapError } = useSwap(swapInput);
 
@@ -80,14 +80,8 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
   };
 
   const handleApprove = async () => {
-    // if (allowanceOnPermit2 && allowanceOnPermit2[0] < swapConfig.tokenIn.rawAmount) {
-    if (allowanceOnToken !== undefined && allowanceOnToken < swapConfig.tokenIn.rawAmount) {
-      await approveRouter();
-      refetchAllowanceOnToken();
-    }
-    //   await approvePermit2();
-    //   refetchAllowanceOnPermit2();
-    // }
+    await approveOnToken();
+    refetchAllowanceOnToken();
   };
 
   const handleSwap = async () => {
@@ -119,10 +113,6 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
     }));
   };
 
-  const sufficientAllowance = useMemo(() => {
-    return allowanceOnToken && allowanceOnToken >= swapConfig.tokenIn.rawAmount;
-  }, [allowanceOnToken, swapConfig.tokenIn.rawAmount]);
-
   useContractEvent({
     address: VAULT_V3[chainId],
     abi: vaultV3Abi,
@@ -147,8 +137,12 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
     },
   });
 
+  const sufficientAllowance = useMemo(() => {
+    return allowanceOnToken && allowanceOnToken >= swapConfig.tokenIn.rawAmount;
+  }, [allowanceOnToken, swapConfig.tokenIn.rawAmount]);
+
   const isFormEmpty = swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === "";
-  const error = queryError || swapError || approveRouterError;
+  const error = queryError || swapError || approveError;
 
   return (
     <section className="flex flex-col gap-5">
@@ -183,11 +177,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
           isFormEmpty={isFormEmpty}
         />
       ) : !sufficientAllowance ? (
-        <TransactionButton
-          label={`Approve ${tokenIn.symbol}`}
-          isDisabled={isApproveRouterPending}
-          onClick={handleApprove}
-        />
+        <TransactionButton label={`Approve ${tokenIn.symbol}`} isDisabled={isApprovePending} onClick={handleApprove} />
       ) : (
         <TransactionButton label="Swap" isDisabled={isSwapPending} onClick={handleSwap} />
       )}

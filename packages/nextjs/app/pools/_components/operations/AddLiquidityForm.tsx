@@ -1,15 +1,15 @@
 import React, { useCallback, useState } from "react";
 import { ResultsDisplay, TokenField, TransactionButton } from ".";
-import { InputAmount, calculateProportionalAmounts } from "@balancer/sdk";
+import { InputAmount, PERMIT2, calculateProportionalAmounts, erc20Abi } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import debounce from "lodash.debounce";
 import { formatUnits, parseUnits } from "viem";
-import { useContractEvent } from "wagmi";
+import { useContractEvent, useContractRead } from "wagmi";
 import { Alert } from "~~/components/common/";
 import abis from "~~/contracts/abis";
-import { useAddLiquidity, useQueryAddLiquidity } from "~~/hooks/balancer/";
+import { useAddLiquidity, useQueryAddLiquidity, useTargetFork } from "~~/hooks/balancer/";
 import { PoolActionsProps, PoolOperationReceipt, TokenAmountDetails } from "~~/hooks/balancer/types";
-import { useApproveTokens, useReadTokens } from "~~/hooks/token/";
+import { useAllowancesOnTokens, useApproveOnToken } from "~~/hooks/token/";
 
 /**
  * 1. Query adding some amount of liquidity to the pool
@@ -33,18 +33,21 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   const [referenceAmount, setReferenceAmount] = useState<InputAmount>(); // only for the proportional add liquidity case
   const [isCalculatingProportional, setIsCalculatingProportional] = useState(false);
 
+  const queryClient = useQueryClient();
   const {
     data: queryResponse,
     isFetching: isQueryFetching,
     error: queryError,
     refetch: refetchQueryAddLiquidity,
   } = useQueryAddLiquidity(pool, tokenInputs, referenceAmount);
-  const { sufficientAllowances, isApproving, approveTokens } = useApproveTokens(tokenInputs);
-  const { mutate: addLiquidity, isPending: isAddLiquidityPending, error: addLiquidityError } = useAddLiquidity();
-  const { refetchTokenAllowances } = useReadTokens(tokenInputs);
-  const queryClient = useQueryClient();
+  const { tokensToApprove, refetchTokenAllowances } = useAllowancesOnTokens(tokenInputs);
+  const {
+    mutate: addLiquidity,
+    isPending: isAddLiquidityPending,
+    error: addLiquidityError,
+  } = useAddLiquidity(tokenInputs);
 
-  // Delay update of token inputs so user has time to finish typing
+  // Delay update of token inputs so user has time to finish typing numbers longer than 1 digit
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSetTokenInputs = useCallback(
     debounce(updatedTokens => {
@@ -146,8 +149,8 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
           isDisabled={isQueryFetching}
           isFormEmpty={isFormEmpty || isCalculatingProportional}
         />
-      ) : !sufficientAllowances ? (
-        <TransactionButton label="Approve" isDisabled={isApproving} onClick={approveTokens} />
+      ) : tokensToApprove.length > 0 ? (
+        <ApproveButtons tokens={tokensToApprove} refetchTokenAllowances={refetchTokenAllowances} />
       ) : (
         <TransactionButton label="Add Liquidity" isDisabled={isAddLiquidityPending} onClick={handleAddLiquidity} />
       )}
@@ -176,5 +179,40 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
 
       {(error as Error) && <Alert type="error">{(error as Error).message}</Alert>}
     </section>
+  );
+};
+
+const ApproveButtons = ({
+  tokens,
+  refetchTokenAllowances,
+}: {
+  tokens: InputAmount[];
+  refetchTokenAllowances: () => void;
+}) => {
+  const { chainId } = useTargetFork();
+  const token = tokens[0];
+
+  const { data: symbol } = useContractRead({
+    address: token.address,
+    abi: erc20Abi,
+    functionName: "symbol",
+  });
+
+  const {
+    mutateAsync: approve,
+    isPending: isApprovePending,
+    error: approveError,
+  } = useApproveOnToken(token.address, PERMIT2[chainId]);
+
+  const handleApprove = async () => {
+    await approve();
+    refetchTokenAllowances();
+  };
+
+  return (
+    <div>
+      <TransactionButton label={`Approve ${symbol}`} isDisabled={isApprovePending} onClick={handleApprove} />
+      {(approveError as Error) && <Alert type="error">{(approveError as Error).message}</Alert>}
+    </div>
   );
 };
