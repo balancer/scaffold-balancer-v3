@@ -23,7 +23,7 @@ export const HooksDetails = ({ hooks }: { hooks: HookInfo[] }) => {
 
         <div className="text-xl">{hook.description}</div>
 
-        <div className="flex justify-between">
+        <div className="flex flex-col md:flex-row flex-wrap md:justify-between">
           <div>Audited: {hook.audited}</div>
           <div>Categories: {categories}</div>
           <Link
@@ -51,7 +51,7 @@ export const HooksDetails = ({ hooks }: { hooks: HookInfo[] }) => {
 
           <div className="hidden lg:flex text-center">
             <Link
-              className="hover:underline flex gap-2 items-center text-nowrap overflow-hidden whitespace-nowrap"
+              className="hover:underline hover:text-accent flex gap-2 items-center text-nowrap overflow-hidden whitespace-nowrap"
               target="_blank"
               rel="noopener noreferrer"
               href={hook.github}

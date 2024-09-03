@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { ResultsDisplay, TokenField, TransactionButton } from ".";
 import { InputAmount, calculateProportionalAmounts } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
+import debounce from "lodash.debounce";
 import { formatUnits, parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
 import { Alert } from "~~/components/common/";
@@ -30,6 +31,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   const [tokenInputs, setTokenInputs] = useState<InputAmount[]>(initialTokenInputs);
   const [addLiquidityReceipt, setAddLiquidityReceipt] = useState<PoolOperationReceipt>(null);
   const [referenceAmount, setReferenceAmount] = useState<InputAmount>(); // only for the proportional add liquidity case
+  const [isCalculatingProportional, setIsCalculatingProportional] = useState(false);
 
   const {
     data: queryResponse,
@@ -42,9 +44,20 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   const { refetchTokenAllowances } = useReadTokens(tokenInputs);
   const queryClient = useQueryClient();
 
+  // Delay update of token inputs so user has time to finish typing
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedSetTokenInputs = useCallback(
+    debounce(updatedTokens => {
+      setTokenInputs(updatedTokens);
+      setIsCalculatingProportional(false);
+    }, 1000),
+    [],
+  );
+
   const handleInputChange = (index: number, value: string) => {
     queryClient.removeQueries({ queryKey: ["queryAddLiquidity"] });
     setAddLiquidityReceipt(null);
+
     const updatedTokens = tokenInputs.map((token, idx) => {
       if (idx === index) {
         return { ...token, rawAmount: parseUnits(value, token.decimals) };
@@ -64,10 +77,12 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
         })),
       };
 
+      setIsCalculatingProportional(true);
       const referenceAmount = updatedTokens[index];
-      const { bptAmount, tokenAmounts } = calculateProportionalAmounts(poolStateWithBalances, referenceAmount);
-      setReferenceAmount(bptAmount);
-      setTokenInputs(tokenAmounts);
+      const { tokenAmounts } = calculateProportionalAmounts(poolStateWithBalances, referenceAmount);
+      setReferenceAmount(referenceAmount);
+      setTokenInputs(updatedTokens);
+      debouncedSetTokenInputs(tokenAmounts);
     } else {
       setTokenInputs(updatedTokens);
     }
@@ -129,7 +144,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
           label="Query"
           onClick={handleQueryAddLiquidity}
           isDisabled={isQueryFetching}
-          isFormEmpty={isFormEmpty}
+          isFormEmpty={isFormEmpty || isCalculatingProportional}
         />
       ) : !sufficientAllowances ? (
         <TransactionButton label="Approve" isDisabled={isApproving} onClick={approveTokens} />

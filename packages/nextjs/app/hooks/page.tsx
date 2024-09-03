@@ -26,17 +26,15 @@ const Hooks: NextPage = async () => {
       <div className="mb-7 w-full text-center">
         <h1 className="text-3xl md:text-5xl font-bold mb-7 text-center">Pool Hooks</h1>
         <div className="text-xl my-10">
-          Extend the functionality of liquidity pools with hooks contracts. Consider utilizing one of the examples below
-          or{" "}
+          Extend the functionality of liquidity pools with hooks contracts. Use one of our curated examples below or{" "}
           <Link
             target="_blank"
             rel="noopener noreferrer"
             href="https://balancer-hooks.vercel.app/submit-hook.html"
             className="link"
           >
-            submit your own creation
+            submit your own
           </Link>
-          .
         </div>
       </div>
       <div className="w-full flex flex-col gap-3">
