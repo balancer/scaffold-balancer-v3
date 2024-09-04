@@ -123,7 +123,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
     },
   });
 
-  const error = queryError || addLiquidityError;
+  const error: Error | null = queryError || addLiquidityError;
   const isFormEmpty = tokenInputs.some(token => token.rawAmount === 0n);
 
   return (
@@ -177,7 +177,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
         />
       )}
 
-      {(error as Error) && <Alert type="error">{(error as Error).message}</Alert>}
+      {error && <Alert type="error">{error.message}</Alert>}
     </section>
   );
 };
@@ -212,7 +212,7 @@ const ApproveButtons = ({
   return (
     <div>
       <TransactionButton label={`Approve ${symbol}`} isDisabled={isApprovePending} onClick={handleApprove} />
-      {(approveError as Error) && <Alert type="error">{(approveError as Error).message}</Alert>}
+      {approveError && <Alert type="error">{approveError.message}</Alert>}
     </div>
   );
 };

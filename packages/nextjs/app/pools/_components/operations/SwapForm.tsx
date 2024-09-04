@@ -142,7 +142,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
   }, [allowanceOnToken, swapConfig.tokenIn.rawAmount]);
 
   const isFormEmpty = swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === "";
-  const error = queryError || swapError || approveError;
+  const error: Error | null = queryError || swapError || approveError;
 
   return (
     <section className="flex flex-col gap-5">
@@ -182,7 +182,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
         <TransactionButton label="Swap" isDisabled={isSwapPending} onClick={handleSwap} />
       )}
 
-      {(error as Error) && <Alert type="error">{(error as Error).message} / </Alert>}
+      {error && <Alert type="error">{error.message} / </Alert>}
 
       {queryResponse && (
         <ResultsDisplay

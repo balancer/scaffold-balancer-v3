@@ -1,5 +1,6 @@
 import {
   AddLiquidity,
+  AddLiquidityBuildCallInput,
   AddLiquidityQueryOutput,
   BALANCER_ROUTER,
   InputAmount,
@@ -11,6 +12,7 @@ import {
 } from "@balancer/sdk";
 import { useMutation } from "@tanstack/react-query";
 import { zeroAddress } from "viem";
+// import { decodeErrorResult } from "viem";
 import { useContractReads, useWalletClient } from "wagmi";
 import { useTargetFork } from "~~/hooks/balancer";
 import { useTransactor } from "~~/hooks/scaffold-eth";
@@ -35,7 +37,11 @@ export const useAddLiquidity = (amountsIn: InputAmount[]) => {
     })),
   });
 
-  // console.log("permit2 allowances for router", allowances);
+  // const error = decodeErrorResult({
+  //   abi: permit2Abi,
+  //   data: "0xf96fb071000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000b68656c6c6f20776f726c64000000000000000000000000000000000000000000",
+  // });
+  // console.log("error", error);
 
   const doAddLiquidity = async (queryOutput: AddLiquidityQueryOutput | undefined) => {
     if (!walletClient) throw new Error("Must connect a wallet to add liquidity");
@@ -44,15 +50,12 @@ export const useAddLiquidity = (amountsIn: InputAmount[]) => {
 
     const slippage = Slippage.fromPercentage("1"); // 1%
 
-    const buildCallInput = {
+    const buildCallInput: AddLiquidityBuildCallInput = {
       ...queryOutput,
       slippage,
       chainId,
       wethIsEth: false,
     };
-
-    // determine which tokens need permit2 approval, add them to the PermitDetails[]
-    // if no tokens need permit2 approval, build the call like normal?
 
     const details: PermitDetails[] = amountsIn.map((token, idx) => {
       const permitInfo = allowances[idx];
@@ -61,7 +64,7 @@ export const useAddLiquidity = (amountsIn: InputAmount[]) => {
         const nonce = permitInfo.result[2];
         return {
           token: token.address,
-          amount: token.rawAmount,
+          amount: token.rawAmount + 1n, // rounding for safety cus AddLiquidityQueryOutput sometimes comes back with a slightly larger amount
           expiration: Number(MaxAllowanceExpiration),
           nonce,
         };
@@ -73,7 +76,6 @@ export const useAddLiquidity = (amountsIn: InputAmount[]) => {
     const permit2 = await signPermit2(walletClient, details);
 
     const call = addLiquidity.buildCallWithPermit2(buildCallInput, permit2);
-
     // const call = addLiquidity.buildCall(buildCallInput);
 
     const txHash = await writeTx(

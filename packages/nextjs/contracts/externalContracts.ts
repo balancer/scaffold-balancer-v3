@@ -1,10 +1,12 @@
 import {
   BALANCER_BATCH_ROUTER,
   BALANCER_ROUTER,
+  PERMIT2,
   VAULT_V3,
   balancerBatchRouterAbi,
   balancerRouterAbi,
-  vaultExtensionV3Abi, // balancerBatchRouterAbi  // Batch Router not exported from balancer sdk?
+  permit2Abi,
+  vaultExtensionV3Abi,
 } from "@balancer/sdk";
 import { sepolia } from "viem/chains";
 import scaffoldConfig from "~~/scaffold.config";
@@ -40,6 +42,10 @@ const externalContracts = {
       address: BALANCER_BATCH_ROUTER[scaffoldConfig.targetFork.id],
       abi: balancerBatchRouterAbi,
     },
+    Permit2: {
+      address: PERMIT2[scaffoldConfig.targetFork.id],
+      abi: permit2Abi,
+    },
   },
   11155111: {
     Vault: {
@@ -53,6 +59,10 @@ const externalContracts = {
     BatchRouter: {
       address: BALANCER_BATCH_ROUTER[sepolia.id],
       abi: balancerBatchRouterAbi,
+    },
+    Permit2: {
+      address: PERMIT2[sepolia.id],
+      abi: permit2Abi,
     },
   },
 } as const;
