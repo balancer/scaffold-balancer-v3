@@ -7,7 +7,7 @@ import { useContractEvent } from "wagmi";
 import { Alert } from "~~/components/common";
 import { useQuerySwap, useSwap, useTargetFork } from "~~/hooks/balancer/";
 import { PoolActionsProps, PoolOperationReceipt, SwapConfig } from "~~/hooks/balancer/types";
-import { useAllowanceOnPermit2, useAllowanceOnToken, useApproveOnPermit2, useApproveOnToken } from "~~/hooks/token";
+import { useAllowanceOnToken, useApproveOnToken } from "~~/hooks/token";
 
 const initialSwapConfig = {
   tokenIn: {
@@ -62,21 +62,15 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
     error: queryError,
     refetch: refetchQuerySwap,
   } = useQuerySwap(swapInput, setSwapConfig);
-  const { data: allowanceOnPermit2, refetch: refetchAllowanceOnPermit2 } = useAllowanceOnPermit2(tokenIn.address);
   const { data: allowanceOnToken, refetch: refetchAllowanceOnToken } = useAllowanceOnToken(
     tokenIn.address,
     PERMIT2[chainId],
   );
   const {
-    mutateAsync: approveRouter,
-    isPending: isApproveRouterPending,
-    error: approveRouterError,
+    mutateAsync: approveOnToken,
+    isPending: isApprovePending,
+    error: approveError,
   } = useApproveOnToken(tokenIn.address, PERMIT2[chainId]);
-  const {
-    mutateAsync: approvePermit2,
-    isPending: isApprovePermit2Pending,
-    error: approvePermit2Error,
-  } = useApproveOnPermit2(tokenIn.address);
   const { mutate: swap, isPending: isSwapPending, error: swapError } = useSwap(swapInput);
 
   const handleQuerySwap = async () => {
@@ -86,14 +80,8 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
   };
 
   const handleApprove = async () => {
-    if (allowanceOnPermit2 && allowanceOnPermit2[0] < swapConfig.tokenIn.rawAmount) {
-      if (allowanceOnToken !== undefined && allowanceOnToken < swapConfig.tokenIn.rawAmount) {
-        await approveRouter();
-        refetchAllowanceOnToken();
-      }
-      await approvePermit2();
-      refetchAllowanceOnPermit2();
-    }
+    await approveOnToken();
+    refetchAllowanceOnToken();
   };
 
   const handleSwap = async () => {
@@ -125,10 +113,6 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
     }));
   };
 
-  const sufficientAllowance = useMemo(() => {
-    return allowanceOnPermit2 && allowanceOnPermit2[0] >= swapConfig.tokenIn.rawAmount;
-  }, [allowanceOnPermit2, swapConfig.tokenIn.rawAmount]);
-
   useContractEvent({
     address: VAULT_V3[chainId],
     abi: vaultV3Abi,
@@ -153,8 +137,12 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
     },
   });
 
+  const sufficientAllowance = useMemo(() => {
+    return allowanceOnToken && allowanceOnToken >= swapConfig.tokenIn.rawAmount;
+  }, [allowanceOnToken, swapConfig.tokenIn.rawAmount]);
+
   const isFormEmpty = swapConfig.tokenIn.amount === "" && swapConfig.tokenOut.amount === "";
-  const error = queryError || swapError || approveRouterError || approvePermit2Error;
+  const error: Error | null = queryError || swapError || approveError;
 
   return (
     <section className="flex flex-col gap-5">
@@ -189,16 +177,12 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
           isFormEmpty={isFormEmpty}
         />
       ) : !sufficientAllowance ? (
-        <TransactionButton
-          label="Approve"
-          isDisabled={isApprovePermit2Pending || isApproveRouterPending}
-          onClick={handleApprove}
-        />
+        <TransactionButton label={`Approve ${tokenIn.symbol}`} isDisabled={isApprovePending} onClick={handleApprove} />
       ) : (
         <TransactionButton label="Swap" isDisabled={isSwapPending} onClick={handleSwap} />
       )}
 
-      {(error as Error) && <Alert type="error">{(error as Error).message} / </Alert>}
+      {error && <Alert type="error">{error.message} / </Alert>}
 
       {queryResponse && (
         <ResultsDisplay

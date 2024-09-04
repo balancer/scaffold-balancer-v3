@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { ResultsDisplay, TokenField, TransactionButton } from ".";
-import { InputAmount, calculateProportionalAmounts } from "@balancer/sdk";
+import { InputAmount, PERMIT2, calculateProportionalAmounts, erc20Abi } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
+import debounce from "lodash.debounce";
 import { formatUnits, parseUnits } from "viem";
-import { useContractEvent } from "wagmi";
+import { useContractEvent, useContractRead } from "wagmi";
 import { Alert } from "~~/components/common/";
 import abis from "~~/contracts/abis";
-import { useAddLiquidity, useQueryAddLiquidity } from "~~/hooks/balancer/";
+import { useAddLiquidity, useQueryAddLiquidity, useTargetFork } from "~~/hooks/balancer/";
 import { PoolActionsProps, PoolOperationReceipt, TokenAmountDetails } from "~~/hooks/balancer/types";
-import { useApproveTokens, useReadTokens } from "~~/hooks/token/";
+import { useAllowancesOnTokens, useApproveOnToken } from "~~/hooks/token/";
 
 /**
  * 1. Query adding some amount of liquidity to the pool
@@ -30,21 +31,36 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   const [tokenInputs, setTokenInputs] = useState<InputAmount[]>(initialTokenInputs);
   const [addLiquidityReceipt, setAddLiquidityReceipt] = useState<PoolOperationReceipt>(null);
   const [referenceAmount, setReferenceAmount] = useState<InputAmount>(); // only for the proportional add liquidity case
+  const [isCalculatingProportional, setIsCalculatingProportional] = useState(false);
 
+  const queryClient = useQueryClient();
   const {
     data: queryResponse,
     isFetching: isQueryFetching,
     error: queryError,
     refetch: refetchQueryAddLiquidity,
   } = useQueryAddLiquidity(pool, tokenInputs, referenceAmount);
-  const { sufficientAllowances, isApproving, approveTokens } = useApproveTokens(tokenInputs);
-  const { mutate: addLiquidity, isPending: isAddLiquidityPending, error: addLiquidityError } = useAddLiquidity();
-  const { refetchTokenAllowances } = useReadTokens(tokenInputs);
-  const queryClient = useQueryClient();
+  const { tokensToApprove, refetchTokenAllowances } = useAllowancesOnTokens(tokenInputs);
+  const {
+    mutate: addLiquidity,
+    isPending: isAddLiquidityPending,
+    error: addLiquidityError,
+  } = useAddLiquidity(tokenInputs);
+
+  // Delay update of token inputs so user has time to finish typing numbers longer than 1 digit
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedSetTokenInputs = useCallback(
+    debounce(updatedTokens => {
+      setTokenInputs(updatedTokens);
+      setIsCalculatingProportional(false);
+    }, 1000),
+    [],
+  );
 
   const handleInputChange = (index: number, value: string) => {
     queryClient.removeQueries({ queryKey: ["queryAddLiquidity"] });
     setAddLiquidityReceipt(null);
+
     const updatedTokens = tokenInputs.map((token, idx) => {
       if (idx === index) {
         return { ...token, rawAmount: parseUnits(value, token.decimals) };
@@ -64,10 +80,12 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
         })),
       };
 
+      setIsCalculatingProportional(true);
       const referenceAmount = updatedTokens[index];
-      const { bptAmount, tokenAmounts } = calculateProportionalAmounts(poolStateWithBalances, referenceAmount);
-      setReferenceAmount(bptAmount);
-      setTokenInputs(tokenAmounts);
+      const { tokenAmounts } = calculateProportionalAmounts(poolStateWithBalances, referenceAmount);
+      setReferenceAmount(referenceAmount);
+      setTokenInputs(updatedTokens);
+      debouncedSetTokenInputs(tokenAmounts);
     } else {
       setTokenInputs(updatedTokens);
     }
@@ -105,7 +123,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
     },
   });
 
-  const error = queryError || addLiquidityError;
+  const error: Error | null = queryError || addLiquidityError;
   const isFormEmpty = tokenInputs.some(token => token.rawAmount === 0n);
 
   return (
@@ -129,10 +147,10 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
           label="Query"
           onClick={handleQueryAddLiquidity}
           isDisabled={isQueryFetching}
-          isFormEmpty={isFormEmpty}
+          isFormEmpty={isFormEmpty || isCalculatingProportional}
         />
-      ) : !sufficientAllowances ? (
-        <TransactionButton label="Approve" isDisabled={isApproving} onClick={approveTokens} />
+      ) : tokensToApprove.length > 0 ? (
+        <ApproveButtons tokens={tokensToApprove} refetchTokenAllowances={refetchTokenAllowances} />
       ) : (
         <TransactionButton label="Add Liquidity" isDisabled={isAddLiquidityPending} onClick={handleAddLiquidity} />
       )}
@@ -159,7 +177,42 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
         />
       )}
 
-      {(error as Error) && <Alert type="error">{(error as Error).message}</Alert>}
+      {error && <Alert type="error">{error.message}</Alert>}
     </section>
+  );
+};
+
+const ApproveButtons = ({
+  tokens,
+  refetchTokenAllowances,
+}: {
+  tokens: InputAmount[];
+  refetchTokenAllowances: () => void;
+}) => {
+  const { chainId } = useTargetFork();
+  const token = tokens[0];
+
+  const { data: symbol } = useContractRead({
+    address: token.address,
+    abi: erc20Abi,
+    functionName: "symbol",
+  });
+
+  const {
+    mutateAsync: approve,
+    isPending: isApprovePending,
+    error: approveError,
+  } = useApproveOnToken(token.address, PERMIT2[chainId]);
+
+  const handleApprove = async () => {
+    await approve();
+    refetchTokenAllowances();
+  };
+
+  return (
+    <div>
+      <TransactionButton label={`Approve ${symbol}`} isDisabled={isApprovePending} onClick={handleApprove} />
+      {approveError && <Alert type="error">{approveError.message}</Alert>}
+    </div>
   );
 };

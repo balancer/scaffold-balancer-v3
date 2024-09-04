@@ -24,6 +24,7 @@
     "blo": "^1.0.1",
     "daisyui": "4.5.0",
     "graphql": "^16.8.1",
+    "lodash.debounce": "^4.0.8",
     "next": "^14.0.4",
     "next-themes": "^0.2.1",
     "nprogress": "^0.2.0",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.1.1",
+    "@types/lodash.debounce": "^4",
     "@types/node": "^17.0.35",
     "@types/nprogress": "^0",
     "@types/react": "^18.0.9",

@@ -94,7 +94,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
     },
   });
 
-  const error = queryError || removeLiquidityError || approveError;
+  const error: Error | null = queryError || removeLiquidityError || approveError;
   const isFormEmpty = bptInput.displayValue === "";
   const isSufficientAllowance = allowance !== undefined && allowance >= bptInput.rawAmount;
 
@@ -112,7 +112,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
       {!queryResponse || removeLiquidityReceipt || isFormEmpty ? (
         <TransactionButton label="Query" onClick={handleQuery} isDisabled={isQueryFetching} isFormEmpty={isFormEmpty} />
       ) : !isSufficientAllowance ? (
-        <TransactionButton label="Approve" isDisabled={isApprovePending} onClick={handleApprove} />
+        <TransactionButton label={`Approve ${pool.symbol}`} isDisabled={isApprovePending} onClick={handleApprove} />
       ) : (
         <TransactionButton
           label="Remove Liquidity"
@@ -141,7 +141,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
         />
       )}
 
-      {(error as Error) && <Alert type="error">{(error as Error).message}</Alert>}
+      {error && <Alert type="error">{error.message}</Alert>}
     </section>
   );
 };
