@@ -149,9 +149,13 @@ const scaffoldConfig = {
 
 Your journey begins with planning the custom computation logic for the pool, which defines how an AMM exchanges one asset for another.
 
+[![Constant Product Pool](https://github.com/user-attachments/assets/6a4fe0f7-4585-4429-b873-890b47b82d86)](https://www.youtube.com/watch?v=kXynS3jAu0M)
+
+
 ### 1. Review the Docs 📖
 
 - [Create a custom AMM with a novel invariant](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html)
+- [Creata a ]
 
 ### 2. Recall the Key Requirements 🔑
 
@@ -183,7 +187,9 @@ After designing a pool contract, the next step is to prepare a factory contract 
 
 ## 🪝 Create a Pool Hook
 
-Next, consider further extending the functionality of the custom pool contract with a hooks contract. If your custom pool does not need a hooks contract, use the zero address during pool registration
+Next, consider further extending the functionality of the custom pool contract with a hooks contract
+
+[![Swap Fee Discount Hook](https://github.com/user-attachments/assets/57b532ee-4c93-423c-946a-ed6c2bbad337)](https://www.youtube.com/watch?v=kaz6duliRPA)
 
 ### 1. Review the Docs 📖
 
