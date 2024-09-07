@@ -38,9 +38,18 @@ contract PoolHelpers {
     }
 
     /**
+     * @notice Approve permit2 on the token contract, then approve the router on the Permit2 contract
+     * @param tokens Array of tokens to approve the router to spend using Permit2
+     */
+    function approveRouterWithPermit2(IERC20[] memory tokens) internal {
+        approveSpenderOnToken(address(permit2), tokens);
+        approveSpenderOnPermit2(address(router), tokens);
+    }
+
+    /**
      * @notice Max approving to speed up UX on frontend
-     * @param tokens Array of tokens to approve
      * @param spender Address of the spender
+     * @param tokens Array of tokens to approve
      */
     function approveSpenderOnToken(address spender, IERC20[] memory tokens) internal {
         uint256 maxAmount = type(uint256).max;
@@ -51,8 +60,8 @@ contract PoolHelpers {
 
     /**
      * @notice Max approving to speed up UX on frontend
-     * @param tokens Array of tokens to approve
      * @param spender Address of the spender
+     * @param tokens Array of tokens to approve
      */
     function approveSpenderOnPermit2(address spender, IERC20[] memory tokens) internal {
         uint160 maxAmount = type(uint160).max;

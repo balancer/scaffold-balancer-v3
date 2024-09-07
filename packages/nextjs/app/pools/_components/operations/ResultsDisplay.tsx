@@ -18,7 +18,7 @@ export const ResultsDisplay: React.FC<ResultsDisplay> = ({ label, transactionHas
 
   const transactionUrl = getBlockExplorerTxLink(chainId, transactionHash ?? "");
 
-  const styles = transactionHash ? "bg-success-tint border border-success" : "bg-warning-tint border border-warning";
+  const styles = transactionHash ? "bg-success" : "bg-warning";
 
   return (
     <div>
@@ -36,7 +36,7 @@ export const ResultsDisplay: React.FC<ResultsDisplay> = ({ label, transactionHas
         )}
       </div>
 
-      <div className={`${styles} rounded-lg p-4 flex flex-col gap-3`}>
+      <div className={`${styles} text-neutral-800 rounded-lg p-4 flex flex-col gap-3`}>
         {data.map((item, idx) => (
           <TokenAmountDisplay
             key={idx}

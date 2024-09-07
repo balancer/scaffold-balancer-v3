@@ -14,18 +14,18 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 
 import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
-import { VeBALFeeDiscountHook } from "../contracts/hooks/VeBALFeeDiscountHook.sol";
 import { ConstantProductFactory } from "../contracts/factories/ConstantProductFactory.sol";
+import { LotteryHook } from "../contracts/hooks/LotteryHook.sol";
 
 /**
  * @title Deploy Constant Product Pool
- * @notice Deploys, registers, and initializes a constant product pool that uses the VeBAL Fee Discount Hook
+ * @notice Deploys, registers, and initializes a constant product pool that uses a Lottery Hook
  */
 contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
-    function run(address token1, address token2, address veBAL) external {
+    function deployConstantProductPool(address token1, address token2) internal {
         // Set the deployment configurations
-        CustomPoolConfig memory poolConfig = getPoolConfig(token1, token2);
-        InitializationConfig memory initConfig = getInitializationConfig(token1, token2);
+        CustomPoolConfig memory poolConfig = getProductPoolConfig(token1, token2);
+        InitializationConfig memory initConfig = getProductPoolInitConfig(token1, token2);
 
         // Start creating the transactions
         uint256 deployerPrivateKey = getDeployerPrivateKey();
@@ -36,13 +36,11 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
         console.log("Constant Product Factory deployed at: %s", address(factory));
 
         // Deploy a hook
-        address veBALFeeDiscountHook = address(
-            new VeBALFeeDiscountHook(vault, address(factory), address(router), veBAL)
-        );
-        console.log("VeBALFeeDiscountHook deployed at address: %s", veBALFeeDiscountHook);
+        address lotteryHook = address(new LotteryHook(vault, address(factory), address(router)));
+        console.log("LotteryHook deployed at address: %s", lotteryHook);
 
         // Deploy a pool and register it with the vault
-        address pool = ConstantProductFactory(factory).create(
+        address pool = factory.create(
             poolConfig.name,
             poolConfig.symbol,
             poolConfig.salt,
@@ -50,17 +48,15 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
             poolConfig.swapFeePercentage,
             poolConfig.protocolFeeExempt,
             poolConfig.roleAccounts,
-            veBALFeeDiscountHook, // poolHooksContract
+            lotteryHook, // poolHooksContract
             poolConfig.liquidityManagement
         );
         console.log("Constant Product Pool deployed at: %s", pool);
 
-        // Approve Permit2 contract to spend tokens on behalf of deployer
-        approveSpenderOnToken(address(permit2), initConfig.tokens);
-        // Approve Router contract to spend tokens using Permit2
-        approveSpenderOnPermit2(address(router), initConfig.tokens);
+        // Approve the router to spend tokens for pool initialization
+        approveRouterWithPermit2(initConfig.tokens);
 
-        // Seed the pool with initial liquidity
+        // Seed the pool with initial liquidity using Router as entrypoint
         router.initialize(
             pool,
             initConfig.tokens,
@@ -79,7 +75,10 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
      * For STANDARD tokens, the rate provider address must be 0, and paysYieldFees must be false.
      * All WITH_RATE tokens need a rate provider, and may or may not be yield-bearing.
      */
-    function getPoolConfig(address token1, address token2) internal view returns (CustomPoolConfig memory config) {
+    function getProductPoolConfig(
+        address token1,
+        address token2
+    ) internal view returns (CustomPoolConfig memory config) {
         string memory name = "Constant Product Pool"; // name for the pool
         string memory symbol = "CPP"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
@@ -107,7 +106,7 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
             poolCreator: address(0) // Account empowered to set the pool creator fee percentage
         });
         LiquidityManagement memory liquidityManagement = LiquidityManagement({
-            disableUnbalancedLiquidity: false,
+            disableUnbalancedLiquidity: true, // Must be true to register pool with the Lottery Hook
             enableAddLiquidityCustom: false,
             enableRemoveLiquidityCustom: false,
             enableDonation: false
@@ -128,9 +127,9 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
 
     /**
      * @dev Set the pool initialization configurations here
-     * @notice This is where the amounts of tokens to seed the pool with initial liquidity are set
+     * @notice This is where the amounts of tokens to Seed the pool with initial liquidity using Router as entrypoint are set
      */
-    function getInitializationConfig(
+    function getProductPoolInitConfig(
         address token1,
         address token2
     ) internal pure returns (InitializationConfig memory config) {

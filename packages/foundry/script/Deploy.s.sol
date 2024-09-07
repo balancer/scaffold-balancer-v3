@@ -13,23 +13,25 @@ import { DeployWeightedPool8020 } from "./03_DeployWeightedPool8020.s.sol";
  * @dev Run all deploy scripts here to allow for scaffold integrations with nextjs front end
  * @dev Run this script with `yarn deploy`
  */
-contract DeployScript is ScaffoldHelpers {
+contract DeployScript is
+    ScaffoldHelpers,
+    DeployMockTokens,
+    DeployConstantSumPool,
+    DeployConstantProductPool,
+    DeployWeightedPool8020
+{
     function run() external scaffoldExport {
-        // Deploy mock tokens to be used for pools and hooks contracts
-        DeployMockTokens deployMockTokens = new DeployMockTokens();
-        (address mockToken1, address mockToken2, address mockVeBAL) = deployMockTokens.run();
+        // Deploy mock tokens to use for the pools and hooks
+        (address mockToken1, address mockToken2, address mockVeBAL) = deployMockTokens();
 
-        // Deploy, register, and initialize a constant sum pool
-        DeployConstantSumPool depoloySumPool = new DeployConstantSumPool();
-        depoloySumPool.run(mockToken1, mockToken2);
+        // Deploy, register, and initialize a constant sum pool with a swap fee discount hook
+        deployConstantSumPool(mockToken1, mockToken2, mockVeBAL);
 
-        // Deploy, register, and initialize a constant product pool
-        DeployConstantProductPool deployProductPool = new DeployConstantProductPool();
-        deployProductPool.run(mockToken1, mockToken2, mockVeBAL);
+        // Deploy, register, and initialize a constant product pool with a lottery hook
+        deployConstantProductPool(mockToken1, mockToken2);
 
-        // Deploy, register, and initialize a weighted pool
-        DeployWeightedPool8020 deployWeightedPool = new DeployWeightedPool8020();
-        deployWeightedPool.run(mockToken1, mockToken2);
+        // Deploy, register, and initialize a weighted pool with an exit fee hook
+        deployWeightedPool8020(mockToken1, mockToken2);
     }
 
     modifier scaffoldExport() {

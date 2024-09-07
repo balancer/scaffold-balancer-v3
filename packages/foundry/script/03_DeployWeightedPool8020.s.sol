@@ -19,12 +19,12 @@ import { ExitFeeHook } from "../contracts/hooks/ExitFeeHook.sol";
 
 /**
  * @title Deploy Weighted Pool 80/20
- * @notice Deploys, registers, and initializes a 80/20 weighted pool that uses the Exit Fee Hook
+ * @notice Deploys, registers, and initializes a 80/20 weighted pool that uses an Exit Fee Hook
  */
 contract DeployWeightedPool8020 is PoolHelpers, ScaffoldHelpers {
-    function run(address token1, address token2) external {
+    function deployWeightedPool8020(address token1, address token2) internal {
         // Set the pool initialization config
-        InitializationConfig memory initConfig = getInitializationConfig(token1, token2);
+        InitializationConfig memory initConfig = getWeightedPoolInitConfig(token1, token2);
 
         // Start creating the transactions
         uint256 deployerPrivateKey = getDeployerPrivateKey();
@@ -35,7 +35,7 @@ contract DeployWeightedPool8020 is PoolHelpers, ScaffoldHelpers {
         console.log("Weighted Pool Factory deployed at: %s", address(factory));
 
         // Deploy a hook
-        address exitFeeHook = address(new ExitFeeHook(vault));
+        address exitFeeHook = address(new ExitFeeHook(vault, address(factory)));
         console.log("ExitFeeHook deployed at address: %s", exitFeeHook);
 
         // Deploy a pool and register it with the vault
@@ -54,12 +54,10 @@ contract DeployWeightedPool8020 is PoolHelpers, ScaffoldHelpers {
         );
         console.log("Weighted Pool deployed at: %s", pool);
 
-        // Approve Permit2 contract to spend tokens on behalf of deployer
-        approveSpenderOnToken(address(permit2), initConfig.tokens);
-        // Approve Router contract to spend tokens using Permit2
-        approveSpenderOnPermit2(address(router), initConfig.tokens);
+        // Approve the router to spend tokens for pool initialization
+        approveRouterWithPermit2(initConfig.tokens);
 
-        // Seed the pool with initial liquidity
+        // Seed the pool with initial liquidity using Router as entrypoint
         router.initialize(
             pool,
             initConfig.tokens,
@@ -112,7 +110,7 @@ contract DeployWeightedPool8020 is PoolHelpers, ScaffoldHelpers {
     }
 
     /// @dev Set the initialization config for the pool (i.e. the amount of tokens to be added)
-    function getInitializationConfig(
+    function getWeightedPoolInitConfig(
         address token1,
         address token2
     ) internal pure returns (InitializationConfig memory config) {
