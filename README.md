@@ -1,14 +1,18 @@
-# Scaffold Balancer v3
+# 🏗︎ Scaffold Balancer v3
 
 A prototyping tool and starter kit for building on top of Balancer v3. Accelerate the process of designing and deploying custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
 
 
-![v3-architecture](https://github.com/user-attachments/assets/584c2a44-5382-4abe-905d-507fb55f5f25)
+### 🔁 Development Life Cycle
+1. Learn the core concepts for building on top of Balancer v3
+2. Configure and deploy factories, pools, and hooks contracts to a local anvil fork of Sepolia
+3. Interact with pools via a frontend that runs at [localhost:3000](http://localhost:3000/)
 
 
 ### 🪧 Table Of Contents
 
 - [🧑‍💻 Environment Setup](#-environment-setup)
+- [👩‍🏫 Learn Core Concepts](#-learn-core-concepts)
 - [🕵️ Explore the Examples](#-explore-the-examples)
 - [🌊 Create a Custom Pool](#-create-a-custom-pool)
 - [🏭 Create a Pool Factory](#-create-a-pool-factory)
@@ -139,22 +143,33 @@ const scaffoldConfig = {
 
 </details>
 
+## 👩‍🏫 Learn Core Concepts
+
+- [Contract Architecture](https://docs-v3.balancer.fi/concepts/core-concepts/architecture.html)
+- [Balancer Pool Tokens](https://docs-v3.balancer.fi/concepts/core-concepts/balancer-pool-tokens.html)
+- [Balancer Pool Types](https://docs-v3.balancer.fi/concepts/explore-available-balancer-pools/)
+- [Building Custom AMMs](https://docs-v3.balancer.fi/build-a-custom-amm/)
+
+![v3-components](https://github.com/user-attachments/assets/ccda9323-790f-4276-b092-c867fd80bf9e)
+
+
 ## 🕵️ Explore the Examples
+Each of the following examples have turn key deploy scripts that can be found in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory
 
 ### 1. Constant Sum Pool with Dynamic Swap Fee Hook
 The swap fee percentage is altered by the hook contract before the pool calculates the amount for the swap
 
-![dynamic-fee-hook](https://github.com/user-attachments/assets/63ab25c2-a530-4bb9-9946-e8cebcb5ab9d)
+![dynamic-fee-hook](https://github.com/user-attachments/assets/5ba69ea3-6894-4eeb-befa-ed87cfeb6b13)
 
 ### 2. Constant Product Pool with Lottery Hook
-After the pool calculates the amount for the swap, an after swap hook makes a request to an oracle contract for a random number
+An after swap hook makes a request to an oracle contract for a random number
 
-![after-swap-hook](https://github.com/user-attachments/assets/39822cf0-1053-4a66-b303-acf63542fcdd)
+![after-swap-hook](https://github.com/user-attachments/assets/594ce1ac-2edc-4d16-9631-14feb2d085f8)
 
 ### 3. Weighted Pool with Exit Fee Hook
-After the pool calculates the amounts of tokens for an exit operation, an after remove liquidity hook adjusts the amounts before the vault transfers tokens to the user 
+An after remove liquidity hook adjusts the amounts before the vault transfers tokens to the user 
 
-![after-remove-liquidity-hook](https://github.com/user-attachments/assets/ca6003ba-7e0c-4431-a7ef-b3273f170c62)
+![after-remove-liquidity-hook](https://github.com/user-attachments/assets/2e8f4a5c-f168-4021-b316-28a79472c8d1)
 
 
 ## 🌊 Create a Custom Pool
@@ -220,7 +235,7 @@ Next, consider further extending the functionality of the custom pool contract w
 
 The deploy scripts are located in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory. To better understand the lifecycle of deploying a pool that uses a hooks contract, see the diagram below
 
-![pool-deploy-scripts](https://github.com/user-attachments/assets/3733296c-9c64-40c8-8139-f2878e6379c4)
+![pool-deploy-scripts](https://github.com/user-attachments/assets/bb906080-8f42-46c0-af90-ba01ba1754fc)
 
 
 ### 1. Modifying the Deploy Scripts 🛠️
