@@ -16,6 +16,7 @@ import {
     TokenConfig,
     HookFlags
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
 
 import { EnumerableMap } from "@balancer-labs/v3-solidity-utils/contracts/openzeppelin/EnumerableMap.sol";
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
@@ -35,6 +36,8 @@ contract LotteryHook is BaseHooks, Ownable {
 
     // Trusted router is needed since we rely on `getSender` to know which user should receive the prize.
     address private immutable _trustedRouter;
+    // Only pools deployed by the allowed factory may register
+    address private immutable _allowedFactory;
 
     // When calling `onAfterSwap`, a random number is generated. If the number is equal to LUCKY_NUMBER, the user will
     // win the accrued fees. It must be a number between 1 and MAX_NUMBER, or else nobody will win.
@@ -51,21 +54,20 @@ contract LotteryHook is BaseHooks, Ownable {
 
     uint256 private _counter = 0;
 
-    constructor(IVault vault, address router) BaseHooks(vault) Ownable(msg.sender) {
+    constructor(IVault vault, address allowedFactory, address router) BaseHooks(vault) Ownable(msg.sender) {
+        _allowedFactory = allowedFactory;
         _trustedRouter = router;
     }
 
     /// @inheritdoc IHooks
     function onRegister(
-        address,
-        address,
+        address factory,
+        address pool,
         TokenConfig[] memory,
         LiquidityManagement calldata
     ) public view override onlyVault returns (bool) {
-        // NOTICE: In real hooks, make sure this function is properly implemented (e.g. check the factory, and check
-        // that the given pool is from the factory). Returning true unconditionally allows any pool, with any
-        // configuration, to use this hook.
-        return true;
+        // Only pools deployed by an allowed factory may register
+        return factory == _allowedFactory && IBasePoolFactory(factory).isPoolFromFactory(pool);
     }
 
     /// @inheritdoc IHooks

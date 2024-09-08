@@ -18,6 +18,7 @@ import {
 
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
 import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
+import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
 
 /**
  * @notice Impose an "exit fee" on a pool. The value of the fee is returned to the LPs.
@@ -41,6 +42,8 @@ contract ExitFeeHook is BaseHooks, Ownable {
     // Percentages are represented as 18-decimal FP numbers, which have a maximum value of FixedPoint.ONE (100%),
     // so 60 bits are sufficient.
     uint64 public exitFeePercentage;
+    // Only pools deployed by the allowed factory may register
+    address private immutable _allowedFactory;
 
     // Maximum exit fee of 10%
     uint64 public constant MAX_EXIT_FEE_PERCENTAGE = 10e16;
@@ -59,27 +62,23 @@ contract ExitFeeHook is BaseHooks, Ownable {
      */
     error PoolDoesNotSupportDonation();
 
-    constructor(IVault vault) BaseHooks(vault) Ownable(msg.sender) {
-        // solhint-disable-previous-line no-empty-blocks
+    constructor(IVault vault, address allowedFactory) BaseHooks(vault) Ownable(msg.sender) {
+        _allowedFactory = allowedFactory;
     }
 
     /// @inheritdoc IHooks
     function onRegister(
-        address,
-        address,
+        address factory,
+        address pool,
         TokenConfig[] memory,
         LiquidityManagement calldata liquidityManagement
     ) public view override onlyVault returns (bool) {
-        // NOTICE: In real hooks, make sure this function is properly implemented (e.g. check the factory, and check
-        // that the given pool is from the factory). Returning true unconditionally allows any pool, with any
-        // configuration, to use this hook.
-
         // This hook requires donation support to work (see above).
         if (liquidityManagement.enableDonation == false) {
             revert PoolDoesNotSupportDonation();
         }
 
-        return true;
+        return factory == _allowedFactory && IBasePoolFactory(factory).isPoolFromFactory(pool);
     }
 
     /// @inheritdoc IHooks

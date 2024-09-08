@@ -8,11 +8,11 @@ module.exports = {
     themes: [
       {
         light: {
-          primary: "#a78bfa",
+          primary: "#9f95f0",
           "primary-content": "#ffffff",
           secondary: "rgb(251, 250, 249)",
           "secondary-content": "rgb(45, 55, 72)",
-          accent: "#a78bfa",
+          accent: "#9f95f0",
           "accent-content": "#ffffff",
           neutral: "#ffffff",
           "neutral-content": "rgb(45, 55, 72)",
@@ -20,10 +20,10 @@ module.exports = {
           "base-200": "rgb(245, 243, 239)",
           "base-300": "#EBE8E0", // bg color
           "base-content": "rgb(45, 55, 72)",
-          info: "#a78bfa",
-          success: "#047857",
-          warning: "#b45309",
-          error: "#b91c1c",
+          info: "#bcddff",
+          success: "#63f2be",
+          warning: "#fed7aa",
+          error: "#f9b5a8",
 
           "--rounded-btn": "9999rem",
 
@@ -44,7 +44,7 @@ module.exports = {
           "primary-content": "#0f172a",
           secondary: "rgb(70, 77, 88)",
           "secondary-content": "#F9FBFF",
-          accent: "#a78bfa",
+          accent: "#9f95f0",
           "accent-content": "#F9FBFF",
           neutral: "rgb(70, 77, 88)",
           "neutral-content": "rgb(229, 211, 190)",
@@ -52,10 +52,10 @@ module.exports = {
           "base-200": "rgb(63, 70, 80)",
           "base-300": "rgb(56, 62, 71)", // bg color
           "base-content": "rgb(229, 211, 190)",
-          info: "#a78bfa",
-          success: "#34d399",
-          warning: "#fcd34d",
-          error: "#fca5a5",
+          info: "#93c6ff",
+          success: "#25e2a4",
+          warning: "#f6ba74",
+          error: "#f48975",
 
           "--rounded-btn": "9999rem",
 
@@ -88,10 +88,10 @@ module.exports = {
       colors: {
         "custom-beige-start": "#e5d3be",
         "custom-beige-end": "#e6c6a0",
-        "error-tint": "#ef444433",
-        "warning-tint": "#f59e0b33",
-        "success-tint": "#10b98133",
-        "info-tint": "#a78bfa33",
+        // "error-tint": "#ef444433",
+        // "warning-tint": "#fdba7433",
+        // "success-tint": "#10b98133",
+        // "info-tint": "#a78bfa33",
       },
     },
   },

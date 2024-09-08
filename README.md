@@ -1,21 +1,15 @@
 # Scaffold Balancer v3
 
-A full stack prototyping tool for building on top of Balancer v3. Accelerate the process of designing and deploying custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
+A prototyping tool and starter kit for building on top of Balancer v3. Accelerate the process of designing and deploying custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
 
-### 🛠️ Tech Stack
 
-| [Balancer SDK](https://github.com/balancer/b-sdk) | [Scaffold ETH 2](https://scaffold-eth-2-docs.vercel.app/) | [Balancer v3 Monorepo](https://github.com/balancer/balancer-v3-monorepo) |
-| ------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------ |
+![v3-architecture](https://github.com/user-attachments/assets/584c2a44-5382-4abe-905d-507fb55f5f25)
 
-### 📚 Prerequisites
-
-- Basic understanding of [Solidity](https://docs.soliditylang.org/) and [Foundry](https://book.getfoundry.sh/)
-- Basic understanding of [liquidity pools](https://www.youtube.com/watch?v=cizLhxSKrAc) and [AMMs](https://chain.link/education-hub/what-is-an-automated-market-maker-amm)
-- Basic understanding of [Balancer v3](https://docs-v3.balancer.fi/concepts/core-concepts/introduction.html)
 
 ### 🪧 Table Of Contents
 
 - [🧑‍💻 Environment Setup](#-environment-setup)
+- [🕵️ Explore the Examples](#-explore-the-examples)
 - [🌊 Create a Custom Pool](#-create-a-custom-pool)
 - [🏭 Create a Pool Factory](#-create-a-pool-factory)
 - [🪝 Create a Pool Hook](#-create-a-pool-hook)
@@ -145,6 +139,24 @@ const scaffoldConfig = {
 
 </details>
 
+## 🕵️ Explore the Examples
+
+### 1. Constant Sum Pool with Dynamic Swap Fee Hook
+The swap fee percentage is altered by the hook contract before the pool calculates the amount for the swap
+
+![dynamic-fee-hook](https://github.com/user-attachments/assets/63ab25c2-a530-4bb9-9946-e8cebcb5ab9d)
+
+### 2. Constant Product Pool with Lottery Hook
+After the pool calculates the amount for the swap, an after swap hook makes a request to an oracle contract for a random number
+
+![after-swap-hook](https://github.com/user-attachments/assets/39822cf0-1053-4a66-b303-acf63542fcdd)
+
+### 3. Weighted Pool with Exit Fee Hook
+After the pool calculates the amounts of tokens for an exit operation, an after remove liquidity hook adjusts the amounts before the vault transfers tokens to the user 
+
+![after-remove-liquidity-hook](https://github.com/user-attachments/assets/ca6003ba-7e0c-4431-a7ef-b3273f170c62)
+
+
 ## 🌊 Create a Custom Pool
 
 Your journey begins with planning the custom computation logic for the pool, which defines how an AMM exchanges one asset for another.
@@ -155,7 +167,6 @@ Your journey begins with planning the custom computation logic for the pool, whi
 ### 1. Review the Docs 📖
 
 - [Create a custom AMM with a novel invariant](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html)
-- [Creata a ]
 
 ### 2. Recall the Key Requirements 🔑
 
@@ -207,47 +218,16 @@ Next, consider further extending the functionality of the custom pool contract w
 
 ## 🚢 Deploy the Contracts
 
-The deploy scripts are located in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory.
+The deploy scripts are located in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory. To better understand the lifecycle of deploying a pool that uses a hooks contract, see the diagram below
+
+![pool-deploy-scripts](https://github.com/user-attachments/assets/3733296c-9c64-40c8-8139-f2878e6379c4)
 
 
+### 1. Modifying the Deploy Scripts 🛠️
 
-### 1. Examine the Deploy Scripts 🕵️
+For all the scaffold integrations to work properly, each deploy script must be imported into `Deploy.s.sol` and inherited by the `DeployScript` contract in `Deploy.s.sol` 
 
-#### [00_DeployMockTokens.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/00_DeployMockTokens.s.sol)
-
-1. Deploys mock tokens that are used to register and initialize pools
-2. Deploys a mock token used for the example `VeBALFeeDiscountHook` contract
-
-#### [01_DeployConstantSumPool.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/01_DeployConstantSumPool.s.sol)
-
-1. Deploys a `ConstantSumFactory`
-2. Deploys and registers a `ConstantSumPool`
-3. Initializes the `ConstantSumPool` using mock tokens
-
-#### [02_DeployConstantProductPool.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/02_DeployConstantProductPool.s.sol)
-
-1. Deploys a `ConstantProductFactory`
-2. Deploys a `VeBALFeeDiscountHook` that can only be used by pools created by the `ConstantProductFactory`
-3. Deploys and registers a `ConstantProductPool`
-4. Initializes the `ConstantProductPool` using mock tokens
-
-#### [03_DeployWeightedPool8020.s.sol](https://github.com/balancer/scaffold-balancer-v3/blob/main/packages/foundry/script/03_DeployWeightedPool8020.s.sol)
-
-1. Deploys a `WeightedPoolFactory`
-2. Deploys an `ExitFeeHook`
-3. Deploys and registers a `WeightedPool` with 80/20 weights
-4. Initializes the `WeightedPool` using mock tokens
-
-### 2. Modify the Deploy Scripts 🛠️
-
-Each deploy scripts should be run inside of `Deploy.s.sol` so that the `scaffoldExport` modifier can automate the transfer of deployed contract info to the nextjs front-end. To add a new deploy script, import it into `Deploy.s.sol`, create a new instance of it, and run it
-
-```
-        DeployYourContract deployYourContract = new DeployYourContract();
-        deployYourContract.run();
-```
-
-### 3. Broadcast the Transactions 📡
+### 2. Broadcast the Transactions 📡
 
 To run all the deploy scripts
 

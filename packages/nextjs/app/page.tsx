@@ -22,10 +22,8 @@ const Home: NextPage = () => {
       <div className="max-w-screen-2xl mx-auto">
         <div className="flex items-center flex-col flex-grow py-10 bg-base-300 px-5 lg:px-10">
           <div className="px-5 mb-14">
-            <h1 className="text-center text-6xl font-bold mb-14 mt-5">Scaffold Balancer</h1>
-            <p className="text-2xl">
-              A series of guides and a prototyping tools for creating custom pools that integrate with Balancer v3
-            </p>
+            <h1 className="text-center text-6xl font-bold mb-14 mt-5">Scaffold Balancer v3</h1>
+            <p className="text-2xl">A developer tool for prototyping liquidity pools and hooks contracts</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 w-full">
