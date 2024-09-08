@@ -142,12 +142,18 @@ const scaffoldConfig = {
 ## 🕵️ Explore the Examples
 
 ### 1. Constant Sum Pool with Dynamic Swap Fee Hook
+The swap fee percentage is altered by the hook contract before the pool calculates the amount for the swap
+
 ![dynamic-fee-hook](https://github.com/user-attachments/assets/63ab25c2-a530-4bb9-9946-e8cebcb5ab9d)
 
 ### 2. Constant Product Pool with Lottery Hook
+After the pool calculates the amount for the swap, an after swap hook makes a request to an oracle contract for a random number
+
 ![after-swap-hook](https://github.com/user-attachments/assets/39822cf0-1053-4a66-b303-acf63542fcdd)
 
 ### 3. Weighted Pool with Exit Fee Hook
+After the pool calculates the amounts of tokens for an exit operation, an after remove liquidity hook adjusts the amounts before the vault transfers tokens to the user 
+
 ![after-remove-liquidity-hook](https://github.com/user-attachments/assets/ca6003ba-7e0c-4431-a7ef-b3273f170c62)
 
 
