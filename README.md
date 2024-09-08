@@ -212,9 +212,9 @@ Next, consider further extending the functionality of the custom pool contract w
 
 ## 🚢 Deploy the Contracts
 
-The deploy scripts are located in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory and follow the same basic pattern shown below
+The deploy scripts are located in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory. To better understand the lifecycle of deploying a pool that uses a hooks contract, see the diagram below
 
-![pool-deploy-scripts](https://github.com/user-attachments/assets/38421d3e-a159-4087-9853-7bc6c9a27c61)
+![pool-deploy-scripts](https://github.com/user-attachments/assets/3733296c-9c64-40c8-8139-f2878e6379c4)
 
 
 ### 1. Modifying the Deploy Scripts 🛠️
