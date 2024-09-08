@@ -2,16 +2,9 @@
 
 A prototyping tool and starter kit for building on top of Balancer v3. Accelerate the process of designing and deploying custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
 
-### 🛠️ Tech Stack
 
-| [Balancer SDK](https://github.com/balancer/b-sdk) | [Scaffold ETH 2](https://scaffold-eth-2-docs.vercel.app/) | [Balancer v3 Monorepo](https://github.com/balancer/balancer-v3-monorepo) |
-| ------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------ |
+![v3-architecture](https://github.com/user-attachments/assets/584c2a44-5382-4abe-905d-507fb55f5f25)
 
-### 📚 Prerequisites
-
-- Basic understanding of [Solidity](https://docs.soliditylang.org/) and [Foundry](https://book.getfoundry.sh/)
-- Basic understanding of [liquidity pools](https://www.youtube.com/watch?v=cizLhxSKrAc) and [AMMs](https://chain.link/education-hub/what-is-an-automated-market-maker-amm)
-- Basic understanding of [Balancer v3](https://docs-v3.balancer.fi/concepts/core-concepts/introduction.html)
 
 ### 🪧 Table Of Contents
 
