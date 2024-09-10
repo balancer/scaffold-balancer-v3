@@ -1,6 +1,9 @@
 # 🏗︎ Scaffold Balancer v3
 
-A prototyping tool and starter kit for building on top of Balancer v3. Accelerate the process of designing and deploying custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
+A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
+
+
+[![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/96587b23-034a-4a84-9758-bca756db0f95)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
 
 
 ### 🔁 Development Life Cycle
@@ -21,9 +24,6 @@ A prototyping tool and starter kit for building on top of Balancer v3. Accelerat
 - [🧪 Test the Contracts](#-test-the-contracts)
 
 ## 🧑‍💻 Environment Setup
-
-<!-- TODO: Record Updated Video -->
-<!-- [![image](https://github.com/user-attachments/assets/2d0d5c6d-647d-4782-8d7a-9076b39319b9)](https://www.youtube.com/watch?v=2lInvpCt2o4) -->
 
 ### 1. Requirements 📜
 
@@ -149,6 +149,8 @@ const scaffoldConfig = {
 - [Balancer Pool Tokens](https://docs-v3.balancer.fi/concepts/core-concepts/balancer-pool-tokens.html)
 - [Balancer Pool Types](https://docs-v3.balancer.fi/concepts/explore-available-balancer-pools/)
 - [Building Custom AMMs](https://docs-v3.balancer.fi/build-a-custom-amm/)
+- [Exploring Hooks and Custom Routers](https://pitchandrolls.com/2024/08/30/unlocking-the-power-of-balancer-v3-exploring-hooks-and-custom-routers/)
+- [Hook Development Tips](https://medium.com/@johngrant/unlocking-the-power-of-balancer-v3-hook-development-made-simple-831391a68296)
 
 ![v3-components](https://github.com/user-attachments/assets/ccda9323-790f-4276-b092-c867fd80bf9e)
 
