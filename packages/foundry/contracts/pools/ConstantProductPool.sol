@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import { BalancerPoolToken } from "@balancer-labs/v3-vault/contracts/BalancerPoolToken.sol";
 import { IBasePool } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
-import { PoolSwapParams } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { PoolSwapParams, Rounding } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -40,9 +40,13 @@ contract ConstantProductPool is BalancerPoolToken, IBasePool {
      * @notice Computes and returns the pool's invariant.
      * @dev This function computes the invariant based on current balances
      * @param balancesLiveScaled18 Array of current pool balances for each token in the pool, scaled to 18 decimals
+     * @param rounding Rounding direction to consider when computing the invariant
      * @return invariant The calculated invariant of the pool, represented as a uint256
      */
-    function computeInvariant(uint256[] memory balancesLiveScaled18) public pure returns (uint256 invariant) {
+    function computeInvariant(
+        uint256[] memory balancesLiveScaled18,
+        Rounding rounding
+    ) public pure returns (uint256 invariant) {
         // scale the invariant to 1e18
         invariant = FixedPoint.ONE;
         invariant = invariant.mulDown(balancesLiveScaled18[0]).mulDown(balancesLiveScaled18[1]);
@@ -61,7 +65,7 @@ contract ConstantProductPool is BalancerPoolToken, IBasePool {
         uint256 tokenInIndex,
         uint256 invariantRatio
     ) external pure returns (uint256 newBalance) {
-        uint256 newInvariant = computeInvariant(balancesLiveScaled18).mulDown(invariantRatio);
+        uint256 newInvariant = computeInvariant(balancesLiveScaled18, Rounding.ROUND_UP).mulDown(invariantRatio);
         uint256 otherTokenIndex = tokenInIndex == 0 ? 1 : 0;
         uint256 poolBalanceOtherToken = balancesLiveScaled18[otherTokenIndex];
 

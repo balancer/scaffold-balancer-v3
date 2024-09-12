@@ -19,6 +19,7 @@ import {
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
 import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
+import { VaultGuard } from "@balancer-labs/v3-vault/contracts/VaultGuard.sol";
 
 /**
  * @notice Impose an "exit fee" on a pool. The value of the fee is returned to the LPs.
@@ -36,7 +37,7 @@ import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/I
  * Finally, since the only way to deposit fee tokens back into the pool balance (without minting new BPT) is through
  * the special "donation" add liquidity type, this hook also requires that the pool support donation.
  */
-contract ExitFeeHook is BaseHooks, Ownable {
+contract ExitFeeHook is BaseHooks, VaultGuard, Ownable {
     using FixedPoint for uint256;
 
     // Percentages are represented as 18-decimal FP numbers, which have a maximum value of FixedPoint.ONE (100%),
@@ -62,7 +63,7 @@ contract ExitFeeHook is BaseHooks, Ownable {
      */
     error PoolDoesNotSupportDonation();
 
-    constructor(IVault vault, address allowedFactory) BaseHooks(vault) Ownable(msg.sender) {
+    constructor(IVault vault, address allowedFactory) VaultGuard(vault) Ownable(msg.sender) {
         _allowedFactory = allowedFactory;
     }
 

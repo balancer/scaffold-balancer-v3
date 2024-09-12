@@ -14,17 +14,18 @@ import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/I
 import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
 import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { VaultGuard } from "@balancer-labs/v3-vault/contracts/VaultGuard.sol";
 
 /**
  * @title VeBAL Fee Discount Hook
  * @notice Applies a 50% discount to the swap fee for users holding veBAL tokens
  */
-contract VeBALFeeDiscountHook is BaseHooks {
+contract VeBALFeeDiscountHook is BaseHooks, VaultGuard {
     address private immutable _allowedFactory;
     address private immutable _trustedRouter;
     address private immutable _veBAL;
 
-    constructor(IVault vault, address allowedFactory, address trustedRouter, address veBAL) BaseHooks(vault) {
+    constructor(IVault vault, address allowedFactory, address trustedRouter, address veBAL) VaultGuard(vault) {
         _allowedFactory = allowedFactory;
         _trustedRouter = trustedRouter;
         _veBAL = veBAL;
@@ -36,7 +37,7 @@ contract VeBALFeeDiscountHook is BaseHooks {
         address pool,
         TokenConfig[] memory,
         LiquidityManagement calldata
-    ) public view override returns (bool) {
+    ) public view override onlyVault returns (bool) {
         // Only pools deployed by an allowed factory may register
         return factory == _allowedFactory && IBasePoolFactory(factory).isPoolFromFactory(pool);
     }
@@ -52,7 +53,7 @@ contract VeBALFeeDiscountHook is BaseHooks {
         PoolSwapParams calldata params,
         address, // pool
         uint256 staticSwapFeePercentage
-    ) public view override returns (bool success, uint256 dynamicSwapFeePercentage) {
+    ) public view override onlyVault returns (bool success, uint256 dynamicSwapFeePercentage) {
         // If the router is not trusted, do not apply a fee discount
         if (params.router != _trustedRouter) {
             return (true, staticSwapFeePercentage);

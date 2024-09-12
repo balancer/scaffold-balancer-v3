@@ -16,7 +16,7 @@ import { IVaultErrors } from "@balancer-labs/v3-interfaces/contracts/vault/IVaul
 import { CastingHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/CastingHelpers.sol";
 import { ArrayHelpers } from "@balancer-labs/v3-solidity-utils/contracts/test/ArrayHelpers.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
-// import { WeightedMath } from "@balancer-labs/v3-solidity-utils/contracts/math/WeightedMath.sol";
+import { IBasePool } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
 import { PoolHooksMock } from "@balancer-labs/v3-vault/contracts/test/PoolHooksMock.sol";
 import { BasePoolTest } from "@balancer-labs/v3-vault/test/foundry/utils/BasePoolTest.sol";
 
@@ -108,7 +108,7 @@ contract ConstantSumPoolTest is BasePoolTest {
             "CSP",
             ZERO_BYTES32,
             tokenConfigs,
-            MIN_SWAP_FEE - 1, // Swap fee too low
+            IBasePool(pool).getMinimumSwapFeePercentage() - 1, // Swap fee too low
             false, // protocolFeeExempt
             roleAccounts,
             poolHooksContract,
