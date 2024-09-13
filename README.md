@@ -3,8 +3,7 @@
 A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
 
 
-[![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/96587b23-034a-4a84-9758-bca756db0f95)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
-
+[![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/f862091d-2fe9-4b4b-8d70-cb2fdc667384)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
 
 ### 🔁 Development Life Cycle
 1. Learn the core concepts for building on top of Balancer v3
