@@ -40,13 +40,9 @@ contract ConstantProductPool is BalancerPoolToken, IBasePool {
      * @notice Computes and returns the pool's invariant.
      * @dev This function computes the invariant based on current balances
      * @param balancesLiveScaled18 Array of current pool balances for each token in the pool, scaled to 18 decimals
-     * @param rounding Rounding direction to consider when computing the invariant
      * @return invariant The calculated invariant of the pool, represented as a uint256
      */
-    function computeInvariant(
-        uint256[] memory balancesLiveScaled18,
-        Rounding rounding
-    ) public pure returns (uint256 invariant) {
+    function computeInvariant(uint256[] memory balancesLiveScaled18, Rounding) public pure returns (uint256 invariant) {
         // scale the invariant to 1e18
         invariant = FixedPoint.ONE;
         invariant = invariant.mulDown(balancesLiveScaled18[0]).mulDown(balancesLiveScaled18[1]);
@@ -65,7 +61,7 @@ contract ConstantProductPool is BalancerPoolToken, IBasePool {
         uint256 tokenInIndex,
         uint256 invariantRatio
     ) external pure returns (uint256 newBalance) {
-        uint256 newInvariant = computeInvariant(balancesLiveScaled18, Rounding.ROUND_UP).mulDown(invariantRatio);
+        uint256 newInvariant = computeInvariant(balancesLiveScaled18, Rounding.ROUND_DOWN).mulDown(invariantRatio);
         uint256 otherTokenIndex = tokenInIndex == 0 ? 1 : 0;
         uint256 poolBalanceOtherToken = balancesLiveScaled18[otherTokenIndex];
 

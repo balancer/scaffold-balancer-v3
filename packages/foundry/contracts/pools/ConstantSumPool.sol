@@ -14,7 +14,7 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 contract ConstantSumPool is IBasePool, BalancerPoolToken {
     uint256 private constant _MIN_INVARIANT_RATIO = 70e16; // 70%
     uint256 private constant _MAX_INVARIANT_RATIO = 300e16; // 300%
-    uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 1e12; // 0.00001%
+    uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 0.001e18; // 0.001%
     uint256 private constant _MAX_SWAP_FEE_PERCENTAGE = 0.10e18; // 10%
 
     constructor(IVault vault, string memory name, string memory symbol) BalancerPoolToken(vault, name, symbol) {}
@@ -32,13 +32,9 @@ contract ConstantSumPool is IBasePool, BalancerPoolToken {
      * @notice Computes and returns the pool's invariant.
      * @dev This function computes the invariant based on current balances
      * @param balancesLiveScaled18 Array of current pool balances for each token in the pool, scaled to 18 decimals
-     * @param rounding Rounding direction to consider when computing the invariant
      * @return invariant The calculated invariant of the pool, represented as a uint256
      */
-    function computeInvariant(
-        uint256[] memory balancesLiveScaled18,
-        Rounding rounding
-    ) public pure returns (uint256 invariant) {
+    function computeInvariant(uint256[] memory balancesLiveScaled18, Rounding) public pure returns (uint256 invariant) {
         invariant = balancesLiveScaled18[0] + balancesLiveScaled18[1];
     }
 
@@ -54,7 +50,7 @@ contract ConstantSumPool is IBasePool, BalancerPoolToken {
         uint256 tokenInIndex,
         uint256 invariantRatio
     ) external pure returns (uint256 newBalance) {
-        uint256 invariant = computeInvariant(balancesLiveScaled18, Rounding.ROUND_UP);
+        uint256 invariant = computeInvariant(balancesLiveScaled18, Rounding.ROUND_DOWN);
 
         newBalance = (balancesLiveScaled18[tokenInIndex] + invariant * (invariantRatio)) - invariant;
     }

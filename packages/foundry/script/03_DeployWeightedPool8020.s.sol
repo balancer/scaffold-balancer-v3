@@ -15,7 +15,7 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 import { PoolHelpers, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { WeightedPoolFactory } from "@balancer-labs/v3-pool-weighted/contracts/WeightedPoolFactory.sol";
-import { ExitFeeHook } from "../contracts/hooks/ExitFeeHook.sol";
+import { ExitFeeHookExample } from "../contracts/hooks/ExitFeeHookExample.sol";
 
 /**
  * @title Deploy Weighted Pool 80/20
@@ -35,8 +35,8 @@ contract DeployWeightedPool8020 is PoolHelpers, ScaffoldHelpers {
         console.log("Weighted Pool Factory deployed at: %s", address(factory));
 
         // Deploy a hook
-        address exitFeeHook = address(new ExitFeeHook(vault, address(factory)));
-        console.log("ExitFeeHook deployed at address: %s", exitFeeHook);
+        address exitFeeHook = address(new ExitFeeHookExample(vault));
+        console.log("ExitFeeHookExample deployed at address: %s", exitFeeHook);
 
         // Deploy a pool and register it with the vault
         /// @notice passing args directly to avoid stack too deep error

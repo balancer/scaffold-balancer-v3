@@ -14,7 +14,7 @@ import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.sol";
-import { VeBALFeeDiscountHook } from "../contracts/hooks/VeBALFeeDiscountHook.sol";
+import { VeBALFeeDiscountHookExample } from "../contracts/hooks/VeBALFeeDiscountHookExample.sol";
 
 /**
  * @title Deploy Constant Sum Pool
@@ -36,9 +36,9 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
 
         // Deploy a hook
         address veBALFeeDiscountHook = address(
-            new VeBALFeeDiscountHook(vault, address(factory), address(router), veBAL)
+            new VeBALFeeDiscountHookExample(vault, address(factory), address(router), veBAL)
         );
-        console.log("VeBALFeeDiscountHook deployed at address: %s", veBALFeeDiscountHook);
+        console.log("VeBALFeeDiscountHookExample deployed at address: %s", veBALFeeDiscountHook);
 
         // Deploy a pool and register it with the vault
         address pool = factory.create(

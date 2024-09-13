@@ -34,12 +34,16 @@ contract ConstantSumPoolTest is BasePoolTest {
     uint256 usdcIdx;
 
     function setUp() public virtual override {
-        expectedAddLiquidityBptAmountOut = TOKEN_AMOUNT;
+        expectedAddLiquidityBptAmountOut = TOKEN_AMOUNT * 2;
         tokenAmountIn = TOKEN_AMOUNT / 4;
+        isTestSwapFeeEnabled = false;
 
         BasePoolTest.setUp();
 
         (daiIdx, usdcIdx) = getSortedIndexes(address(dai), address(usdc));
+
+        poolMinSwapFeePercentage = 0.001e18; // 0.001%
+        poolMaxSwapFeePercentage = 0.10e18; // 10%
     }
 
     function createPool() internal override returns (address) {
@@ -84,17 +88,6 @@ contract ConstantSumPoolTest is BasePoolTest {
         vm.stopPrank();
     }
 
-    // function testGetBptRate() public {
-    //     uint256 invariantBefore = WeightedMath.computeInvariant(weights, [TOKEN_AMOUNT, TOKEN_AMOUNT].toMemoryArray());
-    //     uint256 invariantAfter = WeightedMath.computeInvariant(
-    //         weights,
-    //         [2 * TOKEN_AMOUNT, TOKEN_AMOUNT].toMemoryArray()
-    //     );
-
-    //     uint256[] memory amountsIn = [TOKEN_AMOUNT, 0].toMemoryArray();
-    //     _testGetBptRate(invariantBefore, invariantAfter, amountsIn);
-    // }
-
     function testFailSwapFeeTooLow() public {
         TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
         tokenConfigs[daiIdx].token = IERC20(dai);
@@ -103,7 +96,7 @@ contract ConstantSumPoolTest is BasePoolTest {
         PoolRoleAccounts memory roleAccounts;
         LiquidityManagement memory liquidityManagement;
 
-        address lowFeeWeightedPool = ConstantSumFactory(address(factory)).create(
+        address lowFeeConstantSumPool = ConstantSumFactory(address(factory)).create(
             "Constant Sum Pool",
             "CSP",
             ZERO_BYTES32,
@@ -116,6 +109,6 @@ contract ConstantSumPoolTest is BasePoolTest {
         );
 
         vm.expectRevert(IVaultErrors.SwapFeePercentageTooLow.selector);
-        factoryMock.registerTestPool(lowFeeWeightedPool, tokenConfigs);
+        factoryMock.registerTestPool(lowFeeConstantSumPool, tokenConfigs);
     }
 }

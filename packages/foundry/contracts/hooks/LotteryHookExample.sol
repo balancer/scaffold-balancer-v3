@@ -16,7 +16,6 @@ import {
     TokenConfig,
     HookFlags
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
 
 import { EnumerableMap } from "@balancer-labs/v3-solidity-utils/contracts/openzeppelin/EnumerableMap.sol";
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
@@ -29,14 +28,13 @@ import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
  * If the drawn number is not equal to the LUCKY_NUMBER, the user will pay fees to the hook contract. But, if the
  * drawn number is equal to LUCKY_NUMBER, the user won't pay hook fees and will receive all fees accrued by the hook.
  */
-contract LotteryHook is BaseHooks, VaultGuard, Ownable {
+contract LotteryHookExample is BaseHooks, VaultGuard, Ownable {
     using FixedPoint for uint256;
     using EnumerableMap for EnumerableMap.IERC20ToUint256Map;
     using SafeERC20 for IERC20;
 
     // Trusted router is needed since we rely on `getSender` to know which user should receive the prize.
     address private immutable _trustedRouter;
-    // Only pools deployed by the allowed factory may register
     address private immutable _allowedFactory;
 
     // When calling `onAfterSwap`, a random number is generated. If the number is equal to LUCKY_NUMBER, the user will
@@ -54,20 +52,63 @@ contract LotteryHook is BaseHooks, VaultGuard, Ownable {
 
     uint256 private _counter = 0;
 
-    constructor(IVault vault, address allowedFactory, address router) VaultGuard(vault) Ownable(msg.sender) {
-        _allowedFactory = allowedFactory;
+    /**
+     * @notice A new `LotteryHookExample` contract has been registered successfully for a given factory and pool.
+     * @dev If the registration fails the call will revert, so there will be no event.
+     * @param hooksContract This contract
+     * @param pool The pool on which the hook was registered
+     */
+    event LotteryHookExampleRegistered(address indexed hooksContract, address indexed pool);
+
+    /**
+     * @notice The swap hook fee percentage has been changed.
+     * @dev Note that the initial fee will be zero, and no event is emitted on deployment.
+     * @param hooksContract The hooks contract charging the fee
+     * @param hookFeePercentage The new hook swap fee percentage
+     */
+    event HookSwapFeePercentageChanged(address indexed hooksContract, uint256 hookFeePercentage);
+
+    /**
+     * @notice Fee collected and added to the lottery pot.
+     * @dev The current user did not win the lottery.
+     * @param hooksContract This contract
+     * @param token The token in which the fee was collected
+     * @param feeAmount The amount of the fee collected
+     */
+    event LotteryFeeCollected(address indexed hooksContract, IERC20 indexed token, uint256 feeAmount);
+
+    /**
+     * @notice Lottery proceeds were paid to a lottery winner.
+     * @param hooksContract This contract
+     * @param winner Address of the lottery winner
+     * @param token The token in which winnings were paid
+     * @param amountWon The amount of tokens won
+     */
+    event LotteryWinningsPaid(
+        address indexed hooksContract,
+        address indexed winner,
+        IERC20 indexed token,
+        uint256 amountWon
+    );
+
+    constructor(IVault vault, address router) VaultGuard(vault) Ownable(msg.sender) {
         _trustedRouter = router;
     }
 
     /// @inheritdoc IHooks
     function onRegister(
-        address factory,
+        address,
         address pool,
         TokenConfig[] memory,
         LiquidityManagement calldata
-    ) public view override onlyVault returns (bool) {
-        // Only pools deployed by an allowed factory may register
-        return factory == _allowedFactory && IBasePoolFactory(factory).isPoolFromFactory(pool);
+    ) public override onlyVault returns (bool) {
+        // NOTICE: In real hooks, make sure this function is properly implemented (e.g. check the factory, and check
+        // that the given pool is from the factory). Returning true unconditionally allows any pool, with any
+        // configuration, to use this hook.
+
+        emit LotteryHookExampleRegistered(address(this), pool);
+
+        return true;
     }
 
     /// @inheritdoc IHooks
@@ -138,6 +179,8 @@ contract LotteryHook is BaseHooks, VaultGuard, Ownable {
      */
     function setHookSwapFeePercentage(uint64 swapFeePercentage) external onlyOwner {
         hookSwapFeePercentage = swapFeePercentage;
+
+        emit HookSwapFeePercentageChanged(address(this), swapFeePercentage);
     }
 
     /**
@@ -168,15 +211,21 @@ contract LotteryHook is BaseHooks, VaultGuard, Ownable {
                 (IERC20 feeToken, ) = _tokensWithAccruedFees.at(i - 1);
                 _tokensWithAccruedFees.remove(feeToken);
 
-                // There are multiple reasons to use a direct transfer of hook fees to the user instead of hook
-                // adjusted amounts:
-                //
-                // * We can transfer all fees from all tokens
-                // * For EXACT_OUT transactions, the maximum prize we might give is amountsIn, because the maximum
-                //   discount is 100%
-                // * We don't need to send tokens to the vault and then settle, which would be more expensive than
-                //   transferring tokens to the user directly
-                feeToken.safeTransfer(user, feeToken.balanceOf(address(this)));
+                uint256 amountWon = feeToken.balanceOf(address(this));
+
+                if (amountWon > 0) {
+                    // There are multiple reasons to use a direct transfer of hook fees to the user instead of hook
+                    // adjusted amounts:
+                    //
+                    // * We can transfer all fees from all tokens.
+                    // * For EXACT_OUT transactions, the maximum prize we might give is amountsIn, because the maximum
+                    //   discount is 100%.
+                    // * We don't need to send tokens to the Vault and then settle, which would be more expensive than
+                    //   transferring tokens to the user directly.
+                    feeToken.safeTransfer(user, amountWon);
+
+                    emit LotteryWinningsPaid(address(this), user, feeToken, amountWon);
+                }
             }
             // Winner pays no fees.
             return 0;
@@ -184,8 +233,13 @@ contract LotteryHook is BaseHooks, VaultGuard, Ownable {
             // Add token to the map of tokens with accrued fees.
             _tokensWithAccruedFees.set(token, 1);
 
-            // Collect fees from the vault; user will pay them when the router settles the swap.
-            _vault.sendTo(token, address(this), hookFee);
+            if (hookFee > 0) {
+                // Collect fees from the Vault; the user will pay them when the router settles the swap.
+                _vault.sendTo(token, address(this), hookFee);
+
+                emit LotteryFeeCollected(address(this), token, hookFee);
+            }
+
             return hookFee;
         }
     }

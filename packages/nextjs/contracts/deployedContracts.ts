@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MockToken1: {
-      address: "0xA2f3fE5972995b015392fC9499F22dDe9eB09ee7",
+      address: "0x6496Ca5D0d8986A806478f2f976b48b20C692D55",
       abi: [
         {
           type: "constructor",
@@ -365,7 +365,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x2ddA8072504813f4746c6812ca49d67A29c6Ca50",
+      address: "0x6aca25BA55914537C6C3018555908500253025BB",
       abi: [
         {
           type: "constructor",
@@ -723,7 +723,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0x8F94D9Cd8D94b588EF9829dD73DF1347E1E53a3f",
+      address: "0xC5cD6b75FE662b92b009eEB405d72F8d1BF05390",
       abi: [
         {
           type: "constructor",
@@ -1081,7 +1081,7 @@ const deployedContracts = {
       },
     },
     ConstantSumFactory: {
-      address: "0xA951186C0A00F68Dd745E7EDd1E9d7C57EeE4937",
+      address: "0x1483420e784F35a17D211Ef4b647BdDfE587D62B",
       abi: [
         {
           type: "constructor",
@@ -1465,7 +1465,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHook: {
-      address: "0x69F34d6e288267Cec6F63E3F1D597aEa63c91a07",
+      address: "0x1684164BD6acdEa7488E9ba47C859fD2A41e891d",
       abi: [
         {
           type: "constructor",
@@ -2123,6 +2123,17 @@ const deployedContracts = {
           ],
           stateMutability: "view",
         },
+        {
+          type: "error",
+          name: "SenderIsNotVault",
+          inputs: [
+            {
+              name: "sender",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
       ],
       inheritedFunctions: {
         getHookFlags: "vault/contracts/BaseHooks.sol",
@@ -2139,7 +2150,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactory: {
-      address: "0x1483420e784F35a17D211Ef4b647BdDfE587D62B",
+      address: "0xD2848654877EE06b4C970af34c14539F7F830595",
       abi: [
         {
           type: "constructor",
@@ -2523,7 +2534,7 @@ const deployedContracts = {
       },
     },
     LotteryHook: {
-      address: "0x1684164BD6acdEa7488E9ba47C859fD2A41e891d",
+      address: "0xef1a316936221c05732AD6cec24ECEdA0153b40C",
       abi: [
         {
           type: "constructor",
@@ -3388,7 +3399,7 @@ const deployedContracts = {
       },
     },
     WeightedPoolFactory: {
-      address: "0xD2848654877EE06b4C970af34c14539F7F830595",
+      address: "0x814E334C3CAcE7aB317B65F58F62aAD277637dB3",
       abi: [
         {
           type: "constructor",
@@ -3793,7 +3804,7 @@ const deployedContracts = {
       },
     },
     ExitFeeHook: {
-      address: "0xef1a316936221c05732AD6cec24ECEdA0153b40C",
+      address: "0x2D15481D934C904E407DabF2fad7647C723B8879",
       abi: [
         {
           type: "constructor",
@@ -7106,6 +7117,17 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
+        },
+        {
+          type: "error",
+          name: "SenderIsNotVault",
+          inputs: [
+            {
+              name: "sender",
+              type: "address",
+              internalType: "address",
+            },
+          ],
         },
       ],
       inheritedFunctions: {
