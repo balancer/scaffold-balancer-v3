@@ -3,8 +3,7 @@
 A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
 
 
-[![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/96587b23-034a-4a84-9758-bca756db0f95)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
-
+[![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/f862091d-2fe9-4b4b-8d70-cb2fdc667384)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
 
 ### 🔁 Development Life Cycle
 1. Learn the core concepts for building on top of Balancer v3
@@ -30,11 +29,16 @@ A starter kit for building on top of Balancer v3. Accelerate the process of crea
 - [Node (>= v18.17)](https://nodejs.org/en/download/)
 - Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
 - [Git](https://git-scm.com/downloads)
-- [Foundry](https://book.getfoundry.sh/getting-started/installation)
+- [Foundry](https://book.getfoundry.sh/getting-started/installation) (>= v0.2.0)
 
 ### 2. Quickstart 🏃
 
-1. Clone this repo & install dependencies
+1. Ensure you have the latest version of foundry installed
+```
+foundryup
+```
+
+2. Clone this repo & install dependencies
 
 ```bash
 git clone https://github.com/balancer/scaffold-balancer-v3.git
@@ -42,7 +46,7 @@ cd scaffold-balancer-v3
 yarn install
 ```
 
-2. Set the necessary environment variables in a `packages/foundry/.env` file [^1]
+3. Set the necessary environment variables in a `packages/foundry/.env` file [^1]
    [^1]: The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must possess enough Sepolia ETH to deploy the contracts. The `SEPOLIA_RPC_URL` facilitates running a local fork and sending transactions to sepolia testnet
 
 ```
@@ -50,32 +54,32 @@ DEPLOYER_PRIVATE_KEY=0x...
 SEPOLIA_RPC_URL=...
 ```
 
-3. Start a local anvil fork of the Sepolia testnet
+4. Start a local anvil fork of the Sepolia testnet
 
 ```bash
 yarn fork
 ```
 
-4. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts [^2]
+5. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts [^2]
    [^2]: The `DEPLOYER_PRIVATE_KEY` wallet receives the mock tokens and resulting BPT from pool initialization
 
 ```bash
 yarn deploy
 ```
 
-5. Start the nextjs frontend
+6. Start the nextjs frontend
 
 ```bash
 yarn start
 ```
 
-6. Explore the frontend
+7. Explore the frontend
 
 - Navigate to http://localhost:3000 to see the home page
 - Visit the [Pools Page](http://localhost:3000/pools) to search by address or select using the pool buttons
 - Vist the [Debug Page](http://localhost:3000/debug) to see the mock tokens, factory, and hooks contracts
 
-7. Run the Foundry tests
+8. Run the Foundry tests
 
 ```
 yarn test
