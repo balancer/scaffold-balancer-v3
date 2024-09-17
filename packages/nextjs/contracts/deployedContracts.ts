@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MockToken1: {
-      address: "0xeaeacf0637773ddc12d70d9d9f1ffbd024f0a984",
+      address: "0x37efddf706dcbd55ad4e8b5d4ddacf970d4c2e93",
       abi: [
         {
           type: "constructor",
@@ -365,7 +365,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x1716c987f768c18babbfcfc02a550a9bd1bc0647",
+      address: "0x0e8ebbd5590e4ad7fa19297eceaa238aa0361898",
       abi: [
         {
           type: "constructor",
@@ -723,7 +723,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0x39ff29e16e6d8dee104d1d283a4bb1aa46443a2a",
+      address: "0x46289c4f227af06e10d23ee09d4ad1bba9f177d8",
       abi: [
         {
           type: "constructor",
@@ -1081,7 +1081,7 @@ const deployedContracts = {
       },
     },
     ConstantSumFactory: {
-      address: "0x04edb7080fee632ba3d60560229e7dc6cb72635c",
+      address: "0x543119c86f3d3fe063dd648df238b24b18c284c8",
       abi: [
         {
           type: "constructor",
@@ -1465,7 +1465,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHookExample: {
-      address: "0xd2848654877ee06b4c970af34c14539f7f830595",
+      address: "0x25658ff6251ce2647a4834ab47b63420ef5ba1da",
       abi: [
         {
           type: "constructor",
@@ -2175,7 +2175,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactory: {
-      address: "0x679f1f7a4f18975c1295bc411947e83d711e63a4",
+      address: "0x2c6e466169ffac0dca70bc170ea18f1aaa8e42a3",
       abi: [
         {
           type: "constructor",
@@ -2559,7 +2559,7 @@ const deployedContracts = {
       },
     },
     LotteryHookExample: {
-      address: "0x814e334c3cace7ab317b65f58f62aad277637db3",
+      address: "0x3d993ff56201116c0ac8ee196a1f55a6a56a0f53",
       abi: [
         {
           type: "constructor",
@@ -3513,7 +3513,7 @@ const deployedContracts = {
       },
     },
     WeightedPoolFactory: {
-      address: "0x0576265d57700093a9eb3dc8777bafe5c649913d",
+      address: "0x69bf7d0745856db65fbfc1d2baa9a0cd702b0541",
       abi: [
         {
           type: "constructor",
@@ -3918,7 +3918,7 @@ const deployedContracts = {
       },
     },
     ExitFeeHookExample: {
-      address: "0x538d4d1f18d6ce7b30c683dd3ab8f5b93b673b95",
+      address: "0x0dca8c80fe1dc49b0f54305c04c8c2842e16d9d0",
       abi: [
         {
           type: "constructor",

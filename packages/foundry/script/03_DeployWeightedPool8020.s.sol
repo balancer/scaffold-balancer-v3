@@ -46,7 +46,7 @@ contract DeployWeightedPool8020 is PoolHelpers, ScaffoldHelpers {
             getTokenConfigs(token1, token2), // TokenConfig[] tokenConfigs
             getNormailzedWeights(), // uint256[] normalizedWeights
             getRoleAccounts(), // PoolRoleAccounts roleAccounts
-            0.03e18, // uint256 swapFeePercentage (3%)
+            0.001e18, // uint256 swapFeePercentage (.01%)
             exitFeeHook, // address poolHooksContract
             true, //bool enableDonation
             true, // bool disableUnbalancedLiquidity (must be true for the ExitFee Hook)
