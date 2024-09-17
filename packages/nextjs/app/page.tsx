@@ -4,7 +4,7 @@ import type { NextPage } from "next";
 const TOOLS = [
   {
     emoji: "🌊",
-    title: "Liquidity Pools",
+    title: "Custom Pools",
     href: "/pools",
     description: "Explore and interact with liquidity pools",
   },

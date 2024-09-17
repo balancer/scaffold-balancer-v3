@@ -8,14 +8,14 @@ import {
     PoolRoleAccounts
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
+import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/solidity-utils/helpers/IRateProvider.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
 import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantProductFactory } from "../contracts/factories/ConstantProductFactory.sol";
-import { LotteryHook } from "../contracts/hooks/LotteryHook.sol";
+import { LotteryHookExample } from "../contracts/hooks/LotteryHookExample.sol";
 
 /**
  * @title Deploy Constant Product Pool
@@ -36,8 +36,8 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
         console.log("Constant Product Factory deployed at: %s", address(factory));
 
         // Deploy a hook
-        address lotteryHook = address(new LotteryHook(vault, address(factory), address(router)));
-        console.log("LotteryHook deployed at address: %s", lotteryHook);
+        address lotteryHook = address(new LotteryHookExample(vault, address(router)));
+        console.log("LotteryHookExample deployed at address: %s", lotteryHook);
 
         // Deploy a pool and register it with the vault
         address pool = factory.create(
