@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MockToken1: {
-      address: "0x6496Ca5D0d8986A806478f2f976b48b20C692D55",
+      address: "0xeaeacf0637773ddc12d70d9d9f1ffbd024f0a984",
       abi: [
         {
           type: "constructor",
@@ -365,7 +365,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x6aca25BA55914537C6C3018555908500253025BB",
+      address: "0x1716c987f768c18babbfcfc02a550a9bd1bc0647",
       abi: [
         {
           type: "constructor",
@@ -723,7 +723,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0xC5cD6b75FE662b92b009eEB405d72F8d1BF05390",
+      address: "0x39ff29e16e6d8dee104d1d283a4bb1aa46443a2a",
       abi: [
         {
           type: "constructor",
@@ -1081,7 +1081,7 @@ const deployedContracts = {
       },
     },
     ConstantSumFactory: {
-      address: "0x1483420e784F35a17D211Ef4b647BdDfE587D62B",
+      address: "0x04edb7080fee632ba3d60560229e7dc6cb72635c",
       abi: [
         {
           type: "constructor",
@@ -1464,8 +1464,8 @@ const deployedContracts = {
         isPoolFromFactory: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
       },
     },
-    VeBALFeeDiscountHook: {
-      address: "0x1684164BD6acdEa7488E9ba47C859fD2A41e891d",
+    VeBALFeeDiscountHookExample: {
+      address: "0xd2848654877ee06b4c970af34c14539f7f830595",
       abi: [
         {
           type: "constructor",
@@ -1481,12 +1481,12 @@ const deployedContracts = {
               internalType: "address",
             },
             {
-              name: "trustedRouter",
+              name: "veBAL",
               type: "address",
               internalType: "address",
             },
             {
-              name: "veBAL",
+              name: "trustedRouter",
               type: "address",
               internalType: "address",
             },
@@ -2033,12 +2033,12 @@ const deployedContracts = {
           ],
           outputs: [
             {
-              name: "success",
+              name: "",
               type: "bool",
               internalType: "bool",
             },
             {
-              name: "dynamicSwapFeePercentage",
+              name: "",
               type: "uint256",
               internalType: "uint256",
             },
@@ -2121,7 +2121,32 @@ const deployedContracts = {
               internalType: "bool",
             },
           ],
-          stateMutability: "view",
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "VeBALFeeDiscountHookExampleRegistered",
+          inputs: [
+            {
+              name: "hooksContract",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "factory",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "pool",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
         },
         {
           type: "error",
@@ -2136,21 +2161,21 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        getHookFlags: "vault/contracts/BaseHooks.sol",
-        onAfterAddLiquidity: "vault/contracts/BaseHooks.sol",
-        onAfterInitialize: "vault/contracts/BaseHooks.sol",
-        onAfterRemoveLiquidity: "vault/contracts/BaseHooks.sol",
-        onAfterSwap: "vault/contracts/BaseHooks.sol",
-        onBeforeAddLiquidity: "vault/contracts/BaseHooks.sol",
-        onBeforeInitialize: "vault/contracts/BaseHooks.sol",
-        onBeforeRemoveLiquidity: "vault/contracts/BaseHooks.sol",
-        onBeforeSwap: "vault/contracts/BaseHooks.sol",
-        onComputeDynamicSwapFeePercentage: "vault/contracts/BaseHooks.sol",
-        onRegister: "vault/contracts/BaseHooks.sol",
+        getHookFlags: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterAddLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterInitialize: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterRemoveLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeAddLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeInitialize: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeRemoveLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onComputeDynamicSwapFeePercentage: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onRegister: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
       },
     },
     ConstantProductFactory: {
-      address: "0xD2848654877EE06b4C970af34c14539F7F830595",
+      address: "0x679f1f7a4f18975c1295bc411947e83d711e63a4",
       abi: [
         {
           type: "constructor",
@@ -2533,8 +2558,8 @@ const deployedContracts = {
         isPoolFromFactory: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
       },
     },
-    LotteryHook: {
-      address: "0xef1a316936221c05732AD6cec24ECEdA0153b40C",
+    LotteryHookExample: {
+      address: "0x814e334c3cace7ab317b65f58f62aad277637db3",
       abi: [
         {
           type: "constructor",
@@ -2543,11 +2568,6 @@ const deployedContracts = {
               name: "vault",
               type: "address",
               internalType: "contract IVault",
-            },
-            {
-              name: "allowedFactory",
-              type: "address",
-              internalType: "address",
             },
             {
               name: "router",
@@ -3166,7 +3186,7 @@ const deployedContracts = {
           name: "onRegister",
           inputs: [
             {
-              name: "factory",
+              name: "",
               type: "address",
               internalType: "address",
             },
@@ -3237,7 +3257,7 @@ const deployedContracts = {
               internalType: "bool",
             },
           ],
-          stateMutability: "view",
+          stateMutability: "nonpayable",
         },
         {
           type: "function",
@@ -3284,6 +3304,100 @@ const deployedContracts = {
           ],
           outputs: [],
           stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "HookSwapFeePercentageChanged",
+          inputs: [
+            {
+              name: "hooksContract",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "hookFeePercentage",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "LotteryFeeCollected",
+          inputs: [
+            {
+              name: "hooksContract",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "token",
+              type: "address",
+              indexed: true,
+              internalType: "contract IERC20",
+            },
+            {
+              name: "feeAmount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "LotteryHookExampleRegistered",
+          inputs: [
+            {
+              name: "hooksContract",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "pool",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "LotteryWinningsPaid",
+          inputs: [
+            {
+              name: "hooksContract",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "winner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "token",
+              type: "address",
+              indexed: true,
+              internalType: "contract IERC20",
+            },
+            {
+              name: "amountWon",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
         },
         {
           type: "event",
@@ -3382,24 +3496,24 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        getHookFlags: "vault/contracts/BaseHooks.sol",
-        onAfterAddLiquidity: "vault/contracts/BaseHooks.sol",
-        onAfterInitialize: "vault/contracts/BaseHooks.sol",
-        onAfterRemoveLiquidity: "vault/contracts/BaseHooks.sol",
-        onAfterSwap: "vault/contracts/BaseHooks.sol",
-        onBeforeAddLiquidity: "vault/contracts/BaseHooks.sol",
-        onBeforeInitialize: "vault/contracts/BaseHooks.sol",
-        onBeforeRemoveLiquidity: "vault/contracts/BaseHooks.sol",
-        onBeforeSwap: "vault/contracts/BaseHooks.sol",
-        onComputeDynamicSwapFeePercentage: "vault/contracts/BaseHooks.sol",
-        onRegister: "vault/contracts/BaseHooks.sol",
+        getHookFlags: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterAddLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterInitialize: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterRemoveLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeAddLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeInitialize: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeRemoveLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onComputeDynamicSwapFeePercentage: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onRegister: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
         owner: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
         renounceOwnership: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
         transferOwnership: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
       },
     },
     WeightedPoolFactory: {
-      address: "0x814E334C3CAcE7aB317B65F58F62aAD277637dB3",
+      address: "0x0576265d57700093a9eb3dc8777bafe5c649913d",
       abi: [
         {
           type: "constructor",
@@ -3803,8 +3917,8 @@ const deployedContracts = {
         version: "lib/balancer-v3-monorepo/pkg/solidity-utils/contracts/helpers/Version.sol",
       },
     },
-    ExitFeeHook: {
-      address: "0x2D15481D934C904E407DabF2fad7647C723B8879",
+    ExitFeeHookExample: {
+      address: "0x538d4d1f18d6ce7b30c683dd3ab8f5b93b673b95",
       abi: [
         {
           type: "constructor",
@@ -3813,11 +3927,6 @@ const deployedContracts = {
               name: "vault",
               type: "address",
               internalType: "contract IVault",
-            },
-            {
-              name: "allowedFactory",
-              type: "address",
-              internalType: "address",
             },
           ],
           stateMutability: "nonpayable",
@@ -4405,7 +4514,7 @@ const deployedContracts = {
           name: "onRegister",
           inputs: [
             {
-              name: "factory",
+              name: "",
               type: "address",
               internalType: "address",
             },
@@ -4476,7 +4585,7 @@ const deployedContracts = {
               internalType: "bool",
             },
           ],
-          stateMutability: "view",
+          stateMutability: "nonpayable",
         },
         {
           type: "function",
@@ -4523,6 +4632,69 @@ const deployedContracts = {
           ],
           outputs: [],
           stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "ExitFeeCharged",
+          inputs: [
+            {
+              name: "pool",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "token",
+              type: "address",
+              indexed: true,
+              internalType: "contract IERC20",
+            },
+            {
+              name: "feeAmount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "ExitFeeHookExampleRegistered",
+          inputs: [
+            {
+              name: "hooksContract",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "pool",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "ExitFeePercentageChanged",
+          inputs: [
+            {
+              name: "hookContract",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "exitFeePercentage",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
         },
         {
           type: "event",
@@ -4599,17 +4771,17 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        getHookFlags: "vault/contracts/BaseHooks.sol",
-        onAfterAddLiquidity: "vault/contracts/BaseHooks.sol",
-        onAfterInitialize: "vault/contracts/BaseHooks.sol",
-        onAfterRemoveLiquidity: "vault/contracts/BaseHooks.sol",
-        onAfterSwap: "vault/contracts/BaseHooks.sol",
-        onBeforeAddLiquidity: "vault/contracts/BaseHooks.sol",
-        onBeforeInitialize: "vault/contracts/BaseHooks.sol",
-        onBeforeRemoveLiquidity: "vault/contracts/BaseHooks.sol",
-        onBeforeSwap: "vault/contracts/BaseHooks.sol",
-        onComputeDynamicSwapFeePercentage: "vault/contracts/BaseHooks.sol",
-        onRegister: "vault/contracts/BaseHooks.sol",
+        getHookFlags: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterAddLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterInitialize: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterRemoveLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeAddLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeInitialize: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeRemoveLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onComputeDynamicSwapFeePercentage: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onRegister: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
         owner: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
         renounceOwnership: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
         transferOwnership: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
@@ -7131,17 +7303,17 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        getHookFlags: "vault/contracts/BaseHooks.sol",
-        onAfterAddLiquidity: "vault/contracts/BaseHooks.sol",
-        onAfterInitialize: "vault/contracts/BaseHooks.sol",
-        onAfterRemoveLiquidity: "vault/contracts/BaseHooks.sol",
-        onAfterSwap: "vault/contracts/BaseHooks.sol",
-        onBeforeAddLiquidity: "vault/contracts/BaseHooks.sol",
-        onBeforeInitialize: "vault/contracts/BaseHooks.sol",
-        onBeforeRemoveLiquidity: "vault/contracts/BaseHooks.sol",
-        onBeforeSwap: "vault/contracts/BaseHooks.sol",
-        onComputeDynamicSwapFeePercentage: "vault/contracts/BaseHooks.sol",
-        onRegister: "vault/contracts/BaseHooks.sol",
+        getHookFlags: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterAddLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterInitialize: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterRemoveLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeAddLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeInitialize: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeRemoveLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onComputeDynamicSwapFeePercentage: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onRegister: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
       },
     },
   },

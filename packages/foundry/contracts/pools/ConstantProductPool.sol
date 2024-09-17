@@ -40,6 +40,7 @@ contract ConstantProductPool is BalancerPoolToken, IBasePool {
      * @notice Computes and returns the pool's invariant.
      * @dev This function computes the invariant based on current balances
      * @param balancesLiveScaled18 Array of current pool balances for each token in the pool, scaled to 18 decimals
+     *
      * @return invariant The calculated invariant of the pool, represented as a uint256
      */
     function computeInvariant(uint256[] memory balancesLiveScaled18, Rounding) public pure returns (uint256 invariant) {

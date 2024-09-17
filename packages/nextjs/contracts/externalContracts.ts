@@ -6,7 +6,7 @@ import {
   balancerBatchRouterAbi,
   balancerRouterAbi,
   permit2Abi,
-  vaultExtensionV3Abi,
+  vaultExtensionAbi_V3,
 } from "@balancer/sdk";
 import { sepolia } from "viem/chains";
 import scaffoldConfig from "~~/scaffold.config";
@@ -32,7 +32,7 @@ const externalContracts = {
   31337: {
     Vault: {
       address: VAULT_V3[scaffoldConfig.targetFork.id],
-      abi: vaultExtensionV3Abi,
+      abi: vaultExtensionAbi_V3,
     },
     Router: {
       address: BALANCER_ROUTER[scaffoldConfig.targetFork.id],
@@ -50,7 +50,7 @@ const externalContracts = {
   11155111: {
     Vault: {
       address: VAULT_V3[sepolia.id],
-      abi: vaultExtensionV3Abi,
+      abi: vaultExtensionAbi_V3,
     },
     Router: {
       address: BALANCER_ROUTER[sepolia.id],
