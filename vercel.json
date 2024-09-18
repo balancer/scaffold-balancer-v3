@@ -1,6 +1,6 @@
 {
-  "installCommand": "yarn install --frozen-lockfile",
+  "installCommand": "yarn install --immutable",
   "buildCommand": "yarn next:build",
-  "outputDirectory": "packages/nextjs/.next",
+  "outputDirectory": ".next",
   "framework": "nextjs"
 }
