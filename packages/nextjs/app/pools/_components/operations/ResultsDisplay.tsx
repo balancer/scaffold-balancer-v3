@@ -16,7 +16,11 @@ export const ResultsDisplay: React.FC<ResultsDisplay> = ({ label, transactionHas
   const publicClient = usePublicClient();
   const chainId = publicClient?.chain.id as number;
 
-  const transactionUrl = getBlockExplorerTxLink(chainId, transactionHash ?? "");
+  let transactionUrl;
+
+  if (transactionHash && chainId !== 31337) {
+    transactionUrl = getBlockExplorerTxLink(chainId, transactionHash);
+  }
 
   const styles = transactionHash ? "bg-success" : "bg-warning";
 
@@ -24,7 +28,7 @@ export const ResultsDisplay: React.FC<ResultsDisplay> = ({ label, transactionHas
     <div>
       <div className="flex justify-between items-center mb-1">
         <div className="ml-2 font-bold">{label}</div>
-        {chainId !== 31337 && transactionUrl && (
+        {transactionUrl && (
           <a
             rel="noopener"
             target="_blank"
