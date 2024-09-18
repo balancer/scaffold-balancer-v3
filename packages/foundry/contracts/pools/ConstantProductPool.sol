@@ -11,7 +11,7 @@ import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 /**
  * @title Constant Product Pool
  * @notice This custom pool example is based on the Constant Product Pool from the Balancer v3 Docs
- * https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.htmls
+ * https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html
  */
 contract ConstantProductPool is BalancerPoolToken, IBasePool {
     using FixedPoint for uint256;
