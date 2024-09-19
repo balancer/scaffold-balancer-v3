@@ -180,9 +180,7 @@ An after remove liquidity hook adjusts the amounts before the vault transfers to
 
 ## 🌊 Create a Custom Pool
 
-Your journey begins with planning the custom computation logic for the pool, which defines how an AMM exchanges one asset for another.
-
-[![Constant Product Pool](https://github.com/user-attachments/assets/6a4fe0f7-4585-4429-b873-890b47b82d86)](https://www.youtube.com/watch?v=kXynS3jAu0M)
+[![custom-amm-video](https://github.com/user-attachments/assets/e6069a51-f1b5-4f98-a2a9-3a2098696f96)](https://www.youtube.com/watch?v=kXynS3jAu0M)
 
 
 ### 1. Review the Docs 📖
@@ -219,9 +217,7 @@ After designing a pool contract, the next step is to prepare a factory contract 
 
 ## 🪝 Create a Pool Hook
 
-Next, consider further extending the functionality of the custom pool contract with a hooks contract
-
-[![Swap Fee Discount Hook](https://github.com/user-attachments/assets/57b532ee-4c93-423c-946a-ed6c2bbad337)](https://www.youtube.com/watch?v=kaz6duliRPA)
+[![hook-video](https://github.com/user-attachments/assets/96e12c29-53c2-4a52-9437-e477f6d992d1)](https://www.youtube.com/watch?v=kaz6duliRPA)
 
 ### 1. Review the Docs 📖
 
@@ -230,8 +226,10 @@ Next, consider further extending the functionality of the custom pool contract w
 ### 2. Recall the Key Requirements 🔑
 
 - A hooks contract must inherit from [BasePoolHooks.sol](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/BaseHooks.sol)
-- Must implement `getHookFlags` to define which hooks are supported
+- A hooks contract should also inherit from [VaultGuard.sol](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/VaultGuard.sol)
 - Must implement `onRegister` to determine if a pool is allowed to use the hook contract
+- Must implement `getHookFlags` to define which hooks are supported
+- The `onlyVault`  modifier should be applied to all hooks functions (i.e. `onRegister`, `onBeforeSwap`, `onAfterSwap` ect.)
 
 ### 3. Write a Hook Contract 📝
 
