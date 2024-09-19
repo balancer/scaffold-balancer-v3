@@ -279,8 +279,8 @@ yarn test --match-contract ConstantSumPoolTest
 
 ### 3. Testing Hooks 🎣
 
-The `VeBALFeeDiscountHookTest` mirrors the [VeBALFeeDiscountHookExampleTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-hooks/test/foundry/VeBALFeeDiscountHookExample.t.sol)
+The `VeBALFeeDiscountHookExampleTest` mirrors the [VeBALFeeDiscountHookExampleTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-hooks/test/foundry/VeBALFeeDiscountHookExample.t.sol)
 
 ```
-yarn test --match-contract VeBALFeeDiscountHookTest
+yarn test --match-contract VeBALFeeDiscountHookExampleTest
 ```
