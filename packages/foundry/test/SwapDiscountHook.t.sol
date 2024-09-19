@@ -24,7 +24,7 @@ import { PoolMock } from "@balancer-labs/v3-vault/contracts/test/PoolMock.sol";
 import { PoolFactoryMock } from "@balancer-labs/v3-vault/contracts/test/PoolFactoryMock.sol";
 import { RouterMock } from "@balancer-labs/v3-vault/contracts/test/RouterMock.sol";
 
-import { SwapDiscountHook } from "../contracts/hooks/SwapDiscountHook.sol";
+import { SwapDiscountHook } from "../contracts/hooks/SwapDiscountHook/SwapDiscountHook.sol";
 import { console } from "forge-std/console.sol";
 
 contract SwapDiscountHookTest is BaseVaultTest {
@@ -34,6 +34,7 @@ contract SwapDiscountHookTest is BaseVaultTest {
 
     uint256 internal daiIdx;
     uint256 internal usdcIdx;
+    SwapDiscountHook discountHook;
 
     // Maximum discount fee of 50%
     uint64 public constant MAX_SWAP_DISCOUNT_PERCENTAGE = 50e16;
@@ -44,6 +45,8 @@ contract SwapDiscountHookTest is BaseVaultTest {
         super.setUp();
 
         (daiIdx, usdcIdx) = getSortedIndexes(address(dai), address(usdc));
+
+        discountHook = SwapDiscountHook(poolHooksContract);
     }
 
     function createHook() internal override returns (address) {
@@ -56,8 +59,10 @@ contract SwapDiscountHookTest is BaseVaultTest {
                 IVault(address(vault)),
                 address(factoryMock),
                 trustedRouter,
-                address(dai),
-                MAX_SWAP_DISCOUNT_PERCENTAGE
+                address(usdc),
+                MAX_SWAP_DISCOUNT_PERCENTAGE,
+                "SwapDiscountNFT",
+                "SDN"
             )
         );
         vm.label(swapDiscountHook, "Swap Discount Hook");
@@ -164,8 +169,8 @@ contract SwapDiscountHookTest is BaseVaultTest {
         // PoolMock uses a linear math with rate 1, so amountIn = amountOut if no fees are applied
         uint256 expectedAmountOut = exactAmountIn;
         // If bob has veBAL and router is trusted, bob gets a 50% discount
-        bool shouldGetDiscount = SwapDiscountHook(poolHooksContract).discountToken() == address(dai);
-        uint256 expectedDiscountedToken = exactAmountIn.mulDown(swapDiscountPercentage);
+        bool shouldGetDiscount = discountHook.discountTokenAddress() == address(dai);
+        uint256 expectedDiscountedToken = exactAmountIn.mulDown(discountHook.swapDiscountRate());
         // Hook fee will remain in the pool, so the expected amount out discounts the fees
         // expectedAmountOut -= expectedDiscountedToken;
 
@@ -174,8 +179,8 @@ contract SwapDiscountHookTest is BaseVaultTest {
         vm.prank(bob);
         RouterMock(routerToUse).swapSingleTokenExactIn(
             pool,
-            usdc,
             dai,
+            usdc,
             exactAmountIn,
             expectedAmountOut,
             MAX_UINT256,
@@ -184,23 +189,55 @@ contract SwapDiscountHookTest is BaseVaultTest {
         );
 
         BaseVaultTest.Balances memory balancesAfter = getBalances(address(bob));
+        (address userAddress, uint256 amount, uint256 validity) = discountHook.userDiscountMapping(1);
 
-        // Bob's balance of USDC is supposed to decrease, since USDC is the token in
+        // Bob should get a discount of 50%
+        assertEq(expectedDiscountedToken, amount, "Discounted tokens are wrong");
+
+        // validity should not be greater then 1 day
+        assertTrue(validity > block.timestamp, "Invalid discount validity");
+
+        vm.warp(block.timestamp + 2 days);
+        // validity should  be greater then 1 day
+        assertTrue(validity < block.timestamp, "Invalid discount validity");
+
+        // Bob's balance of DAI is supposed to decrease, since DAI is the token in
         assertEq(
-            balancesBefore.userTokens[usdcIdx] - balancesAfter.userTokens[usdcIdx],
+            balancesBefore.userTokens[daiIdx] - balancesAfter.userTokens[daiIdx],
             exactAmountIn,
+            "Bob's DAI balance is wrong"
+        );
+        // Bob's balance of USDC is supposed to increase, since USDC is the token out
+        assertEq(
+            balancesAfter.userTokens[usdcIdx] - balancesBefore.userTokens[usdcIdx],
+            expectedAmountOut,
             "Bob's USDC balance is wrong"
         );
 
-        // Bob's balance of USDC is supposed to increase, since USDC is the token out
+        // Vault's balance of DAI is supposed to increase, since DAI was added by Bob
         assertEq(
-            balancesAfter.userTokens[daiIdx] - balancesBefore.userTokens[daiIdx],
+            balancesAfter.vaultTokens[daiIdx] - balancesBefore.vaultTokens[daiIdx],
+            exactAmountIn,
+            "Vault's DAI balance is wrong"
+        );
+        // Vault's balance of USDC is supposed to decrease, since USDC was given to Bob
+        assertEq(
+            balancesBefore.vaultTokens[usdcIdx] - balancesAfter.vaultTokens[usdcIdx],
             expectedAmountOut,
-            "Bob's DAI balance is wrong"
+            "Vault's USDC balance is wrong"
         );
 
-        // Bob's discount should be 50% of the tokenOut since DAI is the token out
-        assertEq(expectedDiscountedToken, 50000000000000000000, "Bob's Discount is wrong");
+        // Pool deltas should equal vault's deltas
+        assertEq(
+            balancesAfter.poolTokens[daiIdx] - balancesBefore.poolTokens[daiIdx],
+            exactAmountIn,
+            "Pool's DAI balance is wrong"
+        );
+        assertEq(
+            balancesBefore.poolTokens[usdcIdx] - balancesAfter.poolTokens[usdcIdx],
+            expectedAmountOut,
+            "Pool's USDC balance is wrong"
+        );
     }
 
     // Registry tests require a new pool, because an existing pool may be already registered
