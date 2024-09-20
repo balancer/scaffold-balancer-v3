@@ -17,10 +17,11 @@ import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/I
 import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
 import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
+import { VaultGuard } from "@balancer-labs/v3-vault/contracts/VaultGuard.sol";
 
 import { ISwapDiscountHook } from "./Interfaces/ISwapDiscountHook.sol";
 
-contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable {
+contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, VaultGuard {
     using FixedPoint for uint256;
 
     // Immutable addresses for factory and router
@@ -44,7 +45,7 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable {
         uint64 discountRate,
         string memory name,
         string memory symbol
-    ) BaseHooks(vaultInstance) ERC721(name, symbol) Ownable(msg.sender) {
+    ) VaultGuard(vaultInstance) ERC721(name, symbol) Ownable(msg.sender) {
         allowedFactoryAddress = factoryAddress;
         trustedRouterAddress = routerAddress;
         discountTokenAddress = tokenAddress;
