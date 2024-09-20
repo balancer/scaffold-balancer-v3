@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import { BalancerPoolToken } from "@balancer-labs/v3-vault/contracts/BalancerPoolToken.sol";
 import { IBasePool } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
-import { PoolSwapParams } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+import { PoolSwapParams, Rounding } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
 /**
@@ -14,7 +14,7 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 contract ConstantSumPool is IBasePool, BalancerPoolToken {
     uint256 private constant _MIN_INVARIANT_RATIO = 70e16; // 70%
     uint256 private constant _MAX_INVARIANT_RATIO = 300e16; // 300%
-    uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 1e12; // 0.00001%
+    uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 0.001e18; // 0.001%
     uint256 private constant _MAX_SWAP_FEE_PERCENTAGE = 0.10e18; // 10%
 
     constructor(IVault vault, string memory name, string memory symbol) BalancerPoolToken(vault, name, symbol) {}
@@ -34,7 +34,7 @@ contract ConstantSumPool is IBasePool, BalancerPoolToken {
      * @param balancesLiveScaled18 Array of current pool balances for each token in the pool, scaled to 18 decimals
      * @return invariant The calculated invariant of the pool, represented as a uint256
      */
-    function computeInvariant(uint256[] memory balancesLiveScaled18) public pure returns (uint256 invariant) {
+    function computeInvariant(uint256[] memory balancesLiveScaled18, Rounding) public pure returns (uint256 invariant) {
         invariant = balancesLiveScaled18[0] + balancesLiveScaled18[1];
     }
 
@@ -50,7 +50,7 @@ contract ConstantSumPool is IBasePool, BalancerPoolToken {
         uint256 tokenInIndex,
         uint256 invariantRatio
     ) external pure returns (uint256 newBalance) {
-        uint256 invariant = computeInvariant(balancesLiveScaled18);
+        uint256 invariant = computeInvariant(balancesLiveScaled18, Rounding.ROUND_DOWN);
 
         newBalance = (balancesLiveScaled18[tokenInIndex] + invariant * (invariantRatio)) - invariant;
     }

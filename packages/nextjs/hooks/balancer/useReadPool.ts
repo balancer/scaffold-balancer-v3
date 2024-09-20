@@ -1,5 +1,5 @@
 import type { Pool } from "./types";
-import { VAULT_V3, vaultExtensionV3Abi } from "@balancer/sdk";
+import { VAULT_V3, vaultExtensionAbi_V3 } from "@balancer/sdk";
 import { type Address } from "viem";
 import { erc20ABI, usePublicClient, useQuery, useWalletClient } from "wagmi";
 import abis from "~~/contracts/abis";
@@ -91,14 +91,14 @@ export const useReadPool = (pool: Address | null) => {
           .catch(() => 0n) as Promise<bigint>,
         // fetch more data about pool from vault contract
         client.readContract({
-          abi: vaultExtensionV3Abi,
+          abi: vaultExtensionAbi_V3,
           address: vault,
           functionName: "isPoolRegistered",
           args: [pool],
         }),
         client
           .readContract({
-            abi: vaultExtensionV3Abi,
+            abi: vaultExtensionAbi_V3,
             address: vault,
             functionName: "getPoolTokenInfo",
             args: [pool],
@@ -106,7 +106,7 @@ export const useReadPool = (pool: Address | null) => {
           .catch(() => []),
         client
           .readContract({
-            abi: vaultExtensionV3Abi,
+            abi: vaultExtensionAbi_V3,
             address: vault,
             functionName: "getPoolConfig",
             args: [pool],
@@ -114,7 +114,7 @@ export const useReadPool = (pool: Address | null) => {
           .catch(() => undefined), // return undefined if pool has not been registered
         client
           .readContract({
-            abi: vaultExtensionV3Abi,
+            abi: vaultExtensionAbi_V3,
             address: vault,
             functionName: "getHooksConfig",
             args: [pool],

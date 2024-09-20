@@ -7,6 +7,7 @@ import {
     PoolRoleAccounts
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
+import { IBatchRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IBatchRouter.sol";
 import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
@@ -17,9 +18,10 @@ import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.so
  * @notice Helpful types, interface instances, and functions for deploying pools on Balancer v3
  */
 contract PoolHelpers {
-    // BalancerV3 Sepolia addresses (7th testnet release)
-    IVault internal vault = IVault(0x7966FE92C59295EcE7FB5D9EfDB271967BFe2fbA);
-    IRouter internal router = IRouter(0xDd10aDF05379D7C0Ee4bC9c72ecc5C01c40E25b8);
+    // Balancer v3 Sepolia addresses (8th testnet release)
+    IVault internal vault = IVault(0x0EF1c156a7986F394d90eD1bEeA6483Cc435F542);
+    IRouter internal router = IRouter(0xB12FcB422aAe6720f882E22C340964a7723f2387);
+    IBatchRouter internal batchRouter = IBatchRouter(0x0418001D0d68C71d0E391fE46dC7aFCe045f34A0);
     IPermit2 internal permit2 = IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
 
     /**

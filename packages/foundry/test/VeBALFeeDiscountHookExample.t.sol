@@ -4,7 +4,6 @@ pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import { IVaultAdmin } from "@balancer-labs/v3-interfaces/contracts/vault/IVaultAdmin.sol";
 import { IVaultErrors } from "@balancer-labs/v3-interfaces/contracts/vault/IVaultErrors.sol";
@@ -24,9 +23,9 @@ import { PoolMock } from "@balancer-labs/v3-vault/contracts/test/PoolMock.sol";
 import { PoolFactoryMock } from "@balancer-labs/v3-vault/contracts/test/PoolFactoryMock.sol";
 import { RouterMock } from "@balancer-labs/v3-vault/contracts/test/RouterMock.sol";
 
-import { VeBALFeeDiscountHook } from "../contracts/hooks/VeBALFeeDiscountHook.sol";
+import { VeBALFeeDiscountHookExample } from "../contracts/hooks/VeBALFeeDiscountHookExample.sol";
 
-contract VeBALFeeDiscountHookTest is BaseVaultTest {
+contract VeBALFeeDiscountHookExampleTest is BaseVaultTest {
     using CastingHelpers for address[];
     using FixedPoint for uint256;
     using ArrayHelpers for *;
@@ -44,7 +43,7 @@ contract VeBALFeeDiscountHookTest is BaseVaultTest {
 
         (daiIdx, usdcIdx) = getSortedIndexes(address(dai), address(usdc));
 
-        // Grants to LP the ability to change static swap fee percentage
+        // Grants LP the ability to change the static swap fee percentage.
         authorizer.grantRole(vault.getActionId(IVaultAdmin.setStaticSwapFeePercentage.selector), lp);
     }
 
@@ -54,7 +53,7 @@ contract VeBALFeeDiscountHookTest is BaseVaultTest {
         // lp will be the owner of the hook. Only LP is able to set hook fee percentages.
         vm.prank(lp);
         address veBalFeeHook = address(
-            new VeBALFeeDiscountHook(IVault(address(vault)), address(factoryMock), trustedRouter, address(veBAL))
+            new VeBALFeeDiscountHookExample(IVault(address(vault)), address(factoryMock), address(veBAL), trustedRouter)
         );
         vm.label(veBalFeeHook, "VeBAL Fee Hook");
         return veBalFeeHook;
@@ -100,10 +99,17 @@ contract VeBALFeeDiscountHookTest is BaseVaultTest {
     }
 
     function testSuccessfulRegistry() public {
-        // Registering with allowed factory
+        // Register with the allowed factory.
         address veBalFeePool = factoryMock.createPool("Test Pool", "TEST");
         TokenConfig[] memory tokenConfig = vault.buildTokenConfig(
             [address(dai), address(usdc)].toMemoryArray().asIERC20()
+        );
+
+        vm.expectEmit();
+        emit VeBALFeeDiscountHookExample.VeBALFeeDiscountHookExampleRegistered(
+            poolHooksContract,
+            address(factoryMock),
+            veBalFeePool
         );
 
         _registerPoolWithHook(veBalFeePool, tokenConfig, address(factoryMock));
@@ -121,47 +127,47 @@ contract VeBALFeeDiscountHookTest is BaseVaultTest {
     }
 
     function testSwapWithVeBal() public {
-        // Mint 1 veBAL to bob, so he's able to receive the fee discount
-        veBAL.mint(address(bob), 1);
+        // Mint 1 veBAL to Bob, so he's able to receive the fee discount.
+        veBAL.mint(bob, 1);
         assertGt(veBAL.balanceOf(bob), 0, "Bob does not have veBAL");
 
         _doSwapAndCheckBalances(trustedRouter);
     }
 
     function testSwapWithVeBalAndUntrustedRouter() public {
-        // Mint 1 veBAL to bob, so he's able to receive the fee discount
-        veBAL.mint(address(bob), 1);
+        // Mint 1 veBAL to Bob, so he's able to receive the fee discount.
+        veBAL.mint(bob, 1);
         assertGt(veBAL.balanceOf(bob), 0, "Bob does not have veBAL");
 
         // Create an untrusted router
         address payable untrustedRouter = payable(new RouterMock(IVault(address(vault)), weth, permit2));
         vm.label(untrustedRouter, "untrusted router");
 
-        // Allows permit2 to move DAI tokens from bob to untrustedRouter
+        // Allows permit2 to move DAI tokens from Bob to untrustedRouter.
         vm.prank(bob);
         permit2.approve(address(dai), untrustedRouter, type(uint160).max, type(uint48).max);
 
-        // Even if bob has veBAL, since he is using an untrusted router, he will get no discounts
+        // Even if Bob has veBAL, since he is using an untrusted router, he will get no discount.
         _doSwapAndCheckBalances(untrustedRouter);
     }
 
     function _doSwapAndCheckBalances(address payable routerToUse) private {
-        // 10% swap fee. Since vault does not have swap fee, the fee will stay in the pool
-        uint256 swapFeePercentage = 1e17;
+        // Since the Vault has no swap fee, the fee will stay in the pool.
+        uint256 swapFeePercentage = MAX_SWAP_FEE_PERCENTAGE;
 
         vm.prank(lp);
         vault.setStaticSwapFeePercentage(pool, swapFeePercentage);
 
         uint256 exactAmountIn = poolInitAmount / 100;
-        // PoolMock uses a linear math with rate 1, so amountIn = amountOut if no fees are applied
+        // PoolMock uses linear math with a rate of 1, so amountIn == amountOut when no fees are applied.
         uint256 expectedAmountOut = exactAmountIn;
-        // If bob has veBAL and router is trusted, bob gets a 50% discount
+        // If Bob has veBAL and the router is trusted, Bob gets a 50% discount.
         bool shouldGetDiscount = routerToUse == trustedRouter && veBAL.balanceOf(bob) > 0;
         uint256 expectedHookFee = exactAmountIn.mulDown(swapFeePercentage) / (shouldGetDiscount ? 2 : 1);
-        // Hook fee will remain in the pool, so the expected amount out discounts the fees
+        // The hook fee will remain in the pool, so the expected amountOut discounts the fees.
         expectedAmountOut -= expectedHookFee;
 
-        BaseVaultTest.Balances memory balancesBefore = getBalances(address(bob));
+        BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
 
         vm.prank(bob);
         RouterMock(routerToUse).swapSingleTokenExactIn(
@@ -175,7 +181,7 @@ contract VeBALFeeDiscountHookTest is BaseVaultTest {
             bytes("")
         );
 
-        BaseVaultTest.Balances memory balancesAfter = getBalances(address(bob));
+        BaseVaultTest.Balances memory balancesAfter = getBalances(bob);
 
         // Bob's balance of DAI is supposed to decrease, since DAI is the token in
         assertEq(

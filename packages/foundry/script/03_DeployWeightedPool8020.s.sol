@@ -8,14 +8,14 @@ import {
     PoolRoleAccounts
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/vault/IRateProvider.sol";
+import { IRateProvider } from "@balancer-labs/v3-interfaces/contracts/solidity-utils/helpers/IRateProvider.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
 import { PoolHelpers, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { WeightedPoolFactory } from "@balancer-labs/v3-pool-weighted/contracts/WeightedPoolFactory.sol";
-import { ExitFeeHook } from "../contracts/hooks/ExitFeeHook.sol";
+import { ExitFeeHookExample } from "../contracts/hooks/ExitFeeHookExample.sol";
 
 /**
  * @title Deploy Weighted Pool 80/20
@@ -35,8 +35,8 @@ contract DeployWeightedPool8020 is PoolHelpers, ScaffoldHelpers {
         console.log("Weighted Pool Factory deployed at: %s", address(factory));
 
         // Deploy a hook
-        address exitFeeHook = address(new ExitFeeHook(vault, address(factory)));
-        console.log("ExitFeeHook deployed at address: %s", exitFeeHook);
+        address exitFeeHook = address(new ExitFeeHookExample(vault));
+        console.log("ExitFeeHookExample deployed at address: %s", exitFeeHook);
 
         // Deploy a pool and register it with the vault
         /// @notice passing args directly to avoid stack too deep error
@@ -46,7 +46,7 @@ contract DeployWeightedPool8020 is PoolHelpers, ScaffoldHelpers {
             getTokenConfigs(token1, token2), // TokenConfig[] tokenConfigs
             getNormailzedWeights(), // uint256[] normalizedWeights
             getRoleAccounts(), // PoolRoleAccounts roleAccounts
-            0.03e18, // uint256 swapFeePercentage (3%)
+            0.001e18, // uint256 swapFeePercentage (.01%)
             exitFeeHook, // address poolHooksContract
             true, //bool enableDonation
             true, // bool disableUnbalancedLiquidity (must be true for the ExitFee Hook)
