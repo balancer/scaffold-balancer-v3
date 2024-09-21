@@ -2,7 +2,6 @@
 pragma solidity ^0.8.24;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
@@ -27,43 +26,26 @@ import { IQuestBoard } from "./interfaces/IQuestBoard.sol";
 import { QuestSettingsRegistry } from "./utils/QuestSettingsRegistry.sol";
 
 import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract SereneHook is BaseHooks, VaultGuard {
+/// @title SereneHook
+/// @notice A hook contract that charges a fee on swaps and creates quests from the fees taken from the pools
+/// @author 0xtekgrinder & Kogaroshi
+contract SereneHook is BaseHooks, VaultGuard, ReentrancyGuard {
     using FixedPoint for uint256;
     using SafeERC20 for IERC20;
 
-    // Percentages are represented as 18-decimal FP numbers, which have a maximum value of FixedPoint.ONE (100%),
-    // so 60 bits are sufficient.
-    uint64 public immutable hookSwapFeePercentage;
+    /*//////////////////////////////////////////////////////////////
+                                ERRORS
+    //////////////////////////////////////////////////////////////*/
 
-    uint64 public constant BPS = 10000;
+    error CannotCreateQuest();
+    error InvalidHookSwapFeePercentage();
+    error InvalidAddress();
 
-    // only pools from the allowedFactory are able to register and use this hook
-    address private immutable allowedFactory;
-
-    // The batch router used to swap the fees
-    address private immutable batchRouter;
-
-    // Permit2 contract
-    IPermit2 internal permit2;
-
-    // The token from which the quest are being created
-    address private immutable incentiveToken;
-
-    address public immutable questBoard;
-
-    address public immutable gaugeRegistry;
-
-    address public immutable questSettings;
-
-    // Pool => token => amount
-    mapping(address => mapping(address => uint256)) public takenFees;
-
-    mapping(address => address) public gauges;
-
-    mapping(address => IERC20[]) public poolTokens;
-
-    mapping(address => uint256) public lastQuestCreated;
+    /*//////////////////////////////////////////////////////////////
+                                EVENTS
+    //////////////////////////////////////////////////////////////*/
 
     /**
      * @notice A new `SereneHook` contract has been registered successfully for a given factory and pool.
@@ -72,7 +54,6 @@ contract SereneHook is BaseHooks, VaultGuard {
      * @param pool The pool on which the hook was registered
      */
     event SereneHookRegistered(address indexed hooksContract, address indexed pool);
-
     /**
      * @notice The hooks contract has charged a fee.
      * @param hooksContract The contract that collected the fee
@@ -81,29 +62,117 @@ contract SereneHook is BaseHooks, VaultGuard {
      */
     event HookFeeCharged(address indexed hooksContract, IERC20 indexed token, uint256 feeAmount);
 
-    error CannotCreateQuest();
+    /*//////////////////////////////////////////////////////////////
+                                CONSTANTS
+    //////////////////////////////////////////////////////////////*/
+
+    uint64 public constant BPS = 10000;
+
+    /*//////////////////////////////////////////////////////////////
+                        IMMUTABLES VARIABLES
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @notice The factory that is allowed to register pools with this hook
+     */
+    address public immutable allowedFactory;
+    /**
+     * @notice The fee percentage of the staticSwapPoolFee to be taken from the swaps
+     * @dev Percentages are represented as 18-decimal FP numbers, which have a maximum value of FixedPoint.ONE (100%),
+     * so 60 bits are sufficient.
+     */
+    uint64 public immutable hookSwapFeePercentage;
+    /**
+     * @notice The batch router contract used in batch swaps
+     */
+    address public immutable batchRouter;
+    /**
+     * @notice The permit2 contract used in batch router swaps
+     */
+    IPermit2 public immutable permit2;
+    /**
+     * @notice The token to be used as incentive for the quests
+     */
+    address public immutable incentiveToken;
+    /**
+     * @notice The quest board contract to create the quests
+     */
+    address public immutable questBoard;
+    /**
+     * @notice The gauge registry contract to get the gauges for the pools
+     */
+    address public immutable gaugeRegistry;
+    /**
+     * @notice The quest settings contract to get the settings for the quests creation
+     */
+    address public immutable questSettings;
+
+    /*//////////////////////////////////////////////////////////////
+                             MUTABLE VARIABLES
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @notice The fees taken from the pools
+     * @dev Pool => token => amount
+     */
+    mapping(address => mapping(address => uint256)) public takenFees;
+    /**
+     * @notice The gauges of the pools
+     * @dev Pool => gauge
+     */
+    mapping(address => address) public gauges;
+    /**
+     * @notice The tokens of the pools
+     * @dev Pool => tokens[]
+     */
+    mapping(address => IERC20[]) public poolTokens;
+    /**
+     * @notice The last quest created for the pool
+     * @dev Pool => questId
+     */
+    mapping(address => uint256) public lastQuestCreated;
+
+    /*//////////////////////////////////////////////////////////////
+                                CONSTRUCTOR
+    //////////////////////////////////////////////////////////////*/
 
     constructor(
-        IVault vault,
-        IPermit2 _permit2,
-        address _allowedFactory,
-        address _gaugeRegistry,
-        address _batchRouter,
-        address _questBoard,
-        address _questSettings,
-        address _incentiveToken,
-        uint64 _hookSwapFeePercentage
-    ) VaultGuard(vault) {
-        permit2 = _permit2;
-        allowedFactory = _allowedFactory;
-        batchRouter = _batchRouter;
-        questBoard = _questBoard;
-        questSettings = _questSettings;
-        incentiveToken = _incentiveToken;
-        gaugeRegistry = _gaugeRegistry;
+        IVault definitiveVault,
+        IPermit2 definitivePermit2,
+        address definitiveAllowedFactory,
+        address definitiveGaugeRegistry,
+        address definitiveBatchRouter,
+        address definitiveQuestBoard,
+        address definitiveQuestSettings,
+        address definitiveIncentiveToken,
+        uint64 definitiveHookSwapFeePercentage
+    ) VaultGuard(definitiveVault) {
+        if (definitiveHookSwapFeePercentage > 1e18) revert InvalidHookSwapFeePercentage();
+        if (
+            address(definitiveVault) == address(0) ||
+            address(definitivePermit2) == address(0) ||
+            definitiveAllowedFactory == address(0) ||
+            definitiveGaugeRegistry == address(0) ||
+            definitiveBatchRouter == address(0) ||
+            definitiveQuestBoard == address(0) ||
+            definitiveQuestSettings == address(0) ||
+            definitiveIncentiveToken == address(0)
+        ) revert InvalidAddress();
 
-        hookSwapFeePercentage = _hookSwapFeePercentage;
+        permit2 = definitivePermit2;
+        allowedFactory = definitiveAllowedFactory;
+        batchRouter = definitiveBatchRouter;
+        questBoard = definitiveQuestBoard;
+        questSettings = definitiveQuestSettings;
+        incentiveToken = definitiveIncentiveToken;
+        gaugeRegistry = definitiveGaugeRegistry;
+
+        hookSwapFeePercentage = definitiveHookSwapFeePercentage;
     }
+
+    /*//////////////////////////////////////////////////////////////
+                            HOOKS FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
     /// @inheritdoc IHooks
     function getHookFlags() public pure override returns (HookFlags memory) {
@@ -118,15 +187,14 @@ contract SereneHook is BaseHooks, VaultGuard {
     }
 
     /// @inheritdoc IHooks
-    function onRegister(address factory, address pool, TokenConfig[] memory, LiquidityManagement calldata)
-        public
-        override
-        onlyVault
-        returns (bool)
-    {
+    function onRegister(
+        address factory,
+        address pool,
+        TokenConfig[] memory,
+        LiquidityManagement calldata
+    ) public override onlyVault returns (bool) {
         // This hook implements a restrictive approach, where we check if the factory is an allowed factory and if
-        // the pool was created by the allowed factory. Since we only use onComputeDynamicSwapFeePercentage, this might
-        // be an overkill in real applications because the pool math doesn't play a role in the discount calculation.
+        // the pool was created by the allowed factory.
         bool allowed = factory == allowedFactory && IBasePoolFactory(factory).isPoolFromFactory(pool);
 
         emit SereneHookRegistered(address(this), pool);
@@ -135,19 +203,16 @@ contract SereneHook is BaseHooks, VaultGuard {
     }
 
     /// @inheritdoc IHooks
-    function onAfterSwap(AfterSwapParams calldata params)
-        public
-        override
-        onlyVault
-        returns (bool success, uint256 hookAdjustedAmountCalculatedRaw)
-    {
+    function onAfterSwap(
+        AfterSwapParams calldata params
+    ) public override onlyVault returns (bool success, uint256 hookAdjustedAmountCalculatedRaw) {
         hookAdjustedAmountCalculatedRaw = params.amountCalculatedRaw;
 
         uint256 staticSwapFeePercentage = _vault.getStaticSwapFeePercentage(params.pool);
-        uint256 hookFeePercentage = (staticSwapFeePercentage * uint256(hookSwapFeePercentage) / 1e18);
+        uint256 hookFeePercentage = ((staticSwapFeePercentage * uint256(hookSwapFeePercentage)) / 1e18);
         if (hookFeePercentage > 0) {
-            uint256 previousAmountCalculatedRaw =
-                (hookAdjustedAmountCalculatedRaw * (1e18 + (staticSwapFeePercentage - hookFeePercentage))) / 1e18;
+            uint256 previousAmountCalculatedRaw = (hookAdjustedAmountCalculatedRaw *
+                (1e18 + (staticSwapFeePercentage - hookFeePercentage))) / 1e18;
             uint256 hookFee = previousAmountCalculatedRaw.mulDown(hookFeePercentage);
 
             if (hookFee > 0) {
@@ -177,10 +242,10 @@ contract SereneHook is BaseHooks, VaultGuard {
                     hookAdjustedAmountCalculatedRaw += hookFee;
                 }
 
-                _vault.sendTo(feeToken, address(this), hookFee);
-                takenFees[params.pool][address(feeToken)] += hookFee;
-
                 emit HookFeeCharged(address(this), feeToken, hookFee);
+
+                takenFees[params.pool][address(feeToken)] += hookFee;
+                _vault.sendTo(feeToken, address(this), hookFee);
             }
         }
         return (true, hookAdjustedAmountCalculatedRaw);
@@ -188,89 +253,41 @@ contract SereneHook is BaseHooks, VaultGuard {
 
     // Alter the swap fee percentage
     function onComputeDynamicSwapFeePercentage(
-        PoolSwapParams calldata params,
+        PoolSwapParams calldata, // params
         address, // pool
         uint256 staticSwapFeePercentage
     ) public view override returns (bool success, uint256 dynamicSwapFeePercentage) {
-        return (true, staticSwapFeePercentage - (staticSwapFeePercentage * uint256(hookSwapFeePercentage) / 1e18));
+        return (true, staticSwapFeePercentage - ((staticSwapFeePercentage * uint256(hookSwapFeePercentage)) / 1e18));
     }
 
-    /**
-     * @notice Get the gauge for a pool
-     * @param pool The pool to get the gauge for
-     * @return The gauge for the pool
-     */
-    function _getGauge(address pool) internal view returns (address) {
-        return IGaugeRegistry(gaugeRegistry).getPoolGauge(pool);
-    }
-
-    /**
-     * @notice Swap the fees taken from the pool to the incentive token
-     * @param pool The pool from which the fees were taken
-     * @param steps The swap steps to convert the fees to the incentive token
-     */
-    function _swapToToken(address pool, IBatchRouter.SwapPathStep[][] calldata steps) internal {
-        // Create path data from steps
-        IERC20[] memory tokens = poolTokens[pool];
-        IBatchRouter.SwapPathExactAmountIn[] memory paths = new IBatchRouter.SwapPathExactAmountIn[](steps.length);
-        uint256 pathLength = 0;
-        uint256 length = tokens.length;
-        for (uint256 i = 0; i < length; i++) {
-            IERC20 token = tokens[i];
-            if (address(token) == incentiveToken) {
-                continue;
-            }
-
-            uint256 amount = takenFees[pool][address(token)];
-            if (amount > 0) {
-                _increasePermit2Allowance(token, amount);
-                paths[pathLength++] = IBatchRouter.SwapPathExactAmountIn({
-                    tokenIn: token,
-                    steps: steps[i],
-                    exactAmountIn: amount,
-                    minAmountOut: 0
-                });
-                takenFees[pool][address(token)] = 0;
-            }
-        }
-        // Store the path length in the first slot of the array
-        assembly {
-            mstore(paths, pathLength)
-        }
-
-        // Swap the tokens
-        IBatchRouter(batchRouter).swapExactIn(paths, block.timestamp + 1, false, new bytes(0));
-    }
-
-    function _increasePermit2Allowance(IERC20 token, uint256 amount) internal {
-        if (token.allowance(address(this), address(permit2)) == 0) {
-            token.approve(address(permit2), type(uint256).max);
-        }
-        permit2.approve(address(token), batchRouter, uint160(amount), uint48(block.timestamp + 1));
-    }
+    /*//////////////////////////////////////////////////////////////
+                            QUEST FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
     /**
      * @notice Create a quest from the fees taken from the pool
      * @param pool The pool from which the fees were taken
      * @param steps The swap steps to convert the fees to the incentive token
      */
-    function createQuest(address pool, IBatchRouter.SwapPathStep[][] calldata steps) public {
+    function createQuest(address pool, IBatchRouter.SwapPathStep[][] calldata steps) public nonReentrant {
         uint256 lastQuest = lastQuestCreated[pool];
         if (lastQuest == 0) {
-            // Store the gauge and tokens for the pool to not query the registry again
+            // Check if there is a gauge then store it and tokens for the pool to not query the registry again
             address gauge = _getGauge(pool);
             if (gauge == address(0)) revert CannotCreateQuest();
             gauges[pool] = gauge;
             IERC20[] memory tokens = _vault.getPoolTokens(pool);
             poolTokens[pool] = tokens;
         } else {
+            // Check if the last quest is from last epoch
             uint48[] memory periods = IQuestBoard(questBoard).getAllPeriodsForQuestId(lastQuest);
             uint256 lastPeriod = periods[periods.length - 1];
             if (IQuestBoard(questBoard).getCurrentPeriod() <= lastPeriod) revert CannotCreateQuest();
         }
 
-        QuestSettingsRegistry.QuestSettings memory settings =
-            QuestSettingsRegistry(questSettings).getQuestSettings(incentiveToken);
+        QuestSettingsRegistry.QuestSettings memory settings = QuestSettingsRegistry(questSettings).getQuestSettings(
+            incentiveToken
+        );
 
         // Swap fees taken from the pool and create a quest from it
         uint256 amountOutAfterFee;
@@ -298,5 +315,68 @@ contract SereneHook is BaseHooks, VaultGuard {
             settings.voterList
         );
         lastQuestCreated[pool] = id;
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                                UTILS
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @dev Get the gauge for a pool
+     * @param pool The pool to get the gauge for
+     * @return The gauge for the pool
+     */
+    function _getGauge(address pool) internal view returns (address) {
+        return IGaugeRegistry(gaugeRegistry).getPoolGauge(pool);
+    }
+
+    /**
+     * @dev Swap the fees taken from the pool to the incentive token
+     * @param pool The pool from which the fees were taken
+     * @param steps The swap steps to convert the fees to the incentive token
+     */
+    function _swapToToken(address pool, IBatchRouter.SwapPathStep[][] calldata steps) internal {
+        // Create path data from steps
+        IERC20[] memory tokens = poolTokens[pool];
+        IBatchRouter.SwapPathExactAmountIn[] memory paths = new IBatchRouter.SwapPathExactAmountIn[](steps.length);
+        uint256 pathLength = 0;
+        uint256 length = tokens.length;
+        for (uint256 i = 0; i < length; ++i) {
+            IERC20 token = tokens[i];
+            if (address(token) == incentiveToken) {
+                continue;
+            }
+
+            uint256 amount = takenFees[pool][address(token)];
+            if (amount > 0) {
+                _increasePermit2Allowance(token, amount);
+                paths[pathLength++] = IBatchRouter.SwapPathExactAmountIn({
+                    tokenIn: token,
+                    steps: steps[i],
+                    exactAmountIn: amount,
+                    minAmountOut: 0
+                });
+                takenFees[pool][address(token)] = 0;
+            }
+        }
+        // Store the path length in the first slot of the array
+        assembly {
+            mstore(paths, pathLength)
+        }
+
+        // Swap the tokens
+        IBatchRouter(batchRouter).swapExactIn(paths, block.timestamp + 1, false, new bytes(0));
+    }
+
+    /**
+     * @dev Increase the allowance of the permit2 contract
+     * @param token The token to increase the allowance for
+     * @param amount The amount to increase the allowance by
+     */
+    function _increasePermit2Allowance(IERC20 token, uint256 amount) internal {
+        if (token.allowance(address(this), address(permit2)) == 0) {
+            token.approve(address(permit2), type(uint256).max);
+        }
+        permit2.approve(address(token), batchRouter, uint160(amount), uint48(block.timestamp + 1));
     }
 }
