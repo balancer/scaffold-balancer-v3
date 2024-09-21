@@ -34,8 +34,6 @@ import { QuestSettingsRegistry } from "../contracts/hooks/utils/QuestSettingsReg
 import { SereneHook } from "../contracts/hooks/SereneHook.sol";
 import { IQuestBoard } from "../contracts/hooks/interfaces/IQuestBoard.sol";
 
-import "forge-std/console.sol";
-
 contract SereneHookTest is BaseVaultTest {
     using CastingHelpers for address[];
     using FixedPoint for uint256;
@@ -49,7 +47,7 @@ contract SereneHookTest is BaseVaultTest {
     uint256 internal daiIdx;
     uint256 internal usdcIdx;
 
-    uint256 hookSwapFee = 0.05e18;
+    uint256 hookSwapFee = 5e17; // 50%
     uint256 UNIT = 1e18;
 
     uint256 internal constant SWAP_FEE_PERCENTAGE = 5e16; // 5%
@@ -77,6 +75,292 @@ contract SereneHookTest is BaseVaultTest {
 
         (daiIdx, usdcIdx) = getSortedIndexes(address(dai), address(usdc));
     }
+
+    function testRegistryWithWrongFactory() public {
+        address serenePool = _createPoolToRegister();
+        TokenConfig[] memory tokenConfig = vault.buildTokenConfig(
+            [address(dai), address(usdc)].toMemoryArray().asIERC20()
+        );
+
+        uint32 pauseWindowEndTime = IVaultAdmin(address(vault)).getPauseWindowEndTime();
+        uint32 bufferPeriodDuration = IVaultAdmin(address(vault)).getBufferPeriodDuration();
+        uint32 pauseWindowDuration = pauseWindowEndTime - bufferPeriodDuration;
+        address unauthorizedFactory = address(new PoolFactoryMock(IVault(address(vault)), pauseWindowDuration));
+
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IVaultErrors.HookRegistrationFailed.selector,
+                poolHooksContract,
+                serenePool,
+                unauthorizedFactory
+            )
+        );
+        _registerPoolWithHook(serenePool, tokenConfig, unauthorizedFactory);
+    }
+
+    function testFeeSwapExactIn__Fuzz(uint256 swapAmount) public {
+        // Swap between POOL_MINIMUM_TOTAL_SUPPLY and whole pool liquidity (pool math is linear)
+        swapAmount = bound(swapAmount, POOL_MINIMUM_TOTAL_SUPPLY, poolInitAmount);
+
+        uint256 staticFeePercentage = vault.getStaticSwapFeePercentage(address(pool));
+        uint256 protocolFeePercentage = staticFeePercentage - ((staticFeePercentage * hookSwapFee) / UNIT);
+        uint256 protocolFees = swapAmount.mulUp(protocolFeePercentage);
+        uint256 amountCalculatedRaw = swapAmount - protocolFees;
+        uint256 reconstructedAmount = (amountCalculatedRaw * (UNIT + protocolFeePercentage)) / UNIT;
+        uint256 hookFee = (reconstructedAmount * ((staticFeePercentage * hookSwapFee) / UNIT)) / UNIT;
+
+        BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
+
+        uint256 storedHookFeesBefore = SereneHook(poolHooksContract).takenFees(address(pool), address(usdc));
+
+        if (hookFee > 0) {
+            vm.expectEmit();
+            emit SereneHook.HookFeeCharged(poolHooksContract, IERC20(usdc), hookFee);
+        }
+
+        vm.prank(bob);
+        router.swapSingleTokenExactIn(address(pool), dai, usdc, swapAmount, 0, MAX_UINT256, false, bytes(""));
+
+        BaseVaultTest.Balances memory balancesAfter = getBalances(bob);
+
+        uint256 storedHookFeesAfter = SereneHook(poolHooksContract).takenFees(address(pool), address(usdc));
+
+        assertEq(
+            balancesBefore.userTokens[daiIdx] - balancesAfter.userTokens[daiIdx],
+            swapAmount,
+            "Bob DAI balance is wrong"
+        );
+        assertEq(balancesBefore.hookTokens[daiIdx], balancesAfter.hookTokens[daiIdx], "Hook DAI balance is wrong");
+        assertEq(
+            balancesAfter.userTokens[usdcIdx] - balancesBefore.userTokens[usdcIdx],
+            swapAmount - hookFee - protocolFees,
+            "Bob USDC balance is wrong"
+        );
+        assertEq(
+            balancesAfter.hookTokens[usdcIdx] - balancesBefore.hookTokens[usdcIdx],
+            hookFee,
+            "Hook USDC balance is wrong"
+        );
+
+        assertEq(storedHookFeesAfter - storedHookFeesBefore, hookFee, "Hook taken fees stored is wrong");
+
+        assertEq(
+            balancesAfter.poolTokens[daiIdx] - balancesBefore.poolTokens[daiIdx],
+            swapAmount,
+            "Pool DAI balance is wrong"
+        );
+        assertEq(
+            balancesBefore.poolTokens[usdcIdx] - balancesAfter.poolTokens[usdcIdx],
+            swapAmount - protocolFees,
+            "Pool USDC balance is wrong"
+        );
+        assertEq(
+            balancesAfter.vaultTokens[daiIdx] - balancesBefore.vaultTokens[daiIdx],
+            swapAmount,
+            "Vault DAI balance is wrong"
+        );
+        assertEq(
+            balancesBefore.vaultTokens[usdcIdx] - balancesAfter.vaultTokens[usdcIdx],
+            swapAmount - protocolFees,
+            "Vault USDC balance is wrong"
+        );
+    }
+
+    function testFeeSwapExactOut__Fuzz(uint256 swapAmount) public {
+        // Swap between POOL_MINIMUM_TOTAL_SUPPLY and whole pool liquidity (pool math is linear)
+        swapAmount = bound(swapAmount, POOL_MINIMUM_TOTAL_SUPPLY, poolInitAmount);
+
+        uint256 staticFeePercentage = vault.getStaticSwapFeePercentage(address(pool));
+        uint256 protocolFeePercentage = staticFeePercentage - ((staticFeePercentage * hookSwapFee) / UNIT);
+        uint256 protocolFees = swapAmount.mulDivUp(protocolFeePercentage, protocolFeePercentage.complement());
+        uint256 amountCalculatedRaw = swapAmount + protocolFees;
+        uint256 reconstructedAmount = (amountCalculatedRaw * (UNIT + protocolFeePercentage)) / UNIT;
+        uint256 hookFee = (reconstructedAmount * ((staticFeePercentage * hookSwapFee) / UNIT)) / UNIT;
+
+        BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
+
+        uint256 storedHookFeesBefore = SereneHook(poolHooksContract).takenFees(address(pool), address(dai));
+
+        if (hookFee > 0) {
+            vm.expectEmit();
+            emit SereneHook.HookFeeCharged(poolHooksContract, IERC20(dai), hookFee);
+        }
+
+        vm.prank(bob);
+        router.swapSingleTokenExactOut(
+            address(pool),
+            dai,
+            usdc,
+            swapAmount,
+            MAX_UINT256,
+            block.timestamp + 1,
+            false,
+            bytes("")
+        );
+
+        BaseVaultTest.Balances memory balancesAfter = getBalances(bob);
+
+        uint256 storedHookFeesAfter = SereneHook(poolHooksContract).takenFees(address(pool), address(dai));
+
+        assertEq(
+            balancesBefore.userTokens[daiIdx] - balancesAfter.userTokens[daiIdx],
+            swapAmount + hookFee + protocolFees,
+            "Bob DAI balance is wrong"
+        );
+        assertEq(
+            balancesAfter.hookTokens[daiIdx] - balancesBefore.hookTokens[daiIdx],
+            hookFee,
+            "Hook DAI balance is wrong"
+        );
+        assertEq(
+            balancesAfter.userTokens[usdcIdx] - balancesBefore.userTokens[usdcIdx],
+            swapAmount,
+            "Bob USDC balance is wrong"
+        );
+        assertEq(balancesAfter.hookTokens[usdcIdx], balancesBefore.hookTokens[usdcIdx], "Hook USDC balance is wrong");
+
+        assertEq(storedHookFeesAfter - storedHookFeesBefore, hookFee, "Hook taken fees stored is wrong");
+
+        assertEq(
+            balancesAfter.poolTokens[daiIdx] - balancesBefore.poolTokens[daiIdx],
+            swapAmount + protocolFees,
+            "Pool DAI balance is wrong"
+        );
+        assertEq(
+            balancesBefore.poolTokens[usdcIdx] - balancesAfter.poolTokens[usdcIdx],
+            swapAmount,
+            "Pool USDC balance is wrong"
+        );
+        assertEq(
+            balancesAfter.vaultTokens[daiIdx] - balancesBefore.vaultTokens[daiIdx],
+            swapAmount + protocolFees,
+            "Vault DAI balance is wrong"
+        );
+        assertEq(
+            balancesBefore.vaultTokens[usdcIdx] - balancesAfter.vaultTokens[usdcIdx],
+            swapAmount,
+            "Vault USDC balance is wrong"
+        );
+    }
+
+    function testNoGaugeWhenCreatingQuest() public {
+        IBatchRouter.SwapPathStep[][] memory steps = new IBatchRouter.SwapPathStep[][](0);
+
+        vm.expectRevert(SereneHook.CannotCreateQuest.selector);
+        SereneHook(poolHooksContract).createQuest(address(pool), steps);
+    }
+
+    function testQuestAlreadyCreatedForThisEpoch__Fuzz(uint256 swapAmount) public {
+        swapAmount = bound(swapAmount, POOL_MINIMUM_TOTAL_SUPPLY, 1e19);
+        gaugeRegistry.register(address(pool), makeAddr("gauge"));
+
+        // Swap to get USDC fees
+        vm.prank(bob);
+        router.swapSingleTokenExactOut(
+            address(pool),
+            usdc,
+            dai,
+            swapAmount,
+            MAX_UINT256,
+            block.timestamp + 1,
+            false,
+            bytes("")
+        );
+
+        IBatchRouter.SwapPathStep[][] memory steps = new IBatchRouter.SwapPathStep[][](2);
+        steps[0] = new IBatchRouter.SwapPathStep[](1);
+        steps[0][0] = IBatchRouter.SwapPathStep({ pool: address(pool), tokenOut: dai, isBuffer: false });
+        SereneHook(poolHooksContract).createQuest(address(pool), steps);
+
+        uint48[] memory periods = new uint48[](1);
+        periods[0] = 0;
+        questBoard.setPeriodsForQuestId(1, periods);
+
+        vm.expectRevert(SereneHook.CannotCreateQuest.selector);
+        SereneHook(poolHooksContract).createQuest(address(pool), steps);
+    }
+
+    function testCreateNormalQuestSecondEpoch__Fuzz(uint256 swapAmount) public {
+        swapAmount = bound(swapAmount, POOL_MINIMUM_TOTAL_SUPPLY, 1e19);
+        gaugeRegistry.register(address(pool), makeAddr("gauge"));
+
+        // Swap to get USDC fees
+        vm.prank(bob);
+        router.swapSingleTokenExactOut(
+            address(pool),
+            usdc,
+            dai,
+            swapAmount,
+            MAX_UINT256,
+            block.timestamp + 1,
+            false,
+            bytes("")
+        );
+
+        IBatchRouter.SwapPathStep[][] memory steps = new IBatchRouter.SwapPathStep[][](2);
+        steps[0] = new IBatchRouter.SwapPathStep[](1);
+        steps[0][0] = IBatchRouter.SwapPathStep({ pool: address(pool), tokenOut: dai, isBuffer: false });
+        SereneHook(poolHooksContract).createQuest(address(pool), steps);
+
+        // Swap to get USDC fees
+        vm.prank(bob);
+        router.swapSingleTokenExactOut(
+            address(pool),
+            usdc,
+            dai,
+            swapAmount,
+            MAX_UINT256,
+            block.timestamp + 1,
+            false,
+            bytes("")
+        );
+
+        uint48[] memory periods = new uint48[](1);
+        periods[0] = 0;
+        questBoard.setPeriodsForQuestId(1, periods);
+        questBoard.setPeriod(1);
+
+        vm.expectCall(address(questBoard), abi.encodeWithSelector(IQuestBoard.createRangedQuest.selector));
+        SereneHook(poolHooksContract).createQuest(address(pool), steps);
+
+        assertEq(SereneHook(poolHooksContract).gauges(address(pool)), makeAddr("gauge"), "Gauge not set");
+        assertEq(SereneHook(poolHooksContract).lastQuestCreated(address(pool)), 1, "Quest not created");
+        assertEq(usdc.balanceOf(poolHooksContract), 0, "Usdc balance is wrong");
+        assertApproxEqAbs(dai.balanceOf(poolHooksContract), 0, 1, "Dai balance is wrong");
+    }
+
+    function testCreateNormalQuest__Fuzz(uint256 swapAmount) public {
+        swapAmount = bound(swapAmount, POOL_MINIMUM_TOTAL_SUPPLY, 1e19);
+        gaugeRegistry.register(address(pool), makeAddr("gauge"));
+
+        // Swap to get USDC fees
+        vm.prank(bob);
+        router.swapSingleTokenExactOut(
+            address(pool),
+            usdc,
+            dai,
+            swapAmount,
+            MAX_UINT256,
+            block.timestamp + 1,
+            false,
+            bytes("")
+        );
+
+        IBatchRouter.SwapPathStep[][] memory steps = new IBatchRouter.SwapPathStep[][](2);
+        steps[0] = new IBatchRouter.SwapPathStep[](1);
+        steps[0][0] = IBatchRouter.SwapPathStep({ pool: address(pool), tokenOut: dai, isBuffer: false });
+        vm.expectCall(address(questBoard), abi.encodeWithSelector(IQuestBoard.createRangedQuest.selector));
+        SereneHook(poolHooksContract).createQuest(address(pool), steps);
+
+        assertEq(SereneHook(poolHooksContract).gauges(address(pool)), makeAddr("gauge"), "Gauge not set");
+        assertEq(SereneHook(poolHooksContract).lastQuestCreated(address(pool)), 1, "Quest not created");
+        assertEq(usdc.balanceOf(poolHooksContract), 0, "Usdc balance is wrong");
+        assertApproxEqAbs(dai.balanceOf(poolHooksContract), 0, 1, "Dai balance is wrong");
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                                UTILS
+    //////////////////////////////////////////////////////////////*/
 
     function createHook() internal override returns (address) {
         // lp will be the owner of the hook.
@@ -121,24 +405,6 @@ contract SereneHookTest is BaseVaultTest {
         return address(newPool);
     }
 
-    function testRegistryWithWrongFactory() public {
-        address serenePool = _createPoolToRegister();
-        TokenConfig[] memory tokenConfig =
-            vault.buildTokenConfig([address(dai), address(usdc)].toMemoryArray().asIERC20());
-
-        uint32 pauseWindowEndTime = IVaultAdmin(address(vault)).getPauseWindowEndTime();
-        uint32 bufferPeriodDuration = IVaultAdmin(address(vault)).getBufferPeriodDuration();
-        uint32 pauseWindowDuration = pauseWindowEndTime - bufferPeriodDuration;
-        address unauthorizedFactory = address(new PoolFactoryMock(IVault(address(vault)), pauseWindowDuration));
-
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                IVaultErrors.HookRegistrationFailed.selector, poolHooksContract, serenePool, unauthorizedFactory
-            )
-        );
-        _registerPoolWithHook(serenePool, tokenConfig, unauthorizedFactory);
-    }
-
     // Registry tests require a new pool, because an existing pool may be already registered
     function _createPoolToRegister() private returns (address newPool) {
         newPool = address(new PoolMock(IVault(address(vault)), "SereneHook Pool", "SHK"));
@@ -151,244 +417,11 @@ contract SereneHookTest is BaseVaultTest {
         liquidityManagement.disableUnbalancedLiquidity = true;
 
         PoolFactoryMock(factory).registerPool(
-            exitFeePool, tokenConfig, roleAccounts, poolHooksContract, liquidityManagement
+            exitFeePool,
+            tokenConfig,
+            roleAccounts,
+            poolHooksContract,
+            liquidityManagement
         );
     }
-
-    function testFeeSwapExactIn__Fuzz(uint256 swapAmount) public {
-        // Swap between POOL_MINIMUM_TOTAL_SUPPLY and whole pool liquidity (pool math is linear)
-        swapAmount = bound(swapAmount, POOL_MINIMUM_TOTAL_SUPPLY, poolInitAmount);
-
-        uint256 staticFeePercentage = vault.getStaticSwapFeePercentage(address(pool));
-        uint256 protocolFeePercentage = staticFeePercentage - ((staticFeePercentage * hookSwapFee) / UNIT);
-        uint256 protocolFees = swapAmount.mulUp(protocolFeePercentage);
-        uint256 amountCalculatedRaw = swapAmount - protocolFees;
-        uint256 reconstructedAmount = (amountCalculatedRaw * (UNIT + protocolFeePercentage)) / UNIT;
-        uint256 hookFee = (reconstructedAmount * ((staticFeePercentage * hookSwapFee) / UNIT)) / UNIT;
-
-        BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
-
-        uint256 storedHookFeesBefore = SereneHook(poolHooksContract).takenFees(address(pool), address(usdc));
-
-        if (hookFee > 0) {
-            vm.expectEmit();
-            emit SereneHook.HookFeeCharged(poolHooksContract, IERC20(usdc), hookFee);
-        }
-
-        vm.prank(bob);
-        router.swapSingleTokenExactIn(address(pool), dai, usdc, swapAmount, 0, MAX_UINT256, false, bytes(""));
-
-        BaseVaultTest.Balances memory balancesAfter = getBalances(bob);
-
-        uint256 storedHookFeesAfter = SereneHook(poolHooksContract).takenFees(address(pool), address(usdc));
-
-        assertEq(
-            balancesBefore.userTokens[daiIdx] - balancesAfter.userTokens[daiIdx], swapAmount, "Bob DAI balance is wrong"
-        );
-        assertEq(
-            balancesBefore.hookTokens[daiIdx], balancesAfter.hookTokens[daiIdx], "Hook DAI balance is wrong"
-        );
-        assertEq(
-            balancesAfter.userTokens[usdcIdx] - balancesBefore.userTokens[usdcIdx],
-            swapAmount - hookFee - protocolFees,
-            "Bob USDC balance is wrong"
-        );
-        assertEq(
-            balancesAfter.hookTokens[usdcIdx] - balancesBefore.hookTokens[usdcIdx],
-            hookFee,
-            "Hook USDC balance is wrong"
-        );
-
-        assertEq(
-            storedHookFeesAfter - storedHookFeesBefore,
-            hookFee,
-            "Hook taken fees stored is wrong"
-        );
-
-        assertEq(
-            balancesAfter.poolTokens[daiIdx] - balancesBefore.poolTokens[daiIdx],
-            swapAmount,
-            "Pool DAI balance is wrong"
-        );
-        assertEq(
-            balancesBefore.poolTokens[usdcIdx] - balancesAfter.poolTokens[usdcIdx],
-            swapAmount - protocolFees,
-            "Pool USDC balance is wrong"
-        );
-        assertEq(
-            balancesAfter.vaultTokens[daiIdx] - balancesBefore.vaultTokens[daiIdx],
-            swapAmount,
-            "Vault DAI balance is wrong"
-        );
-        assertEq(
-            balancesBefore.vaultTokens[usdcIdx] - balancesAfter.vaultTokens[usdcIdx],
-            swapAmount - protocolFees,
-            "Vault USDC balance is wrong"
-        );
-    }
-
-    function testFeeSwapExactOut__Fuzz(uint256 swapAmount) public {
-        // Swap between POOL_MINIMUM_TOTAL_SUPPLY and whole pool liquidity (pool math is linear)
-        swapAmount = bound(swapAmount, POOL_MINIMUM_TOTAL_SUPPLY, poolInitAmount);
-
-        uint256 staticFeePercentage = vault.getStaticSwapFeePercentage(address(pool));
-        uint256 protocolFeePercentage = staticFeePercentage - ((staticFeePercentage * hookSwapFee) / UNIT);
-        uint256 protocolFees = swapAmount.mulDivUp(
-            protocolFeePercentage,
-            protocolFeePercentage.complement()
-        );
-        uint256 amountCalculatedRaw = swapAmount + protocolFees;
-        uint256 reconstructedAmount = (amountCalculatedRaw * (UNIT + protocolFeePercentage)) / UNIT;
-        uint256 hookFee = (reconstructedAmount * ((staticFeePercentage * hookSwapFee) / UNIT)) / UNIT;
-
-        BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
-
-        uint256 storedHookFeesBefore = SereneHook(poolHooksContract).takenFees(address(pool), address(dai));
-
-        if (hookFee > 0) {
-            vm.expectEmit();
-            emit SereneHook.HookFeeCharged(poolHooksContract, IERC20(dai), hookFee);
-        }
-
-        vm.prank(bob);
-        router.swapSingleTokenExactOut(
-            address(pool), dai, usdc, swapAmount, MAX_UINT256, block.timestamp + 1, false, bytes("")
-        );
-
-        BaseVaultTest.Balances memory balancesAfter = getBalances(bob);
-
-        uint256 storedHookFeesAfter = SereneHook(poolHooksContract).takenFees(address(pool), address(dai));
-
-        assertEq(
-            balancesBefore.userTokens[daiIdx] - balancesAfter.userTokens[daiIdx], swapAmount + hookFee + protocolFees, "Bob DAI balance is wrong"
-        );
-        assertEq(
-            balancesAfter.hookTokens[daiIdx] - balancesBefore.hookTokens[daiIdx],
-            hookFee,
-            "Hook DAI balance is wrong"
-        );
-        assertEq(
-            balancesAfter.userTokens[usdcIdx] - balancesBefore.userTokens[usdcIdx],
-            swapAmount,
-            "Bob USDC balance is wrong"
-        );
-        assertEq(
-            balancesAfter.hookTokens[usdcIdx], balancesBefore.hookTokens[usdcIdx], "Hook USDC balance is wrong"
-        );
-
-        assertEq(
-            storedHookFeesAfter - storedHookFeesBefore,
-            hookFee,
-            "Hook taken fees stored is wrong"
-        );
-
-        assertEq(
-            balancesAfter.poolTokens[daiIdx] - balancesBefore.poolTokens[daiIdx],
-            swapAmount + protocolFees,
-            "Pool DAI balance is wrong"
-        );
-        assertEq(
-            balancesBefore.poolTokens[usdcIdx] - balancesAfter.poolTokens[usdcIdx],
-            swapAmount,
-            "Pool USDC balance is wrong"
-        );
-        assertEq(
-            balancesAfter.vaultTokens[daiIdx] - balancesBefore.vaultTokens[daiIdx],
-            swapAmount + protocolFees,
-            "Vault DAI balance is wrong"
-        );
-        assertEq(
-            balancesBefore.vaultTokens[usdcIdx] - balancesAfter.vaultTokens[usdcIdx],
-            swapAmount,
-            "Vault USDC balance is wrong"
-        );
-    }
-
-    function testNoGaugeWhenCreatingQuest() public {
-        IBatchRouter.SwapPathStep[][] memory steps = new IBatchRouter.SwapPathStep[][](0);
-
-        vm.expectRevert(SereneHook.CannotCreateQuest.selector);
-        SereneHook(poolHooksContract).createQuest(address(pool), steps);
-    }
-
-    function testQuestAlreadyCreatedForThisEpoch__Fuzz(uint256 swapAmount) public {
-        swapAmount = bound(swapAmount, POOL_MINIMUM_TOTAL_SUPPLY, 1e19);
-        gaugeRegistry.register(address(pool), makeAddr("gauge"));
-
-        // Swap to get USDC fees
-        vm.prank(bob);
-        router.swapSingleTokenExactOut(
-            address(pool), usdc, dai, swapAmount, MAX_UINT256, block.timestamp + 1, false, bytes("")
-        );
-
-        IBatchRouter.SwapPathStep[][] memory steps = new IBatchRouter.SwapPathStep[][](2);
-        steps[0] = new IBatchRouter.SwapPathStep[](1);
-        steps[0][0] = IBatchRouter.SwapPathStep({ pool: address(pool), tokenOut: dai, isBuffer: false });
-        SereneHook(poolHooksContract).createQuest(address(pool), steps);
-
-        uint48[] memory periods = new uint48[](1);
-        periods[0] = 0;
-        questBoard.setPeriodsForQuestId(1, periods);
-
-        vm.expectRevert(SereneHook.CannotCreateQuest.selector);
-        SereneHook(poolHooksContract).createQuest(address(pool), steps);
-    }
-
-    function testCreateNormalQuestSecondEpoch__Fuzz(uint256 swapAmount) public {
-        swapAmount = bound(swapAmount, POOL_MINIMUM_TOTAL_SUPPLY, 1e19);
-        gaugeRegistry.register(address(pool), makeAddr("gauge"));
-
-        // Swap to get USDC fees
-        vm.prank(bob);
-        router.swapSingleTokenExactOut(
-            address(pool), usdc, dai, swapAmount, MAX_UINT256, block.timestamp + 1, false, bytes("")
-        );
-
-        IBatchRouter.SwapPathStep[][] memory steps = new IBatchRouter.SwapPathStep[][](2);
-        steps[0] = new IBatchRouter.SwapPathStep[](1);
-        steps[0][0] = IBatchRouter.SwapPathStep({ pool: address(pool), tokenOut: dai, isBuffer: false });
-        SereneHook(poolHooksContract).createQuest(address(pool), steps);
-
-        // Swap to get USDC fees
-        vm.prank(bob);
-        router.swapSingleTokenExactOut(
-            address(pool), usdc, dai, swapAmount, MAX_UINT256, block.timestamp + 1, false, bytes("")
-        );
-
-        uint48[] memory periods = new uint48[](1);
-        periods[0] = 0;
-        questBoard.setPeriodsForQuestId(1, periods);
-        questBoard.setPeriod(1);
-
-        vm.expectCall(address(questBoard), abi.encodeWithSelector(IQuestBoard.createRangedQuest.selector));
-        SereneHook(poolHooksContract).createQuest(address(pool), steps);
-
-        assertEq(SereneHook(poolHooksContract).gauges(address(pool)), makeAddr("gauge"), "Gauge not set");
-        assertEq(SereneHook(poolHooksContract).lastQuestCreated(address(pool)), 1, "Quest not created");
-        assertEq(usdc.balanceOf(poolHooksContract), 0, "Usdc balance is wrong");
-        assertApproxEqAbs(dai.balanceOf(poolHooksContract), 0, 1, "Dai balance is wrong");
-    }
-
-    function testCreateNormalQuest__Fuzz(uint256 swapAmount) public {
-        swapAmount = bound(swapAmount, POOL_MINIMUM_TOTAL_SUPPLY, 1e19);
-        gaugeRegistry.register(address(pool), makeAddr("gauge"));
-
-        // Swap to get USDC fees
-        vm.prank(bob);
-        router.swapSingleTokenExactOut(
-            address(pool), usdc, dai, swapAmount, MAX_UINT256, block.timestamp + 1, false, bytes("")
-        );
-
-        IBatchRouter.SwapPathStep[][] memory steps = new IBatchRouter.SwapPathStep[][](2);
-        steps[0] = new IBatchRouter.SwapPathStep[](1);
-        steps[0][0] = IBatchRouter.SwapPathStep({ pool: address(pool), tokenOut: dai, isBuffer: false });
-        vm.expectCall(address(questBoard), abi.encodeWithSelector(IQuestBoard.createRangedQuest.selector));
-        SereneHook(poolHooksContract).createQuest(address(pool), steps);
-
-        assertEq(SereneHook(poolHooksContract).gauges(address(pool)), makeAddr("gauge"), "Gauge not set");
-        assertEq(SereneHook(poolHooksContract).lastQuestCreated(address(pool)), 1, "Quest not created");
-        assertEq(usdc.balanceOf(poolHooksContract), 0, "Usdc balance is wrong");
-        assertApproxEqAbs(dai.balanceOf(poolHooksContract), 0, 1, "Dai balance is wrong");
-    }
-
 }
