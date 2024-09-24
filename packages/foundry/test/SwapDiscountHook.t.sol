@@ -5,6 +5,7 @@ pragma solidity ^0.8.24;
 import "forge-std/Test.sol";
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IERC721 } from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import { IVaultAdmin } from "@balancer-labs/v3-interfaces/contracts/vault/IVaultAdmin.sol";
 import { IVaultErrors } from "@balancer-labs/v3-interfaces/contracts/vault/IVaultErrors.sol";
@@ -55,15 +56,7 @@ contract SwapDiscountHookTest is BaseVaultTest {
         // lp will be the owner of the hook. Only LP is able to set hook fee percentages.
         vm.prank(lp);
         address swapDiscountHook = address(
-            new SwapDiscountHook(
-                IVault(address(vault)),
-                address(factoryMock),
-                trustedRouter,
-                address(usdc),
-                MAX_SWAP_DISCOUNT_PERCENTAGE,
-                "SwapDiscountNFT",
-                "SDN"
-            )
+            new SwapDiscountHook(IVault(address(vault)), address(factoryMock), trustedRouter, "SwapDiscountNFT", "SDN")
         );
         vm.label(swapDiscountHook, "Swap Discount Hook");
         return swapDiscountHook;
@@ -123,58 +116,72 @@ contract SwapDiscountHookTest is BaseVaultTest {
         assertEq(hooksConfig.shouldCallAfterSwap, true, "shouldCallAfterSwap is false");
     }
 
-    function testSwapDiscountHook() public {
-        assertTrue(dai.balanceOf(bob) > 0, "Bob has 0 dai");
-        assertTrue(usdc.balanceOf(bob) > 0, "Bob has 0 usdc");
+    function _registerPoolWithHook(address swapDhookPool, TokenConfig[] memory tokenConfig, address factory) private {
+        PoolRoleAccounts memory roleAccounts;
+        LiquidityManagement memory liquidityManagement;
 
-        _doSwapAndCheckBalances(trustedRouter);
-
-        // Balances memory balances = getBalances(address(bob));
-        // console.log(balances.bobTokens[0]);
+        PoolFactoryMock(factory).registerPool(
+            swapDhookPool,
+            tokenConfig,
+            roleAccounts,
+            poolHooksContract,
+            liquidityManagement
+        );
     }
 
-    // function testSwapWithVeBal() public {
-    //     // Mint 1 veBAL to bob, so he's able to receive the fee discount
-    //     veBAL.mint(address(bob), 1);
-    //     assertGt(veBAL.balanceOf(bob), 0, "Bob does not have veBAL");
+    // Registry tests require a new pool, because an existing pool may be already registered
+    function _createPoolToRegister() private returns (address newPool) {
+        newPool = address(new PoolMock(IVault(address(vault)), "SwapD Hook Pool", "swapDHookPool"));
+        vm.label(newPool, "SwapD Hook Pool");
+    }
 
-    //     _doSwapAndCheckBalances(trustedRouter);
-    // }
+    // ======================================================================= //
 
-    // function testSwapWithVeBalAndUntrustedRouter() public {
-    //     // Mint 1 veBAL to bob, so he's able to receive the fee discount
-    //     veBAL.mint(address(bob), 1);
-    //     assertGt(veBAL.balanceOf(bob), 0, "Bob does not have veBAL");
+    function testUnSuccessfulCreationOfCampaign() public {
+        discountHook.createCampaign(100 ether, block.timestamp + 7 days, 2 days, 500000000000000000, address(pool));
 
-    //     // Create an untrusted router
-    //     address payable untrustedRouter = payable(new RouterMock(IVault(address(vault)), weth, permit2));
-    //     vm.label(untrustedRouter, "untrusted router");
+        vm.expectRevert();
+        discountHook.createCampaign(100 ether, block.timestamp + 7 days, 2 days, 500000000000000000, address(pool));
+    }
 
-    //     // Allows permit2 to move DAI tokens from bob to untrustedRouter
-    //     vm.prank(bob);
-    //     permit2.approve(address(dai), untrustedRouter, type(uint160).max, type(uint48).max);
+    function testSuccessfulCreationOfCampaign() public {
+        discountHook.createCampaign(100 ether, block.timestamp + 7 days, 2 days, 500000000000000000, address(pool));
 
-    //     // Even if bob has veBAL, since he is using an untrusted router, he will get no discounts
-    //     _doSwapAndCheckBalances(untrustedRouter);
-    // }
+        (address campaignAddress, address owner, uint256 timeOfCreation) = discountHook.discountCampaigns(
+            address(pool)
+        );
+
+        assertEq(campaignAddress, 0x31f98AFA8142Fdd8B0d1eFfB15E08FeFA7AaAA83, "Address doesnot matches");
+        assertEq(owner, address(this), "Address doesnot matches");
+        assertEq(timeOfCreation, block.timestamp, "time doesnot matches");
+    }
+
+    function testSuccessfulMintOfNFT() public {
+        discountHook.createCampaign(100 ether, block.timestamp + 7 days, 2 days, 500000000000000000, pool);
+        _doSwapAndCheckBalances(trustedRouter);
+
+        assertEq(IERC721(address(discountHook)).balanceOf(address(bob)), 1);
+
+        (address userAddress, address campaignAddress, uint256 swappedAmount, uint256 timeOfSwap) = discountHook
+            .userDiscountMapping(1);
+
+        assertEq(campaignAddress, 0x31f98AFA8142Fdd8B0d1eFfB15E08FeFA7AaAA83, "Address doesnot matches");
+        assertEq(userAddress, bob, "Address doesnot matches");
+        assertEq(swappedAmount, poolInitAmount / 100, "Amount doesnot matches");
+        assertEq(timeOfSwap, block.timestamp, "timestamp doesnot matches");
+    }
+
+    function testUnSuccessfulMintOfNFT() public {
+        _doSwapAndCheckBalances(trustedRouter);
+        assertEq(IERC721(address(discountHook)).balanceOf(address(bob)), 0);
+    }
 
     function _doSwapAndCheckBalances(address payable routerToUse) private {
-        // 10% swap fee. Since vault does not have swap fee, the fee will stay in the pool
-        uint256 swapDiscountPercentage = 5e17;
-
-        // vm.prank(lp);
-        // vault.setStaticSwapFeePercentage(pool, swapFeePercentage);
-
-        uint256 exactAmountIn = 100e18;
-        // PoolMock uses a linear math with rate 1, so amountIn = amountOut if no fees are applied
+        uint256 exactAmountIn = poolInitAmount / 100;
+        // PoolMock uses linear math with a rate of 1, so amountIn == amountOut when no fees are applied.
         uint256 expectedAmountOut = exactAmountIn;
-        // If bob has veBAL and router is trusted, bob gets a 50% discount
-        bool shouldGetDiscount = discountHook.discountTokenAddress() == address(dai);
-        uint256 expectedDiscountedToken = exactAmountIn.mulDown(discountHook.swapDiscountRate());
-        // Hook fee will remain in the pool, so the expected amount out discounts the fees
-        // expectedAmountOut -= expectedDiscountedToken;
 
-        BaseVaultTest.Balances memory balancesBefore = getBalances(address(bob));
+        BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
 
         vm.prank(bob);
         RouterMock(routerToUse).swapSingleTokenExactIn(
@@ -188,18 +195,7 @@ contract SwapDiscountHookTest is BaseVaultTest {
             bytes("")
         );
 
-        BaseVaultTest.Balances memory balancesAfter = getBalances(address(bob));
-        (address userAddress, uint256 amount, uint256 validity) = discountHook.userDiscountMapping(1);
-
-        // Bob should get a discount of 50%
-        assertEq(expectedDiscountedToken, amount, "Discounted tokens are wrong");
-
-        // validity should not be greater then 1 day
-        assertTrue(validity > block.timestamp, "Invalid discount validity");
-
-        vm.warp(block.timestamp + 2 days);
-        // validity should  be greater then 1 day
-        assertTrue(validity < block.timestamp, "Invalid discount validity");
+        BaseVaultTest.Balances memory balancesAfter = getBalances(bob);
 
         // Bob's balance of DAI is supposed to decrease, since DAI is the token in
         assertEq(
@@ -237,25 +233,6 @@ contract SwapDiscountHookTest is BaseVaultTest {
             balancesBefore.poolTokens[usdcIdx] - balancesAfter.poolTokens[usdcIdx],
             expectedAmountOut,
             "Pool's USDC balance is wrong"
-        );
-    }
-
-    // Registry tests require a new pool, because an existing pool may be already registered
-    function _createPoolToRegister() private returns (address newPool) {
-        newPool = address(new PoolMock(IVault(address(vault)), "SwapD Hook Pool", "swapDHookPool"));
-        vm.label(newPool, "SwapD Hook Pool");
-    }
-
-    function _registerPoolWithHook(address swapDhookPool, TokenConfig[] memory tokenConfig, address factory) private {
-        PoolRoleAccounts memory roleAccounts;
-        LiquidityManagement memory liquidityManagement;
-
-        PoolFactoryMock(factory).registerPool(
-            swapDhookPool,
-            tokenConfig,
-            roleAccounts,
-            poolHooksContract,
-            liquidityManagement
         );
     }
 }

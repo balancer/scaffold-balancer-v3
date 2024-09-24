@@ -20,6 +20,7 @@ import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 import { VaultGuard } from "@balancer-labs/v3-vault/contracts/VaultGuard.sol";
 
 import { ISwapDiscountHook } from "./Interfaces/ISwapDiscountHook.sol";
+import { DiscountCampaign } from "./DiscountCampaign.sol";
 
 contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, VaultGuard {
     using FixedPoint for uint256;
@@ -31,25 +32,20 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
     // Token-related state variables
     address public discountTokenAddress;
     uint256 private _shareTokenId = 1;
-    uint64 public swapDiscountRate;
-    uint256 public expirationTime = 1 days;
 
     // Mapping to store user swap discount data
     mapping(uint256 => UserSwapData) public override userDiscountMapping;
+    mapping(address => CampaignData) public override discountCampaigns;
 
     constructor(
         IVault vaultInstance,
         address factoryAddress,
         address routerAddress,
-        address tokenAddress,
-        uint64 discountRate,
         string memory name,
         string memory symbol
     ) VaultGuard(vaultInstance) ERC721(name, symbol) Ownable(msg.sender) {
         allowedFactoryAddress = factoryAddress;
         trustedRouterAddress = routerAddress;
-        discountTokenAddress = tokenAddress;
-        swapDiscountRate = discountRate;
     }
 
     /// @inheritdoc IHooks
@@ -72,41 +68,46 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
     function onAfterSwap(
         AfterSwapParams calldata params
     ) public override onlyVault returns (bool success, uint256 discountedAmount) {
-        if (
-            swapDiscountRate > 0 && address(params.tokenOut) == discountTokenAddress && params.kind == SwapKind.EXACT_IN
-        ) {
-            discountedAmount = _calculateDiscount(params);
-            _applyDiscount(params, discountedAmount);
+        if (params.kind == SwapKind.EXACT_IN && discountCampaigns[params.pool].campaignAddress != address(0)) {
+            mint(params);
         }
         return (true, params.amountCalculatedRaw);
     }
 
-    /// Calculate the discount based on swap parameters
-    function _calculateDiscount(AfterSwapParams calldata params) internal view returns (uint256) {
-        return params.amountCalculatedRaw.mulDown(swapDiscountRate);
-    }
-
     /// Apply discount and mint token for the user
-    function _applyDiscount(AfterSwapParams calldata params, uint256 discountedAmount) internal {
+    function mint(AfterSwapParams calldata params) internal {
         uint256 newTokenId = _shareTokenId++;
         address user = IRouterCommon(params.router).getSender();
 
         UserSwapData storage userSwapData = userDiscountMapping[newTokenId];
         userSwapData.userAddress = user;
-        userSwapData.expirationTime = block.timestamp + expirationTime;
-        userSwapData.discountedTokenAmount = discountedAmount;
+        userSwapData.swappedAmount = params.amountCalculatedRaw;
+        userSwapData.campaignAddress = discountCampaigns[params.pool].campaignAddress;
+        userSwapData.timeOfSwap = block.timestamp;
 
         _mint(user, newTokenId);
-        emit SwapDiscountGranted(newTokenId, user, userSwapData.expirationTime, discountedAmount);
     }
 
-    function updateDiscountRate(uint64 newDiscountRate) external onlyOwner {
-        require(newDiscountRate <= 100, "IDR");
-        swapDiscountRate = newDiscountRate;
-    }
+    function createCampaign(
+        uint256 rewardAmount,
+        uint256 expirationTime,
+        uint256 coolDownPeriod,
+        uint256 discountAmount,
+        address pool
+    ) external {
+        if (discountCampaigns[pool].campaignAddress != address(0)) {
+            revert poolCampaignAlreadyExist();
+        }
+        DiscountCampaign discountCampaign = new DiscountCampaign(
+            rewardAmount,
+            expirationTime,
+            coolDownPeriod,
+            discountAmount
+        );
 
-    function updateExpirationTime(uint256 newExpirationTime) external onlyOwner {
-        require(newExpirationTime > block.timestamp, "IET");
-        expirationTime = newExpirationTime;
+        CampaignData storage campaignData = discountCampaigns[pool];
+        campaignData.campaignAddress = address(discountCampaign);
+        campaignData.owner = msg.sender;
+        campaignData.timeOfCreation = block.timestamp;
     }
 }
