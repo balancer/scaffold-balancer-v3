@@ -93,7 +93,8 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
         uint256 expirationTime,
         uint256 coolDownPeriod,
         uint256 discountAmount,
-        address pool
+        address pool,
+        address owner
     ) external {
         if (discountCampaigns[pool].campaignAddress != address(0)) {
             revert poolCampaignAlreadyExist();
@@ -102,7 +103,9 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
             rewardAmount,
             expirationTime,
             coolDownPeriod,
-            discountAmount
+            discountAmount,
+            owner,
+            address(this)
         );
 
         CampaignData storage campaignData = discountCampaigns[pool];
