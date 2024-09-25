@@ -14,14 +14,14 @@ import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.sol";
-import { VeBALFeeDiscountHookExample } from "../contracts/hooks/VeBALFeeDiscountHookExample.sol";
+import { NftCheckHook } from "../contracts/hooks/NftCheckHook.sol";
 
 /**
  * @title Deploy Constant Sum Pool
  * @notice Deploys, registers, and initializes a constant sum pool that uses a swap fee discount hook
  */
 contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
-    function deployConstantSumPool(address token1, address token2, address veBAL) internal {
+    function deployConstantSumPool(address token1, address token2, address nftContract, uint256 nftId) internal {
         // Set the pool's deployment, registration, and initialization config
         CustomPoolConfig memory poolConfig = getSumPoolConfig(token1, token2);
         InitializationConfig memory initConfig = getSumPoolInitConfig(token1, token2);
@@ -35,10 +35,10 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
         console.log("Constant Sum Factory deployed at: %s", address(factory));
 
         // Deploy a hook
-        address veBALFeeDiscountHook = address(
-            new VeBALFeeDiscountHookExample(vault, address(factory), address(router), veBAL)
+        address nftCheckHook = address(
+            new NftCheckHook(vault, nftContract, nftId)
         );
-        console.log("VeBALFeeDiscountHookExample deployed at address: %s", veBALFeeDiscountHook);
+        console.log("NftCheckHook deployed at address: %s", nftCheckHook);
 
         // Deploy a pool and register it with the vault
         address pool = factory.create(
@@ -49,7 +49,7 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
             poolConfig.swapFeePercentage,
             poolConfig.protocolFeeExempt,
             poolConfig.roleAccounts,
-            veBALFeeDiscountHook, // poolHooksContract
+            nftCheckHook, // poolHooksContract
             poolConfig.liquidityManagement
         );
         console.log("Constant Sum Pool deployed at: %s", pool);

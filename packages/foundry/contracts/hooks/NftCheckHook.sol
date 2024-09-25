@@ -20,94 +20,89 @@ import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/Fixe
 import { VaultGuard } from "@balancer-labs/v3-vault/contracts/VaultGuard.sol";
 import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 
-/**
- * @notice Impose an "exit fee" on a pool. The value of the fee is returned to the LPs.
- * @dev This hook extracts a fee on all withdrawals, then donates it back to the pool (effectively increasing the value
- * of BPT shares for all users).
- *
- * Since the Vault always takes fees on the calculated amounts, and only supports taking fees in tokens, this hook
- * must be restricted to pools that require proportional liquidity operations. The calculated amount for EXACT_OUT
- * withdrawals would be in BPT, and charging fees on BPT is unsupported.
- *
- * Since the fee must be taken *after* the `amountOut` is calculated - and the actual `amountOut` returned to the Vault
- * must be modified in order to charge the fee - `enableHookAdjustedAmounts` must also be set to true in the
- * pool configuration. Otherwise, the Vault would ignore the adjusted values, and not recognize the fee.
- *
- * Finally, since the only way to deposit fee tokens back into the pool balance (without minting new BPT) is through
- * the special "donation" add liquidity type, this hook also requires that the pool support donation.
- */
+// Interface for ERC721 NFT contract
+interface IERC721 {
+    function ownerOf(uint256 tokenId) external view returns (address owner);
+}
+
+// Interface for the custom NFT contract
+interface ICustomNFT is IERC721 {
+    struct NFTData {
+        string status;
+        address linkedToken;
+        string[] linkedTokenInterfaces;
+        bool locked;
+        bool paused;
+    }
+
+    function nftData(uint256 tokenId) external view returns (NFTData memory);
+}
+
 contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     using FixedPoint for uint256;
 
-    // Percentages are represented as 18-decimal FP numbers, which have a maximum value of FixedPoint.ONE (100%),
-    // so 60 bits are sufficient.
-    uint64 public exitFeePercentage;
+    // the NFT contract address and id that must be held by the hook before the pool can be registered
+    address public immutable nftContract;
+    uint256 public immutable nftId;
 
-    // Maximum exit fee of 10%
+    // Error to throw when the hook doesn't own the required NFT
+    error DoesNotOwnRequiredNFT(address hook, address nftContract, uint256 nftId);
+
+    // Error to throw when the NFT's linked token doesn't match any of the pool tokens
+    error LinkedTokenNotInPool(address linkedToken);
+
+    uint64 public exitFeePercentage;
     uint64 public constant MAX_EXIT_FEE_PERCENTAGE = 10e16;
 
-    /**
-     * @notice A new `ExitFeeHookExample` contract has been registered successfully for a given factory and pool.
-     * @dev If the registration fails the call will revert, so there will be no event.
-     * @param hooksContract This contract
-     * @param pool The pool on which the hook was registered
-     */
-    event ExitFeeHookExampleRegistered(address indexed hooksContract, address indexed pool);
-
-    /**
-     * @notice An exit fee has been charged on a pool.
-     * @param pool The pool that was charged
-     * @param token The address of the fee token
-     * @param feeAmount The amount of the fee (in native decimals)
-     */
+    event NftCheckHookRegistered(address indexed hooksContract, address indexed pool);
     event ExitFeeCharged(address indexed pool, IERC20 indexed token, uint256 feeAmount);
-
-    /**
-     * @notice The exit fee has been changed in an `ExitFeeHookExample` contract.
-     * @dev Note that the initial fee will be zero, and no event is emitted on deployment.
-     * @param hookContract The contract whose fee changed
-     * @param exitFeePercentage The new exit fee percentage
-     */
     event ExitFeePercentageChanged(address indexed hookContract, uint256 exitFeePercentage);
 
-    /**
-     * @notice The exit fee cannot exceed the maximum allowed percentage.
-     * @param feePercentage The fee percentage exceeding the limit
-     * @param limit The maximum exit fee percentage
-     */
     error ExitFeeAboveLimit(uint256 feePercentage, uint256 limit);
-
-    /**
-     * @notice The pool does not support adding liquidity through donation.
-     * @dev There is an existing similar error (IVaultErrors.DoesNotSupportDonation), but hooks should not throw
-     * "Vault" errors.
-     */
     error PoolDoesNotSupportDonation();
 
-    constructor(IVault vault) VaultGuard(vault) Ownable(msg.sender) {
-        // solhint-disable-previous-line no-empty-blocks
+    constructor(IVault vault, address _nftContract, uint256 _nftId) VaultGuard(vault) Ownable(msg.sender) {
+        nftContract = _nftContract;
+        nftId = _nftId;
     }
 
-    /// @inheritdoc IHooks
     function onRegister(
         address,
         address pool,
-        TokenConfig[] memory,
+        TokenConfig[] memory tokenConfigs,
         LiquidityManagement calldata liquidityManagement
     ) public override onlyVault returns (bool) {
-        // NOTICE: In real hooks, make sure this function is properly implemented (e.g. check the factory, and check
-        // that the given pool is from the factory). Returning true unconditionally allows any pool, with any
-        // configuration, to use this hook.
-
-        // This hook requires donation support to work (see above).
         if (liquidityManagement.enableDonation == false) {
             revert PoolDoesNotSupportDonation();
         }
 
-        emit ExitFeeHookExampleRegistered(address(this), pool);
+        // Check if the hook owns the required NFT
+        if (IERC721(nftContract).ownerOf(nftId) != address(this)) {
+            revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
+        }
+
+        // Get the linked token from the NFT
+        ICustomNFT.NFTData memory data = ICustomNFT(nftContract).nftData(nftId);
+        address linkedToken = data.linkedToken;
+
+        // Check if the linked token is one of the pool tokens
+        bool linkedTokenFound = false;
+        for (uint256 i = 0; i < tokenConfigs.length; i++) {
+            if (address(tokenConfigs[i].token) == address(linkedToken)) {
+                linkedTokenFound = true;
+                break;
+            }
+        }
+
+        if (!linkedTokenFound) {
+            revert LinkedTokenNotInPool(linkedToken);
+        }
+
+        emit NftCheckHookRegistered(address(this), pool);
 
         return true;
     }
+
 
     /// @inheritdoc IHooks
     function getHookFlags() public pure override returns (HookFlags memory) {
