@@ -138,18 +138,40 @@ contract SwapDiscountHookTest is BaseVaultTest {
     // ======================================================================= //
 
     function testUnSuccessfulCreationOfCampaign() public {
-        discountHook.createCampaign(100 ether, block.timestamp + 7 days, 2 days, 500000000000000000, address(pool));
-
+        discountHook.createCampaign(
+            100 ether,
+            block.timestamp + 7 days,
+            2 days,
+            500000000000000000,
+            address(pool),
+            address(this),
+            address(usdc)
+        );
         vm.expectRevert();
-        discountHook.createCampaign(100 ether, block.timestamp + 7 days, 2 days, 500000000000000000, address(pool));
+        discountHook.createCampaign(
+            100 ether,
+            block.timestamp + 7 days,
+            2 days,
+            500000000000000000,
+            address(pool),
+            address(this),
+            address(usdc)
+        );
     }
 
     function testSuccessfulCreationOfCampaign() public {
-        discountHook.createCampaign(100 ether, block.timestamp + 7 days, 2 days, 500000000000000000, address(pool));
-
-        (address campaignAddress, address owner, uint256 timeOfCreation) = discountHook.discountCampaigns(
-            address(pool)
+        discountHook.createCampaign(
+            100 ether,
+            block.timestamp + 7 days,
+            2 days,
+            500000000000000000,
+            address(pool),
+            address(this),
+            address(usdc)
         );
+
+        (address campaignAddress, address owner, address rewardToken, uint256 timeOfCreation) = discountHook
+            .discountCampaigns(address(pool));
 
         assertEq(campaignAddress, 0x31f98AFA8142Fdd8B0d1eFfB15E08FeFA7AaAA83, "Address doesnot matches");
         assertEq(owner, address(this), "Address doesnot matches");
@@ -157,12 +179,20 @@ contract SwapDiscountHookTest is BaseVaultTest {
     }
 
     function testSuccessfulMintOfNFT() public {
-        discountHook.createCampaign(100 ether, block.timestamp + 7 days, 2 days, 500000000000000000, pool);
+        discountHook.createCampaign(
+            100 ether,
+            block.timestamp + 7 days,
+            2 days,
+            500000000000000000,
+            address(pool),
+            address(this),
+            address(usdc)
+        );
         _doSwapAndCheckBalances(trustedRouter);
 
         assertEq(IERC721(address(discountHook)).balanceOf(address(bob)), 1);
 
-        (address userAddress, address campaignAddress, uint256 swappedAmount, uint256 timeOfSwap) = discountHook
+        (address userAddress, address campaignAddress, uint256 swappedAmount, uint256 timeOfSwap, ) = discountHook
             .userDiscountMapping(1);
 
         assertEq(campaignAddress, 0x31f98AFA8142Fdd8B0d1eFfB15E08FeFA7AaAA83, "Address doesnot matches");
