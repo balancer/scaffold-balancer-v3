@@ -24,6 +24,7 @@ import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 import { VaultGuard } from "@balancer-labs/v3-vault/contracts/VaultGuard.sol";
 
 import { ISwapDiscountHook } from "./Interfaces/ISwapDiscountHook.sol";
+import { IDiscountCampaign } from "./Interfaces/IDiscountCampaign.sol";
 import { DiscountCampaign } from "./DiscountCampaign.sol";
 
 contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, VaultGuard, ReentrancyGuard {
@@ -82,7 +83,15 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
         return (true, params.amountCalculatedRaw);
     }
 
-    /// Apply discount and mint token for the user
+    /**
+     * @notice Apply discount and mint a new token for the user.
+     * @dev This function mints a token for the user after applying the discount and storing relevant swap data.
+     *      The function uses memory for `UserSwapData` to minimize storage operations until the final write to storage.
+     * @param params The parameters of the swap after it has been executed.
+     *        - params.router: The address of the router handling the swap.
+     *        - params.amountCalculatedRaw: The amount swapped by the user.
+     *        - params.pool: The liquidity pool involved in the swap.
+     */
     function mint(AfterSwapParams calldata params) internal nonReentrant {
         uint256 newTokenId = _shareTokenId++;
         address user = IRouterCommon(params.router).getSender();
@@ -100,6 +109,19 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
         _mint(user, newTokenId);
     }
 
+    /**
+     * @notice Create a new discount campaign for a specific liquidity pool.
+     * @dev The function creates a new `DiscountCampaign` contract and stores its details.
+     *      Reverts if a campaign for the specified pool already exists or if the reward token is invalid.
+     * @param rewardAmount The total reward amount for the campaign.
+     * @param expirationTime The expiration time of the discount campaign.
+     * @param coolDownPeriod The cooldown period for rewards between claims.
+     * @param discountAmount The discount rate offered in the campaign.
+     * @param pool The address of the liquidity pool for which the campaign is being created.
+     * @param owner The address of the owner of the campaign.
+     * @param rewardToken The address of the reward token used in the campaign.
+     * @return The address of the newly created `DiscountCampaign` contract.
+     */
     function createCampaign(
         uint256 rewardAmount,
         uint256 expirationTime,
@@ -119,16 +141,19 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
             revert InvalidRewardToken();
         }
 
-        DiscountCampaign discountCampaign = new DiscountCampaign(
-            rewardAmount,
-            expirationTime,
-            coolDownPeriod,
-            discountAmount,
-            rewardToken,
-            owner,
-            address(this)
-        );
+        // Create a CampaignDetails struct to pass into the constructor
+        IDiscountCampaign.CampaignDetails memory campaignDetails = IDiscountCampaign.CampaignDetails({
+            rewardAmount: rewardAmount,
+            expirationTime: expirationTime,
+            coolDownPeriod: coolDownPeriod,
+            discountRate: discountAmount,
+            rewardToken: rewardToken
+        });
 
+        // Deploy the DiscountCampaign contract with the struct
+        DiscountCampaign discountCampaign = new DiscountCampaign(campaignDetails, owner, address(this));
+
+        // Store campaign details
         campaignData.campaignAddress = address(discountCampaign);
         campaignData.rewardToken = rewardToken;
         campaignData.owner = msg.sender;
@@ -137,17 +162,29 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
         return address(discountCampaign);
     }
 
-    // Function to set 'hasClaimed' - can only be called by the respective DiscountCampaign contract
+    /**
+     * @notice Mark the token as 'claimed' for the given token ID.
+     * @dev This function sets the `hasClaimed` status of a token to true.
+     *      Can only be called by the respective DiscountCampaign contract.
+     * @param tokenID The ID of the token to mark as claimed.
+     */
     function setHasClaimed(uint256 tokenID) external override {
         // Ensure the caller is the discount campaign associated with the token
         address campaignAddress = userDiscountMapping[tokenID].campaignAddress;
-        require(msg.sender == campaignAddress, "Caller is not the authorized discount campaign");
+        if (msg.sender != campaignAddress) revert NOT_AUTHORIZED();
 
         // Set the 'hasClaimed' status to true
         UserSwapData storage userSwapData = userDiscountMapping[tokenID];
         userSwapData.hasClaimed = true;
     }
 
+    /**
+     * @notice Check if the given reward token is valid for the specified pool.
+     * @dev This function iterates over the tokens in the pool to check if the reward token matches any of them.
+     * @param pool The address of the liquidity pool.
+     * @param rewardToken The address of the reward token to validate.
+     * @return True if the reward token is valid for the pool, false otherwise.
+     */
     function _checkToken(address pool, address rewardToken) internal view returns (bool) {
         IERC20[] memory tokens = IPoolInfo(pool).getTokens();
         uint256 tokensLength = tokens.length;

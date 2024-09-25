@@ -11,60 +11,49 @@ import { ISwapDiscountHook } from "./Interfaces/ISwapDiscountHook.sol";
 
 contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
     // Public state variables
-    uint256 public rewardAmount;
-    uint256 public expirationTime;
-    uint256 public coolDownPeriod;
-    uint256 public discountRate;
-    address public rewardToken;
+    CampaignDetails public campaignDetails;
     uint256 public tokenRewardDistributed;
 
     // Private state variables
-    uint256 private _previousDiscountRate;
     ISwapDiscountHook private _swapHook;
 
     /**
-     * @dev Constructor to initialize the contract state.
-     * @param _rewardAmount The total reward amount.
-     * @param _expirationTime The expiration time of the campaign.
-     * @param _coolDownPeriod The cool-down period for rewards.
-     * @param _discountAmount The initial discount rate.
-     * @param _rewardToken The address of the reward token contract.
-     * @param _owner The owner of the contract.
-     * @param _hook The address of the discount hook for tracking discounts.
+     * @notice Initializes the discount campaign contract with the provided details.
+     * @dev Sets the campaign details, owner, and swap hook address during contract deployment.
+     * @param _campaignDetails A struct containing reward amount, expiration time, cooldown period, discount rate, and reward token.
+     * @param _owner The owner address of the discount campaign contract.
+     * @param _hook The address of the swap hook for tracking user discounts.
      */
-    constructor(
-        uint256 _rewardAmount,
-        uint256 _expirationTime,
-        uint256 _coolDownPeriod,
-        uint256 _discountAmount,
-        address _rewardToken,
-        address _owner,
-        address _hook
-    ) Ownable(_owner) {
-        rewardAmount = _rewardAmount;
-        expirationTime = _expirationTime;
-        coolDownPeriod = _coolDownPeriod;
-        discountRate = _discountAmount;
-        rewardToken = _rewardToken;
+    constructor(CampaignDetails memory _campaignDetails, address _owner, address _hook) Ownable(_owner) {
+        campaignDetails = _campaignDetails;
         _swapHook = ISwapDiscountHook(_hook);
     }
 
     /**
-     * @dev Modifier to check the validity of the token ID.
-     * Reverts if the token ID is invalid or if the discount has expired.
+     * @notice Updates the campaign details.
+     * @dev Only the contract owner can update the campaign details. This will replace the existing campaign parameters.
+     * @param _newCampaignDetails A struct containing updated reward amount, expiration time, cooldown period, discount rate, and reward token.
+     */
+    function updateCampaignDetails(CampaignDetails calldata _newCampaignDetails) external onlyOwner {
+        campaignDetails = _newCampaignDetails;
+        emit CampaignDetailsUpdated(_newCampaignDetails);
+    }
+
+    /**
+     * @notice Checks the validity of a token ID and ensures it meets the required conditions.
+     * @dev Reverts if the token ID is invalid, expired, or if the reward has already been claimed.
      * @param tokenID The ID of the token to be validated.
      */
-    modifier authorizeTokenId(uint256 tokenID) {
+    modifier checkAndAuthorizeTokenId(uint256 tokenID) {
         (address user, address campaignAddress, , uint256 timeOfSwap, bool hasClaimed) = _swapHook.userDiscountMapping(
             tokenID
         );
         if (campaignAddress != address(this)) {
             revert InvalidTokenID();
         }
-        if (timeOfSwap > expirationTime) {
+        if (timeOfSwap > campaignDetails.expirationTime) {
             revert DiscountExpired();
         }
-
         if (hasClaimed == true) {
             revert RewardAlreadyClaimed();
         }
@@ -72,26 +61,28 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Claim rewards for a specific token ID.
-     * Transfers the token to the contract and rewards the user with claimable tokens.
+     * @notice Claims rewards for a specific token ID.
+     * @dev Transfers the reward to the user associated with the token and marks the token as claimed.
+     *      Reverts if the reward amount is zero or if the total rewards have been distributed.
      * @param tokenID The ID of the token for which the claim is made.
      */
-    function claim(uint256 tokenID) public authorizeTokenId(tokenID) nonReentrant {
+    function claim(uint256 tokenID) public checkAndAuthorizeTokenId(tokenID) nonReentrant {
         (address user, , , , ) = _swapHook.userDiscountMapping(tokenID);
         uint256 reward = _getClaimableRewards(tokenID);
 
-        if (reward == 0 && tokenRewardDistributed == rewardAmount) {
+        if (reward == 0 && tokenRewardDistributed == campaignDetails.rewardAmount) {
             revert RewardAmountExpired();
         }
 
-        IERC20(rewardToken).transferFrom(address(this), user, reward);
+        IERC20(campaignDetails.rewardToken).transferFrom(address(this), user, reward);
         tokenRewardDistributed += reward;
-        updateDiscount();
+        _updateDiscount();
         _swapHook.setHasClaimed(tokenID);
     }
 
     /**
-     * @dev Get the claimable reward for a specific token ID.
+     * @notice Returns the claimable reward amount for a specific token ID.
+     * @dev Fetches the claimable reward based on the token's associated swap data and discount rate.
      * @param tokenID The ID of the token to check.
      * @return The claimable reward amount.
      */
@@ -100,24 +91,27 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Internal function to calculate the claimable rewards for a token ID.
-     * @param tokenID The ID of the token.
+     * @notice Internal function to calculate the claimable reward for a given token ID.
+     * @dev The reward is calculated based on the swapped amount and discount rate.
+     * @param tokenID The ID of the token for which to calculate the reward.
      * @return claimableReward The amount of reward that can be claimed.
      */
     function _getClaimableRewards(
         uint256 tokenID
-    ) internal view authorizeTokenId(tokenID) returns (uint256 claimableReward) {
+    ) private view checkAndAuthorizeTokenId(tokenID) returns (uint256 claimableReward) {
         (, , uint256 swappedAmount, , ) = _swapHook.userDiscountMapping(tokenID);
 
         // Calculate claimable reward based on the swapped amount and discount rate
-        claimableReward = (swappedAmount * discountRate) / 100e18;
+        claimableReward = (swappedAmount * campaignDetails.discountRate) / 100e18;
     }
 
     /**
-     * @dev Update the discount rate based on the reward distribution.
-     * The discount rate decreases as more rewards are distributed.
+     * @notice Updates the discount rate based on the distributed rewards.
+     * @dev The discount rate decreases proportionally as more rewards are distributed.
      */
-    function updateDiscount() internal {
-        discountRate = discountRate * (1 - tokenRewardDistributed / rewardAmount);
+    function _updateDiscount() private {
+        campaignDetails.discountRate =
+            campaignDetails.discountRate *
+            (1 - tokenRewardDistributed / campaignDetails.rewardAmount);
     }
 }
