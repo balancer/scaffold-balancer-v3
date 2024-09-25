@@ -42,10 +42,12 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     // Percentages are represented as 18-decimal FP numbers, which have a maximum value of FixedPoint.ONE (100%),
     // so 60 bits are sufficient.
     uint64 public exitFeePercentage;
+    uint64 public entryFeePercentage;
 
     // Maximum exit fee of 10%
     uint64 public constant MAX_EXIT_FEE_PERCENTAGE = 10e16;
-
+    uint64 public constant MAX_ENTRY_FEE_PERCENTAGE = 10e16;
+    
     /**
      * @notice A new `ExitFeeHookExample` contract has been registered successfully for a given factory and pool.
      * @dev If the registration fails the call will revert, so there will be no event.
