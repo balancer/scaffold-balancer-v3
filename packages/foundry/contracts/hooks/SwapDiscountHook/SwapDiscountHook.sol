@@ -3,9 +3,13 @@ pragma solidity ^0.8.24;
 
 import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { IPoolInfo } from "@balancer-labs/v3-interfaces/contracts/pool-utils/IPoolInfo.sol";
+
 import {
     LiquidityManagement,
     AfterSwapParams,
@@ -22,7 +26,7 @@ import { VaultGuard } from "@balancer-labs/v3-vault/contracts/VaultGuard.sol";
 import { ISwapDiscountHook } from "./Interfaces/ISwapDiscountHook.sol";
 import { DiscountCampaign } from "./DiscountCampaign.sol";
 
-contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, VaultGuard {
+contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, VaultGuard, ReentrancyGuard {
     using FixedPoint for uint256;
 
     // Immutable addresses for factory and router
@@ -68,22 +72,30 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
     function onAfterSwap(
         AfterSwapParams calldata params
     ) public override onlyVault returns (bool success, uint256 discountedAmount) {
-        if (params.kind == SwapKind.EXACT_IN && discountCampaigns[params.pool].campaignAddress != address(0)) {
+        if (
+            params.kind == SwapKind.EXACT_IN &&
+            discountCampaigns[params.pool].campaignAddress != address(0) &&
+            address(params.tokenOut) == discountCampaigns[params.pool].rewardToken
+        ) {
             mint(params);
         }
         return (true, params.amountCalculatedRaw);
     }
 
     /// Apply discount and mint token for the user
-    function mint(AfterSwapParams calldata params) internal {
+    function mint(AfterSwapParams calldata params) internal nonReentrant {
         uint256 newTokenId = _shareTokenId++;
         address user = IRouterCommon(params.router).getSender();
 
-        UserSwapData storage userSwapData = userDiscountMapping[newTokenId];
+        // Use memory for userSwapData until final write to storage
+        UserSwapData memory userSwapData;
         userSwapData.userAddress = user;
         userSwapData.swappedAmount = params.amountCalculatedRaw;
         userSwapData.campaignAddress = discountCampaigns[params.pool].campaignAddress;
         userSwapData.timeOfSwap = block.timestamp;
+
+        // Write once to storage
+        userDiscountMapping[newTokenId] = userSwapData;
 
         _mint(user, newTokenId);
     }
@@ -94,23 +106,58 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
         uint256 coolDownPeriod,
         uint256 discountAmount,
         address pool,
-        address owner
-    ) external {
-        if (discountCampaigns[pool].campaignAddress != address(0)) {
+        address owner,
+        address rewardToken
+    ) external nonReentrant returns (address) {
+        CampaignData storage campaignData = discountCampaigns[pool];
+
+        if (campaignData.campaignAddress != address(0)) {
             revert poolCampaignAlreadyExist();
         }
+
+        if (!_checkToken(pool, rewardToken)) {
+            revert InvalidRewardToken();
+        }
+
         DiscountCampaign discountCampaign = new DiscountCampaign(
             rewardAmount,
             expirationTime,
             coolDownPeriod,
             discountAmount,
+            rewardToken,
             owner,
             address(this)
         );
 
-        CampaignData storage campaignData = discountCampaigns[pool];
         campaignData.campaignAddress = address(discountCampaign);
+        campaignData.rewardToken = rewardToken;
         campaignData.owner = msg.sender;
         campaignData.timeOfCreation = block.timestamp;
+
+        return address(discountCampaign);
+    }
+
+    // Function to set 'hasClaimed' - can only be called by the respective DiscountCampaign contract
+    function setHasClaimed(uint256 tokenID) external override {
+        // Ensure the caller is the discount campaign associated with the token
+        address campaignAddress = userDiscountMapping[tokenID].campaignAddress;
+        require(msg.sender == campaignAddress, "Caller is not the authorized discount campaign");
+
+        // Set the 'hasClaimed' status to true
+        UserSwapData storage userSwapData = userDiscountMapping[tokenID];
+        userSwapData.hasClaimed = true;
+    }
+
+    function _checkToken(address pool, address rewardToken) internal view returns (bool) {
+        IERC20[] memory tokens = IPoolInfo(pool).getTokens();
+        uint256 tokensLength = tokens.length;
+
+        for (uint256 i = 0; i < tokensLength; i++) {
+            if (rewardToken == address(tokens[i])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
