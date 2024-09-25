@@ -41,9 +41,9 @@ interface ICustomNFT is IERC721 {
 contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     using FixedPoint for uint256;
 
-    // the NFT contract address and id that must be held by the hook before the pool can be registered
-    address public immutable nftContract;
-    uint256 public immutable nftId;
+    // Changed from immutable to public
+    address public nftContract;
+    uint256 public nftId;
 
     // Error to throw when the hook doesn't own the required NFT
     error DoesNotOwnRequiredNFT(address hook, address nftContract, uint256 nftId);
@@ -57,6 +57,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     event NftCheckHookRegistered(address indexed hooksContract, address indexed pool);
     event ExitFeeCharged(address indexed pool, IERC20 indexed token, uint256 feeAmount);
     event ExitFeePercentageChanged(address indexed hookContract, uint256 exitFeePercentage);
+    event NftContractUpdated(address indexed oldContract, address indexed newContract);
+    event NftIdUpdated(uint256 oldId, uint256 newId);
 
     error ExitFeeAboveLimit(uint256 feePercentage, uint256 limit);
     error PoolDoesNotSupportDonation();
@@ -180,5 +182,19 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         exitFeePercentage = newExitFeePercentage;
 
         emit ExitFeePercentageChanged(address(this), newExitFeePercentage);
+    }
+
+    // New function to update nftContract
+    function setNftContract(address _newNftContract) external onlyOwner {
+        address oldContract = nftContract;
+        nftContract = _newNftContract;
+        emit NftContractUpdated(oldContract, _newNftContract);
+    }
+
+    // New function to update nftId
+    function setNftId(uint256 _newNftId) external onlyOwner {
+        uint256 oldId = nftId;
+        nftId = _newNftId;
+        emit NftIdUpdated(oldId, _newNftId);
     }
 }
