@@ -2,19 +2,42 @@
 pragma solidity ^0.8.24;
 
 interface IDiscountCampaignFactory {
-    error poolCampaignAlreadyExist();
+    error PoolCampaignAlreadyExist();
+    error PoolCampaignDoesnotExist();
+    error PoolCampaignHasnotExpired();
     error InvalidRewardToken();
     error NOT_AUTHORIZED();
+
+    event CampaignUpdated(
+        address indexed campaign,
+        uint256 rewardAmount,
+        uint256 expirationTime,
+        uint256 coolDownPeriod,
+        uint256 discountAmount,
+        address pool,
+        address owner,
+        address rewardToken
+    );
 
     struct CampaignData {
         address campaignAddress;
         address owner;
         address rewardToken;
         uint256 timeOfCreation;
+        uint256 expirationTime;
     }
 
     /// Mapping from token ID to user swap data
     function discountCampaigns(
         address poolAddress
-    ) external view returns (address campaignAddress, address owner, address rewardToken, uint256 timeOfCreation);
+    )
+        external
+        view
+        returns (
+            address campaignAddress,
+            address owner,
+            address rewardToken,
+            uint256 timeOfCreation,
+            uint256 expirationTime
+        );
 }

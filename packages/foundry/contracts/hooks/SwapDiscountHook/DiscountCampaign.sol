@@ -14,6 +14,7 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
     mapping(uint256 => UserSwapData) public override userDiscountMapping;
     CampaignDetails public campaignDetails;
     uint256 public tokenRewardDistributed;
+    address public discountCampaignFactory;
 
     // Private state variables
     ISwapDiscountHook private _swapHook;
@@ -26,10 +27,23 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
      * @param _owner The owner address of the discount campaign contract.
      * @param _hook The address of the swap hook for tracking user discounts.
      */
-    constructor(CampaignDetails memory _campaignDetails, address _owner, address _hook) Ownable(_owner) {
+    constructor(
+        CampaignDetails memory _campaignDetails,
+        address _owner,
+        address _hook,
+        address _discountCampaignFactory
+    ) Ownable(_owner) {
         campaignDetails = _campaignDetails;
         _swapHook = ISwapDiscountHook(_hook);
         _maxBuy = _campaignDetails.rewardAmount;
+        discountCampaignFactory = _discountCampaignFactory;
+    }
+
+    modifier onlyFactory() {
+        if (msg.sender != discountCampaignFactory) {
+            revert NOT_AUTHORIZED();
+        }
+        _;
     }
 
     /**
@@ -37,7 +51,7 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
      * @dev Only the contract owner can update the campaign details. This will replace the existing campaign parameters.
      * @param _newCampaignDetails A struct containing updated reward amount, expiration time, cooldown period, discount rate, and reward token.
      */
-    function updateCampaignDetails(CampaignDetails calldata _newCampaignDetails) external onlyOwner {
+    function updateCampaignDetails(CampaignDetails calldata _newCampaignDetails) external onlyFactory {
         campaignDetails = _newCampaignDetails;
         emit CampaignDetailsUpdated(_newCampaignDetails);
     }

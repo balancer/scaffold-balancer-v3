@@ -41,7 +41,7 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
     address public discountTokenAddress;
 
     modifier verifyCampaign(address _campaignAddress) {
-        (, , , , , address pool) = IDiscountCampaign(_campaignAddress).campaignDetails();
+        (, , , , , address pool, ) = IDiscountCampaign(_campaignAddress).campaignDetails();
         if (pool == address(0)) {
             revert InvalidCampaignAddress();
         }
@@ -81,7 +81,7 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
     function onAfterSwap(
         AfterSwapParams calldata params
     ) public override onlyVault returns (bool success, uint256 discountedAmount) {
-        (, , , , address rewardToken, ) = discountCampaign.campaignDetails();
+        (, , , , address rewardToken, , ) = discountCampaign.campaignDetails();
 
         if (params.kind == SwapKind.EXACT_IN && address(params.tokenOut) == rewardToken) {
             mint(params);

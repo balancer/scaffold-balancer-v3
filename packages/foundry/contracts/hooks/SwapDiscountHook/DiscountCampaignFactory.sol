@@ -42,7 +42,7 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
         CampaignData storage campaignData = discountCampaigns[pool];
 
         if (campaignData.campaignAddress != address(0)) {
-            revert poolCampaignAlreadyExist();
+            revert PoolCampaignAlreadyExist();
         }
 
         if (!_checkToken(pool, rewardToken)) {
@@ -56,11 +56,12 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
             coolDownPeriod: coolDownPeriod,
             discountRate: discountAmount,
             rewardToken: rewardToken,
-            poolAddress: pool
+            poolAddress: pool,
+            owner: owner
         });
 
         // Deploy the DiscountCampaign contract with the struct
-        DiscountCampaign discountCampaign = new DiscountCampaign(campaignDetails, owner, address(this));
+        DiscountCampaign discountCampaign = new DiscountCampaign(campaignDetails, owner, address(this), address(this));
 
         // Store campaign details
         campaignData.campaignAddress = address(discountCampaign);
@@ -69,6 +70,57 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
         campaignData.timeOfCreation = block.timestamp;
 
         return address(discountCampaign);
+    }
+
+    function updateCampaign(
+        uint256 rewardAmount,
+        uint256 expirationTime,
+        uint256 coolDownPeriod,
+        uint256 discountAmount,
+        address pool,
+        address owner,
+        address rewardToken
+    ) external {
+        CampaignData storage campaignData = discountCampaigns[pool];
+        address campaignAddress = campaignData.campaignAddress;
+        if (campaignAddress == address(0)) {
+            revert PoolCampaignDoesnotExist();
+        }
+
+        if (msg.sender != campaignData.owner) {
+            revert NOT_AUTHORIZED();
+        }
+
+        if (campaignData.expirationTime > block.timestamp) {
+            revert PoolCampaignHasnotExpired();
+        }
+
+        if (!_checkToken(pool, rewardToken)) {
+            revert InvalidRewardToken();
+        }
+
+        IDiscountCampaign.CampaignDetails memory campaignDetails = IDiscountCampaign.CampaignDetails({
+            rewardAmount: rewardAmount,
+            expirationTime: expirationTime,
+            coolDownPeriod: coolDownPeriod,
+            discountRate: discountAmount,
+            rewardToken: rewardToken,
+            poolAddress: pool,
+            owner: owner
+        });
+
+        IDiscountCampaign(campaignAddress).updateCampaignDetails(campaignDetails);
+
+        emit CampaignUpdated(
+            campaignAddress,
+            rewardAmount,
+            expirationTime,
+            coolDownPeriod,
+            discountAmount,
+            pool,
+            owner,
+            rewardToken
+        );
     }
 
     /**

@@ -16,6 +16,8 @@ interface IDiscountCampaign {
 
     error CoolDownPeriodNotPassed();
 
+    error NOT_AUTHORIZED();
+
     /**
      * @notice A struct containing key parameters related to a discount campaign.
      * @param rewardAmount Total amount of rewards that can be distributed during the campaign.
@@ -32,6 +34,7 @@ interface IDiscountCampaign {
         uint256 discountRate;
         address rewardToken;
         address poolAddress;
+        address owner;
     }
 
     /**
@@ -65,6 +68,8 @@ interface IDiscountCampaign {
         uint256 swappedAmount,
         uint256 timeOfSwap
     ) external;
+
+    function updateCampaignDetails(CampaignDetails calldata _newCampaignDetails) external;
 
     /**
      * @notice Retrieves the swap data associated with a specific token ID.
@@ -106,7 +111,8 @@ interface IDiscountCampaign {
             uint256 coolDownPeriod,
             uint256 discountRate,
             address rewardToken,
-            address poolAddress
+            address poolAddress,
+            address owner
         );
 
     /**
