@@ -17,6 +17,7 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
 
     // Private state variables
     ISwapDiscountHook private _swapHook;
+    uint256 private _maxBuy;
 
     /**
      * @notice Initializes the discount campaign contract with the provided details.
@@ -28,6 +29,7 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
     constructor(CampaignDetails memory _campaignDetails, address _owner, address _hook) Ownable(_owner) {
         campaignDetails = _campaignDetails;
         _swapHook = ISwapDiscountHook(_hook);
+        _maxBuy = _campaignDetails.rewardAmount;
     }
 
     /**
@@ -88,6 +90,9 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
             revert RewardAlreadyClaimed();
         }
 
+        if (block.timestamp <= campaignDetails.coolDownPeriod) {
+            revert CoolDownPeriodNotPassed();
+        }
         _;
     }
 
@@ -101,13 +106,14 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
         UserSwapData memory userSwapData = userDiscountMapping[tokenID];
         uint256 reward = _getClaimableRewards(tokenID);
 
-        if (reward == 0 && tokenRewardDistributed == campaignDetails.rewardAmount) {
+        if (reward == 0) {
             revert RewardAmountExpired();
         }
 
-        IERC20(campaignDetails.rewardToken).transferFrom(address(this), userSwapData.userAddress, reward);
         tokenRewardDistributed += reward;
+        _maxBuy -= reward;
         userDiscountMapping[tokenID].hasClaimed = true;
+        IERC20(campaignDetails.rewardToken).transferFrom(address(this), userSwapData.userAddress, reward);
         _updateDiscount();
     }
 
@@ -127,9 +133,7 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
      * @param tokenID The ID of the token for which to calculate the reward.
      * @return claimableReward The amount of reward that can be claimed.
      */
-    function _getClaimableRewards(
-        uint256 tokenID
-    ) private view checkAndAuthorizeTokenId(tokenID) returns (uint256 claimableReward) {
+    function _getClaimableRewards(uint256 tokenID) private view returns (uint256 claimableReward) {
         UserSwapData memory userSwapData = userDiscountMapping[tokenID];
 
         // Calculate claimable reward based on the swapped amount and discount rate

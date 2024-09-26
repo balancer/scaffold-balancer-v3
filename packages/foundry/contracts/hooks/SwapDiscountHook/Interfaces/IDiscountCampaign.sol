@@ -14,6 +14,8 @@ interface IDiscountCampaign {
     /// @notice Reverts when the total reward amount has already been distributed, and no further rewards can be claimed.
     error RewardAmountExpired();
 
+    error CoolDownPeriodNotPassed();
+
     /**
      * @notice A struct containing key parameters related to a discount campaign.
      * @param rewardAmount Total amount of rewards that can be distributed during the campaign.

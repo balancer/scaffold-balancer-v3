@@ -40,8 +40,13 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
     // Token-related state variables
     address public discountTokenAddress;
 
-    // Mapping to store user swap discount data
-    // mapping(uint256 => UserSwapData) public override userDiscountMapping;
+    modifier verifyCampaign(address _campaignAddress) {
+        (, , , , , address pool) = IDiscountCampaign(_campaignAddress).campaignDetails();
+        if (pool == address(0)) {
+            revert InvalidCampaignAddress();
+        }
+        _;
+    }
 
     constructor(
         IVault vaultInstance,
@@ -50,7 +55,7 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
         address _campaignAddress,
         string memory name,
         string memory symbol
-    ) VaultGuard(vaultInstance) ERC721(name, symbol) Ownable(msg.sender) {
+    ) VaultGuard(vaultInstance) ERC721(name, symbol) Ownable(msg.sender) verifyCampaign(_campaignAddress) {
         allowedFactoryAddress = _factoryAddress;
         trustedRouterAddress = _routerAddress;
         discountCampaign = IDiscountCampaign(_campaignAddress);
@@ -76,9 +81,9 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
     function onAfterSwap(
         AfterSwapParams calldata params
     ) public override onlyVault returns (bool success, uint256 discountedAmount) {
-        (, , , , address rewardToken, address pool) = discountCampaign.campaignDetails();
+        (, , , , address rewardToken, ) = discountCampaign.campaignDetails();
 
-        if (params.kind == SwapKind.EXACT_IN && pool != address(0) && address(params.tokenOut) == rewardToken) {
+        if (params.kind == SwapKind.EXACT_IN && address(params.tokenOut) == rewardToken) {
             mint(params);
         }
         return (true, params.amountCalculatedRaw);

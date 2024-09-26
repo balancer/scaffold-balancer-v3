@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 interface ISwapDiscountHook {
     error poolCampaignAlreadyExist();
     error InvalidRewardToken();
+    error InvalidCampaignAddress();
     error NOT_AUTHORIZED();
 
     /// Event emitted when a discount is granted
