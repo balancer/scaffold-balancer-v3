@@ -105,7 +105,6 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         return true;
     }
 
-
     /// @inheritdoc IHooks
     function getHookFlags() public pure override returns (HookFlags memory) {
         HookFlags memory hookFlags;
