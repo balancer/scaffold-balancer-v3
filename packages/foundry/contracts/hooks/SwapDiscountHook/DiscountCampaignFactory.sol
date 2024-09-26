@@ -17,9 +17,28 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
 
     constructor() Ownable(msg.sender) {}
 
+    modifier onlyCampaignOwner(address pool) {
+        if (msg.sender != discountCampaigns[pool].owner) revert NOT_AUTHORIZED();
+        _;
+    }
+
+    modifier campaignExists(address pool) {
+        if (discountCampaigns[pool].campaignAddress == address(0)) revert PoolCampaignDoesnotExist();
+        _;
+    }
+
+    modifier campaignNotExpired(address pool) {
+        (, uint256 expirationTime, , , , , ) = IDiscountCampaign(discountCampaigns[pool].campaignAddress)
+            .campaignDetails();
+        if (expirationTime > block.timestamp) {
+            revert PoolCampaignHasnotExpired();
+        }
+        _;
+    }
+
     /**
      * @notice Create a new discount campaign for a specific liquidity pool.
-     * @dev The function creates a new `DiscountCampaign` contract and stores its details.
+     * @dev Creates a new `DiscountCampaign` contract and stores its details.
      *      Reverts if a campaign for the specified pool already exists or if the reward token is invalid.
      * @param rewardAmount The total reward amount for the campaign.
      * @param expirationTime The expiration time of the discount campaign.
@@ -41,15 +60,10 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
     ) external nonReentrant returns (address) {
         CampaignData storage campaignData = discountCampaigns[pool];
 
-        if (campaignData.campaignAddress != address(0)) {
-            revert PoolCampaignAlreadyExist();
-        }
+        if (campaignData.campaignAddress != address(0)) revert PoolCampaignAlreadyExist();
+        validateTokenAndPool(pool, rewardToken);
 
-        if (!_checkToken(pool, rewardToken)) {
-            revert InvalidRewardToken();
-        }
-
-        // Create a CampaignDetails struct to pass into the constructor
+        // Prepare campaign details
         IDiscountCampaign.CampaignDetails memory campaignDetails = IDiscountCampaign.CampaignDetails({
             rewardAmount: rewardAmount,
             expirationTime: expirationTime,
@@ -65,13 +79,22 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
 
         // Store campaign details
         campaignData.campaignAddress = address(discountCampaign);
-        campaignData.rewardToken = rewardToken;
         campaignData.owner = msg.sender;
-        campaignData.timeOfCreation = block.timestamp;
 
         return address(discountCampaign);
     }
 
+    /**
+     * @notice Update the campaign details for a specific pool.
+     * @dev Updates the campaign details if the campaign has expired and belongs to the caller.
+     * @param rewardAmount The new total reward amount for the campaign.
+     * @param expirationTime The new expiration time for the campaign.
+     * @param coolDownPeriod The new cooldown period between reward claims.
+     * @param discountAmount The new discount rate for the campaign.
+     * @param pool The address of the liquidity pool.
+     * @param owner The address of the new owner of the campaign.
+     * @param rewardToken The new reward token used in the campaign.
+     */
     function updateCampaign(
         uint256 rewardAmount,
         uint256 expirationTime,
@@ -80,24 +103,8 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
         address pool,
         address owner,
         address rewardToken
-    ) external {
-        CampaignData storage campaignData = discountCampaigns[pool];
-        address campaignAddress = campaignData.campaignAddress;
-        if (campaignAddress == address(0)) {
-            revert PoolCampaignDoesnotExist();
-        }
-
-        if (msg.sender != campaignData.owner) {
-            revert NOT_AUTHORIZED();
-        }
-
-        if (campaignData.expirationTime > block.timestamp) {
-            revert PoolCampaignHasnotExpired();
-        }
-
-        if (!_checkToken(pool, rewardToken)) {
-            revert InvalidRewardToken();
-        }
+    ) external onlyCampaignOwner(pool) campaignExists(pool) campaignNotExpired(pool) {
+        validateTokenAndPool(pool, rewardToken);
 
         IDiscountCampaign.CampaignDetails memory campaignDetails = IDiscountCampaign.CampaignDetails({
             rewardAmount: rewardAmount,
@@ -109,10 +116,10 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
             owner: owner
         });
 
-        IDiscountCampaign(campaignAddress).updateCampaignDetails(campaignDetails);
+        IDiscountCampaign(discountCampaigns[pool].campaignAddress).updateCampaignDetails(campaignDetails);
 
         emit CampaignUpdated(
-            campaignAddress,
+            discountCampaigns[pool].campaignAddress,
             rewardAmount,
             expirationTime,
             coolDownPeriod,
@@ -139,7 +146,15 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
                 return true;
             }
         }
-
         return false;
+    }
+
+    /**
+     * @notice Validate the token and pool for a campaign.
+     * @param pool The address of the liquidity pool.
+     * @param rewardToken The address of the reward token to validate.
+     */
+    function validateTokenAndPool(address pool, address rewardToken) internal view {
+        if (!_checkToken(pool, rewardToken)) revert InvalidRewardToken();
     }
 }

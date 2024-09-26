@@ -6,6 +6,7 @@ interface IDiscountCampaignFactory {
     error PoolCampaignDoesnotExist();
     error PoolCampaignHasnotExpired();
     error InvalidRewardToken();
+    error PoolAddressCannotBeChanged();
     error NOT_AUTHORIZED();
 
     event CampaignUpdated(
@@ -22,22 +23,8 @@ interface IDiscountCampaignFactory {
     struct CampaignData {
         address campaignAddress;
         address owner;
-        address rewardToken;
-        uint256 timeOfCreation;
-        uint256 expirationTime;
     }
 
     /// Mapping from token ID to user swap data
-    function discountCampaigns(
-        address poolAddress
-    )
-        external
-        view
-        returns (
-            address campaignAddress,
-            address owner,
-            address rewardToken,
-            uint256 timeOfCreation,
-            uint256 expirationTime
-        );
+    function discountCampaigns(address poolAddress) external view returns (address campaignAddress, address owner);
 }
