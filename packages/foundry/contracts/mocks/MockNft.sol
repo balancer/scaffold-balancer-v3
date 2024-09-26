@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "../utils/Counters.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin-npm/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin-npm/access/Ownable.sol";
+import "@openzeppelin-npm/security/Pausable.sol";
+import "@openzeppelin-npm/utils/Counters.sol";
 import "./MockERC20Factory.sol";
 
 contract NFTFactory is ERC721URIStorage, Ownable, Pausable {

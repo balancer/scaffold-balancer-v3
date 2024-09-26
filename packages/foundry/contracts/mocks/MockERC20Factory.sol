@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin-npm/access/Ownable.sol";
 import "./MockERC20Ownable.sol";
 
 contract ERC20Factory is Ownable {
