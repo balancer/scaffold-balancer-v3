@@ -11,6 +11,7 @@ import { ISwapDiscountHook } from "./Interfaces/ISwapDiscountHook.sol";
 
 contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
     // Public state variables
+    mapping(uint256 => UserSwapData) public override userDiscountMapping;
     CampaignDetails public campaignDetails;
     uint256 public tokenRewardDistributed;
 
@@ -40,23 +41,53 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
     }
 
     /**
+     * @notice Allows the SwapDiscountHook to update the userDiscountMapping after a swap.
+     * @param tokenId The token ID for which the discount data is being updated.
+     * @param user The address of the user receiving the discount.
+     * @param swappedAmount The amount that was swapped.
+     * @param timeOfSwap The timestamp of when the swap occurred.
+     */
+    function updateUserDiscountMapping(
+        uint256 tokenId,
+        address user,
+        uint256 swappedAmount,
+        uint256 timeOfSwap
+    ) external override {
+        // Ensure only the SwapDiscountHook contract can call this function
+        require(msg.sender == address(_swapHook), "Unauthorized");
+
+        userDiscountMapping[tokenId] = UserSwapData({
+            userAddress: user,
+            campaignAddress: address(this),
+            swappedAmount: swappedAmount,
+            timeOfSwap: timeOfSwap,
+            hasClaimed: false
+        });
+    }
+
+    /**
      * @notice Checks the validity of a token ID and ensures it meets the required conditions.
      * @dev Reverts if the token ID is invalid, expired, or if the reward has already been claimed.
      * @param tokenID The ID of the token to be validated.
      */
     modifier checkAndAuthorizeTokenId(uint256 tokenID) {
-        (address user, address campaignAddress, , uint256 timeOfSwap, bool hasClaimed) = _swapHook.userDiscountMapping(
-            tokenID
-        );
-        if (campaignAddress != address(this)) {
+        UserSwapData memory userSwapData = userDiscountMapping[tokenID];
+
+        // Ensure the campaign address matches the current contract address
+        if (userSwapData.campaignAddress != address(this)) {
             revert InvalidTokenID();
         }
-        if (timeOfSwap > campaignDetails.expirationTime) {
+
+        // Check if the swap happened before the campaign expiration
+        if (userSwapData.timeOfSwap > campaignDetails.expirationTime) {
             revert DiscountExpired();
         }
-        if (hasClaimed == true) {
+
+        // Ensure the reward hasn't already been claimed
+        if (userSwapData.hasClaimed) {
             revert RewardAlreadyClaimed();
         }
+
         _;
     }
 
@@ -67,17 +98,17 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
      * @param tokenID The ID of the token for which the claim is made.
      */
     function claim(uint256 tokenID) public checkAndAuthorizeTokenId(tokenID) nonReentrant {
-        (address user, , , , ) = _swapHook.userDiscountMapping(tokenID);
+        UserSwapData memory userSwapData = userDiscountMapping[tokenID];
         uint256 reward = _getClaimableRewards(tokenID);
 
         if (reward == 0 && tokenRewardDistributed == campaignDetails.rewardAmount) {
             revert RewardAmountExpired();
         }
 
-        IERC20(campaignDetails.rewardToken).transferFrom(address(this), user, reward);
+        IERC20(campaignDetails.rewardToken).transferFrom(address(this), userSwapData.userAddress, reward);
         tokenRewardDistributed += reward;
+        userDiscountMapping[tokenID].hasClaimed = true;
         _updateDiscount();
-        _swapHook.setHasClaimed(tokenID);
     }
 
     /**
@@ -99,10 +130,10 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
     function _getClaimableRewards(
         uint256 tokenID
     ) private view checkAndAuthorizeTokenId(tokenID) returns (uint256 claimableReward) {
-        (, , uint256 swappedAmount, , ) = _swapHook.userDiscountMapping(tokenID);
+        UserSwapData memory userSwapData = userDiscountMapping[tokenID];
 
         // Calculate claimable reward based on the swapped amount and discount rate
-        claimableReward = (swappedAmount * campaignDetails.discountRate) / 100e18;
+        claimableReward = (userSwapData.swappedAmount * campaignDetails.discountRate) / 100e18;
     }
 
     /**
