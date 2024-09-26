@@ -135,9 +135,14 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
      */
     function _getClaimableRewards(uint256 tokenID) private view returns (uint256 claimableReward) {
         UserSwapData memory userSwapData = userDiscountMapping[tokenID];
+        uint256 swappedAmount = userSwapData.swappedAmount;
 
         // Calculate claimable reward based on the swapped amount and discount rate
-        claimableReward = (userSwapData.swappedAmount * campaignDetails.discountRate) / 100e18;
+        if (swappedAmount <= _maxBuy) {
+            claimableReward = (swappedAmount * campaignDetails.discountRate) / 100e18;
+        } else {
+            claimableReward = (_maxBuy * campaignDetails.discountRate) / 100e18;
+        }
     }
 
     /**
@@ -148,5 +153,9 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
         campaignDetails.discountRate =
             campaignDetails.discountRate *
             (1 - tokenRewardDistributed / campaignDetails.rewardAmount);
+    }
+
+    function recoverERC20(address tokenAddress, uint256 tokenAmount) external onlyOwner {
+        IERC20(tokenAddress).transfer(owner(), tokenAmount);
     }
 }
