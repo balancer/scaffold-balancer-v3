@@ -114,7 +114,10 @@ contract SereneVeBalDiscountHookTest is BaseVaultTest {
 
         BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
 
-        uint256 storedHookFeesBefore = SereneVeBalDiscountHook(poolHooksContract).takenFees(address(pool), address(usdc));
+        uint256 storedHookFeesBefore = SereneVeBalDiscountHook(poolHooksContract).takenFees(
+            address(pool),
+            address(usdc)
+        );
 
         if (hookFee > 0) {
             vm.expectEmit();
@@ -126,7 +129,10 @@ contract SereneVeBalDiscountHookTest is BaseVaultTest {
 
         BaseVaultTest.Balances memory balancesAfter = getBalances(bob);
 
-        uint256 storedHookFeesAfter = SereneVeBalDiscountHook(poolHooksContract).takenFees(address(pool), address(usdc));
+        uint256 storedHookFeesAfter = SereneVeBalDiscountHook(poolHooksContract).takenFees(
+            address(pool),
+            address(usdc)
+        );
 
         assertEq(
             balancesBefore.userTokens[daiIdx] - balancesAfter.userTokens[daiIdx],
@@ -183,7 +189,10 @@ contract SereneVeBalDiscountHookTest is BaseVaultTest {
 
         BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
 
-        uint256 storedHookFeesBefore = SereneVeBalDiscountHook(poolHooksContract).takenFees(address(pool), address(dai));
+        uint256 storedHookFeesBefore = SereneVeBalDiscountHook(poolHooksContract).takenFees(
+            address(pool),
+            address(dai)
+        );
 
         if (hookFee > 0) {
             vm.expectEmit();
@@ -263,7 +272,10 @@ contract SereneVeBalDiscountHookTest is BaseVaultTest {
 
         BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
 
-        uint256 storedHookFeesBefore = SereneVeBalDiscountHook(poolHooksContract).takenFees(address(pool), address(usdc));
+        uint256 storedHookFeesBefore = SereneVeBalDiscountHook(poolHooksContract).takenFees(
+            address(pool),
+            address(usdc)
+        );
 
         if (hookFee > 0) {
             vm.expectEmit();
@@ -275,7 +287,10 @@ contract SereneVeBalDiscountHookTest is BaseVaultTest {
 
         BaseVaultTest.Balances memory balancesAfter = getBalances(bob);
 
-        uint256 storedHookFeesAfter = SereneVeBalDiscountHook(poolHooksContract).takenFees(address(pool), address(usdc));
+        uint256 storedHookFeesAfter = SereneVeBalDiscountHook(poolHooksContract).takenFees(
+            address(pool),
+            address(usdc)
+        );
 
         assertEq(
             balancesBefore.userTokens[daiIdx] - balancesAfter.userTokens[daiIdx],
@@ -334,7 +349,10 @@ contract SereneVeBalDiscountHookTest is BaseVaultTest {
 
         BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
 
-        uint256 storedHookFeesBefore = SereneVeBalDiscountHook(poolHooksContract).takenFees(address(pool), address(dai));
+        uint256 storedHookFeesBefore = SereneVeBalDiscountHook(poolHooksContract).takenFees(
+            address(pool),
+            address(dai)
+        );
 
         if (hookFee > 0) {
             vm.expectEmit();
@@ -422,7 +440,10 @@ contract SereneVeBalDiscountHookTest is BaseVaultTest {
 
         BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
 
-        uint256 storedHookFeesBefore = SereneVeBalDiscountHook(poolHooksContract).takenFees(address(pool), address(usdc));
+        uint256 storedHookFeesBefore = SereneVeBalDiscountHook(poolHooksContract).takenFees(
+            address(pool),
+            address(usdc)
+        );
 
         if (hookFee > 0) {
             vm.expectEmit();
@@ -430,11 +451,23 @@ contract SereneVeBalDiscountHookTest is BaseVaultTest {
         }
 
         vm.prank(bob);
-        RouterMock(untrustedRouter).swapSingleTokenExactIn(address(pool), dai, usdc, swapAmount, 0, MAX_UINT256, false, bytes(""));
+        RouterMock(untrustedRouter).swapSingleTokenExactIn(
+            address(pool),
+            dai,
+            usdc,
+            swapAmount,
+            0,
+            MAX_UINT256,
+            false,
+            bytes("")
+        );
 
         BaseVaultTest.Balances memory balancesAfter = getBalances(bob);
 
-        uint256 storedHookFeesAfter = SereneVeBalDiscountHook(poolHooksContract).takenFees(address(pool), address(usdc));
+        uint256 storedHookFeesAfter = SereneVeBalDiscountHook(poolHooksContract).takenFees(
+            address(pool),
+            address(usdc)
+        );
 
         assertEq(
             balancesBefore.userTokens[daiIdx] - balancesAfter.userTokens[daiIdx],
