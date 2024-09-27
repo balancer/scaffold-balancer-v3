@@ -7,6 +7,7 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.s
 
 import { IPoolInfo } from "@balancer-labs/v3-interfaces/contracts/pool-utils/IPoolInfo.sol";
 
+import { TransferHelper } from "./libraries/TransferHelper.sol";
 import { IDiscountCampaignFactory } from "./Interfaces/IDiscountCampaignFactory.sol";
 import { IDiscountCampaign } from "./Interfaces/IDiscountCampaign.sol";
 import { DiscountCampaign } from "./DiscountCampaign.sol";
@@ -74,6 +75,10 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
             owner: owner
         });
 
+        TransferHelper.safeTransfer(rewardToken, discountCampaigns[pool].campaignAddress, rewardAmount);
+
+        IDiscountCampaign(discountCampaigns[pool].campaignAddress).updateCampaignDetails(campaignDetails);
+
         // Deploy the DiscountCampaign contract with the struct
         DiscountCampaign discountCampaign = new DiscountCampaign(campaignDetails, owner, address(this), address(this));
 
@@ -115,6 +120,8 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
             poolAddress: pool,
             owner: owner
         });
+
+        TransferHelper.safeTransfer(rewardToken, discountCampaigns[pool].campaignAddress, rewardAmount);
 
         IDiscountCampaign(discountCampaigns[pool].campaignAddress).updateCampaignDetails(campaignDetails);
 
