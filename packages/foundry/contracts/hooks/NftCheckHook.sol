@@ -78,27 +78,27 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
             revert PoolDoesNotSupportDonation();
         }
 
-        // Check if the hook owns the required NFT
-        if (IERC721(nftContract).ownerOf(nftId) != address(this)) {
-            revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
-        }
+        // // Check if the hook owns the required NFT
+        // if (IERC721(nftContract).ownerOf(nftId) != address(this)) {
+        //     revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
+        // }
 
-        // Get the linked token from the NFT
-        ICustomNFT.NFTData memory data = ICustomNFT(nftContract).nftData(nftId);
-        address linkedToken = data.linkedToken;
+        // // Get the linked token from the NFT
+        // ICustomNFT.NFTData memory data = ICustomNFT(nftContract).nftData(nftId);
+        // address linkedToken = data.linkedToken;
 
-        // Check if the linked token is one of the pool tokens
-        bool linkedTokenFound = false;
-        for (uint256 i = 0; i < tokenConfigs.length; i++) {
-            if (address(tokenConfigs[i].token) == address(linkedToken)) {
-                linkedTokenFound = true;
-                break;
-            }
-        }
+        // // Check if the linked token is one of the pool tokens
+        // bool linkedTokenFound = false;
+        // for (uint256 i = 0; i < tokenConfigs.length; i++) {
+        //     if (address(tokenConfigs[i].token) == address(linkedToken)) {
+        //         linkedTokenFound = true;
+        //         break;
+        //     }
+        // }
 
-        if (!linkedTokenFound) {
-            revert LinkedTokenNotInPool(linkedToken);
-        }
+        // if (!linkedTokenFound) {
+        //     revert LinkedTokenNotInPool(linkedToken);
+        // }
 
         emit NftCheckHookRegistered(address(this), pool);
 
@@ -111,8 +111,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         // `enableHookAdjustedAmounts` must be true for all contracts that modify the `amountCalculated`
         // in after hooks. Otherwise, the Vault will ignore any "hookAdjusted" amounts, and the transaction
         // might not settle. (It should be false if the after hooks do something else.)
-        hookFlags.enableHookAdjustedAmounts = true;
         hookFlags.shouldCallAfterRemoveLiquidity = true;
+        hookFlags.shouldCallComputeDynamicSwapFee = true;
         return hookFlags;
     }
 
