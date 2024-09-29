@@ -7,7 +7,7 @@ import "@openzeppelin-npm/security/Pausable.sol";
 import "@openzeppelin-npm/utils/Counters.sol";
 import "./MockERC20Factory.sol";
 
-contract NFTFactory is ERC721URIStorage, Ownable, Pausable {
+contract MockNft is ERC721URIStorage, Ownable, Pausable {
 	using Counters for Counters.Counter;
 	Counters.Counter private _tokenIdCounter;
 	address public linkedTokenFactoryAddress = 0x0000000000000000000000000000000000000000;
@@ -75,7 +75,7 @@ contract NFTFactory is ERC721URIStorage, Ownable, Pausable {
 			// TODO: find out why this is throwing error
 			// Create the associated ERC20 token by calling TokenFactory
 			// linkedTokenInterfaces[0] = "ERC20";
-			linkedTokenAddress = ERC20Factory(linkedTokenFactoryAddress).createToken(
+			linkedTokenAddress = MockERC20Factory(linkedTokenFactoryAddress).createToken(
 				name_,
 				symbol_,
 				to,

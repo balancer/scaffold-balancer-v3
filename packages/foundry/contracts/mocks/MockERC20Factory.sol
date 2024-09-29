@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import "@openzeppelin-npm/access/Ownable.sol";
 import "./MockERC20Ownable.sol";
 
-contract ERC20Factory is Ownable {
+contract MockERC20Factory is Ownable {
 	string public name;
 	mapping(address => address[]) public tokensByOwner;
 	address[] public allTokens;

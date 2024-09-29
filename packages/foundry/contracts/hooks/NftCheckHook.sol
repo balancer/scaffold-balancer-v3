@@ -68,6 +68,10 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         nftId = _nftId;
     }
 
+    function onERC721Received(address, address, uint256, bytes calldata) external pure returns (bytes4) {
+        return this.onERC721Received.selector;
+    }
+
     function onRegister(
         address,
         address pool,
@@ -78,10 +82,10 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
             revert PoolDoesNotSupportDonation();
         }
 
-        // // Check if the hook owns the required NFT
-        // if (IERC721(nftContract).ownerOf(nftId) != address(this)) {
-        //     revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
-        // }
+        // Check if the hook owns the required NFT
+        if (IERC721(nftContract).ownerOf(nftId) != address(this)) {
+            revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
+        }
 
         // // Get the linked token from the NFT
         // ICustomNFT.NFTData memory data = ICustomNFT(nftContract).nftData(nftId);

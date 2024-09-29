@@ -112,7 +112,7 @@ contract ERC20Ownable is ERC20, Ownable, Pausable {
 		super._transferOwnership(newOwner);
 		// Check if the factory address is defined and not an empty address
 		if (factory != address(0)) {
-			ERC20Factory(factory).notifyOwnershipChange(oldOwner, newOwner);
+			MockERC20Factory(factory).notifyOwnershipChange(oldOwner, newOwner);
 		}
 		emit OwnershipTransferred(oldOwner, newOwner);
 	}

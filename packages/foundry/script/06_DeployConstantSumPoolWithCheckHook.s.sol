@@ -15,16 +15,23 @@ import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpe
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.sol";
 import { NftCheckHook } from "../contracts/hooks/NftCheckHook.sol";
+import { MockNft } from "../contracts/mocks/MockNft.sol";
+import { MockERC20Factory } from "../contracts/mocks/MockERC20Factory.sol";
+
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
 /**
  * @title Deploy Constant Sum Pool
  * @notice Deploys, registers, and initializes a constant sum pool that uses a swap fee discount hook
  */
-contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
+contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers, IERC721Receiver {
     function deployConstantSumPoolWithCheckHook(address token1, address token2) internal {
         // Set the pool's deployment, registration, and initialization config
         CustomPoolConfig memory poolConfig = getCheckSumPoolConfig(token1, token2);
         InitializationConfig memory initConfig = getCheckSumPoolInitConfig(token1, token2);
+
+        // change this manually, because msg.sender does not work when broadcasting :(
+        address publicKey = 0xe7a5b06E8dc5863566B974a4a19509898bdEc277;
 
         // Start creating the transactions
         uint256 deployerPrivateKey = getDeployerPrivateKey();
@@ -34,11 +41,37 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         ConstantSumFactory factory = new ConstantSumFactory(vault, 365 days); // pauseWindowDuration
         console.log("Constant Sum Factory deployed at: %s", address(factory));
 
+        // Deploy an Nft and mint one
+        MockNft mockNft = new MockNft("NFTFactory", "NFTF");
+
+        MockERC20Factory mockERC20Factory = new MockERC20Factory("ERC20Factory");
+        MockNft(mockNft).setLinkedTokenFactory(address(mockERC20Factory));
+        
+        address[] memory membersToFund = new address[](1);
+        membersToFund[0] = msg.sender;
+        uint256[] memory amountsToFund = new uint256[](1);
+        amountsToFund[0] = 2e18;
+
+        uint256 tokenId = MockNft(mockNft).mint(
+            publicKey,
+            "https://0a050602b1c1aeae1063a0c8f5a7cdac.ipfscdn.io/ipfs/QmSiA82PQNuWuBfQtuzWKwnZV94qs34jrW1L6PaR69jeoE/metadata.json",
+            address(0),
+            new string[](0),
+            "ERC20 name",
+            "ERC20 name",
+            membersToFund, //membersToFund
+            amountsToFund //amountsToFund
+            );
+
         // Deploy a hook
         address nftCheckHook = address(
-            new NftCheckHook(vault, address(factory), 0) // TODO: Change
+            new NftCheckHook(vault, address(mockNft), tokenId) // TODO: Change
         );
         console.log("NftCheckHook deployed at address: %s", nftCheckHook);
+
+
+        MockNft(mockNft).approve(nftCheckHook, tokenId);
+        MockNft(mockNft).transferFrom(publicKey, nftCheckHook, tokenId);
 
         // Deploy a pool and register it with the vault
         address pool = factory.create(
@@ -52,7 +85,7 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
             nftCheckHook, // poolHooksContract
             poolConfig.liquidityManagement
         );
-        console.log("Constant Sum Pool deployed at: %s", pool);
+        console.log("SumPoolWithNftCheckHook deployed at: %s", pool);
 
         // Approve the router to spend tokens for pool initialization
         approveRouterWithPermit2(initConfig.tokens);
@@ -66,8 +99,12 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
             initConfig.wethIsEth,
             initConfig.userData
         );
-        console.log("Constant Sum Pool initialized successfully!");
+        console.log("SumPoolWithNftCheckHook initialized successfully!");
         vm.stopBroadcast();
+    }
+
+    function onERC721Received(address, address, uint256, bytes calldata) external pure returns (bytes4) {
+        return this.onERC721Received.selector;
     }
 
     /**
@@ -77,7 +114,7 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
      * All WITH_RATE tokens need a rate provider, and may or may not be yield-bearing.
      */
     function getCheckSumPoolConfig(address token1, address token2) internal view returns (CustomPoolConfig memory config) {
-        string memory name = "Constant Sum Pool"; // name for the pool
+        string memory name = "Constant Sum Pool With Nft Check"; // name for the pool
         string memory symbol = "CSP"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
         uint256 swapFeePercentage = 0.01e18; // 1%
