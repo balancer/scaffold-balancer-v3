@@ -9,7 +9,7 @@ The Serene Hook provide a simple and easy way to incentive in a substainable man
 ### Components
 
 - `SereneHook` : The main contract that will be used by the pools to use the trading fees to incentive the liquidity providers. It implements the `onComputeDynamicSwapFeePercentage` function to keep a portion of the initial pool swap fee, and then the `afterSwap` function to take the remaininder of the initial swap fees. The last core function of the SereneHook is the `createQuest` function that will create a quest inside the Paladin's Quests contract in a permissionless way. The quests are created by swapping the fees tokens to a defined incentive token (ex WETH).
-- `SereneVeBalDiscountHook` : The same hook as `SereneHook` but with a discount on the BAL emissions for the pools that use it to show the flexibility of the hook by taking an already existing example hook.
+- `SereneVeBalDiscountHook` : The same hook as `SereneHook` but with a discount on the protocol swap fees for veBAL holders. The discount is applied by the `onComputeDynamicSwapFeePercentage` function, and also only impacts the fees taken after the swap by the Hook.
 - `QuestSettingsRegistry` : A utility contract to store specific settings for the quest creation that will be fetched by the `SereneHook` contract. These settings are stored in a permissioned way with one settings per incentive token (ex WETH).
 - `QuestBoard` : The external contract from Paladin's Quest product used to create incentive for veBAL voters to vote for the pool(s gauges.)
 - `GaugeRegistry` : A mock contract used mainly to store the gauges of the pools while the balancer v3 gauge registry is being worked on.
@@ -25,7 +25,7 @@ A protocol decides to create a balancer V3 pool, he wants to attract liquidity p
 
 ## Feedback about DevX
 
-In our experience developping the Serne Hook, we found the DevX to be pretty good overall with a decent documentation and a good community support.
+In our experience developping the Serene Hook, we found the DevX to be pretty good overall with a decent documentation and a good community support.
 The cherry on top was the scaffold repository already had base tests for the hooks, which made the development process much faster and easier.
 The pain points were:
 - That we didn't knew exactly what were the implication of changing the onComputeDynamicSwapFeePercentage to the amounts on the afterSwap hook.
