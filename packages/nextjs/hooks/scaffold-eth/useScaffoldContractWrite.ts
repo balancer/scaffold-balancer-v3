@@ -74,6 +74,7 @@ export const useScaffoldContractWrite = <
         const writeTxResult = await writeTx(
           () =>
             wagmiContractWrite.writeAsync({
+              // @ts-ignore
               args: newArgs ?? args,
               value: newValue ?? value,
               ...otherConfig,
