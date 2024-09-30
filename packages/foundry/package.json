@@ -5,7 +5,7 @@
     "account": "node script/ListAccount.js",
     "chain": "anvil --config-out localhost.json",
     "compile": "forge compile",
-    "deploy": "forge build --build-info --build-info-path out/build-info/ && forge script script/Deploy.s.sol --rpc-url ${1:-default_network} --broadcast && node scripts-js/generateTsAbis.js",
+    "deploy": "forge build --build-info --build-info-path out/build-info/ && forge script script/Deploy.s.sol --rpc-url ${1:-default_network} --broadcast --slow && node scripts-js/generateTsAbis.js",
     "flatten": "forge flatten",
     "fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
     "format": "npx prettier --write --plugin=prettier-plugin-solidity 'contracts/**/*.sol' 'test/**/*.sol' 'script/*.sol' 'utils/*.sol'",
