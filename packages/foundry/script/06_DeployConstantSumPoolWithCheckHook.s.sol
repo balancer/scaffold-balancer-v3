@@ -26,9 +26,6 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
  */
 contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers, IERC721Receiver {
     function deployConstantSumPoolWithCheckHook(address token1, address token2) internal {
-        // Set the pool's deployment, registration, and initialization config
-        CustomPoolConfig memory poolConfig = getCheckSumPoolConfig(token1, token2);
-        InitializationConfig memory initConfig = getCheckSumPoolInitConfig(token1, token2);
 
         // change this manually, because msg.sender does not work when broadcasting :(
         address publicKey = 0xe7a5b06E8dc5863566B974a4a19509898bdEc277;
@@ -52,7 +49,7 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers, IER
         uint256[] memory amountsToFund = new uint256[](1);
         amountsToFund[0] = 2e18;
 
-        uint256 tokenId = MockNft(mockNft).mint(
+        (uint256 tokenId, address linkedTokenAddress) = MockNft(mockNft).mint(
             publicKey,
             "https://0a050602b1c1aeae1063a0c8f5a7cdac.ipfscdn.io/ipfs/QmSiA82PQNuWuBfQtuzWKwnZV94qs34jrW1L6PaR69jeoE/metadata.json",
             address(0),
@@ -62,6 +59,11 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers, IER
             membersToFund, //membersToFund
             amountsToFund //amountsToFund
             );
+
+        // Set the pool's deployment, registration, and initialization config
+        console.log("linkedTokenAddress: %s", linkedTokenAddress);
+        CustomPoolConfig memory poolConfig = getCheckSumPoolConfig(linkedTokenAddress, token2);
+        InitializationConfig memory initConfig = getCheckSumPoolInitConfig(linkedTokenAddress, token2);
 
         // Deploy a hook
         address nftCheckHook = address(

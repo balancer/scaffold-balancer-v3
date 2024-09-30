@@ -52,7 +52,7 @@ contract MockNft is ERC721URIStorage, Ownable, Pausable {
 		string memory symbol_,
 		address[] memory membersToFund,
 		uint256[] memory amountsToFund
-	) public virtual whenNotPaused returns (uint256) {
+	) public virtual whenNotPaused returns (uint256, address) {
 		require(!onlyOwnerCanMint || msg.sender == owner(), "Minting is restricted to the owner");
 
 		// increment id & mint
@@ -102,7 +102,7 @@ contract MockNft is ERC721URIStorage, Ownable, Pausable {
 		// tokensByAddress[to].push(tokenId); // Add token to the new owner's list
 
 		emit TokenMinted(tokenId, linkedTokenAddress);
-		return tokenId;
+		return (tokenId, linkedTokenAddress);
 	}
 
 	// Callable by both owner and individual NFT holder
