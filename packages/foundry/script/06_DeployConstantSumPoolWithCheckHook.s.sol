@@ -18,13 +18,11 @@ import { NftCheckHook } from "../contracts/hooks/NftCheckHook.sol";
 import { MockNft } from "../contracts/mocks/MockNft.sol";
 import { MockERC20Factory } from "../contracts/mocks/MockERC20Factory.sol";
 
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-
 /**
  * @title Deploy Constant Sum Pool
  * @notice Deploys, registers, and initializes a constant sum pool that uses a swap fee discount hook
  */
-contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers, IERC721Receiver {
+contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
     function deployConstantSumPoolWithCheckHook(address token1, address token2) internal {
 
         // change this manually, because msg.sender does not work when broadcasting :(
@@ -45,9 +43,9 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers, IER
         MockNft(mockNft).setLinkedTokenFactory(address(mockERC20Factory));
         
         address[] memory membersToFund = new address[](1);
-        membersToFund[0] = msg.sender;
+        membersToFund[0] = publicKey;
         uint256[] memory amountsToFund = new uint256[](1);
-        amountsToFund[0] = 2e18;
+        amountsToFund[0] = 1000e18;
 
         (uint256 tokenId, address linkedTokenAddress) = MockNft(mockNft).mint(
             publicKey,
@@ -55,9 +53,9 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers, IER
             address(0),
             new string[](0),
             "ERC20 name",
-            "ERC20 name",
-            membersToFund, //membersToFund
-            amountsToFund //amountsToFund
+            "ERC20 symbol",
+            membersToFund,
+            amountsToFund
             );
 
         // Set the pool's deployment, registration, and initialization config
@@ -67,7 +65,7 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers, IER
 
         // Deploy a hook
         address nftCheckHook = address(
-            new NftCheckHook(vault, address(mockNft), tokenId) // TODO: Change
+            new NftCheckHook(vault, address(mockNft), tokenId)
         );
         console.log("NftCheckHook deployed at address: %s", nftCheckHook);
 
@@ -103,10 +101,6 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers, IER
         );
         console.log("SumPoolWithNftCheckHook initialized successfully!");
         vm.stopBroadcast();
-    }
-
-    function onERC721Received(address, address, uint256, bytes calldata) external pure returns (bytes4) {
-        return this.onERC721Received.selector;
     }
 
     /**

@@ -21,7 +21,7 @@ contract MockNft is ERC721URIStorage, Ownable, Pausable {
 		bool paused;
 	}
 
-	mapping(uint256 => NFTData) public nftData;
+	mapping(uint256 => NFTData) private nftData;
 	mapping(address => uint256[]) internal tokensByAddress;
 
 	function getTokensByAddress(address owner) public view returns (uint256[] memory) {
@@ -181,5 +181,10 @@ contract MockNft is ERC721URIStorage, Ownable, Pausable {
 		}
 
 		super._beforeTokenTransfer(from, to, tokenId, batchSize);
+	}
+
+	// Getter
+	function getNftData(uint256 tokenId) external view returns (NFTData memory) {
+		return nftData[tokenId];
 	}
 }

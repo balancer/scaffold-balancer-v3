@@ -35,7 +35,7 @@ interface ICustomNFT is IERC721 {
         bool paused;
     }
 
-    function nftData(uint256 tokenId) external view returns (NFTData memory);
+    function getNftData(uint256 tokenId) external view returns (NFTData memory);
 }
 
 contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
@@ -68,10 +68,6 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         nftId = _nftId;
     }
 
-    function onERC721Received(address, address, uint256, bytes calldata) external pure returns (bytes4) {
-        return this.onERC721Received.selector;
-    }
-
     function onRegister(
         address,
         address pool,
@@ -87,9 +83,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
             revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
         }
 
-        // // Get the linked token from the NFT - this requires the NFT
-        ICustomNFT.NFTData memory data = ICustomNFT(nftContract).nftData(nftId);
-        address linkedToken = data.linkedToken;
+        // Get the linked token from the NFT - this requires the NFT
+        address linkedToken = ICustomNFT(nftContract).getNftData(nftId).linkedToken;
 
         // Check if the linked token is one of the pool tokens
         bool linkedTokenFound = false;
