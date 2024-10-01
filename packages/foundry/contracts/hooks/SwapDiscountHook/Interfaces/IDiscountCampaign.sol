@@ -16,6 +16,8 @@ interface IDiscountCampaign {
 
     error CoolDownPeriodNotPassed();
 
+    error CampaignExpired();
+
     error NOT_AUTHORIZED();
 
     /**
@@ -28,6 +30,7 @@ interface IDiscountCampaign {
      * @param poolAddress The address of the pool associated with the campaign.
      */
     struct CampaignDetails {
+        bytes32 campaignID;
         uint256 rewardAmount;
         uint256 expirationTime;
         uint256 coolDownPeriod;
@@ -46,6 +49,7 @@ interface IDiscountCampaign {
      * @param hasClaimed Indicates whether the user has already claimed the discount/reward for this swap.
      */
     struct UserSwapData {
+        bytes32 campaignID;
         address userAddress;
         address campaignAddress;
         uint256 swappedAmount;
@@ -63,6 +67,7 @@ interface IDiscountCampaign {
      * @param timeOfSwap The timestamp when the swap occurred.
      */
     function updateUserDiscountMapping(
+        bytes32 campaignID,
         uint256 tokenId,
         address user,
         uint256 swappedAmount,
@@ -74,6 +79,7 @@ interface IDiscountCampaign {
     /**
      * @notice Retrieves the swap data associated with a specific token ID.
      * @param tokenId The ID of the token for which the swap data is being requested.
+     * @return campaignID The address of the user who made the swap.
      * @return userAddress The address of the user who made the swap.
      * @return campaignAddress The address of the discount campaign.
      * @return swappedAmount The amount of tokens swapped by the user.
@@ -86,6 +92,7 @@ interface IDiscountCampaign {
         external
         view
         returns (
+            bytes32 campaignID,
             address userAddress,
             address campaignAddress,
             uint256 swappedAmount,
@@ -95,6 +102,7 @@ interface IDiscountCampaign {
 
     /**
      * @notice Retrieves the details of the current discount campaign.
+     * @return campaignID The total amount of rewards available for the campaign.
      * @return rewardAmount The total amount of rewards available for the campaign.
      * @return expirationTime The timestamp after which the campaign expires.
      * @return coolDownPeriod The required cooldown time between swaps for users to be eligible for rewards.
@@ -106,6 +114,7 @@ interface IDiscountCampaign {
         external
         view
         returns (
+            bytes32 campaignID,
             uint256 rewardAmount,
             uint256 expirationTime,
             uint256 coolDownPeriod,

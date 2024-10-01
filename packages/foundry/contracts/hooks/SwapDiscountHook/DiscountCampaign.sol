@@ -9,6 +9,8 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.s
 import { IDiscountCampaign } from "./Interfaces/IDiscountCampaign.sol";
 import { ISwapDiscountHook } from "./Interfaces/ISwapDiscountHook.sol";
 
+import { TransferHelper } from "./libraries/TransferHelper.sol";
+
 contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
     // Public state variables
     mapping(uint256 => UserSwapData) public override userDiscountMapping;
@@ -46,6 +48,8 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
         _;
     }
 
+    // function
+
     /**
      * @notice Updates the campaign details.
      * @dev Only the contract owner can update the campaign details. This will replace the existing campaign parameters.
@@ -64,6 +68,7 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
      * @param timeOfSwap The timestamp of when the swap occurred.
      */
     function updateUserDiscountMapping(
+        bytes32 campaignID,
         uint256 tokenId,
         address user,
         uint256 swappedAmount,
@@ -73,6 +78,7 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
         require(msg.sender == address(_swapHook), "Unauthorized");
 
         userDiscountMapping[tokenId] = UserSwapData({
+            campaignID: campaignID,
             userAddress: user,
             campaignAddress: address(this),
             swappedAmount: swappedAmount,
@@ -92,6 +98,10 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
         // Ensure the campaign address matches the current contract address
         if (userSwapData.campaignAddress != address(this)) {
             revert InvalidTokenID();
+        }
+
+        if (userSwapData.campaignID != campaignDetails.campaignID) {
+            revert CampaignExpired();
         }
 
         // Check if the swap happened before the campaign expiration
@@ -127,7 +137,7 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
         tokenRewardDistributed += reward;
         _maxBuy -= reward;
         userDiscountMapping[tokenID].hasClaimed = true;
-        IERC20(campaignDetails.rewardToken).transferFrom(address(this), userSwapData.userAddress, reward);
+        TransferHelper.safeTransfer(campaignDetails.rewardToken, userSwapData.userAddress, reward);
         _updateDiscount();
     }
 
@@ -165,11 +175,11 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
      */
     function _updateDiscount() private {
         campaignDetails.discountRate =
-            campaignDetails.discountRate *
-            (1 - tokenRewardDistributed / campaignDetails.rewardAmount);
+            (campaignDetails.discountRate * (campaignDetails.rewardAmount - tokenRewardDistributed)) /
+            campaignDetails.rewardAmount;
     }
 
     function recoverERC20(address tokenAddress, uint256 tokenAmount) external onlyOwner {
-        IERC20(tokenAddress).transfer(owner(), tokenAmount);
+        TransferHelper.safeTransfer(tokenAddress, owner(), tokenAmount);
     }
 }

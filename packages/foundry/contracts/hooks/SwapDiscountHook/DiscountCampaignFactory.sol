@@ -9,12 +9,15 @@ import { IPoolInfo } from "@balancer-labs/v3-interfaces/contracts/pool-utils/IPo
 
 import { TransferHelper } from "./libraries/TransferHelper.sol";
 import { IDiscountCampaignFactory } from "./Interfaces/IDiscountCampaignFactory.sol";
+import { ISwapDiscountHook } from "./Interfaces/ISwapDiscountHook.sol";
 import { IDiscountCampaign } from "./Interfaces/IDiscountCampaign.sol";
 import { DiscountCampaign } from "./DiscountCampaign.sol";
 
 contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, Ownable {
     // Mapping to store user swap discount data
     mapping(address => CampaignData) public override discountCampaigns;
+
+    address public swapDiscountHook;
 
     constructor() Ownable(msg.sender) {}
 
@@ -29,12 +32,30 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
     }
 
     modifier campaignNotExpired(address pool) {
-        (, uint256 expirationTime, , , , , ) = IDiscountCampaign(discountCampaigns[pool].campaignAddress)
+        (, , uint256 expirationTime, , , , , ) = IDiscountCampaign(discountCampaigns[pool].campaignAddress)
             .campaignDetails();
         if (expirationTime > block.timestamp) {
             revert PoolCampaignHasnotExpired();
         }
         _;
+    }
+
+    modifier verifyHook(address _hookAddress) {
+        if (_hookAddress == address(0)) {
+            revert InvalidHookAddress();
+        }
+        _;
+    }
+
+    modifier isHookUpdated() {
+        if (swapDiscountHook == address(0)) {
+            revert InvalidHookAddress();
+        }
+        _;
+    }
+
+    function setSwapDiscountHook(address _hookAddress) external onlyOwner verifyHook(_hookAddress) {
+        swapDiscountHook = _hookAddress;
     }
 
     /**
@@ -58,7 +79,7 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
         address pool,
         address owner,
         address rewardToken
-    ) external nonReentrant returns (address) {
+    ) external nonReentrant isHookUpdated returns (address) {
         CampaignData storage campaignData = discountCampaigns[pool];
 
         if (campaignData.campaignAddress != address(0)) revert PoolCampaignAlreadyExist();
@@ -66,21 +87,25 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
 
         // Prepare campaign details
         IDiscountCampaign.CampaignDetails memory campaignDetails = IDiscountCampaign.CampaignDetails({
+            campaignID: keccak256(abi.encode(block.timestamp, expirationTime)),
             rewardAmount: rewardAmount,
-            expirationTime: expirationTime,
-            coolDownPeriod: coolDownPeriod,
+            expirationTime: block.timestamp + expirationTime,
+            coolDownPeriod: block.timestamp + coolDownPeriod,
             discountRate: discountAmount,
             rewardToken: rewardToken,
             poolAddress: pool,
             owner: owner
         });
 
-        TransferHelper.safeTransfer(rewardToken, discountCampaigns[pool].campaignAddress, rewardAmount);
-
-        IDiscountCampaign(discountCampaigns[pool].campaignAddress).updateCampaignDetails(campaignDetails);
-
         // Deploy the DiscountCampaign contract with the struct
-        DiscountCampaign discountCampaign = new DiscountCampaign(campaignDetails, owner, address(this), address(this));
+        DiscountCampaign discountCampaign = new DiscountCampaign(
+            campaignDetails,
+            owner,
+            swapDiscountHook,
+            address(this)
+        );
+        TransferHelper.safeTransfer(rewardToken, address(discountCampaign), rewardAmount);
+        IDiscountCampaign(address(discountCampaign)).updateCampaignDetails(campaignDetails);
 
         // Store campaign details
         campaignData.campaignAddress = address(discountCampaign);
@@ -108,13 +133,14 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
         address pool,
         address owner,
         address rewardToken
-    ) external onlyCampaignOwner(pool) campaignExists(pool) campaignNotExpired(pool) {
+    ) external campaignExists(pool) onlyCampaignOwner(pool) campaignNotExpired(pool) {
         validateTokenAndPool(pool, rewardToken);
 
         IDiscountCampaign.CampaignDetails memory campaignDetails = IDiscountCampaign.CampaignDetails({
+            campaignID: keccak256(abi.encode(block.timestamp, expirationTime)),
             rewardAmount: rewardAmount,
-            expirationTime: expirationTime,
-            coolDownPeriod: coolDownPeriod,
+            expirationTime: block.timestamp + expirationTime,
+            coolDownPeriod: block.timestamp + coolDownPeriod,
             discountRate: discountAmount,
             rewardToken: rewardToken,
             poolAddress: pool,
@@ -135,6 +161,10 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
             owner,
             rewardToken
         );
+    }
+
+    function recoverERC20(address token, uint256 amount) external onlyOwner {
+        TransferHelper.safeTransfer(token, owner(), amount);
     }
 
     /**

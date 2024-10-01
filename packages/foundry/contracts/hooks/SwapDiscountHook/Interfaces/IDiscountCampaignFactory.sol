@@ -6,6 +6,7 @@ interface IDiscountCampaignFactory {
     error PoolCampaignDoesnotExist();
     error PoolCampaignHasnotExpired();
     error InvalidRewardToken();
+    error InvalidHookAddress();
     error InsufficientRewardAmountBalance();
     error PoolAddressCannotBeChanged();
     error NOT_AUTHORIZED();
