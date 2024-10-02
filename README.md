@@ -1,301 +1,146 @@
-# 🏗︎ Scaffold Balancer v3
+# LoyaltyHook - BAL Hookathon submission
 
-A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
+A custom Balancer V3 Pool Hook designed to incentivize user engagement and loyalty within a liquidity pool by rewarding users with Loyalty Tokens (`LOYALTY`).
 
-[![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/f862091d-2fe9-4b4b-8d70-cb2fdc667384)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
+## 🪧 Table of contents
 
-### 🔁 Development Life Cycle
+- [📖 Overview](#-overview)
+- [🎯 What the hook does](#-what-the-hook-does)
+- [💡 Example uise case](#-example-use-case)
+- [🏦 Benefits for pool creators](#-benefits-for-pool-creators)
+- [👍 DevX feedback](#-devx-feedback)
+- [📜 LoyaltyToken](#-loyaltytoken-implementation)
 
-1. Learn the core concepts for building on top of Balancer v3
-2. Configure and deploy factories, pools, and hooks contracts to a local anvil fork of Sepolia
-3. Interact with pools via a frontend that runs at [localhost:3000](http://localhost:3000/)
+## 📖 Overview
 
-### 🪧 Table Of Contents
+The **LoyaltyHook** is a custom Balancer V3 Pool Hook designed to incentivize user engagement and loyalty within a liquidity pool. By integrating this hook, pools can reward users with **Loyalty Tokens (`LOYALTY`)** when they add liquidity or perform swaps. Additionally, the hook dynamically adjusts swap and exit fees based on the user's `LOYALTY` token balance, offering significant discounts to loyal participants.
 
-- [🧑‍💻 Environment Setup](#-environment-setup)
-- [👩‍🏫 Learn Core Concepts](#-learn-core-concepts)
-- [🕵️ Explore the Examples](#-explore-the-examples)
-- [🌊 Create a Custom Pool](#-create-a-custom-pool)
-- [🏭 Create a Pool Factory](#-create-a-pool-factory)
-- [🪝 Create a Pool Hook](#-create-a-pool-hook)
-- [🚢 Deploy the Contracts](#-deploy-the-contracts)
-- [🧪 Test the Contracts](#-test-the-contracts)
+## 🎯 What the hook does
 
-## 🧑‍💻 Environment Setup
+The LoyaltyHook enhances a Balancer V3 liquidity pool with the following features:
 
-### 1. Requirements 📜
+1. **Minting loyalty tokens**: Users earn `LOYALTY` tokens when they add liquidity or execute swaps through the pool. The amount minted is adjusted based on their activity level, incorporating a decay mechanism to balance rewards.
 
-- [Node (>= v18.17)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
-- [Foundry](https://book.getfoundry.sh/getting-started/installation) (>= v0.2.0)
+2. **Dynamic swap fees**: Swap fees are dynamically calculated based on the user's `LOYALTY` token holdings. Higher `LOYALTY` balances result in greater fee discounts, encouraging users to accumulate and retain tokens.
 
-### 2. Quickstart 🏃
+3. **Exit fees**: When users remove liquidity, an exit fee is applied. However, users with sufficient `LOYALTY` tokens receive discounts on these fees, potentially eliminating them entirely at the highest loyalty tiers.
 
-1. Ensure you have the latest version of foundry installed
+4. **Action tracking and decay mechanism**: The hook tracks user actions and applies a decay to the `LOYALTY` tokens minted over time. Frequent actions within a reset interval (e.g., 30 days) result in reduced mint amounts per action, promoting consistent engagement without over-rewarding.
 
-```
-foundryup
-```
+### Loyalty tiers and discounts
 
-2. Clone this repo & install dependencies
+- **Tier 1**:
+  - **Threshold**: ≥ 100 `LOYALTY` tokens
+  - **Discount**: 50% off swap and exit fees
 
-```bash
-git clone https://github.com/balancer/scaffold-balancer-v3.git
-cd scaffold-balancer-v3
-yarn install
-```
+- **Tier 2**:
+  - **Threshold**: ≥ 500 `LOYALTY` tokens
+  - **Discount**: 80% off swap and exit fees
 
-3. Set a `SEPOLIA_RPC_URL` in the `packages/foundry/.env` file
+- **Tier 3**:
+  - **Threshold**: ≥ 1000 `LOYALTY` tokens
+  - **Discount**: 90% off swap and exit fees
 
-```
-SEPOLIA_RPC_URL=...
-```
+## 💡 Example use case
 
-4. Start a local anvil fork of the Sepolia testnet
+**Scenario**:
 
-```bash
-yarn fork
-```
+Imagine Alice, an active trader and liquidity provider, interacts with a Balancer pool that has integrated the LoyaltyHook.
 
-5. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts
-   > By default, the anvil account #0 will be the deployer and recieve the mock tokens and BPT from pool initialization
+1. **Adding Liquidity**:
+   - Alice adds liquidity to the pool.
+   - She receives `LOYALTY` tokens proportional to her contribution and activity level.
+   - Her action count increases, and the decay mechanism adjusts her rewards appropriately.
 
-```bash
-yarn deploy
-```
+2. **Performing Swaps**:
+   - Alice swaps tokens within the pool.
+   - She earns additional `LOYALTY` tokens for each swap.
+   - Her growing `LOYALTY` balance moves her up the loyalty tiers.
 
-6. Start the nextjs frontend
+3. **Receiving Fee Discounts**:
+   - As her `LOYALTY` balance surpasses tier thresholds, she enjoys reduced swap and exit fees.
+   - At Tier 2, she gets an 80% discount, significantly lowering her trading costs.
 
-```bash
-yarn start
-```
+4. **Removing Liquidity**:
+   - When Alice decides to withdraw her liquidity, her high `LOYALTY` balance grants her reduced or waived exit fees.
+   - This maximizes her returns and encourages her to continue participating in the future.
 
-7. Explore the frontend
+**Benefits for Alice**:
 
-- Navigate to http://localhost:3000 to see the home page
-- Visit the [Pools Page](http://localhost:3000/pools) to search by address or select using the pool buttons
-- Vist the [Debug Page](http://localhost:3000/debug) to see the mock tokens, factory, and hooks contracts
+- Lower fees enhance her profitability.
+- Earning `LOYALTY` tokens adds value to her participation.
+- Incentives align with her interest in staying active within the pool.
 
-8. Run the Foundry tests
+## 🏦 Benefits for pool creators
 
-```
-yarn test
-```
+- **Increased user engagement**: Incentivizes users to interact more with the pool, increasing liquidity and trading volume. By rewarding users with `LOYALTY` tokens, deployers can foster a more vibrant and active pool ecosystem.
+- **Future extensions**: There's potential to implement a staking contract where users can stake their `LOYALTY` tokens for additional benefits, further enhancing user commitment and offering new utility for the token.
 
-### 3. Scaffold ETH 2 Tips 🏗️
+## 👍 DevX fedback
 
-SE-2 offers a variety of configuration options for connecting an account, choosing networks, and deploying contracts
+Developing the LoyaltyHook provided valuable insights into the Balancer V3 ecosystem. Here are some observations:
 
-<details><summary><strong>🔥 Burner Wallet</strong></summary>
+### Positive aspects:
 
-If you do not have an active wallet extension connected to your web browser, then scaffold eth will automatically connect to a "burner wallet" that is randomly generated on the frontend and saved to the browser's local storage. When using the burner wallet, transactions will be instantly signed, which is convenient for quick iterative development.
+- **Comprehensive documentation**: The Balancer documentation is excellent, with sample hooks that were instrumental in understanding the hook system. Many of the tests and mechanisms in the LoyaltyHook were based on these examples.
 
-To force the use of burner wallet, disable your browsers wallet extensions and refresh the page. Note that the burner wallet comes with 0 ETH to pay for gas so you will need to click the faucet button in top right corner. Also the mock tokens for the pool are minted to your deployer account set in `.env` so you will want to navigate to the "Debug Contracts" page to mint your burner wallet some mock tokens to use with the pool.
+- **Deploy scripts**: The provided deploy scripts were very helpful. They enabled seamless deployment of the pool and LoyaltyHook, and facilitated interaction with the frontend effectively.
 
-![Burner Wallet](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/0a1f3456-f22a-46b5-9e05-0ef5cd17cce7)
+- **Interactive frontend**: The frontend offered a practical environment to test and interact with custom contracts, making the development and debugging process more efficient.
 
-![Debug Tab Mint](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/fbb53772-8f6d-454d-a153-0e7a2925ef9f)
+### Suggestions
 
-</details>
+- **Documentation consistency**:
+  - **Observation**: Some of the documentation is spread across the `scaffold-balancer-v3` repository and the official documentation site, which was discovered late in the development process.
 
-<details><summary><strong>👛 Browser Extension Wallet</strong></summary>
-    
-- To use your preferred browser extension wallet, ensure that the account you are using matches the PK you previously provided in the `foundry/.env` file
-- You may need to add a local development network with rpc url `http://127.0.0.1:8545/` and chain id `31337`. Also, you may need to reset the nonce data for your wallet exension if it gets out of sync.
+  - **Suggestion**: Unifying the documentation by consolidating resources and examples in one place would enhance accessibility.
 
-</details>
+### Overall Experience
 
-<details><summary><strong>🐛 Debug Contracts Page </strong></summary>
+Developing the LoyaltyHook was a rewarding experience, showcasing the flexibility and power of the Balancer V3 platform. The ability to customize pool behavior through hooks opens up possibilities for innovation in DeFi. The supportive documentation and tools provided made the development process smooth and enjoyable.
 
-The [Debug Contracts Page](http://localhost:3000/debug) can be useful for viewing and interacting with all of the externally avaiable read and write functions of a contract. The page will automatically hot reload with contracts that are deployed via the `01_DeployConstantSumFactory.s.sol` script. We use this handy setup to mint `mockERC20` tokens to any connected wallet
+## 📜 LoyaltyToken Implementation
 
-</details>
+The `LOYALTY` token is implemented using OpenZeppelin's `ERC20` and `AccessControl` contracts, ensuring standard token functionality and secure role-based permissions. The code is as follows:
 
-<details><summary><strong>🌐 Changing The Frontend Network Connection</strong></summary>
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 
-- The network the frontend points at is set via `targetNetworks` in the `scaffold.config.ts` file using `chains` from viem.
-- By default, the frontend runs on a local node at `http://127.0.0.1:8545`
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
-```typescript
-const scaffoldConfig = {
-  targetNetworks: [chains.foundry],
-```
+contract LoyaltyToken is ERC20, AccessControl {
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-</details>
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
 
-<details><summary><strong>🍴 Changing The Forked Network</strong></summary>
+    function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
+        _mint(to, amount);
+    }
 
-- By default, the `yarn fork` command points at sepolia, but any of the network aliases from the `[rpc_endpoints]` of `foundry.toml` can be used to modify the `"fork"` alias in the `packages/foundry/package.json` file
+    // Function to grant minter role (can only be called by admin)
+    function grantMinterRole(address minter) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        grantRole(MINTER_ROLE, minter);
+    }
 
-```json
-	"fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
-```
-
-- To point the frontend at a different forked network, change the `targetFork` in `scaffold.config.ts`
-
-```typescript
-const scaffoldConfig = {
-  // The networks the frontend can connect to
-  targetNetworks: [chains.foundry],
-
-  // If using chains.foundry as your targetNetwork, you must specify a network to fork
-  targetFork: chains.sepolia,
+    // Function to revoke minter role (can only be called by admin)
+    function revokeMinterRole(address minter) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        revokeRole(MINTER_ROLE, minter);
+    }
+}
 ```
 
-</details>
+For testing purposes, the `LoyaltyHook` contract is granted the `MINTER_ROLE` to mint `LOYALTY` tokens appropriately.
 
-## 👩‍🏫 Learn Core Concepts
+---
 
-- [Contract Architecture](https://docs-v3.balancer.fi/concepts/core-concepts/architecture.html)
-- [Balancer Pool Tokens](https://docs-v3.balancer.fi/concepts/core-concepts/balancer-pool-tokens.html)
-- [Balancer Pool Types](https://docs-v3.balancer.fi/concepts/explore-available-balancer-pools/)
-- [Building Custom AMMs](https://docs-v3.balancer.fi/build-a-custom-amm/)
-- [Exploring Hooks and Custom Routers](https://pitchandrolls.com/2024/08/30/unlocking-the-power-of-balancer-v3-exploring-hooks-and-custom-routers/)
-- [Hook Development Tips](https://medium.com/@johngrant/unlocking-the-power-of-balancer-v3-hook-development-made-simple-831391a68296)
+**Note**: This hook is a submission for the BAL Hookathon and aims to demonstrate the potential of customizable hooks in enhancing user engagement and value within the Balancer ecosystem.
 
-![v3-components](https://github.com/user-attachments/assets/ccda9323-790f-4276-b092-c867fd80bf9e)
+---
 
-## 🕵️ Explore the Examples
+# Thank you for considering the LoyaltyHook for the BAL Hookathon!
 
-Each of the following examples have turn key deploy scripts that can be found in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory
-
-### 1. Constant Sum Pool with Dynamic Swap Fee Hook
-
-The swap fee percentage is altered by the hook contract before the pool calculates the amount for the swap
-
-![dynamic-fee-hook](https://github.com/user-attachments/assets/5ba69ea3-6894-4eeb-befa-ed87cfeb6b13)
-
-### 2. Constant Product Pool with Lottery Hook
-
-An after swap hook makes a request to an oracle contract for a random number
-
-![after-swap-hook](https://github.com/user-attachments/assets/594ce1ac-2edc-4d16-9631-14feb2d085f8)
-
-### 3. Weighted Pool with Exit Fee Hook
-
-An after remove liquidity hook adjusts the amounts before the vault transfers tokens to the user
-
-![after-remove-liquidity-hook](https://github.com/user-attachments/assets/2e8f4a5c-f168-4021-b316-28a79472c8d1)
-
-## 🌊 Create a Custom Pool
-
-[![custom-amm-video](https://github.com/user-attachments/assets/e6069a51-f1b5-4f98-a2a9-3a2098696f96)](https://www.youtube.com/watch?v=kXynS3jAu0M)
-
-### 1. Review the Docs 📖
-
-- [Create a custom AMM with a novel invariant](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html)
-
-### 2. Recall the Key Requirements 🔑
-
-- Must inherit from `IBasePool` and `BalancerPoolToken`
-- Must implement `onSwap`, `computeInvariant`, and `computeBalance`
-- Must implement `getMaximumSwapFeePercentage` and `getMinimumSwapFeePercentage`
-
-### 3. Write a Custom Pool Contract 📝
-
-- To get started, edit the`ConstantSumPool.sol` contract directly or make a copy
-
-## 🏭 Create a Pool Factory
-
-After designing a pool contract, the next step is to prepare a factory contract because Balancer's off-chain infrastructure uses the factory address as a means to identify the type of pool, which is important for integration into the UI, SDK, and external aggregators
-
-### 1. Review the Docs 📖
-
-- [Deploy a Custom AMM Using a Factory](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/deploy-custom-amm-using-factory.html)
-
-### 2. Recall the Key Requirements 🔑
-
-- A pool factory contract must inherit from [BasePoolFactory](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/factories/BasePoolFactory.sol)
-- Use the internal `_create` function to deploy a new pool
-- Use the internal `_registerPoolWithVault` fuction to register a pool immediately after creation
-
-### 3. Write a Factory Contract 📝
-
-- To get started, edit the`ConstantSumFactory.sol` contract directly or make a copy
-
-## 🪝 Create a Pool Hook
-
-[![hook-video](https://github.com/user-attachments/assets/96e12c29-53c2-4a52-9437-e477f6d992d1)](https://www.youtube.com/watch?v=kaz6duliRPA)
-
-### 1. Review the Docs 📖
-
-- [Extend an Existing Pool Type Using Hooks](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/extend-existing-pool-type-using-hooks.html)
-
-### 2. Recall the Key Requirements 🔑
-
-- A hooks contract must inherit from [BasePoolHooks.sol](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/BaseHooks.sol)
-- A hooks contract should also inherit from [VaultGuard.sol](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/VaultGuard.sol)
-- Must implement `onRegister` to determine if a pool is allowed to use the hook contract
-- Must implement `getHookFlags` to define which hooks are supported
-- The `onlyVault` modifier should be applied to all hooks functions (i.e. `onRegister`, `onBeforeSwap`, `onAfterSwap` ect.)
-
-### 3. Write a Hook Contract 📝
-
-- To get started, edit the `VeBALFeeDiscountHook.sol` contract directly or make a copy
-
-## 🚢 Deploy the Contracts
-
-The deploy scripts are located in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory. To better understand the lifecycle of deploying a pool that uses a hooks contract, see the diagram below
-
-![pool-deploy-scripts](https://github.com/user-attachments/assets/bb906080-8f42-46c0-af90-ba01ba1754fc)
-
-### 1. Modifying the Deploy Scripts 🛠️
-
-For all the scaffold integrations to work properly, each deploy script must be imported into `Deploy.s.sol` and inherited by the `DeployScript` contract in `Deploy.s.sol`
-
-### 2. Broadcast the Transactions 📡
-
-#### Deploy to local fork
-
-1. Run the following command
-
-```bash
-yarn deploy
-```
-
-#### Deploy to a live network
-
-1. Add a `DEPLOYER_PRIVATE_KEY` to the `packages/foundry/.env` file
-
-```
-DEPLOYER_PRIVATE_KEY=0x...
-SEPOLIA_RPC_URL=...
-```
-
-> The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must hold enough Sepolia ETH to deploy the contracts. This account will receive the BPT from pool initialization
-
-2. Run the following command
-
-```
-yarn deploy --network sepolia
-```
-
-## 🧪 Test the Contracts
-
-The [balancer-v3-monorepo](https://github.com/balancer/balancer-v3-monorepo) provides testing utility contracts like [BasePoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/test/foundry/utils/BasePoolTest.sol) and [BaseVaultTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/test/foundry/utils/BaseVaultTest.sol). Therefore, the best way to begin writing tests for custom factories, pools, and hooks contracts is to leverage the examples established by the source code.
-
-### 1. Testing Factories 👨‍🔬
-
-The `ConstantSumFactoryTest` roughly mirrors the [WeightedPool8020FactoryTest
-](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool8020Factory.t.sol)
-
-```
-yarn test --match-contract ConstantSumFactoryTest
-```
-
-### 2. Testing Pools 🏊
-
-The `ConstantSumPoolTest` roughly mirrors the [WeightedPoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool.t.sol)
-
-```
-yarn test --match-contract ConstantSumPoolTest
-```
-
-### 3. Testing Hooks 🎣
-
-The `VeBALFeeDiscountHookExampleTest` mirrors the [VeBALFeeDiscountHookExampleTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-hooks/test/foundry/VeBALFeeDiscountHookExample.t.sol)
-
-```
-yarn test --match-contract VeBALFeeDiscountHookExampleTest
-```
+Feel free to reach out for any questions or further discussions.
