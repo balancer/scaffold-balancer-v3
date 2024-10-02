@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin-npm/access/Ownable.sol";
-import "./MockERC20Ownable.sol";
+import "./ERC20Ownable.sol";
 
 contract MockERC20Factory is Ownable {
 	string public name;

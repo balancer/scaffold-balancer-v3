@@ -1,7 +1,7 @@
 "use client";
 
 // @refresh reset
-import { useReducer } from "react";
+import { useReducer, useState } from "react";
 import { ContractReadMethods } from "./ContractReadMethods";
 import { ContractVariables } from "./ContractVariables";
 import { ContractWriteMethods } from "./ContractWriteMethods";
@@ -21,8 +21,15 @@ type ContractUIProps = {
 export const ContractUI = ({ contractName, className = "" }: ContractUIProps) => {
   const [refreshDisplayVariables, triggerRefreshDisplayVariables] = useReducer(value => !value, false);
   const { targetNetwork } = useTargetNetwork();
-  const { data: deployedContractData, isLoading: deployedContractLoading } = useDeployedContractInfo(contractName);
+  const [customAddress, setCustomAddress] = useState<string>("");
+  const { data: deployedContractData, isLoading: deployedContractLoading } = useDeployedContractInfo(
+    contractName,
+    customAddress,
+  );
   const networkColor = useNetworkColor();
+  const handleAddressChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomAddress(event.target.value);
+  };
 
   if (deployedContractLoading) {
     return (
@@ -61,6 +68,14 @@ export const ContractUI = ({ contractName, className = "" }: ContractUIProps) =>
                 <span style={{ color: networkColor }}>{targetNetwork.name}</span>
               </p>
             )}
+            <input
+              type="text"
+              id="customAddress"
+              value={customAddress}
+              onChange={handleAddressChange}
+              className="mt-1 p-2 block w-full shadow-sm sm:text-sm border-gray-700 border rounded-md"
+              placeholder="Custom Address"
+            />
           </div>
           <div className="bg-base-300 rounded-3xl px-6 lg:px-8 py-4 shadow-lg shadow-base-300">
             <ContractVariables

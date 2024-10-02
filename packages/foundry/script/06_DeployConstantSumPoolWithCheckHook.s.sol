@@ -17,16 +17,17 @@ import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.so
 import { NftCheckHook } from "../contracts/hooks/NftCheckHook.sol";
 import { MockNft } from "../contracts/mocks/MockNft.sol";
 import { MockERC20Factory } from "../contracts/mocks/MockERC20Factory.sol";
+import { ERC20Ownable } from "../contracts/mocks/ERC20Ownable.sol";
 
 /**
  * @title Deploy Constant Sum Pool
  * @notice Deploys, registers, and initializes a constant sum pool that uses a swap fee discount hook
  */
 contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
-    function deployConstantSumPoolWithCheckHook(address token1, address token2) internal {
+    function deployConstantSumPoolWithCheckHook(address token) internal {
 
-        // change this manually, because msg.sender does not work when broadcasting :(
-        address publicKey = 0xe7a5b06E8dc5863566B974a4a19509898bdEc277;
+        // this should be the public key of  because msg.sender does not work when broadcasting :(
+        address publicKey = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
         // Start creating the transactions
         uint256 deployerPrivateKey = getDeployerPrivateKey();
@@ -39,7 +40,8 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         // Deploy an Nft and mint one
         MockNft mockNft = new MockNft("NFTFactory", "NFTF");
 
-        MockERC20Factory mockERC20Factory = new MockERC20Factory("ERC20Factory");
+
+        MockERC20Factory mockERC20Factory = new MockERC20Factory("MockERC20Factory");
         MockNft(mockNft).setLinkedTokenFactory(address(mockERC20Factory));
         
         address[] memory membersToFund = new address[](1);
@@ -47,21 +49,34 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         uint256[] memory amountsToFund = new uint256[](1);
         amountsToFund[0] = 1000e18;
 
-        (uint256 tokenId, address linkedTokenAddress) = MockNft(mockNft).mint(
+        // Deploy a Sample Token - will throw warning on deploy as it is not used in the following code
+        // however it is needed in order to interact with the contract via scaffold's patterns
+        ERC20Ownable mockRwa = new ERC20Ownable(
+            "Sample Token",
+            "ST",
+            publicKey,
+            address(mockERC20Factory),
+            address(0),
+            0,
+            membersToFund,
+            amountsToFund
+        );
+
+         (uint256 tokenId, address linkedTokenAddress) = MockNft(mockNft).mint(
             publicKey,
             "https://0a050602b1c1aeae1063a0c8f5a7cdac.ipfscdn.io/ipfs/QmSiA82PQNuWuBfQtuzWKwnZV94qs34jrW1L6PaR69jeoE/metadata.json",
             address(0),
             new string[](0),
-            "ERC20 name",
-            "ERC20 symbol",
+            "RWA Token",
+            "RWAT",
             membersToFund,
             amountsToFund
-            );
+        );
 
         // Set the pool's deployment, registration, and initialization config
         console.log("linkedTokenAddress: %s", linkedTokenAddress);
-        CustomPoolConfig memory poolConfig = getCheckSumPoolConfig(linkedTokenAddress, token2);
-        InitializationConfig memory initConfig = getCheckSumPoolInitConfig(linkedTokenAddress, token2);
+        CustomPoolConfig memory poolConfig = getCheckSumPoolConfig(linkedTokenAddress, token);
+        InitializationConfig memory initConfig = getCheckSumPoolInitConfig(linkedTokenAddress, token);
 
         // Deploy a hook
         address nftCheckHook = address(
