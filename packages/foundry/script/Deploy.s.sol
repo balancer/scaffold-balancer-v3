@@ -29,7 +29,7 @@ contract DeployScript is
         // Deploy, register, and initialize a constant sum pool with a swap fee discount hook
         deployConstantSumPool(mockToken1, mockToken2, mockVeBAL);
 
-        deployConstantSumPoolWithCheckHook(mockToken1, mockToken2);
+        deployConstantSumPoolWithCheckHook(mockToken2);
 
         // Deploy, register, and initialize a constant product pool with a lottery hook
         deployConstantProductPool(mockToken1, mockToken2);

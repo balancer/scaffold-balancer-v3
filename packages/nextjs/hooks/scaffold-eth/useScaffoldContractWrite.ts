@@ -14,6 +14,7 @@ type UpdatedArgs = Parameters<ReturnType<typeof useContractWrite<Abi, string, un
  * @param config - The config settings, including extra wagmi configuration
  * @param config.contractName - contract name
  * @param config.functionName - name of the function to be called
+ * @param config.address - address of the contract
  * @param config.args - arguments for the function
  * @param config.value - value in ETH that will be sent with transaction
  * @param config.blockConfirmations - number of block confirmations to wait for (default: 1)
@@ -25,12 +26,13 @@ export const useScaffoldContractWrite = <
 >({
   contractName,
   functionName,
+  address,
   args,
   value,
   onBlockConfirmation,
   blockConfirmations,
   ...writeConfig
-}: UseScaffoldWriteConfig<TContractName, TFunctionName>) => {
+}: UseScaffoldWriteConfig<TContractName, TFunctionName> & { address?: string }) => {
   const { data: deployedContractData } = useDeployedContractInfo(contractName);
   const { chain } = useNetwork();
   const writeTx = useTransactor();
@@ -39,7 +41,7 @@ export const useScaffoldContractWrite = <
 
   const wagmiContractWrite = useContractWrite({
     chainId: targetNetwork.id,
-    address: deployedContractData?.address,
+    address: address || deployedContractData?.address,
     abi: deployedContractData?.abi as Abi,
     functionName: functionName as any,
     args: args as unknown[],
