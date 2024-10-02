@@ -115,10 +115,6 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         vm.stopBroadcast();
     }
 
-    function getDeployer() private view returns(address) {
-        return msg.sender;
-    }
-
     /**
      * @dev Set all of the configurations for deploying and registering a pool here
      * @notice TokenConfig encapsulates the data required for the Vault to support a token of the given type.
