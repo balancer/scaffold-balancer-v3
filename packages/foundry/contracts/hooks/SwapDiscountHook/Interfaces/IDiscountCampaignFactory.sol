@@ -13,6 +13,19 @@ interface IDiscountCampaignFactory {
 
     event CampaignUpdated(
         address indexed campaign,
+        bytes32 indexed campaignID,
+        uint256 rewardAmount,
+        uint256 expirationTime,
+        uint256 coolDownPeriod,
+        uint256 discountAmount,
+        address pool,
+        address owner,
+        address rewardToken
+    );
+
+    event CampaignCreated(
+        address indexed campaign,
+        bytes32 indexed campaignID,
         uint256 rewardAmount,
         uint256 expirationTime,
         uint256 coolDownPeriod,
@@ -25,6 +38,16 @@ interface IDiscountCampaignFactory {
     struct CampaignData {
         address campaignAddress;
         address owner;
+    }
+
+    struct CampaignParams {
+        uint256 rewardAmount;
+        uint256 expirationTime;
+        uint256 coolDownPeriod;
+        uint256 discountAmount;
+        address pool;
+        address owner;
+        address rewardToken;
     }
 
     /// Mapping from token ID to user swap data

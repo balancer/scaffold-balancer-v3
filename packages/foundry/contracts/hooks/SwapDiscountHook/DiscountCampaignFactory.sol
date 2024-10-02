@@ -27,7 +27,13 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
     }
 
     modifier campaignExists(address pool) {
-        if (discountCampaigns[pool].campaignAddress == address(0)) revert PoolCampaignDoesnotExist();
+        address campaignAddress = discountCampaigns[pool].campaignAddress;
+        if (campaignAddress == address(0)) revert PoolCampaignDoesnotExist();
+        (, , , , , , address poolAddress, ) = IDiscountCampaign(discountCampaigns[pool].campaignAddress)
+            .campaignDetails();
+        if (pool != poolAddress) {
+            revert PoolAddressCannotBeChanged();
+        }
         _;
     }
 
@@ -62,54 +68,42 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
      * @notice Create a new discount campaign for a specific liquidity pool.
      * @dev Creates a new `DiscountCampaign` contract and stores its details.
      *      Reverts if a campaign for the specified pool already exists or if the reward token is invalid.
-     * @param rewardAmount The total reward amount for the campaign.
-     * @param expirationTime The expiration time of the discount campaign.
-     * @param coolDownPeriod The cooldown period for rewards between claims.
-     * @param discountAmount The discount rate offered in the campaign.
-     * @param pool The address of the liquidity pool for which the campaign is being created.
-     * @param owner The address of the owner of the campaign.
-     * @param rewardToken The address of the reward token used in the campaign.
+     * @param params The parameters for creating the discount campaign.
      * @return The address of the newly created `DiscountCampaign` contract.
      */
-    function createCampaign(
-        uint256 rewardAmount,
-        uint256 expirationTime,
-        uint256 coolDownPeriod,
-        uint256 discountAmount,
-        address pool,
-        address owner,
-        address rewardToken
-    ) external nonReentrant isHookUpdated returns (address) {
-        CampaignData storage campaignData = discountCampaigns[pool];
+    function createCampaign(CampaignParams memory params) external nonReentrant isHookUpdated returns (address) {
+        CampaignData storage campaignData = discountCampaigns[params.pool];
 
         if (campaignData.campaignAddress != address(0)) revert PoolCampaignAlreadyExist();
-        validateTokenAndPool(pool, rewardToken);
+        validateTokenAndPool(params.pool, params.rewardToken);
 
         // Prepare campaign details
-        IDiscountCampaign.CampaignDetails memory campaignDetails = IDiscountCampaign.CampaignDetails({
-            campaignID: keccak256(abi.encode(block.timestamp, expirationTime)),
-            rewardAmount: rewardAmount,
-            expirationTime: block.timestamp + expirationTime,
-            coolDownPeriod: block.timestamp + coolDownPeriod,
-            discountRate: discountAmount,
-            rewardToken: rewardToken,
-            poolAddress: pool,
-            owner: owner
-        });
+        IDiscountCampaign.CampaignDetails memory campaignDetails = _prepareCampaignDetails(params);
 
         // Deploy the DiscountCampaign contract with the struct
         DiscountCampaign discountCampaign = new DiscountCampaign(
             campaignDetails,
-            owner,
+            params.owner,
             swapDiscountHook,
             address(this)
         );
-        TransferHelper.safeTransfer(rewardToken, address(discountCampaign), rewardAmount);
+        TransferHelper.safeTransfer(params.rewardToken, address(discountCampaign), params.rewardAmount);
         IDiscountCampaign(address(discountCampaign)).updateCampaignDetails(campaignDetails);
 
         // Store campaign details
         campaignData.campaignAddress = address(discountCampaign);
         campaignData.owner = msg.sender;
+
+        emit CampaignCreated(
+            address(discountCampaign),
+            params.rewardAmount,
+            params.expirationTime,
+            params.coolDownPeriod,
+            params.discountAmount,
+            params.pool,
+            params.owner,
+            params.rewardToken
+        );
 
         return address(discountCampaign);
     }
@@ -117,42 +111,32 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
     /**
      * @notice Update the campaign details for a specific pool.
      * @dev Updates the campaign details if the campaign has expired and belongs to the caller.
-     * @param rewardAmount The new total reward amount for the campaign.
-     * @param expirationTime The new expiration time for the campaign.
-     * @param coolDownPeriod The new cooldown period between reward claims.
-     * @param discountAmount The new discount rate for the campaign.
-     * @param pool The address of the liquidity pool.
-     * @param owner The address of the new owner of the campaign.
-     * @param rewardToken The new reward token used in the campaign.
+     * @param params The parameters for updating the discount campaign.
      */
     function updateCampaign(
-        uint256 rewardAmount,
-        uint256 expirationTime,
-        uint256 coolDownPeriod,
-        uint256 discountAmount,
-        address pool,
-        address owner,
-        address rewardToken
-    ) external campaignExists(pool) onlyCampaignOwner(pool) campaignNotExpired(pool) {
-        validateTokenAndPool(pool, rewardToken);
+        CampaignParams memory params
+    ) external campaignExists(params.pool) onlyCampaignOwner(params.pool) campaignNotExpired(params.pool) {
+        validateTokenAndPool(params.pool, params.rewardToken);
 
-        IDiscountCampaign.CampaignDetails memory campaignDetails = IDiscountCampaign.CampaignDetails({
-            campaignID: keccak256(abi.encode(block.timestamp, expirationTime)),
-            rewardAmount: rewardAmount,
-            expirationTime: block.timestamp + expirationTime,
-            coolDownPeriod: block.timestamp + coolDownPeriod,
-            discountRate: discountAmount,
-            rewardToken: rewardToken,
-            poolAddress: pool,
-            owner: owner
-        });
+        address campaignAddress = discountCampaigns[params.pool].campaignAddress;
 
-        TransferHelper.safeTransfer(rewardToken, discountCampaigns[pool].campaignAddress, rewardAmount);
+        IDiscountCampaign.CampaignDetails memory campaignDetails = _prepareCampaignDetails(params);
 
-        IDiscountCampaign(discountCampaigns[pool].campaignAddress).updateCampaignDetails(campaignDetails);
+        TransferHelper.safeTransfer(params.rewardToken, campaignAddress, params.rewardAmount);
+
+        IDiscountCampaign(campaignAddress).updateCampaignDetails(campaignDetails);
+
+        uint256 rewardAmount = params.rewardAmount;
+        uint256 expirationTime = params.expirationTime;
+        uint256 coolDownPeriod = params.coolDownPeriod;
+        uint256 discountAmount = params.discountAmount;
+        address pool = params.pool;
+        address owner = params.owner;
+        address rewardToken = params.rewardToken;
+        bytes32 campaignID = 
 
         emit CampaignUpdated(
-            discountCampaigns[pool].campaignAddress,
+            campaignAddress,
             rewardAmount,
             expirationTime,
             coolDownPeriod,
@@ -161,6 +145,22 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
             owner,
             rewardToken
         );
+    }
+
+    function _prepareCampaignDetails(
+        CampaignParams memory params
+    ) internal view returns (IDiscountCampaign.CampaignDetails memory) {
+        return
+            IDiscountCampaign.CampaignDetails({
+                campaignID: keccak256(abi.encode(block.timestamp, params.expirationTime)),
+                rewardAmount: params.rewardAmount,
+                expirationTime: block.timestamp + params.expirationTime,
+                coolDownPeriod: block.timestamp + params.coolDownPeriod,
+                discountRate: params.discountAmount,
+                rewardToken: params.rewardToken,
+                poolAddress: params.pool,
+                owner: params.owner
+            });
     }
 
     function recoverERC20(address token, uint256 amount) external onlyOwner {

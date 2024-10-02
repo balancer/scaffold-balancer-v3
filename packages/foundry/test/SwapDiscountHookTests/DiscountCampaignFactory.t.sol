@@ -57,81 +57,119 @@ contract DiscountCampaignFactoryTest is BaseVaultTest {
     function testSuccessfullDeploymentOfCampaignContract() public {
         deal(address(dai), address(discountCampaignFactory), 100e18);
 
-        address campaignAddress = discountCampaignFactory.createCampaign(
-            100e18,
-            2 days,
-            0,
-            50e18,
-            address(pool),
-            address(this),
-            address(dai)
-        );
+        IDiscountCampaignFactory.CampaignParams memory params = IDiscountCampaignFactory.CampaignParams({
+            rewardAmount: 100e18,
+            expirationTime: 2 days,
+            coolDownPeriod: 0,
+            discountAmount: 50e18,
+            pool: address(pool),
+            owner: address(this),
+            rewardToken: address(dai)
+        });
+
+        address campaignAddress = discountCampaignFactory.createCampaign(params);
 
         // test the struct
         (address _campaignAddress, address _owner) = discountCampaignFactory.discountCampaigns(address(pool));
 
-        assertEq(_campaignAddress, campaignAddress, "Inavlid campaign Address ");
-        assertEq(_owner, address(this), "Inavlid owner Address ");
+        assertEq(_campaignAddress, campaignAddress, "Invalid campaign Address");
+        assertEq(_owner, address(this), "Invalid owner Address");
     }
 
     function testUnsuccessfulDeploymentsOfCampaignContract() public {
         vm.expectRevert();
-        discountCampaignFactory.createCampaign(100e18, 2 days, 0, 50e18, address(pool), address(this), address(dai));
+        IDiscountCampaignFactory.CampaignParams memory params = IDiscountCampaignFactory.CampaignParams({
+            rewardAmount: 100e18,
+            expirationTime: 2 days,
+            coolDownPeriod: 0,
+            discountAmount: 50e18,
+            pool: address(pool),
+            owner: address(this),
+            rewardToken: address(dai)
+        });
+
+        discountCampaignFactory.createCampaign(params);
 
         deal(address(dai), address(discountCampaignFactory), 100e18);
 
-        discountCampaignFactory.createCampaign(100e18, 2 days, 0, 50e18, address(pool), address(this), address(dai));
+        discountCampaignFactory.createCampaign(params);
 
         vm.expectRevert(IDiscountCampaignFactory.PoolCampaignAlreadyExist.selector);
-        discountCampaignFactory.createCampaign(100e18, 2 days, 0, 50e18, address(pool), address(this), address(dai));
+        discountCampaignFactory.createCampaign(params);
     }
 
     function testUnsuccessfulCampaignUpdate() public {
         deal(address(dai), address(discountCampaignFactory), 100e18);
 
-        address campaignAddress = discountCampaignFactory.createCampaign(
-            100e18,
-            2 days,
-            0,
-            50e18,
-            address(pool),
-            address(this),
-            address(dai)
-        );
+        IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
+            rewardAmount: 100e18,
+            expirationTime: 2 days,
+            coolDownPeriod: 0,
+            discountAmount: 50e18,
+            pool: address(pool),
+            owner: address(this),
+            rewardToken: address(dai)
+        });
+
+        address campaignAddress = discountCampaignFactory.createCampaign(createParams);
+
+        IDiscountCampaignFactory.CampaignParams memory updateParams = IDiscountCampaignFactory.CampaignParams({
+            rewardAmount: 100e18,
+            expirationTime: 5 days,
+            coolDownPeriod: 0,
+            discountAmount: 20e18,
+            pool: address(pool),
+            owner: address(this),
+            rewardToken: address(dai)
+        });
 
         vm.expectRevert(IDiscountCampaignFactory.PoolCampaignHasnotExpired.selector);
-        discountCampaignFactory.updateCampaign(100e18, 5 days, 0, 20e18, address(pool), address(this), address(dai));
+        discountCampaignFactory.updateCampaign(updateParams);
 
         vm.expectRevert(IDiscountCampaignFactory.PoolCampaignDoesnotExist.selector);
-        discountCampaignFactory.updateCampaign(100e18, 5 days, 0, 20e18, address(bob), address(this), address(dai));
+        updateParams.pool = address(bob);
+        discountCampaignFactory.updateCampaign(updateParams);
 
         vm.prank(address(bob));
         vm.expectRevert(IDiscountCampaignFactory.NOT_AUTHORIZED.selector);
-        discountCampaignFactory.updateCampaign(100e18, 5 days, 0, 20e18, address(pool), address(this), address(dai));
+        updateParams.pool = address(pool);
+        discountCampaignFactory.updateCampaign(updateParams);
 
-        // campaign hasnt expired yet
+        // campaign hasn't expired yet
         vm.warp(block.timestamp + 7 days);
         vm.expectRevert();
-        discountCampaignFactory.updateCampaign(100e18, 5 days, 0, 20e18, address(pool), address(this), address(dai));
+        discountCampaignFactory.updateCampaign(updateParams);
     }
 
     function testSuccessfulCampaignUpdate() public {
         deal(address(dai), address(discountCampaignFactory), 100e18);
 
-        address campaignAddress = discountCampaignFactory.createCampaign(
-            100e18,
-            2 days,
-            0,
-            50e18,
-            address(pool),
-            address(this),
-            address(dai)
-        );
+        IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
+            rewardAmount: 100e18,
+            expirationTime: 2 days,
+            coolDownPeriod: 0,
+            discountAmount: 50e18,
+            pool: address(pool),
+            owner: address(this),
+            rewardToken: address(dai)
+        });
+
+        address campaignAddress = discountCampaignFactory.createCampaign(createParams);
 
         vm.warp(block.timestamp + 7 days);
         deal(address(dai), address(discountCampaignFactory), 1000e18);
 
-        discountCampaignFactory.updateCampaign(1000e18, 5 days, 0, 20e18, address(pool), address(this), address(dai));
+        IDiscountCampaignFactory.CampaignParams memory updateParams = IDiscountCampaignFactory.CampaignParams({
+            rewardAmount: 1000e18,
+            expirationTime: 5 days,
+            coolDownPeriod: 0,
+            discountAmount: 20e18,
+            pool: address(pool),
+            owner: address(this),
+            rewardToken: address(dai)
+        });
+
+        discountCampaignFactory.updateCampaign(updateParams);
     }
 
     // ===============================================================================

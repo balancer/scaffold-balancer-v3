@@ -27,6 +27,9 @@ import { RouterMock } from "@balancer-labs/v3-vault/contracts/test/RouterMock.so
 
 import { SwapDiscountHook } from "../../contracts/hooks/SwapDiscountHook/SwapDiscountHook.sol";
 import { DiscountCampaignFactory } from "../../contracts/hooks/SwapDiscountHook/DiscountCampaignFactory.sol";
+import {
+    IDiscountCampaignFactory
+} from "../../contracts/hooks/SwapDiscountHook/Interfaces/IDiscountCampaignFactory.sol";
 import { DiscountCampaign } from "../../contracts/hooks/SwapDiscountHook/DiscountCampaign.sol";
 import { IDiscountCampaign } from "../../contracts/hooks/SwapDiscountHook/Interfaces/IDiscountCampaign.sol";
 
@@ -104,15 +107,17 @@ contract SwapDiscountHookTest is BaseVaultTest {
     function testSuccessfulNFTMint() public {
         deal(address(usdc), address(discountCampaignFactory), 100e18);
 
-        address campaignAddress = discountCampaignFactory.createCampaign(
-            100e18,
-            2 days,
-            0,
-            50e18,
-            address(pool),
-            address(this),
-            address(usdc)
-        );
+        IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
+            rewardAmount: 100e18,
+            expirationTime: 2 days,
+            coolDownPeriod: 0,
+            discountAmount: 50e18,
+            pool: address(pool),
+            owner: address(this),
+            rewardToken: address(dai)
+        });
+
+        address campaignAddress = discountCampaignFactory.createCampaign(createParams);
 
         discountCampaign = DiscountCampaign(campaignAddress);
 
