@@ -5,6 +5,7 @@ import { ScaffoldHelpers } from "./ScaffoldHelpers.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { DeployMockTokens } from "./00_DeployMockTokens.s.sol";
 import { DeployConstantSumPool } from "./01_DeployConstantSumPool.s.sol";
+import { DeployConstantSumPoolV2 } from "./04_DeployConstantSumPoolV2.s.sol";
 import { DeployConstantProductPool } from "./02_DeployConstantProductPool.s.sol";
 import { DeployWeightedPool8020 } from "./03_DeployWeightedPool8020.s.sol";
 
@@ -17,6 +18,7 @@ contract DeployScript is
     ScaffoldHelpers,
     DeployMockTokens,
     DeployConstantSumPool,
+    DeployConstantSumPoolV2,
     DeployConstantProductPool,
     DeployWeightedPool8020
 {
@@ -26,6 +28,7 @@ contract DeployScript is
 
         // Deploy, register, and initialize a constant sum pool with a swap fee discount hook
         deployConstantSumPool(mockToken1, mockToken2, mockVeBAL);
+        deployConstantSumPoolV2(mockToken1, mockToken2, mockVeBAL);
 
         // Deploy, register, and initialize a constant product pool with a lottery hook
         deployConstantProductPool(mockToken1, mockToken2);

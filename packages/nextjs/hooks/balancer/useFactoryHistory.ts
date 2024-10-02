@@ -7,6 +7,7 @@ const FROM_BLOCK_NUMBER = 6563900n;
 
 export const useFactoryHistory = () => {
   const [sumPools, setSumPools] = useState<Address[]>([]);
+  const [sumPoolsV2, setSumPoolsV2] = useState<Address[]>([]);
   const [productPools, setProductPools] = useState<Address[]>([]);
   const [weightedPools, setWeightedPools] = useState<Address[]>([]);
 
@@ -18,6 +19,19 @@ export const useFactoryHistory = () => {
         const { pool } = log.args;
         if (pool) {
           setSumPools(pools => [...pools, pool]);
+        }
+      });
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "ConstantSumFactoryV2",
+    eventName: "PoolCreated",
+    listener: logs => {
+      logs.forEach(log => {
+        const { pool } = log.args;
+        if (pool) {
+          setSumPoolsV2(pools => [...pools, pool]);
         }
       });
     },
@@ -56,6 +70,12 @@ export const useFactoryHistory = () => {
     fromBlock: FROM_BLOCK_NUMBER,
   });
 
+  const { data: sumPoolHistoryV2, isLoading: isLoadingSumPoolHistoryV2 } = useScaffoldEventHistory({
+    contractName: "ConstantSumFactoryV2",
+    eventName: "PoolCreated",
+    fromBlock: FROM_BLOCK_NUMBER,
+  });
+
   const { data: productPoolHistory, isLoading: isLoadingProductPoolHistory } = useScaffoldEventHistory({
     contractName: "ConstantProductFactory",
     eventName: "PoolCreated",
@@ -70,6 +90,19 @@ export const useFactoryHistory = () => {
 
   useScaffoldEventSubscriber({
     contractName: "ConstantSumFactory",
+    eventName: "PoolCreated",
+    listener: logs => {
+      logs.forEach(log => {
+        const { pool } = log.args;
+        if (pool) {
+          setSumPools(pools => [...pools, pool]);
+        }
+      });
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "ConstantSumFactoryV2",
     eventName: "PoolCreated",
     listener: logs => {
       logs.forEach(log => {
@@ -111,13 +144,21 @@ export const useFactoryHistory = () => {
     () => {
       if (
         !isLoadingSumPoolHistory &&
+        !isLoadingSumPoolHistoryV2 &&
         !isLoadingProductPoolHistory &&
         !isLoadingWeightedPoolHistory &&
         sumPoolHistory &&
+        sumPoolHistoryV2 &&
         productPoolHistory &&
         weightedPoolHistory
       ) {
         const sumPools = sumPoolHistory
+          .map(({ args }) => {
+            if (args.pool && isAddress(args.pool)) return args.pool;
+          })
+          .filter((pool): pool is Address => typeof pool === "string");
+
+        const sumPoolsV2 = sumPoolHistoryV2
           .map(({ args }) => {
             if (args.pool && isAddress(args.pool)) return args.pool;
           })
@@ -137,6 +178,7 @@ export const useFactoryHistory = () => {
 
         setProductPools(productPools);
         setSumPools(sumPools);
+        setSumPoolsV2(sumPoolsV2);
         setWeightedPools(weightedPools);
       }
     },
@@ -151,5 +193,5 @@ export const useFactoryHistory = () => {
     ],
   );
 
-  return { sumPools, productPools, weightedPools };
+  return { sumPools, sumPoolsV2, productPools, weightedPools };
 };

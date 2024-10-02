@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MockToken1: {
-      address: "0x37efddf706dcbd55ad4e8b5d4ddacf970d4c2e93",
+      address: "0xd18e0fe99f3eb099c67ade897a6bbbf02a5a68f9",
       abi: [
         {
           type: "constructor",
@@ -365,7 +365,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x0e8ebbd5590e4ad7fa19297eceaa238aa0361898",
+      address: "0x652e154e05a07a9a11c3503a7a5f07ccaaa08086",
       abi: [
         {
           type: "constructor",
@@ -723,7 +723,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0x46289c4f227af06e10d23ee09d4ad1bba9f177d8",
+      address: "0xf0539d9d2389db985cb13f28a35e888739aff28d",
       abi: [
         {
           type: "constructor",
@@ -1081,7 +1081,7 @@ const deployedContracts = {
       },
     },
     ConstantSumFactory: {
-      address: "0x543119c86f3d3fe063dd648df238b24b18c284c8",
+      address: "0xc5522cb5cd4d2276009d4c3454e1ce0d0a90b7ff",
       abi: [
         {
           type: "constructor",
@@ -1465,7 +1465,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHookExample: {
-      address: "0x25658ff6251ce2647a4834ab47b63420ef5ba1da",
+      address: "0x05fb4fa95ef2971398478f786799a10e4aee7830",
       abi: [
         {
           type: "constructor",
@@ -2174,8 +2174,1233 @@ const deployedContracts = {
         onRegister: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
       },
     },
+    ConstantSumFactoryV2: {
+      address: "0x56636f6dcfd9e89919555da2f320151b75319c6f",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "vault",
+              type: "address",
+              internalType: "contract IVault",
+            },
+            {
+              name: "pauseWindowDuration",
+              type: "uint32",
+              internalType: "uint32",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "create",
+          inputs: [
+            {
+              name: "name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "symbol",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "tokens",
+              type: "tuple[]",
+              internalType: "struct TokenConfig[]",
+              components: [
+                {
+                  name: "token",
+                  type: "address",
+                  internalType: "contract IERC20",
+                },
+                {
+                  name: "tokenType",
+                  type: "uint8",
+                  internalType: "enum TokenType",
+                },
+                {
+                  name: "rateProvider",
+                  type: "address",
+                  internalType: "contract IRateProvider",
+                },
+                {
+                  name: "paysYieldFees",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+            {
+              name: "swapFeePercentage",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "protocolFeeExempt",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "roleAccounts",
+              type: "tuple",
+              internalType: "struct PoolRoleAccounts",
+              components: [
+                {
+                  name: "pauseManager",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "swapFeeManager",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "poolCreator",
+                  type: "address",
+                  internalType: "address",
+                },
+              ],
+            },
+            {
+              name: "poolHooksContract",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "liquidityManagement",
+              type: "tuple",
+              internalType: "struct LiquidityManagement",
+              components: [
+                {
+                  name: "disableUnbalancedLiquidity",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableAddLiquidityCustom",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableRemoveLiquidityCustom",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableDonation",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+          ],
+          outputs: [
+            {
+              name: "pool",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "disable",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getActionId",
+          inputs: [
+            {
+              name: "selector",
+              type: "bytes4",
+              internalType: "bytes4",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getAuthorizer",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract IAuthorizer",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getDefaultLiquidityManagement",
+          inputs: [],
+          outputs: [
+            {
+              name: "liquidityManagement",
+              type: "tuple",
+              internalType: "struct LiquidityManagement",
+              components: [
+                {
+                  name: "disableUnbalancedLiquidity",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableAddLiquidityCustom",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableRemoveLiquidityCustom",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableDonation",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "getDefaultPoolHooksContract",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "getDeploymentAddress",
+          inputs: [
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getNewPoolPauseWindowEndTime",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint32",
+              internalType: "uint32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getOriginalPauseWindowEndTime",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint32",
+              internalType: "uint32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getPauseWindowDuration",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint32",
+              internalType: "uint32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getVault",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract IVault",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "isDisabled",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "isPoolFromFactory",
+          inputs: [
+            {
+              name: "pool",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "FactoryDisabled",
+          inputs: [],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "PoolCreated",
+          inputs: [
+            {
+              name: "pool",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "Disabled",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "PoolPauseWindowDurationOverflow",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "SenderNotAllowed",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "StandardPoolWithCreator",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {
+        disable: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getActionId: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getAuthorizer: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getDefaultLiquidityManagement: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getDefaultPoolHooksContract: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getDeploymentAddress: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getNewPoolPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getOriginalPauseWindowEndTime: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getPauseWindowDuration: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        getVault: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        isDisabled: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+        isPoolFromFactory: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
+      },
+    },
+    TimeBasedDiscountHook: {
+      address: "0xf99373a639c7aee33481d593090aa6e37427eb6e",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "vault",
+              type: "address",
+              internalType: "contract IVault",
+            },
+            {
+              name: "allowedFactory",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "trustedRouter",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "veBAL",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_peakHourStart",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "_peakHourEnd",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "_discountPercentage",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "discountPercentage",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getCurrentTimeStampWithOffset",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "int256",
+              internalType: "int256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getHookFlags",
+          inputs: [],
+          outputs: [
+            {
+              name: "hookFlags",
+              type: "tuple",
+              internalType: "struct HookFlags",
+              components: [
+                {
+                  name: "enableHookAdjustedAmounts",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "shouldCallBeforeInitialize",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "shouldCallAfterInitialize",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "shouldCallComputeDynamicSwapFee",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "shouldCallBeforeSwap",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "shouldCallAfterSwap",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "shouldCallBeforeAddLiquidity",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "shouldCallAfterAddLiquidity",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "shouldCallBeforeRemoveLiquidity",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "shouldCallAfterRemoveLiquidity",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "getIfPeakHour",
+          inputs: [
+            {
+              name: "currentHour",
+              type: "int256",
+              internalType: "int256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "onAfterAddLiquidity",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "uint8",
+              internalType: "enum AddLiquidityKind",
+            },
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "amountsInRaw",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "onAfterInitialize",
+          inputs: [
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "onAfterRemoveLiquidity",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "uint8",
+              internalType: "enum RemoveLiquidityKind",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "amountsOutRaw",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "onAfterSwap",
+          inputs: [
+            {
+              name: "",
+              type: "tuple",
+              internalType: "struct AfterSwapParams",
+              components: [
+                {
+                  name: "kind",
+                  type: "uint8",
+                  internalType: "enum SwapKind",
+                },
+                {
+                  name: "tokenIn",
+                  type: "address",
+                  internalType: "contract IERC20",
+                },
+                {
+                  name: "tokenOut",
+                  type: "address",
+                  internalType: "contract IERC20",
+                },
+                {
+                  name: "amountInScaled18",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "amountOutScaled18",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "tokenInBalanceScaled18",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "tokenOutBalanceScaled18",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "amountCalculatedScaled18",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "amountCalculatedRaw",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "router",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "pool",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "userData",
+                  type: "bytes",
+                  internalType: "bytes",
+                },
+              ],
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "onBeforeAddLiquidity",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "uint8",
+              internalType: "enum AddLiquidityKind",
+            },
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "onBeforeInitialize",
+          inputs: [
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "onBeforeRemoveLiquidity",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "uint8",
+              internalType: "enum RemoveLiquidityKind",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+            {
+              name: "",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "onBeforeSwap",
+          inputs: [
+            {
+              name: "",
+              type: "tuple",
+              internalType: "struct PoolSwapParams",
+              components: [
+                {
+                  name: "kind",
+                  type: "uint8",
+                  internalType: "enum SwapKind",
+                },
+                {
+                  name: "amountGivenScaled18",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "balancesScaled18",
+                  type: "uint256[]",
+                  internalType: "uint256[]",
+                },
+                {
+                  name: "indexIn",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "indexOut",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "router",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "userData",
+                  type: "bytes",
+                  internalType: "bytes",
+                },
+              ],
+            },
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "onComputeDynamicSwapFeePercentage",
+          inputs: [
+            {
+              name: "params",
+              type: "tuple",
+              internalType: "struct PoolSwapParams",
+              components: [
+                {
+                  name: "kind",
+                  type: "uint8",
+                  internalType: "enum SwapKind",
+                },
+                {
+                  name: "amountGivenScaled18",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "balancesScaled18",
+                  type: "uint256[]",
+                  internalType: "uint256[]",
+                },
+                {
+                  name: "indexIn",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "indexOut",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "router",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "userData",
+                  type: "bytes",
+                  internalType: "bytes",
+                },
+              ],
+            },
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "staticSwapFeePercentage",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "onRegister",
+          inputs: [
+            {
+              name: "factory",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "pool",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "tokenConfigs",
+              type: "tuple[]",
+              internalType: "struct TokenConfig[]",
+              components: [
+                {
+                  name: "token",
+                  type: "address",
+                  internalType: "contract IERC20",
+                },
+                {
+                  name: "tokenType",
+                  type: "uint8",
+                  internalType: "enum TokenType",
+                },
+                {
+                  name: "rateProvider",
+                  type: "address",
+                  internalType: "contract IRateProvider",
+                },
+                {
+                  name: "paysYieldFees",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+            {
+              name: "liquidityManagement",
+              type: "tuple",
+              internalType: "struct LiquidityManagement",
+              components: [
+                {
+                  name: "disableUnbalancedLiquidity",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableAddLiquidityCustom",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableRemoveLiquidityCustom",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "enableDonation",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+          ],
+          outputs: [
+            {
+              name: "success",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "peakHourEnd",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "peakHourStart",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "setDiscountPercentage",
+          inputs: [
+            {
+              name: "newDiscountPercentage",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "setPeakHourEnd",
+          inputs: [
+            {
+              name: "newPeakHourEnd",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "setPeakHourStart",
+          inputs: [
+            {
+              name: "newPeakHourStart",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "TimeBasedDiscountHookExecuted",
+          inputs: [],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "TimeBasedDiscountHookRegistered",
+          inputs: [
+            {
+              name: "hooksContract",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "factory",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "pool",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "SenderIsNotVault",
+          inputs: [
+            {
+              name: "sender",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+      ],
+      inheritedFunctions: {
+        getHookFlags: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterAddLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterInitialize: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterRemoveLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onAfterSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeAddLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeInitialize: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeRemoveLiquidity: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onBeforeSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onComputeDynamicSwapFeePercentage: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        onRegister: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+      },
+    },
     ConstantProductFactory: {
-      address: "0x2c6e466169ffac0dca70bc170ea18f1aaa8e42a3",
+      address: "0x8c252d7d1bf4940df82ce11671c98ca3b0590708",
       abi: [
         {
           type: "constructor",
@@ -2559,7 +3784,7 @@ const deployedContracts = {
       },
     },
     LotteryHookExample: {
-      address: "0x3d993ff56201116c0ac8ee196a1f55a6a56a0f53",
+      address: "0x9a61b227d30fa088600cb5c753ffb9b606c7e993",
       abi: [
         {
           type: "constructor",
@@ -3513,7 +4738,7 @@ const deployedContracts = {
       },
     },
     WeightedPoolFactory: {
-      address: "0x69bf7d0745856db65fbfc1d2baa9a0cd702b0541",
+      address: "0x6b175fd51384d56cd9fd143b1ceeefca66362189",
       abi: [
         {
           type: "constructor",
@@ -3918,7 +5143,7 @@ const deployedContracts = {
       },
     },
     ExitFeeHookExample: {
-      address: "0x0dca8c80fe1dc49b0f54305c04c8c2842e16d9d0",
+      address: "0x839aae42a500b9b9426aab6e5d3a3e1ad3bbdd4c",
       abi: [
         {
           type: "constructor",
