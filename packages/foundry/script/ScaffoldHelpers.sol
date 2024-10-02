@@ -26,6 +26,15 @@ contract ScaffoldHelpers is Script {
         }
     }
 
+    function getDeployerAddress() internal view returns (uint256 deployerPrivateKey) {
+        deployerPrivateKey = vm.envUint("DEPLOYER_ADDRESS");
+        if (deployerPrivateKey == 0) {
+            revert InvalidPrivateKey(
+                "You don't have a deployer address. Make sure you have set DEPLOYER_ADDRESS in .env"
+            );
+        }
+    }
+
     function setupLocalhostEnv() internal returns (uint256 localhostPrivateKey) {
         if (block.chainid == 31337) {
             root = vm.projectRoot();

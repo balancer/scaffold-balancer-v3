@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MockToken1: {
-      address: "0x8e7109f1dc67f55fbc99c04c3327ad8c56f94b68",
+      address: "0x6a6aeb33b0c57ecf0c2beedd6bdcfa656cecd565",
       abi: [
         {
           type: "constructor",
@@ -365,7 +365,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x7d82b4cba028913ac17eac50a505ae3495bfb345",
+      address: "0xc699a1d8adb62800921d131e96f47e1a204a0aac",
       abi: [
         {
           type: "constructor",
@@ -723,7 +723,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0x9fcf86efd713ce08493cadc44c3920504b52aed8",
+      address: "0x9cc07fdb2637059c1ef56e6716dd6aebe30bbd57",
       abi: [
         {
           type: "constructor",
@@ -1081,7 +1081,7 @@ const deployedContracts = {
       },
     },
     ConstantSumFactory: {
-      address: "0x30692ae129919d2f482760f90ff80303e2ed1621",
+      address: "0x0e3b43dd1e3ccdd933837e5d24fe24eb643947bf",
       abi: [
         {
           type: "constructor",
@@ -1465,7 +1465,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHookExample: {
-      address: "0x1fad5f18ac2ca74d38e0568bf28283ca2cf8cf36",
+      address: "0x37f63d488402c2450b922f744e7b40ffec9208e2",
       abi: [
         {
           type: "constructor",
@@ -2175,7 +2175,7 @@ const deployedContracts = {
       },
     },
     MockNft: {
-      address: "0x8bcb23452001b402f293ca17f3f18fec11692358",
+      address: "0xbc9e3aa358a9849753325d3349227b8c65fcb9ac",
       abi: [
         {
           type: "constructor",
@@ -2245,6 +2245,52 @@ const deployedContracts = {
               name: "",
               type: "address",
               internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getNftData",
+          inputs: [
+            {
+              name: "tokenId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "tuple",
+              internalType: "struct MockNft.NFTData",
+              components: [
+                {
+                  name: "status",
+                  type: "string",
+                  internalType: "string",
+                },
+                {
+                  name: "linkedToken",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "linkedTokenInterfaces",
+                  type: "string[]",
+                  internalType: "string[]",
+                },
+                {
+                  name: "locked",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "paused",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
             },
           ],
           stateMutability: "view",
@@ -2369,6 +2415,11 @@ const deployedContracts = {
               type: "uint256",
               internalType: "uint256",
             },
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
           ],
           stateMutability: "nonpayable",
         },
@@ -2381,40 +2432,6 @@ const deployedContracts = {
               name: "",
               type: "string",
               internalType: "string",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "nftData",
-          inputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "status",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "linkedToken",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "locked",
-              type: "bool",
-              internalType: "bool",
-            },
-            {
-              name: "paused",
-              type: "bool",
-              internalType: "bool",
             },
           ],
           stateMutability: "view",
@@ -2986,7 +3003,7 @@ const deployedContracts = {
       },
     },
     MockERC20Factory: {
-      address: "0x185fcd882dc94f374feb4ff92697ad90eed0fd1c",
+      address: "0x062e43e9a7196151eca49b5ebd1fbb37ca45aa89",
       abi: [
         {
           type: "constructor",
@@ -3328,7 +3345,7 @@ const deployedContracts = {
       },
     },
     NftCheckHook: {
-      address: "0xc10764777381fb98c9ddfd635016f952192c4a9c",
+      address: "0x440354744d776f13a42d1cb4a3753394252797fd",
       abi: [
         {
           type: "constructor",
@@ -3957,40 +3974,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "onERC721Received",
-          inputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "",
-              type: "bytes",
-              internalType: "bytes",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bytes4",
-              internalType: "bytes4",
-            },
-          ],
-          stateMutability: "pure",
-        },
-        {
-          type: "function",
           name: "onRegister",
           inputs: [
             {
@@ -4364,7 +4347,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactory: {
-      address: "0xc65b8b8c23fe8a94967650c5f8310494725eceb3",
+      address: "0x0655203b21765f5f2ada8a82fdc09873bd302366",
       abi: [
         {
           type: "constructor",
@@ -4748,7 +4731,7 @@ const deployedContracts = {
       },
     },
     LotteryHookExample: {
-      address: "0x6f976a21632fa595929b5681d59ae4606c374d26",
+      address: "0x24a080a114fececbab04f8cbb885aa89b6b5506b",
       abi: [
         {
           type: "constructor",
@@ -5702,7 +5685,7 @@ const deployedContracts = {
       },
     },
     WeightedPoolFactory: {
-      address: "0xdafeab85877c42fc2ef0823df9d74cb867c41a74",
+      address: "0xec8f6e92e7be2e8cbe8c660662d542ee7cda3b97",
       abi: [
         {
           type: "constructor",
@@ -6107,7 +6090,7 @@ const deployedContracts = {
       },
     },
     ExitFeeHookExample: {
-      address: "0xe24eadd285a571fa305f52403ce881e300631ed2",
+      address: "0x04ea5a580f0b88c69bedc644f40504efef1a292f",
       abi: [
         {
           type: "constructor",

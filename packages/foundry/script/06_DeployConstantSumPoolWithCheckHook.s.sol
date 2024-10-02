@@ -26,7 +26,7 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
     function deployConstantSumPoolWithCheckHook(address token1, address token2) internal {
 
         // change this manually, because msg.sender does not work when broadcasting :(
-        address publicKey = 0xe7a5b06E8dc5863566B974a4a19509898bdEc277;
+        address deployerAddress = address(uint160(getDeployerAddress()));
 
         // Start creating the transactions
         uint256 deployerPrivateKey = getDeployerPrivateKey();
@@ -43,12 +43,12 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         MockNft(mockNft).setLinkedTokenFactory(address(mockERC20Factory));
         
         address[] memory membersToFund = new address[](1);
-        membersToFund[0] = publicKey;
+        membersToFund[0] = deployerAddress;
         uint256[] memory amountsToFund = new uint256[](1);
         amountsToFund[0] = 1000e18;
 
         (uint256 tokenId, address linkedTokenAddress) = MockNft(mockNft).mint(
-            publicKey,
+            deployerAddress,
             "https://0a050602b1c1aeae1063a0c8f5a7cdac.ipfscdn.io/ipfs/QmSiA82PQNuWuBfQtuzWKwnZV94qs34jrW1L6PaR69jeoE/metadata.json",
             address(0),
             new string[](0),
@@ -71,7 +71,7 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
 
 
         MockNft(mockNft).approve(nftCheckHook, tokenId);
-        MockNft(mockNft).transferFrom(publicKey, nftCheckHook, tokenId);
+        MockNft(mockNft).transferFrom(deployerAddress, nftCheckHook, tokenId);
 
         // Deploy a pool and register it with the vault
         address pool = factory.create(
@@ -101,6 +101,10 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         );
         console.log("SumPoolWithNftCheckHook initialized successfully!");
         vm.stopBroadcast();
+    }
+
+    function getDeployer() private view returns(address) {
+        return msg.sender;
     }
 
     /**
