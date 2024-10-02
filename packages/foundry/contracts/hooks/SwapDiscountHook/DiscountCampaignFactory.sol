@@ -4,39 +4,58 @@ pragma solidity ^0.8.24;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-
 import { IPoolInfo } from "@balancer-labs/v3-interfaces/contracts/pool-utils/IPoolInfo.sol";
-
 import { TransferHelper } from "./libraries/TransferHelper.sol";
 import { IDiscountCampaignFactory } from "./Interfaces/IDiscountCampaignFactory.sol";
 import { ISwapDiscountHook } from "./Interfaces/ISwapDiscountHook.sol";
 import { IDiscountCampaign } from "./Interfaces/IDiscountCampaign.sol";
 import { DiscountCampaign } from "./DiscountCampaign.sol";
 
+/**
+ * @title DiscountCampaignFactory
+ * @notice Factory contract for creating and managing discount campaigns.
+ * @dev Allows for the creation and updating of discount campaigns associated with liquidity pools.
+ */
 contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, Ownable {
-    // Mapping to store user swap discount data
+    /// @notice Mapping to store discount campaigns associated with pools.
     mapping(address => CampaignData) public override discountCampaigns;
 
+    /// @notice Address of the SwapDiscountHook contract used to track user swaps.
     address public swapDiscountHook;
 
+    /**
+     * @notice Initializes the DiscountCampaignFactory contract.
+     * @dev Sets the owner of the contract during deployment.
+     */
     constructor() Ownable(msg.sender) {}
 
+    /**
+     * @notice Modifier to allow only the campaign owner to execute the function.
+     * @param pool The address of the liquidity pool for which the campaign is managed.
+     */
     modifier onlyCampaignOwner(address pool) {
         if (msg.sender != discountCampaigns[pool].owner) revert NOT_AUTHORIZED();
         _;
     }
 
+    /**
+     * @notice Modifier to ensure the campaign for a given pool exists.
+     * @param pool The address of the liquidity pool.
+     */
     modifier campaignExists(address pool) {
         address campaignAddress = discountCampaigns[pool].campaignAddress;
         if (campaignAddress == address(0)) revert PoolCampaignDoesnotExist();
-        (, , , , , , address poolAddress, ) = IDiscountCampaign(discountCampaigns[pool].campaignAddress)
-            .campaignDetails();
+        (, , , , , , address poolAddress, ) = IDiscountCampaign(campaignAddress).campaignDetails();
         if (pool != poolAddress) {
             revert PoolAddressCannotBeChanged();
         }
         _;
     }
 
+    /**
+     * @notice Modifier to ensure that the campaign for a given pool has not expired.
+     * @param pool The address of the liquidity pool.
+     */
     modifier campaignNotExpired(address pool) {
         (, , uint256 expirationTime, , , , , ) = IDiscountCampaign(discountCampaigns[pool].campaignAddress)
             .campaignDetails();
@@ -46,6 +65,10 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
         _;
     }
 
+    /**
+     * @notice Modifier to verify that a valid hook address is provided.
+     * @param _hookAddress The address of the hook contract.
+     */
     modifier verifyHook(address _hookAddress) {
         if (_hookAddress == address(0)) {
             revert InvalidHookAddress();
@@ -53,6 +76,9 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
         _;
     }
 
+    /**
+     * @notice Modifier to ensure that the swap discount hook is set.
+     */
     modifier isHookUpdated() {
         if (swapDiscountHook == address(0)) {
             revert InvalidHookAddress();
@@ -60,6 +86,11 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
         _;
     }
 
+    /**
+     * @notice Sets the address of the SwapDiscountHook contract.
+     * @dev Can only be called by the contract owner.
+     * @param _hookAddress The address of the SwapDiscountHook contract.
+     */
     function setSwapDiscountHook(address _hookAddress) external onlyOwner verifyHook(_hookAddress) {
         swapDiscountHook = _hookAddress;
     }
@@ -88,7 +119,6 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
             address(this)
         );
         TransferHelper.safeTransfer(params.rewardToken, address(discountCampaign), params.rewardAmount);
-        IDiscountCampaign(address(discountCampaign)).updateCampaignDetails(campaignDetails);
 
         // Store campaign details
         campaignData.campaignAddress = address(discountCampaign);
@@ -133,7 +163,6 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
         address pool = params.pool;
         address owner = params.owner;
         address rewardToken = params.rewardToken;
-        bytes32 campaignID = 
 
         emit CampaignUpdated(
             campaignAddress,
@@ -147,6 +176,12 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
         );
     }
 
+    /**
+     * @notice Prepares the campaign details for creating or updating a campaign.
+     * @dev Creates a CampaignDetails struct with the specified parameters.
+     * @param params The parameters for preparing the campaign details.
+     * @return A `CampaignDetails` struct containing the prepared campaign details.
+     */
     function _prepareCampaignDetails(
         CampaignParams memory params
     ) internal view returns (IDiscountCampaign.CampaignDetails memory) {
@@ -163,13 +198,19 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
             });
     }
 
+    /**
+     * @notice Recovers ERC20 tokens mistakenly sent to the contract or unwanted and no longer needed.
+     * @dev Can only be called by the contract owner.
+     * @param token Address of the ERC20 token to recover.
+     * @param amount Amount of tokens to recover.
+     */
     function recoverERC20(address token, uint256 amount) external onlyOwner {
         TransferHelper.safeTransfer(token, owner(), amount);
     }
 
     /**
-     * @notice Check if the given reward token is valid for the specified pool.
-     * @dev This function iterates over the tokens in the pool to check if the reward token matches any of them.
+     * @notice Checks if the given reward token is valid for the specified pool.
+     * @dev Iterates over the tokens in the pool to check if the reward token matches any of them.
      * @param pool The address of the liquidity pool.
      * @param rewardToken The address of the reward token to validate.
      * @return True if the reward token is valid for the pool, false otherwise.
@@ -187,7 +228,8 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
     }
 
     /**
-     * @notice Validate the token and pool for a campaign.
+     * @notice Validates the token and pool for a campaign.
+     * @dev Ensures that the reward token is one of the pool tokens.
      * @param pool The address of the liquidity pool.
      * @param rewardToken The address of the reward token to validate.
      */

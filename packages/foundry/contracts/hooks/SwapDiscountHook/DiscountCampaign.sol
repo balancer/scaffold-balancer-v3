@@ -8,19 +8,34 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.s
 
 import { IDiscountCampaign } from "./Interfaces/IDiscountCampaign.sol";
 import { ISwapDiscountHook } from "./Interfaces/ISwapDiscountHook.sol";
-
 import { TransferHelper } from "./libraries/TransferHelper.sol";
 
+/**
+ * @title DiscountCampaign
+ * @notice This contract is used to manage discount campaigns, allowing users to earn rewards through swaps.
+ * @dev Implements IDiscountCampaign interface. Includes reward distribution, user discount data updates, and campaign management.
+ */
 contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
-    // Public state variables
+    /// @notice Maps token IDs to user-specific swap data.
     mapping(uint256 => UserSwapData) public override userDiscountMapping;
+
+    /// @notice Holds the details of the current discount campaign.
     CampaignDetails public campaignDetails;
+
+    /// @notice Total amount of reward tokens distributed so far.
     uint256 public tokenRewardDistributed;
+
+    /// @notice Address of the discount campaign factory that can manage campaign updates.
     address public discountCampaignFactory;
 
-    // Private state variables
+    /// @notice Address of the swap discount hook for tracking user swaps.
     ISwapDiscountHook private _swapHook;
+
+    /// @notice Maximum buyable reward amount during the campaign.
     uint256 private _maxBuy;
+
+    /// @notice Maximum discount rate available in the campaign.
+    uint256 private _maxDiscountRate;
 
     /**
      * @notice Initializes the discount campaign contract with the provided details.
@@ -28,6 +43,7 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
      * @param _campaignDetails A struct containing reward amount, expiration time, cooldown period, discount rate, and reward token.
      * @param _owner The owner address of the discount campaign contract.
      * @param _hook The address of the swap hook for tracking user discounts.
+     * @param _discountCampaignFactory The address of the discount campaign factory.
      */
     constructor(
         CampaignDetails memory _campaignDetails,
@@ -38,9 +54,14 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
         campaignDetails = _campaignDetails;
         _swapHook = ISwapDiscountHook(_hook);
         _maxBuy = _campaignDetails.rewardAmount;
+        _maxDiscountRate = _campaignDetails.discountRate;
         discountCampaignFactory = _discountCampaignFactory;
     }
 
+    /**
+     * @notice Modifier to restrict access to the factory contract.
+     * @dev Reverts with `NOT_AUTHORIZED` if the caller is not the factory.
+     */
     modifier onlyFactory() {
         if (msg.sender != discountCampaignFactory) {
             revert NOT_AUTHORIZED();
@@ -48,11 +69,44 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
         _;
     }
 
-    // function
+    /**
+     * @notice Modifier to check and authorize a token ID before processing claims.
+     * @dev Ensures the token is valid, the campaign has not expired, and the reward has not been claimed.
+     * @param tokenID The ID of the token to be validated.
+     */
+    modifier checkAndAuthorizeTokenId(uint256 tokenID) {
+        UserSwapData memory userSwapData = userDiscountMapping[tokenID];
+
+        // Ensure the campaign address matches the current contract address
+        if (userSwapData.campaignAddress != address(this)) {
+            revert InvalidTokenID();
+        }
+
+        // Ensure the campaign ID matches the current campaign ID
+        if (userSwapData.campaignID != campaignDetails.campaignID) {
+            revert CampaignExpired();
+        }
+
+        // Check if the swap happened before the campaign expiration
+        if (block.timestamp > campaignDetails.expirationTime) {
+            revert DiscountExpired();
+        }
+
+        // Ensure the reward hasn't already been claimed
+        if (userSwapData.hasClaimed) {
+            revert RewardAlreadyClaimed();
+        }
+
+        // Ensure the cooldown period has passed
+        if (block.timestamp <= campaignDetails.coolDownPeriod) {
+            revert CoolDownPeriodNotPassed();
+        }
+        _;
+    }
 
     /**
      * @notice Updates the campaign details.
-     * @dev Only the contract owner can update the campaign details. This will replace the existing campaign parameters.
+     * @dev Can only be called by the factory contract. This will replace the existing campaign parameters.
      * @param _newCampaignDetails A struct containing updated reward amount, expiration time, cooldown period, discount rate, and reward token.
      */
     function updateCampaignDetails(CampaignDetails calldata _newCampaignDetails) external onlyFactory {
@@ -61,7 +115,9 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice Allows the SwapDiscountHook to update the userDiscountMapping after a swap.
+     * @notice Allows the SwapDiscountHook to update the user discount mapping after a swap.
+     * @dev Can only be called by the SwapDiscountHook contract.
+     * @param campaignID The ID of the campaign associated with the user.
      * @param tokenId The token ID for which the discount data is being updated.
      * @param user The address of the user receiving the discount.
      * @param swappedAmount The amount that was swapped.
@@ -74,7 +130,6 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
         uint256 swappedAmount,
         uint256 timeOfSwap
     ) external override {
-        // Ensure only the SwapDiscountHook contract can call this function
         require(msg.sender == address(_swapHook), "Unauthorized");
 
         userDiscountMapping[tokenId] = UserSwapData({
@@ -85,39 +140,6 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
             timeOfSwap: timeOfSwap,
             hasClaimed: false
         });
-    }
-
-    /**
-     * @notice Checks the validity of a token ID and ensures it meets the required conditions.
-     * @dev Reverts if the token ID is invalid, expired, or if the reward has already been claimed.
-     * @param tokenID The ID of the token to be validated.
-     */
-    modifier checkAndAuthorizeTokenId(uint256 tokenID) {
-        UserSwapData memory userSwapData = userDiscountMapping[tokenID];
-
-        // Ensure the campaign address matches the current contract address
-        if (userSwapData.campaignAddress != address(this)) {
-            revert InvalidTokenID();
-        }
-
-        if (userSwapData.campaignID != campaignDetails.campaignID) {
-            revert CampaignExpired();
-        }
-
-        // Check if the swap happened before the campaign expiration
-        if (userSwapData.timeOfSwap > campaignDetails.expirationTime) {
-            revert DiscountExpired();
-        }
-
-        // Ensure the reward hasn't already been claimed
-        if (userSwapData.hasClaimed) {
-            revert RewardAlreadyClaimed();
-        }
-
-        if (block.timestamp <= campaignDetails.coolDownPeriod) {
-            revert CoolDownPeriodNotPassed();
-        }
-        _;
     }
 
     /**
@@ -175,10 +197,16 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
      */
     function _updateDiscount() private {
         campaignDetails.discountRate =
-            (campaignDetails.discountRate * (campaignDetails.rewardAmount - tokenRewardDistributed)) /
+            (_maxDiscountRate * (campaignDetails.rewardAmount - tokenRewardDistributed)) /
             campaignDetails.rewardAmount;
     }
 
+    /**
+     * @notice Recovers any ERC20 tokens that are mistakenly sent to the contract.
+     * @dev Can only be called by the contract owner.
+     * @param tokenAddress Address of the ERC20 token to recover.
+     * @param tokenAmount Amount of tokens to recover.
+     */
     function recoverERC20(address tokenAddress, uint256 tokenAmount) external onlyOwner {
         TransferHelper.safeTransfer(tokenAddress, owner(), tokenAmount);
     }

@@ -14,20 +14,24 @@ interface IDiscountCampaign {
     /// @notice Reverts when the total reward amount has already been distributed, and no further rewards can be claimed.
     error RewardAmountExpired();
 
+    /// @notice Reverts when attempting to claim a reward without waiting for the required cooldown period.
     error CoolDownPeriodNotPassed();
 
+    /// @notice Reverts when attempting to interact with an expired campaign.
     error CampaignExpired();
 
+    /// @notice Reverts when the caller is not authorized to perform the action.
     error NOT_AUTHORIZED();
 
     /**
-     * @notice A struct containing key parameters related to a discount campaign.
-     * @param rewardAmount Total amount of rewards that can be distributed during the campaign.
-     * @param expirationTime The timestamp after which the campaign expires and discounts cannot be claimed.
-     * @param coolDownPeriod Time in seconds a user must wait between making swaps to be eligible for rewards.
-     * @param discountRate The percentage rate used to calculate discounts for users based on their swaps.
-     * @param rewardToken The address of the token used to reward users for participating in the campaign.
-     * @param poolAddress The address of the pool associated with the campaign.
+     * @notice Contains parameters related to a discount campaign.
+     * @param rewardAmount Total rewards available for the campaign.
+     * @param expirationTime Campaign expiration timestamp.
+     * @param coolDownPeriod Time a user must wait between swaps to be eligible for rewards.
+     * @param discountRate Percentage rate for discounts based on swaps.
+     * @param rewardToken Token used to reward users.
+     * @param poolAddress Address of the associated liquidity pool.
+     * @param owner Owner of the campaign.
      */
     struct CampaignDetails {
         bytes32 campaignID;
@@ -41,12 +45,12 @@ interface IDiscountCampaign {
     }
 
     /**
-     * @notice A struct used to store user-specific data about a swap and their eligibility for rewards.
-     * @param userAddress The address of the user participating in the campaign.
-     * @param campaignAddress The address of the associated discount campaign contract.
-     * @param swappedAmount The amount of tokens the user swapped during the campaign.
-     * @param timeOfSwap The timestamp of when the swap was executed.
-     * @param hasClaimed Indicates whether the user has already claimed the discount/reward for this swap.
+     * @notice Contains user-specific data related to a swap.
+     * @param userAddress Address of the participating user.
+     * @param campaignAddress Address of the discount campaign contract.
+     * @param swappedAmount Amount swapped during the campaign.
+     * @param timeOfSwap Timestamp of the swap.
+     * @param hasClaimed Indicates if the reward for this swap has been claimed.
      */
     struct UserSwapData {
         bytes32 campaignID;
@@ -58,13 +62,12 @@ interface IDiscountCampaign {
     }
 
     /**
-     * @notice Updates the user discount mapping for a given token ID.
-     * @dev This function is called by the swap hook to store the discount data for a user after a swap.
-     *      Only the authorized hook contract should be able to call this function.
-     * @param tokenId The ID of the token being associated with the user's swap.
-     * @param user The address of the user for whom the discount is being recorded.
-     * @param swappedAmount The amount of tokens that the user swapped.
-     * @param timeOfSwap The timestamp when the swap occurred.
+     * @notice Updates user discount mapping for a given token ID.
+     * @dev Can only be called by authorized contracts.
+     * @param tokenId ID of the token being updated.
+     * @param user Address of the user whose discount is being recorded.
+     * @param swappedAmount Amount of tokens swapped.
+     * @param timeOfSwap Timestamp of the swap.
      */
     function updateUserDiscountMapping(
         bytes32 campaignID,
@@ -74,17 +77,21 @@ interface IDiscountCampaign {
         uint256 timeOfSwap
     ) external;
 
+    /**
+     * @notice Updates campaign details.
+     * @param _newCampaignDetails Struct containing the new campaign details.
+     */
     function updateCampaignDetails(CampaignDetails calldata _newCampaignDetails) external;
 
     /**
-     * @notice Retrieves the swap data associated with a specific token ID.
-     * @param tokenId The ID of the token for which the swap data is being requested.
-     * @return campaignID The address of the user who made the swap.
-     * @return userAddress The address of the user who made the swap.
-     * @return campaignAddress The address of the discount campaign.
-     * @return swappedAmount The amount of tokens swapped by the user.
-     * @return timeOfSwap The timestamp of when the swap occurred.
-     * @return hasClaimed Whether the reward for this swap has been claimed.
+     * @notice Retrieves swap data for a specific token ID.
+     * @param tokenId ID of the token.
+     * @return campaignID Campaign ID related to the token.
+     * @return userAddress User who made the swap.
+     * @return campaignAddress Campaign address.
+     * @return swappedAmount Amount swapped.
+     * @return timeOfSwap Timestamp of the swap.
+     * @return hasClaimed Indicates if the reward was claimed.
      */
     function userDiscountMapping(
         uint256 tokenId
@@ -101,14 +108,15 @@ interface IDiscountCampaign {
         );
 
     /**
-     * @notice Retrieves the details of the current discount campaign.
-     * @return campaignID The total amount of rewards available for the campaign.
-     * @return rewardAmount The total amount of rewards available for the campaign.
-     * @return expirationTime The timestamp after which the campaign expires.
-     * @return coolDownPeriod The required cooldown time between swaps for users to be eligible for rewards.
-     * @return discountRate The discount rate applied to swaps.
-     * @return rewardToken The token address used for distributing rewards.
-     * @return poolAddress The address of the associated liquidity pool for the campaign.
+     * @notice Retrieves details of the discount campaign.
+     * @return campaignID Campaign ID.
+     * @return rewardAmount Total rewards available.
+     * @return expirationTime Expiration time of the campaign.
+     * @return coolDownPeriod Cooldown time between swaps for eligibility.
+     * @return discountRate Discount rate applied to swaps.
+     * @return rewardToken Reward token address.
+     * @return poolAddress Address of the liquidity pool.
+     * @return owner Campaign owner.
      */
     function campaignDetails()
         external
@@ -125,8 +133,8 @@ interface IDiscountCampaign {
         );
 
     /**
-     * @notice Emitted when the campaign details are updated by the contract owner.
-     * @param _newCampaignDetails The updated campaign details.
+     * @notice Emitted when the campaign details are updated.
+     * @param _newCampaignDetails Updated campaign details.
      */
     event CampaignDetailsUpdated(CampaignDetails _newCampaignDetails);
 }

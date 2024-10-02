@@ -73,8 +73,12 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
         (address campaignAddress, ) = discountCampaignFactory.discountCampaigns(params.pool);
         if (campaignAddress != address(0)) {
             IDiscountCampaign campaign = IDiscountCampaign(campaignAddress);
-            (, , , , , address rewardToken, , ) = campaign.campaignDetails();
-            if (params.kind == SwapKind.EXACT_IN && address(params.tokenOut) == rewardToken) {
+            (, , , , , address rewardToken, address poolAddress, ) = campaign.campaignDetails();
+            if (
+                params.kind == SwapKind.EXACT_IN &&
+                address(params.tokenOut) == rewardToken &&
+                poolAddress == params.pool
+            ) {
                 mint(params, campaign);
             }
         }
@@ -98,6 +102,11 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
         _mint(user, newTokenId);
     }
 
+    /**
+     * @notice Updates the address of the discount campaign factory.
+     * @dev Can only be called by the contract owner. Reverts if the new factory address is invalid.
+     * @param newFactory The address of the new discount campaign factory.
+     */
     function updateCampaignFactory(address newFactory) external onlyOwner {
         if (newFactory == address(0)) {
             revert InvalidCampaignAddress();
