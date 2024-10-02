@@ -24,41 +24,30 @@ import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 import { VaultGuard } from "@balancer-labs/v3-vault/contracts/VaultGuard.sol";
 
 import { ISwapDiscountHook } from "./Interfaces/ISwapDiscountHook.sol";
-import { IDiscountCampaign } from "./Interfaces/IDiscountCampaign.sol";
 import { IDiscountCampaignFactory } from "./Interfaces/IDiscountCampaignFactory.sol";
+import { IDiscountCampaign } from "./Interfaces/IDiscountCampaign.sol";
 import { DiscountCampaign } from "./DiscountCampaign.sol";
 
 contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, VaultGuard, ReentrancyGuard {
     using FixedPoint for uint256;
 
     // Immutable addresses for factory and router
-    IDiscountCampaign public immutable discountCampaign;
+    IDiscountCampaignFactory public discountCampaignFactory;
     address private immutable allowedFactoryAddress;
     address private immutable trustedRouterAddress;
     uint256 private _shareTokenId = 1;
-
-    // Token-related state variables
-    address public discountTokenAddress;
-
-    modifier verifyCampaign(address _campaignAddress) {
-        (, , , , , address pool, ) = IDiscountCampaign(_campaignAddress).campaignDetails();
-        if (pool == address(0)) {
-            revert InvalidCampaignAddress();
-        }
-        _;
-    }
 
     constructor(
         IVault vaultInstance,
         address _factoryAddress,
         address _routerAddress,
-        address _campaignAddress,
+        address _campaignFactory,
         string memory name,
         string memory symbol
-    ) VaultGuard(vaultInstance) ERC721(name, symbol) Ownable(msg.sender) verifyCampaign(_campaignAddress) {
+    ) VaultGuard(vaultInstance) ERC721(name, symbol) Ownable(msg.sender) {
         allowedFactoryAddress = _factoryAddress;
         trustedRouterAddress = _routerAddress;
-        discountCampaign = IDiscountCampaign(_campaignAddress);
+        discountCampaignFactory = IDiscountCampaignFactory(_campaignFactory);
     }
 
     /// @inheritdoc IHooks
@@ -81,10 +70,17 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
     function onAfterSwap(
         AfterSwapParams calldata params
     ) public override onlyVault returns (bool success, uint256 discountedAmount) {
-        (, , , , address rewardToken, , ) = discountCampaign.campaignDetails();
-
-        if (params.kind == SwapKind.EXACT_IN && address(params.tokenOut) == rewardToken) {
-            mint(params);
+        (address campaignAddress, ) = discountCampaignFactory.discountCampaigns(params.pool);
+        if (campaignAddress != address(0)) {
+            IDiscountCampaign campaign = IDiscountCampaign(campaignAddress);
+            (, , , , , address rewardToken, address poolAddress, ) = campaign.campaignDetails();
+            if (
+                params.kind == SwapKind.EXACT_IN &&
+                address(params.tokenOut) == rewardToken &&
+                poolAddress == params.pool
+            ) {
+                mint(params, campaign);
+            }
         }
         return (true, params.amountCalculatedRaw);
     }
@@ -98,13 +94,23 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
      *        - params.amountCalculatedRaw: The amount swapped by the user.
      *        - params.pool: The liquidity pool involved in the swap.
      */
-    function mint(AfterSwapParams calldata params) internal nonReentrant {
+    function mint(AfterSwapParams calldata params, IDiscountCampaign _campaign) internal nonReentrant {
         uint256 newTokenId = _shareTokenId++;
         address user = IRouterCommon(params.router).getSender();
-
-        // Call DiscountCampaign to update the user discount mapping
-        discountCampaign.updateUserDiscountMapping(newTokenId, user, params.amountCalculatedRaw, block.timestamp);
-
+        (bytes32 campaignID, , , , , , , ) = _campaign.campaignDetails();
+        _campaign.updateUserDiscountMapping(campaignID, newTokenId, user, params.amountCalculatedRaw, block.timestamp);
         _mint(user, newTokenId);
+    }
+
+    /**
+     * @notice Updates the address of the discount campaign factory.
+     * @dev Can only be called by the contract owner. Reverts if the new factory address is invalid.
+     * @param newFactory The address of the new discount campaign factory.
+     */
+    function updateCampaignFactory(address newFactory) external onlyOwner {
+        if (newFactory == address(0)) {
+            revert InvalidCampaignAddress();
+        }
+        discountCampaignFactory = IDiscountCampaignFactory(newFactory);
     }
 }

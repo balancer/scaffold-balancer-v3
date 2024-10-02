@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.24;
 
+/**
+ * @title ISwapDiscountHook
+ * @notice Interface for the Swap Discount Hook, which manages the granting of discounts during swaps.
+ */
 interface ISwapDiscountHook {
-    error poolCampaignAlreadyExist();
-    error InvalidRewardToken();
+    /// @notice Reverts if the provided campaign address is invalid.
     error InvalidCampaignAddress();
-    error NOT_AUTHORIZED();
-
-    /// Event emitted when a discount is granted
-    event SwapDiscountGranted(uint256 indexed id, address indexed user, uint256 expiration, uint256 amount);
 }
