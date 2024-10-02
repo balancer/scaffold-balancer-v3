@@ -114,7 +114,7 @@ contract SwapDiscountHookTest is BaseVaultTest {
             discountAmount: 50e18,
             pool: address(pool),
             owner: address(this),
-            rewardToken: address(dai)
+            rewardToken: address(usdc)
         });
 
         address campaignAddress = discountCampaignFactory.createCampaign(createParams);
