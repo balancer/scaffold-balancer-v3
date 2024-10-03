@@ -77,28 +77,27 @@ contract TWAMMTest is Test {
     }
 
     function testSwap() public {
-        IVault.SingleSwap memory singleSwap = IVault.SingleSwap({
-            poolId: twamm.getPoolId(),
-            kind: IVault.SwapKind.GIVEN_IN,
-            assetIn: IAsset(address(tokenA)),
-            assetOut: IAsset(address(tokenB)),
-            amount: 100 ether,
+        // Prepare the swap parameters
+        TWAMM.VaultSwapParams memory vaultSwapParams = TWAMM.VaultSwapParams({
+            kind: TWAMM.SwapKind.EXACT_IN,
+            pool: address(twamm),
+            tokenIn: tokenA,
+            tokenOut: tokenB,
+            amountGivenRaw: 100 ether,
+            limitRaw: 0,
             userData: ""
         });
-
-        IVault.FundManagement memory funds = IVault.FundManagement({
-            sender: address(this),
-            fromInternalBalance: false,
-            recipient: payable(address(this)),
-            toInternalBalance: false
-        });
-
+    
         uint256 limit = 0;
         uint256 deadline = block.timestamp + 1 hours;
-
-        uint256 amountOut = twamm.swap(singleSwap, funds, limit, deadline);
-        assertGt(amountOut, 0);
+    
+        // Perform the swap
+        (uint256 amountCalculatedRaw, uint256 amountInRaw, uint256 amountOutRaw) = twamm.swap(vaultSwapParams, limit, deadline);
+    
+        // Assert that the swap was successful
+        assertGt(amountOutRaw, 0);
     }
+    
 
     function testWithdrawRemainingFunds() public {
         vm.warp(block.timestamp + 2 weeks); // Fast forward time past endTime
@@ -115,7 +114,6 @@ contract TWAMMTest is Test {
 
 // Mock contracts for testing
 contract MockVault is IVault {
-    // Implement necessary functions for the mock vault
 }
 
 contract MockERC20 is IERC20 {
