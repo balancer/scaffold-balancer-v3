@@ -1,17 +1,27 @@
-# Volatility Fee Hook
+# 🪝Volatility Fee Hook
 
 A dynamic Swap Fee hook based on volatiltiy of the pool. The Hook calculates utilization ratio based on Amount of Token Out and Balance of Token Out in the pool, and charges igher fee when the utilization ratio increases.
 
 <br>
 
-## Key Advantages
+## 🔑Key Advantages
 - Increased Protection during Volatility
 - Smoother Market Conditions
 - Disincentivizes Pool Exploits
 - Customisable Fee Logic
 - Reduction in Impermanent Loss for LPs
 
-### Volatility Fee Hook v1 
+## 🏃‍♂️How to Run
+1. Ensure to Follow the Scaffold-Balancer-v3 `README.md`
+
+2. For Step 5, instead of deploying simple, use deployWith Hook to deploy, mock tokens, pool factories, Constant Product Pool, and Constant Product Pool with Volatility Fee Hook V1 and V2.
+```bash
+yarn deployWithHook
+```
+3. Use the Pool Addresses from deploy Terminal, and search in the scaffold frontend to access the pool.
+
+
+### ⭐️Volatility Fee Hook v1 
 was developed simply to discretely distinguish fee ranges:
 Technicals:
 1. Utilization Ratio > 10%, pool/hook will charge x5 the staticSwapFee
@@ -26,7 +36,7 @@ Developers can update the fee charge ranges in `function _calculateSwapFee`.
 
 <br>
 
-### Volatility Fee Hook V2
+### ✨Volatility Fee Hook V2
 v2 is developed on a continuous exponential curve for charging Swap Fee.
 The core equation behind charging these swap fee is:
 
@@ -43,3 +53,7 @@ multiplying by 99 ensures that at max utilization the fee multiplier reaches 100
 ``` 
 Caution: This repository have many changes and additions to learn Balancer Smart Contract Ecosystem, and may differ in working from original Balancer Scaffold V3 
 ```
+
+<br>
+
+***📢 Big Shoutout to Team Balancer and Matthu.eth for encouraging learning and Development at every step***
