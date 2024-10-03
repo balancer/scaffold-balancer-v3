@@ -13,6 +13,7 @@
     "chain": "yarn workspace @se-2/foundry chain",
     "fork": "yarn workspace @se-2/foundry fork",
     "deploy": "yarn workspace @se-2/foundry deploy",
+    "deployWithHook": "yarn workspace @se-2/foundry deployWithHook",
     "verify": "yarn workspace @se-2/foundry verify",
     "deploy:verify": "yarn workspace @se-2/foundry deploy:verify",
     "compile": "yarn workspace @se-2/foundry compile",
