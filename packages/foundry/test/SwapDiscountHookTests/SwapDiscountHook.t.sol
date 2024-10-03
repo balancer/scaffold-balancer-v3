@@ -170,6 +170,148 @@ contract SwapDiscountHookTest is BaseVaultTest {
         console.log(discountRate);
     }
 
+    function testLoggingSuccessfulMint() public {
+        // Step 1: Deploy discountCampaignFactory
+        console.log("DiscountCampaignFactory deployed at:", address(discountCampaignFactory));
+
+        // Step 2: Set the Swap Discount Hook address
+        discountHook = SwapDiscountHook(poolHooksContract);
+        discountCampaignFactory.setSwapDiscountHook(address(discountHook));
+        console.log("Discount Hook address set to:", address(discountHook));
+
+        // Step 3: Create a discount campaign and log its details
+        deal(address(usdc), address(discountCampaignFactory), 100e18);
+
+        IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
+            rewardAmount: 100e18,
+            expirationTime: 2 days,
+            coolDownPeriod: 0,
+            discountAmount: 50e18,
+            pool: address(pool),
+            owner: address(this),
+            rewardToken: address(usdc)
+        });
+
+        address campaignAddress = discountCampaignFactory.createCampaign(createParams);
+        discountCampaign = DiscountCampaign(campaignAddress);
+
+        console.log("DiscountCampaign created at:", campaignAddress);
+        console.log("Campaign Reward Amount:", createParams.rewardAmount);
+        console.log("Campaign Expiration Time:", createParams.expirationTime);
+        console.log("Campaign Discount Amount:", createParams.discountAmount);
+
+        // Step 4: Perform a swap and verify NFT mint
+        _doSwapAndCheckBalances2(trustedRouter);
+        uint256 nftBalance = IERC721(address(discountHook)).balanceOf(address(bob));
+        console.log("NFT balance of Bob after swap:", nftBalance);
+        assertEq(nftBalance, 1);
+
+        // Fetch user discount details and log them
+        (
+            bytes32 campaignID,
+            address userAddress,
+            address _campaignAddress,
+            uint256 swappedAmount,
+            uint256 timeOfSwap,
+            bool hasClaimed
+        ) = discountCampaign.userDiscountMapping(1);
+
+        console.log("User Address after swap:", userAddress);
+        console.log("Campaign Address after swap:", _campaignAddress);
+        console.log("Swapped Amount:", swappedAmount);
+        console.log("Time of Swap:", timeOfSwap);
+        console.log("Has Claimed Reward:", hasClaimed);
+
+        // Step 5: Claim the reward and verify balances
+        vm.warp(block.timestamp + 1 days);
+        uint256 bobRewardTokenBalanceBefore = IERC20(usdc).balanceOf(bob);
+
+        uint256 discountRate;
+        (, , , , discountRate, , , ) = discountCampaign.campaignDetails();
+
+        discountCampaign.claim(1);
+        console.log("Reward claimed by Bob.");
+
+        // Fetch updated user discount details and log them
+        (campaignID, userAddress, _campaignAddress, swappedAmount, timeOfSwap, hasClaimed) = discountCampaign
+            .userDiscountMapping(1);
+        console.log("Has Claimed Reward after claiming:", hasClaimed);
+
+        // Verify that Bob's reward balance increased
+
+        uint256 bobRewardTokenBalanceAfter = bobRewardTokenBalanceBefore + ((swappedAmount * discountRate) / 100e18);
+        assertEq(bobRewardTokenBalanceAfter, IERC20(usdc).balanceOf(bob));
+        console.log("Bob's Reward Token Balance after claim:", bobRewardTokenBalanceAfter);
+
+        // Step 6: Attempt to reclaim the reward and expect revert
+        vm.expectRevert(IDiscountCampaign.RewardAlreadyClaimed.selector);
+        discountCampaign.claim(1);
+
+        console.log("Reward reclaim attempt reverted as expected.");
+    }
+
+    function _doSwapAndCheckBalances2(address payable routerToUse) private {
+        uint256 exactAmountIn = poolInitAmount / 100;
+        uint256 expectedAmountOut = exactAmountIn;
+
+        BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
+
+        vm.prank(bob);
+        RouterMock(routerToUse).swapSingleTokenExactIn(
+            pool,
+            dai,
+            usdc,
+            exactAmountIn,
+            expectedAmountOut,
+            MAX_UINT256,
+            false,
+            bytes("")
+        );
+
+        BaseVaultTest.Balances memory balancesAfter = getBalances(bob);
+
+        // Log swap details for verification
+        console.log("Swap executed:");
+        console.log("Bob's DAI Balance Before:", balancesBefore.userTokens[daiIdx]);
+        console.log("Bob's DAI Balance After:", balancesAfter.userTokens[daiIdx]);
+        console.log("Bob's USDC Balance Before:", balancesBefore.userTokens[usdcIdx]);
+        console.log("Bob's USDC Balance After:", balancesAfter.userTokens[usdcIdx]);
+
+        // Verify balances as per swap expectations
+        assertEq(
+            balancesBefore.userTokens[daiIdx] - balancesAfter.userTokens[daiIdx],
+            exactAmountIn,
+            "Bob's DAI balance is wrong"
+        );
+        assertEq(
+            balancesAfter.userTokens[usdcIdx] - balancesBefore.userTokens[usdcIdx],
+            expectedAmountOut,
+            "Bob's USDC balance is wrong"
+        );
+
+        assertEq(
+            balancesAfter.vaultTokens[daiIdx] - balancesBefore.vaultTokens[daiIdx],
+            exactAmountIn,
+            "Vault's DAI balance is wrong"
+        );
+        assertEq(
+            balancesBefore.vaultTokens[usdcIdx] - balancesAfter.vaultTokens[usdcIdx],
+            expectedAmountOut,
+            "Vault's USDC balance is wrong"
+        );
+
+        assertEq(
+            balancesAfter.poolTokens[daiIdx] - balancesBefore.poolTokens[daiIdx],
+            exactAmountIn,
+            "Pool's DAI balance is wrong"
+        );
+        assertEq(
+            balancesBefore.poolTokens[usdcIdx] - balancesAfter.poolTokens[usdcIdx],
+            expectedAmountOut,
+            "Pool's USDC balance is wrong"
+        );
+    }
+
     function _doSwapAndCheckBalances(address payable routerToUse) private {
         uint256 exactAmountIn = poolInitAmount / 100;
         // PoolMock uses linear math with a rate of 1, so amountIn == amountOut when no fees are applied.
