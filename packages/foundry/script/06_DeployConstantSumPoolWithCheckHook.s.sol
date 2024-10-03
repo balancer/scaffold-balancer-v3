@@ -122,8 +122,8 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
      * All WITH_RATE tokens need a rate provider, and may or may not be yield-bearing.
      */
     function getCheckSumPoolConfig(address token1, address token2) internal view returns (CustomPoolConfig memory config) {
-        string memory name = "Constant Sum Pool With Nft Check"; // name for the pool
-        string memory symbol = "CSP"; // symbol for the BPT
+        string memory name = "NFT Constant Sum Pool"; // name for the pool
+        string memory symbol = "NFTCSP"; // symbol for the BPT
         bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
         uint256 swapFeePercentage = 0.01e18; // 1%
         bool protocolFeeExempt = true;

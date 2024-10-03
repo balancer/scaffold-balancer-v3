@@ -45,11 +45,18 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     address public nftContract;
     uint256 public nftId;
 
+    // Track the first user who initialized the pool and their initial liquidity amounts
+    address public firstDepositor;
+    uint256 public initialToken1Amount;
+    uint256 public initialToken2Amount;
+
     // Error to throw when the hook doesn't own the required NFT
     error DoesNotOwnRequiredNFT(address hook, address nftContract, uint256 nftId);
 
     // Error to throw when the NFT's linked token doesn't match any of the pool tokens
     error LinkedTokenNotInPool(address linkedToken);
+
+    error InsufficientLiquidityToRemove(address user, uint256 currentAmount, uint256 initialAmount);
 
     uint64 public exitFeePercentage;
     uint64 public constant MAX_EXIT_FEE_PERCENTAGE = 10e16;
@@ -59,6 +66,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     event ExitFeePercentageChanged(address indexed hookContract, uint256 exitFeePercentage);
     event NftContractUpdated(address indexed oldContract, address indexed newContract);
     event NftIdUpdated(uint256 oldId, uint256 newId);
+    event InitialLiquidityRecorded(address indexed user, uint256 token1Amount, uint256 token2Amount);
 
     error ExitFeeAboveLimit(uint256 feePercentage, uint256 limit);
     error PoolDoesNotSupportDonation();
@@ -98,6 +106,9 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         if (!linkedTokenFound) {
             revert LinkedTokenNotInPool(linkedToken);
         }
+        
+        // Record the initial liquidity amounts for use in limiting the position from the depositor prematurely
+        recordInitialLiquidity(tokenConfigs[0].token.balanceOf(pool), tokenConfigs[1].token.balanceOf(pool));
 
         emit NftCheckHookRegistered(address(this), pool);
 
@@ -126,6 +137,22 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         uint256[] memory,
         bytes memory
     ) public override onlyVault returns (bool, uint256[] memory hookAdjustedAmountsOutRaw) {
+        
+        // Ensure the first depositor has the same amount of both tokens after removal (no rug pulling allowed)
+        if (msg.sender == firstDepositor) {
+            IERC20[] memory tokens = _vault.getPoolTokens(pool);
+
+            uint256 currentToken1Amount = tokens[0].balanceOf(msg.sender);
+            uint256 currentToken2Amount = tokens[1].balanceOf(msg.sender);
+
+            if (currentToken1Amount < initialToken1Amount) {
+                revert InsufficientLiquidityToRemove(msg.sender, currentToken1Amount, initialToken1Amount);
+            }
+            if (currentToken2Amount < initialToken2Amount) {
+                revert InsufficientLiquidityToRemove(msg.sender, currentToken2Amount, initialToken2Amount);
+            }
+        }
+
         // Our current architecture only supports fees on tokens. Since we must always respect exact `amountsOut`, and
         // non-proportional remove liquidity operations would require taking fees in BPT, we only support proportional
         // removeLiquidity.
@@ -194,5 +221,13 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         uint256 oldId = nftId;
         nftId = _newNftId;
         emit NftIdUpdated(oldId, _newNftId);
+    }
+
+    function recordInitialLiquidity(uint256 token1Amount, uint256 token2Amount) external onlyOwner {
+        require(firstDepositor == address(0), "Initial liquidity already recorded");
+        firstDepositor = msg.sender;
+        initialToken1Amount = token1Amount;
+        initialToken2Amount = token2Amount;
+        emit InitialLiquidityRecorded(msg.sender, token1Amount, token2Amount);
     }
 }

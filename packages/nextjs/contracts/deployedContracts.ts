@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MockToken1: {
-      address: "0x4a9f7f3a0fdcbf5aaa7a730ed583edc80d0596a2",
+      address: "0xb5322696ac3ffb23dc777b1ffcf108f796208957",
       abi: [
         {
           type: "constructor",
@@ -365,7 +365,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0xcf865895eaee23f3b921204b778e20baeabcb7cb",
+      address: "0x277d08722386b977effb8b12615b60f9f72adadd",
       abi: [
         {
           type: "constructor",
@@ -723,7 +723,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0xe208bd36211c8605fab1ab62132ea6dcf7502f4c",
+      address: "0x97eb6a787a29cf4b915350f242a826bc90f6a8c6",
       abi: [
         {
           type: "constructor",
@@ -1081,7 +1081,7 @@ const deployedContracts = {
       },
     },
     ConstantSumFactory: {
-      address: "0x8387599872ffb5c2e00717ad3a6f84faaec548c5",
+      address: "0x558df1f43f00a10e1262d9fe38a967b51f1208ed",
       abi: [
         {
           type: "constructor",
@@ -1465,7 +1465,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHookExample: {
-      address: "0xd06091f95260dbb787236cdc83ccc6ecf399ac9b",
+      address: "0x3f8334ffc0650779bd96b0d1bde7a4f7ef134e14",
       abi: [
         {
           type: "constructor",
@@ -2175,7 +2175,7 @@ const deployedContracts = {
       },
     },
     MockNft: {
-      address: "0xb48f9803373b254a8cd582f0450fb04d81554e91",
+      address: "0x0b007eb9ab79ad756173cfa32e1d9ca925d99a48",
       abi: [
         {
           type: "constructor",
@@ -3003,7 +3003,7 @@ const deployedContracts = {
       },
     },
     MockERC20Factory: {
-      address: "0x4d87eda9401140095cacba591fe270afc6dc65c6",
+      address: "0x3f365385541616996793adce657ebee01dc11828",
       abi: [
         {
           type: "constructor",
@@ -3345,7 +3345,7 @@ const deployedContracts = {
       },
     },
     ERC20Ownable: {
-      address: "0x46d0a2f632545747591bd02594cb64d0d52a0519",
+      address: "0xc90ea46525c2d3ec1c1d22af6e609d728a02f862",
       abi: [
         {
           type: "constructor",
@@ -4052,7 +4052,7 @@ const deployedContracts = {
       },
     },
     NftCheckHook: {
-      address: "0x2a4ee082a97562d68a08f8be1673b2a3399558a9",
+      address: "0x186ea4a55d0f350c7540e3a8768963aa3f037b92",
       abi: [
         {
           type: "constructor",
@@ -5054,7 +5054,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactory: {
-      address: "0x7d6f4f027218a8435ead10c5cf638aba4541c07f",
+      address: "0x240135a655229fd86d6b317584ee50a37b4ff9ed",
       abi: [
         {
           type: "constructor",
@@ -5438,7 +5438,7 @@ const deployedContracts = {
       },
     },
     LotteryHookExample: {
-      address: "0x94d3148c59f75f91d54d8012346c578bfeabfd1e",
+      address: "0xdc37d5e13e08b32f538b33e8131ecdf646a69e40",
       abi: [
         {
           type: "constructor",
@@ -6392,7 +6392,7 @@ const deployedContracts = {
       },
     },
     WeightedPoolFactory: {
-      address: "0x4582d516b9c3f3badc54694c2bf66f9c4f03c879",
+      address: "0x7f270f2577c54cec93ab7faf4b3e48c8c850ea99",
       abi: [
         {
           type: "constructor",
@@ -6797,7 +6797,7 @@ const deployedContracts = {
       },
     },
     ExitFeeHookExample: {
-      address: "0x5634ddf1ed7ae57865a686b5a81ced478700e66d",
+      address: "0xaf529d373c2bc86436d4ff68182796b12cd1977a",
       abi: [
         {
           type: "constructor",
