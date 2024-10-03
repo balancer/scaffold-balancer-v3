@@ -223,7 +223,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         emit NftIdUpdated(oldId, _newNftId);
     }
 
-    function recordInitialLiquidity(uint256 token1Amount, uint256 token2Amount) external onlyOwner {
+    function recordInitialLiquidity(uint256 token1Amount, uint256 token2Amount) public onlyVault {
         require(firstDepositor == address(0), "Initial liquidity already recorded");
         firstDepositor = msg.sender;
         initialToken1Amount = token1Amount;
