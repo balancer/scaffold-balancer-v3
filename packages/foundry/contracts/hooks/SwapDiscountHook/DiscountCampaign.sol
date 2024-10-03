@@ -98,7 +98,7 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
         }
 
         // Ensure the cooldown period has passed
-        if (block.timestamp <= campaignDetails.coolDownPeriod) {
+        if (userSwapData.timeOfSwap + campaignDetails.coolDownPeriod > block.timestamp) {
             revert CoolDownPeriodNotPassed();
         }
         _;
