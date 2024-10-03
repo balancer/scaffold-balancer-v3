@@ -1,14 +1,96 @@
+
+# TWAMM (Time-Weighted Automated Market Maker)
+
+## Overview
+
+TWAMM is a smart contract implementation designed to facilitate time-weighted automated market making on the [Ethereum blockchain](https://ethereum.org/en/developers/docs/smart-contracts/). It leverages the [Balancer V3 Vault](https://docs.balancer.fi) architecture to execute trades over a specified time interval, allowing users to create, execute, and manage orders in a decentralized manner.
+
+## Features
+
+- **Order Creation**: Users can create buy or sell orders specifying the amount and duration.
+- **Order Execution**: Orders are executed automatically based on the specified time intervals.
+- **Order Cancellation**: Users can cancel their orders before execution.
+- **Swap Functionality**: Integrates with Balancer V3 Vault for token swaps.
+- **Fund Withdrawal**: Users can withdraw remaining funds after the order execution period ends.
+
+## Contract Details
+
+- **TWAMM.sol**: The main contract implementing the TWAMM logic.
+- **TWAMMTest.sol**: Contains test cases for the TWAMM contract using a mock vault and ERC20 tokens.
+
+## Installation
+
+To set up the project, clone the repository and install the necessary dependencies:
+
+```bash
+git clone <repository-url>
+cd TWAMM
+npm install
+```
+
+## Usage
+
+### Deploying the Contract
+
+Deploy the `TWAMM` contract on an Ethereum-compatible blockchain:
+
+```solidity
+IVault vault = IVault(address(new MockVault()));
+IERC20 tokenA = IERC20(address(new MockERC20("TokenA", "TKA", 18)));
+IERC20 tokenB = IERC20(address(new MockERC20("TokenB", "TKB", 18)));
+
+TWAMM twamm = new TWAMM(
+    vault,
+    address(tokenA),
+    address(tokenB),
+    tokenA,
+    tokenB,
+    1000 ether,
+    1000 ether,
+    block.timestamp,
+    block.timestamp + 1 weeks,
+    1 hours
+);
+```
+
+### Running Tests
+
+To run the tests for the `TWAMM` contract, use the following command:
+
+```bash
+forge test
+```
+
+## Mock Contracts
+
+- **MockVault**: A mock implementation of the Balancer V3 Vault interface for testing purposes.
+- **MockERC20**: A simple [ERC20](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#IERC20) token implementation used in testing.
+
+## License
+
+This project is licensed under the [GPL-3.0-only License](https://www.gnu.org/licenses/gpl-faq.en.html).
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
+
+## Contact
+
+For any questions or support, please contact the project maintainers.       
+
+
 # 🏗︎ Scaffold Balancer v3
 
 A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
 
+
 [![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/f862091d-2fe9-4b4b-8d70-cb2fdc667384)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
 
 ### 🔁 Development Life Cycle
-
 1. Learn the core concepts for building on top of Balancer v3
 2. Configure and deploy factories, pools, and hooks contracts to a local anvil fork of Sepolia
 3. Interact with pools via a frontend that runs at [localhost:3000](http://localhost:3000/)
+
 
 ### 🪧 Table Of Contents
 
@@ -33,7 +115,6 @@ A starter kit for building on top of Balancer v3. Accelerate the process of crea
 ### 2. Quickstart 🏃
 
 1. Ensure you have the latest version of foundry installed
-
 ```
 foundryup
 ```
@@ -46,9 +127,11 @@ cd scaffold-balancer-v3
 yarn install
 ```
 
-3. Set a `SEPOLIA_RPC_URL` in the `packages/foundry/.env` file
+3. Set the necessary environment variables in a `packages/foundry/.env` file [^1]
+   [^1]: The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must possess enough Sepolia ETH to deploy the contracts. The `SEPOLIA_RPC_URL` facilitates running a local fork and sending transactions to sepolia testnet
 
 ```
+DEPLOYER_PRIVATE_KEY=0x...
 SEPOLIA_RPC_URL=...
 ```
 
@@ -58,8 +141,8 @@ SEPOLIA_RPC_URL=...
 yarn fork
 ```
 
-5. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts
-   > By default, the anvil account #0 will be the deployer and recieve the mock tokens and BPT from pool initialization
+5. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts [^2]
+   [^2]: The `DEPLOYER_PRIVATE_KEY` wallet receives the mock tokens and resulting BPT from pool initialization
 
 ```bash
 yarn deploy
@@ -156,31 +239,30 @@ const scaffoldConfig = {
 
 ![v3-components](https://github.com/user-attachments/assets/ccda9323-790f-4276-b092-c867fd80bf9e)
 
-## 🕵️ Explore the Examples
 
+## 🕵️ Explore the Examples
 Each of the following examples have turn key deploy scripts that can be found in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory
 
 ### 1. Constant Sum Pool with Dynamic Swap Fee Hook
-
 The swap fee percentage is altered by the hook contract before the pool calculates the amount for the swap
 
 ![dynamic-fee-hook](https://github.com/user-attachments/assets/5ba69ea3-6894-4eeb-befa-ed87cfeb6b13)
 
 ### 2. Constant Product Pool with Lottery Hook
-
 An after swap hook makes a request to an oracle contract for a random number
 
 ![after-swap-hook](https://github.com/user-attachments/assets/594ce1ac-2edc-4d16-9631-14feb2d085f8)
 
 ### 3. Weighted Pool with Exit Fee Hook
-
-An after remove liquidity hook adjusts the amounts before the vault transfers tokens to the user
+An after remove liquidity hook adjusts the amounts before the vault transfers tokens to the user 
 
 ![after-remove-liquidity-hook](https://github.com/user-attachments/assets/2e8f4a5c-f168-4021-b316-28a79472c8d1)
+
 
 ## 🌊 Create a Custom Pool
 
 [![custom-amm-video](https://github.com/user-attachments/assets/e6069a51-f1b5-4f98-a2a9-3a2098696f96)](https://www.youtube.com/watch?v=kXynS3jAu0M)
+
 
 ### 1. Review the Docs 📖
 
@@ -228,7 +310,7 @@ After designing a pool contract, the next step is to prepare a factory contract 
 - A hooks contract should also inherit from [VaultGuard.sol](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/VaultGuard.sol)
 - Must implement `onRegister` to determine if a pool is allowed to use the hook contract
 - Must implement `getHookFlags` to define which hooks are supported
-- The `onlyVault` modifier should be applied to all hooks functions (i.e. `onRegister`, `onBeforeSwap`, `onAfterSwap` ect.)
+- The `onlyVault`  modifier should be applied to all hooks functions (i.e. `onRegister`, `onBeforeSwap`, `onAfterSwap` ect.)
 
 ### 3. Write a Hook Contract 📝
 
@@ -240,36 +322,20 @@ The deploy scripts are located in the [foundry/script/](https://github.com/balan
 
 ![pool-deploy-scripts](https://github.com/user-attachments/assets/bb906080-8f42-46c0-af90-ba01ba1754fc)
 
+
 ### 1. Modifying the Deploy Scripts 🛠️
 
-For all the scaffold integrations to work properly, each deploy script must be imported into `Deploy.s.sol` and inherited by the `DeployScript` contract in `Deploy.s.sol`
+For all the scaffold integrations to work properly, each deploy script must be imported into `Deploy.s.sol` and inherited by the `DeployScript` contract in `Deploy.s.sol` 
 
 ### 2. Broadcast the Transactions 📡
 
-#### Deploy to local fork
-
-1. Run the following command
+To run all the deploy scripts
 
 ```bash
 yarn deploy
 ```
 
-#### Deploy to a live network
-
-1. Add a `DEPLOYER_PRIVATE_KEY` to the `packages/foundry/.env` file
-
-```
-DEPLOYER_PRIVATE_KEY=0x...
-SEPOLIA_RPC_URL=...
-```
-
-> The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must hold enough Sepolia ETH to deploy the contracts. This account will receive the BPT from pool initialization
-
-2. Run the following command
-
-```
-yarn deploy --network sepolia
-```
+🛈 To deploy to the live sepolia testnet, add the `--network sepolia` flag
 
 ## 🧪 Test the Contracts
 
