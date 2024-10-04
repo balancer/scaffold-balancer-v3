@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-// Interface for Balancer V3 Vault
 interface IBalancerVault {
     function flashLoan(
         address recipient,
@@ -14,9 +13,15 @@ interface IBalancerVault {
         uint256[] memory amounts,
         bytes memory userData
     ) external;
+
+    function swap(
+        SingleSwap memory singleSwap,
+        FundManagement memory funds,
+        uint256 limit,
+        uint256 deadline
+    ) external returns (uint256);
 }
 
-// Simplified interface for Uniswap V2 Router
 interface IUniswapV2Router {
     function swapExactTokensForTokens(
         uint amountIn,
@@ -27,6 +32,24 @@ interface IUniswapV2Router {
     ) external returns (uint[] memory amounts);
 }
 
+struct SingleSwap {
+    bytes32 poolId;
+    SwapKind kind;
+    address assetIn;
+    address assetOut;
+    uint256 amount;
+    bytes userData;
+}
+
+struct FundManagement {
+    address sender;
+    bool fromInternalBalance;
+    address payable recipient;
+    bool toInternalBalance;
+}
+
+enum SwapKind { GIVEN_IN, GIVEN_OUT }
+
 contract BalancerV3ArbitrageBot is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -34,27 +57,38 @@ contract BalancerV3ArbitrageBot is Ownable, ReentrancyGuard {
     IUniswapV2Router public uniswapRouter;
 
     event ArbitrageExecuted(address indexed token0, address indexed token1, uint256 profit);
+    event ArbitrageError(string reason);
 
     constructor(address _balancerVault, address _uniswapRouter) {
         balancerVault = IBalancerVault(_balancerVault);
         uniswapRouter = IUniswapV2Router(_uniswapRouter);
     }
 
+    event DebugLog(string message);
+    event DebugLogUint(string message, uint256 value);
+
     function executeArbitrage(
         address token0,
         address token1,
         uint256 flashLoanAmount,
-        uint256 minProfit
+        uint256 minProfit,
+        bytes32 balancerPoolId
     ) external onlyOwner nonReentrant {
+        emit DebugLog("Executing arbitrage");
         address[] memory tokens = new address[](1);
         tokens[0] = token0;
 
         uint256[] memory amounts = new uint256[](1);
         amounts[0] = flashLoanAmount;
 
-        bytes memory userData = abi.encode(token1, minProfit);
+        bytes memory userData = abi.encode(token1, minProfit, balancerPoolId);
 
-        balancerVault.flashLoan(address(this), tokens, amounts, userData);
+        try balancerVault.flashLoan(address(this), tokens, amounts, userData) {
+            emit DebugLog("Flash loan successful");
+        } catch Error(string memory reason) {
+            emit DebugLog(string(abi.encodePacked("Flash loan failed: ", reason)));
+            emit ArbitrageError(string(abi.encodePacked("Flash loan failed: ", reason)));
+        }
     }
 
     function receiveFlashLoan(
@@ -63,38 +97,50 @@ contract BalancerV3ArbitrageBot is Ownable, ReentrancyGuard {
         uint256[] memory feeAmounts,
         bytes memory userData
     ) external {
+        emit DebugLog("Received flash loan");
         require(msg.sender == address(balancerVault), "Unauthorized");
 
-        (address token1, uint256 minProfit) = abi.decode(userData, (address, uint256));
+        (address token1, uint256 minProfit, bytes32 balancerPoolId) = abi.decode(userData, (address, uint256, bytes32));
 
-        // Step 1: Receive flash loan
         uint256 flashLoanAmount = amounts[0];
         address token0 = tokens[0];
 
-        // Step 2: Swap token0 for token1 on Uniswap
-        IERC20(token0).safeApprove(address(uniswapRouter), flashLoanAmount);
-        address[] memory path = new address[](2);
-        path[0] = token0;
-        path[1] = token1;
-        uint256[] memory swapAmounts = uniswapRouter.swapExactTokensForTokens(
-            flashLoanAmount,
-            0,
-            path,
-            address(this),
-            block.timestamp
-        );
+        try this.performArbitrage(token0, token1, flashLoanAmount, feeAmounts[0], minProfit, balancerPoolId) {
+            emit DebugLog("Arbitrage successful");
+        } catch Error(string memory reason) {
+            emit DebugLog(string(abi.encodePacked("Arbitrage failed: ", reason)));
+            emit ArbitrageError(string(abi.encodePacked("Arbitrage failed: ", reason)));
+            // Ensure we repay the flash loan even if arbitrage fails
+            IERC20(token0).safeTransfer(address(balancerVault), flashLoanAmount + feeAmounts[0]);
+        }
+    }
 
-        // Step 3: Swap token1 back to token0 on Balancer (simplified, assume direct swap)
-        uint256 token1Amount = swapAmounts[1];
-        IERC20(token1).safeApprove(address(balancerVault), token1Amount);
-        // Note: This is a simplified representation. You'd need to implement the actual Balancer swap logic here.
-        uint256 token0Received = token1Amount * 101 / 100; // Simplified: assume 1% profit
+    function performArbitrage(
+        address token0,
+        address token1,
+        uint256 flashLoanAmount,
+        uint256 flashLoanFee,
+        uint256 minProfit,
+        bytes32 balancerPoolId
+    ) external {
+        emit DebugLog("Performing arbitrage");
+        require(msg.sender == address(this), "Only internal call");
 
-        // Step 4: Repay flash loan and calculate profit
-        uint256 flashLoanRepayment = flashLoanAmount + feeAmounts[0];
+        // Step 1: Swap token0 for token1 on Uniswap
+        uint256 token1Amount = swapOnUniswap(token0, token1, flashLoanAmount);
+        emit DebugLogUint("Uniswap swap result", token1Amount);
+
+        // Step 2: Swap token1 back to token0 on Balancer
+        uint256 token0Received = swapOnBalancer(token1, token0, token1Amount, balancerPoolId);
+        emit DebugLogUint("Balancer swap result", token0Received);
+
+        // Step 3: Calculate profit and repay flash loan
+        uint256 flashLoanRepayment = flashLoanAmount + flashLoanFee;
+        emit DebugLogUint("Flash loan repayment", flashLoanRepayment);
         require(token0Received > flashLoanRepayment, "Arbitrage not profitable");
 
         uint256 profit = token0Received - flashLoanRepayment;
+        emit DebugLogUint("Calculated profit", profit);
         require(profit >= minProfit, "Profit below minimum threshold");
 
         // Repay flash loan
@@ -106,90 +152,50 @@ contract BalancerV3ArbitrageBot is Ownable, ReentrancyGuard {
         emit ArbitrageExecuted(token0, token1, profit);
     }
 
+
+    function swapOnUniswap(address tokenIn, address tokenOut, uint256 amountIn) internal returns (uint256) {
+        IERC20(tokenIn).safeApprove(address(uniswapRouter), amountIn);
+        
+        address[] memory path = new address[](2);
+        path[0] = tokenIn;
+        path[1] = tokenOut;
+
+        uint[] memory amounts = uniswapRouter.swapExactTokensForTokens(
+            amountIn,
+            0, // We don't set a minimum as we'll check profitability later
+            path,
+            address(this),
+            block.timestamp
+        );
+
+        return amounts[1]; // Return the amount of tokenOut received
+    }
+
+    function swapOnBalancer(address tokenIn, address tokenOut, uint256 amountIn, bytes32 poolId) internal returns (uint256) {
+        IERC20(tokenIn).safeApprove(address(balancerVault), amountIn);
+
+        SingleSwap memory swap = SingleSwap({
+            poolId: poolId,
+            kind: SwapKind.GIVEN_IN,
+            assetIn: tokenIn,
+            assetOut: tokenOut,
+            amount: amountIn,
+            userData: ""
+        });
+
+        FundManagement memory funds = FundManagement({
+            sender: address(this),
+            fromInternalBalance: false,
+            recipient: payable(address(this)),
+            toInternalBalance: false
+        });
+
+        return balancerVault.swap(swap, funds, 0, block.timestamp);
+    }
+
     // Function to rescue tokens stuck in the contract
     function rescueTokens(address token) external onlyOwner {
         uint256 balance = IERC20(token).balanceOf(address(this));
         IERC20(token).safeTransfer(owner(), balance);
     }
 }
-// pragma solidity ^0.8.0;
-
-// import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-// import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-// import "@balancer-labs/v2-flash-loans/contracts/IVault.sol";
-
-// contract FlashLoanArbitrage {
-//     address private owner;
-//     IVault private balancerVault;
-//     IUniswapV2Router02 private uniswapRouter;
-//     IUniswapV2Router02 private sushiswapRouter;
-
-//     constructor(address _balancerVault, address _uniswapRouter, address _sushiswapRouter) {
-//         owner = msg.sender;
-//         balancerVault = IVault(_balancerVault);
-//         uniswapRouter = IUniswapV2Router02(_uniswapRouter);
-//         sushiswapRouter = IUniswapV2Router02(_sushiswapRouter);
-//     }
-
-//     modifier onlyOwner() {
-//         require(msg.sender == owner, "Not the owner");
-//         _;
-//     }
-
-//     // Flash Loan Callback (Balancer will call this function after loan is granted)
-//     function receiveFlashLoan(
-//         IERC20[] memory tokens,
-//         uint256[] memory amounts,
-//         uint256 fee,
-//         bytes memory userData
-//     ) external {
-//         // Assume we're only borrowing one asset (USDC)
-//         uint256 amountBorrowed = amounts[0];
-
-//         // Trade on Uniswap (buy ETH with USDC)
-//         address;
-//         path[0] = address(tokens[0]); // USDC
-//         path[1] = uniswapRouter.WETH(); // ETH
-        
-//         tokens[0].approve(address(uniswapRouter), amountBorrowed);
-//         uint256[] memory amountsOut = uniswapRouter.swapExactTokensForTokens(
-//             amountBorrowed,
-//             0, // minimum ETH out
-//             path,
-//             address(this),
-//             block.timestamp + 300
-//         );
-
-//         uint256 ethBought = amountsOut[1];
-
-//         // Trade on Sushiswap (sell ETH for USDC)
-//         path[0] = sushiswapRouter.WETH(); // ETH
-//         path[1] = address(tokens[0]); // USDC
-
-//         IERC20(path[0]).approve(address(sushiswapRouter), ethBought);
-//         uint256[] memory amountsBack = sushiswapRouter.swapExactTokensForTokens(
-//             ethBought,
-//             0, // minimum USDC out
-//             path,
-//             address(this),
-//             block.timestamp + 300
-//         );
-
-//         uint256 usdcGained = amountsBack[1];
-
-//         // Repay the flash loan
-//         uint256 amountOwed = amountBorrowed + fee;
-//         require(usdcGained > amountOwed, "No profit, reverting");
-
-//         tokens[0].transfer(address(balancerVault), amountOwed);
-
-//         // Keep the profit
-//         uint256 profit = usdcGained - amountOwed;
-//         tokens[0].transfer(owner, profit);
-//     }
-
-//     // Initiate Flash Loan
-//     function executeArbitrage(IERC20[] memory tokens, uint256[] memory amounts) external onlyOwner {
-//         balancerVault.flashLoan(address(this), tokens, amounts, "");
-//     }
-// }

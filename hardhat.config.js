@@ -1,32 +1,17 @@
-require("@nomiclabs/hardhat-ethers");
 require("dotenv").config();
-
+// require("@nomicfoundation/hardhat-toolbox");
+// require("@nomicfoundation/hardhat-chai-matchers");
+require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-ethers");
+/** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.0",
+  solidity: "0.8.18",
   networks: {
-    sepolia: {
-      url: `https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
-      accounts: [`0x${process.env.PRIVATE_KEY}`],
-      gas: 2100000,
-      gasPrice: 8000000000, // Customize based on network conditions
-    }
-  }
+    hardhat: {
+      forking: {
+        url: `https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+        blockNumber: 3250000  // Use a fixed block number for better performance
+      },
+    },
+  },
 };
-
-// require("@nomiclabs/hardhat-ethers");
-// require("dotenv").config();
-
-// module.exports = {
-//   solidity: "0.8.0",
-//   networks: {
-//     goerli: {
-//       url: `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
-//       accounts: [`0x${process.env.PRIVATE_KEY}`]
-//     }
-//   }
-// };
-
-// /** @type import('hardhat/config').HardhatUserConfig */
-// module.exports = {
-//   solidity: "0.8.27",
-// };
