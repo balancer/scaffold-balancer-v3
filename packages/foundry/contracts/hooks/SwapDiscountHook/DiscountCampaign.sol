@@ -150,7 +150,7 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
      */
     function claim(uint256 tokenID) public checkAndAuthorizeTokenId(tokenID) nonReentrant {
         UserSwapData memory userSwapData = userDiscountMapping[tokenID];
-        uint256 reward = _getClaimableRewards(tokenID);
+        uint256 reward = _getClaimableRewards(userSwapData);
 
         if (reward == 0) {
             revert RewardAmountExpired();
@@ -164,23 +164,22 @@ contract DiscountCampaign is IDiscountCampaign, Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice Returns the claimable reward amount for a specific token ID.
-     * @dev Fetches the claimable reward based on the token's associated swap data and discount rate.
-     * @param tokenID The ID of the token to check.
-     * @return The claimable reward amount.
-     */
-    function getClaimableReward(uint256 tokenID) external view returns (uint256) {
-        return _getClaimableRewards(tokenID);
-    }
-
-    /**
      * @notice Internal function to calculate the claimable reward for a given token ID.
      * @dev The reward is calculated based on the swapped amount and discount rate.
      * @param tokenID The ID of the token for which to calculate the reward.
      * @return claimableReward The amount of reward that can be claimed.
      */
-    function _getClaimableRewards(uint256 tokenID) private view returns (uint256 claimableReward) {
+    function getClaimableReward(uint256 tokenID) external view returns (uint256 claimableReward) {
         UserSwapData memory userSwapData = userDiscountMapping[tokenID];
+        return _getClaimableRewards(userSwapData);
+    }
+
+    /**
+     * @notice Overloaded version of _getClaimableRewards that takes UserSwapData as input.
+     * @param userSwapData The UserSwapData struct containing the necessary information for calculating rewards.
+     * @return claimableReward The amount of reward that can be claimed.
+     */
+    function _getClaimableRewards(UserSwapData memory userSwapData) private view returns (uint256 claimableReward) {
         uint256 swappedAmount = userSwapData.swappedAmount;
 
         // Calculate claimable reward based on the swapped amount and discount rate

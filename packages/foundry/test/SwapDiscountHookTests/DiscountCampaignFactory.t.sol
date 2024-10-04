@@ -55,7 +55,8 @@ contract DiscountCampaignFactoryTest is BaseVaultTest {
     }
 
     function testSuccessfullDeploymentOfCampaignContract() public {
-        deal(address(dai), address(discountCampaignFactory), 100e18);
+        deal(address(dai), address(this), 100e18);
+        IERC20(address(dai)).approve(address(discountCampaignFactory), 100e18);
 
         IDiscountCampaignFactory.CampaignParams memory params = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 100e18,
@@ -90,7 +91,8 @@ contract DiscountCampaignFactoryTest is BaseVaultTest {
 
         discountCampaignFactory.createCampaign(params);
 
-        deal(address(dai), address(discountCampaignFactory), 100e18);
+        deal(address(dai), address(this), 100e18);
+        IERC20(address(dai)).approve(address(discountCampaignFactory), 100e18);
 
         discountCampaignFactory.createCampaign(params);
 
@@ -99,7 +101,8 @@ contract DiscountCampaignFactoryTest is BaseVaultTest {
     }
 
     function testUnsuccessfulCampaignUpdate() public {
-        deal(address(dai), address(discountCampaignFactory), 100e18);
+        deal(address(dai), address(this), 100e18);
+        IERC20(address(dai)).approve(address(discountCampaignFactory), 100e18);
 
         IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 100e18,
@@ -142,7 +145,8 @@ contract DiscountCampaignFactoryTest is BaseVaultTest {
     }
 
     function testSuccessfulCampaignUpdate() public {
-        deal(address(dai), address(discountCampaignFactory), 100e18);
+        deal(address(dai), address(this), 100e18);
+        IERC20(address(dai)).approve(address(discountCampaignFactory), 100e18);
 
         IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 100e18,
@@ -157,7 +161,8 @@ contract DiscountCampaignFactoryTest is BaseVaultTest {
         address campaignAddress = discountCampaignFactory.createCampaign(createParams);
 
         vm.warp(block.timestamp + 7 days);
-        deal(address(dai), address(discountCampaignFactory), 1000e18);
+        deal(address(dai), address(this), 1000e18);
+        IERC20(address(dai)).approve(address(discountCampaignFactory), 1000e18);
 
         IDiscountCampaignFactory.CampaignParams memory updateParams = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 1000e18,

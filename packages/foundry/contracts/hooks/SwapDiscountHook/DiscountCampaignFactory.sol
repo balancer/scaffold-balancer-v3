@@ -118,11 +118,12 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
             swapDiscountHook,
             address(this)
         );
-        TransferHelper.safeTransfer(params.rewardToken, address(discountCampaign), params.rewardAmount);
 
         // Store campaign details
         campaignData.campaignAddress = address(discountCampaign);
         campaignData.owner = msg.sender;
+
+        TransferHelper.safeTransferFrom(params.rewardToken, msg.sender, address(discountCampaign), params.rewardAmount);
 
         emit CampaignCreated(
             address(discountCampaign),
@@ -152,8 +153,6 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
 
         IDiscountCampaign.CampaignDetails memory campaignDetails = _prepareCampaignDetails(params);
 
-        TransferHelper.safeTransfer(params.rewardToken, campaignAddress, params.rewardAmount);
-
         IDiscountCampaign(campaignAddress).updateCampaignDetails(campaignDetails);
 
         uint256 rewardAmount = params.rewardAmount;
@@ -163,6 +162,8 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
         address pool = params.pool;
         address owner = params.owner;
         address rewardToken = params.rewardToken;
+
+        TransferHelper.safeTransferFrom(rewardToken, msg.sender, campaignAddress, rewardAmount);
 
         emit CampaignUpdated(
             campaignAddress,

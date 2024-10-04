@@ -105,7 +105,8 @@ contract SwapDiscountHookTest is BaseVaultTest {
     }
 
     function testSuccessfulNFTMint() public {
-        deal(address(usdc), address(discountCampaignFactory), 100e18);
+        deal(address(usdc), address(this), 100e18);
+        IERC20(address(usdc)).approve(address(discountCampaignFactory), 100e18);
 
         IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 100e18,
@@ -180,7 +181,8 @@ contract SwapDiscountHookTest is BaseVaultTest {
         console.log("Discount Hook address set to:", address(discountHook));
 
         // Step 3: Create a discount campaign and log its details
-        deal(address(usdc), address(discountCampaignFactory), 100e18);
+        deal(address(usdc), address(this), 100e18);
+        IERC20(address(usdc)).approve(address(discountCampaignFactory), 100e18);
 
         IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 100e18,

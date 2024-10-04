@@ -59,7 +59,8 @@ contract DiscountCampaignTest is BaseVaultTest {
     }
 
     function testSuccessfulNFTMint() public {
-        deal(address(usdc), address(discountCampaignFactory), 100e18);
+        deal(address(usdc), address(this), 100e18);
+        IERC20(address(usdc)).approve(address(discountCampaignFactory), 100e18);
 
         IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 100e18,
@@ -124,7 +125,8 @@ contract DiscountCampaignTest is BaseVaultTest {
     }
 
     function test_NotAbleToClaimRewardBeforeCoolDownPeriod() public {
-        deal(address(usdc), address(discountCampaignFactory), 100e18);
+        deal(address(usdc), address(this), 100e18);
+        IERC20(address(usdc)).approve(address(discountCampaignFactory), 100e18);
 
         IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 100e18,
@@ -189,7 +191,8 @@ contract DiscountCampaignTest is BaseVaultTest {
     }
 
     function test_NotAbleToClaimRewardAfterExpiration() public {
-        deal(address(usdc), address(discountCampaignFactory), 100e18);
+        deal(address(usdc), address(this), 100e18);
+        IERC20(address(usdc)).approve(address(discountCampaignFactory), 100e18);
 
         IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 100e18,
@@ -238,7 +241,8 @@ contract DiscountCampaignTest is BaseVaultTest {
         discountCampaign.claim(1);
 
         // Now updating the campaign
-        deal(address(usdc), address(discountCampaignFactory), 50e18);
+        deal(address(usdc), address(this), 50e18);
+        IERC20(address(usdc)).approve(address(discountCampaignFactory), 50e18);
 
         IDiscountCampaignFactory.CampaignParams memory updateParams = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 50e18,
@@ -258,7 +262,8 @@ contract DiscountCampaignTest is BaseVaultTest {
     }
 
     function test_NotAbleToClaimRewardFromAnotherCampaign() public {
-        deal(address(usdc), address(discountCampaignFactory), 200e18);
+        deal(address(usdc), address(this), 200e18);
+        IERC20(address(usdc)).approve(address(discountCampaignFactory), 200e18);
 
         IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 100e18,
@@ -304,7 +309,8 @@ contract DiscountCampaignTest is BaseVaultTest {
     }
 
     function test_DiscountRate() public {
-        deal(address(usdc), address(discountCampaignFactory), 100e18);
+        deal(address(usdc), address(this), 100e18);
+        IERC20(address(usdc)).approve(address(discountCampaignFactory), 100e18);
 
         IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 100e18,
@@ -343,7 +349,8 @@ contract DiscountCampaignTest is BaseVaultTest {
 
     // function test_fuzz_discountRateUntilZero2() public {
     //     // Initial setup
-    //     deal(address(usdc), address(discountCampaignFactory), 100e18);
+    //     deal(address(usdc), address(this), 100e18);
+    // IERC20(address(usdc)).approve(address(discountCampaignFactory), 100e18);
 
     //     IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
     //         rewardAmount: 100e18,
@@ -426,7 +433,8 @@ contract DiscountCampaignTest is BaseVaultTest {
     // }
 
     function test_fuzz_discountRate() public {
-        deal(address(usdc), address(discountCampaignFactory), 100e18);
+        deal(address(usdc), address(this), 100e18);
+        IERC20(address(usdc)).approve(address(discountCampaignFactory), 100e18);
 
         IDiscountCampaignFactory.CampaignParams memory createParams = IDiscountCampaignFactory.CampaignParams({
             rewardAmount: 100e18,
