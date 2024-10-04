@@ -73,13 +73,13 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
         (address campaignAddress, ) = discountCampaignFactory.discountCampaigns(params.pool);
         if (campaignAddress != address(0)) {
             IDiscountCampaign campaign = IDiscountCampaign(campaignAddress);
-            (, , , , , address rewardToken, address poolAddress, ) = campaign.campaignDetails();
+            (bytes32 campaignID, , , , , address rewardToken, address poolAddress, ) = campaign.campaignDetails();
             if (
                 params.kind == SwapKind.EXACT_IN &&
                 address(params.tokenOut) == rewardToken &&
                 poolAddress == params.pool
             ) {
-                mint(params, campaign);
+                mint(params, campaign, campaignID);
             }
         }
         return (true, params.amountCalculatedRaw);
@@ -94,11 +94,14 @@ contract SwapDiscountHook is ISwapDiscountHook, BaseHooks, ERC721, Ownable, Vaul
      *        - params.amountCalculatedRaw: The amount swapped by the user.
      *        - params.pool: The liquidity pool involved in the swap.
      */
-    function mint(AfterSwapParams calldata params, IDiscountCampaign _campaign) internal nonReentrant {
+    function mint(
+        AfterSwapParams calldata params,
+        IDiscountCampaign _campaign,
+        bytes32 _campaignID
+    ) internal nonReentrant {
         uint256 newTokenId = _shareTokenId++;
         address user = IRouterCommon(params.router).getSender();
-        (bytes32 campaignID, , , , , , , ) = _campaign.campaignDetails();
-        _campaign.updateUserDiscountMapping(campaignID, newTokenId, user, params.amountCalculatedRaw, block.timestamp);
+        _campaign.updateUserDiscountMapping(_campaignID, newTokenId, user, params.amountCalculatedRaw, block.timestamp);
         _mint(user, newTokenId);
     }
 
