@@ -1,7 +1,11 @@
 {
-  "name": "se-2",
-  "version": "0.0.1",
+  "name": "balancerv3-bot",
+  "version": "1.0.0",
   "private": true,
+  "main": "hardhat.config.js",
+  "directories": {
+    "test": "test"
+  },
   "workspaces": {
     "packages": [
       "packages/nextjs",
@@ -21,7 +25,7 @@
     "foundry:format": "yarn workspace @se-2/foundry format",
     "foundry:lint": "yarn workspace @se-2/foundry lint",
     "foundry:test": "yarn workspace @se-2/foundry test",
-    "test": "yarn foundry:test",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "format": "yarn next:format && yarn foundry:format",
     "start": "yarn workspace @se-2/nextjs dev",
     "next:lint": "yarn workspace @se-2/nextjs lint",
@@ -33,9 +37,23 @@
     "vercel": "vercel",
     "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "packageManager": "yarn@3.2.3",
   "devDependencies": {
     "husky": "^8.0.1",
-    "lint-staged": "^13.0.3"
+    "lint-staged": "^13.0.3",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "chai": "^4.3.7",
+    "ethereum-waffle": "^4.0.10",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.22.12",
+    "dotenv": "^16.4.5"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.4.0"
   }
 }
