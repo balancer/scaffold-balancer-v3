@@ -69,7 +69,7 @@ function _getClaimableRewards(UserSwapData memory userSwapData) private view ret
 
 ## Code Review
 
-![Hook Review](https://youtu.be/eEBEvTei99s)
+[![Watch the video](https://img.youtube.com/vi/eEBEvTei99s/maxresdefault.jpg)](https://youtu.be/eEBEvTei99s)
 
 ## Challenges
 
