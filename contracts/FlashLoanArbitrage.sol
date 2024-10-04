@@ -112,7 +112,6 @@ contract BalancerV3ArbitrageBot is Ownable, ReentrancyGuard {
         IERC20(token).safeTransfer(owner(), balance);
     }
 }
-// // SPDX-License-Identifier: MIT
 // pragma solidity ^0.8.0;
 
 // import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
