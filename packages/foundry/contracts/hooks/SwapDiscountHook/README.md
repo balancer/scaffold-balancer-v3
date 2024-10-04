@@ -21,11 +21,11 @@ This way, the project can essentially create an incentive opportunity for their 
 
 This hook is not only for the new pools but the projects can utilise this layer at any stage of their project to invite the influx of token holders.
 
-## Code And Architecture Review
+# Code And Architecture Review
 
 [![Watch the video](https://img.youtube.com/vi/eEBEvTei99s/maxresdefault.jpg)](https://youtu.be/eEBEvTei99s)
 
-### Local Test Demo
+# Local Test Demo
 
 [![Watch the video](https://img.youtube.com/vi/y_DcclWcuHk/maxresdefault.jpg)](https://youtu.be/y_DcclWcuHk)
 
@@ -71,7 +71,7 @@ function _getClaimableRewards(UserSwapData memory userSwapData) private view ret
 - Wait for the cooldown period to end.
 - Visit the campaign interface and redeem the reward against their bond nft.
 
-## Challenges
+# Challenges
 
 Since Hook based architecture among the Dexes is a fairly new and untested idea as there is no practical example on mainnet. It's uncertain to know from the user experience perspective if it will be adopted widely and how easy it will be for the people to integrate the applications or hooks built on top of the dexes in their daily crypto usage.
 
@@ -79,7 +79,7 @@ While building the swap bond hook, we also had some questions related to how muc
 
 There is ofcourse a room of improvement as the hook goes into the hands of people and projects.
 
-## Running Tests
+# Running Tests
 
 Run the Foundry tests
 
@@ -88,7 +88,11 @@ yarn test
 
 ```
 
-## Authors
+# DevX Feedback
+
+The online hookathon is well organized through Dorahacks, Kudos on that. The only feedback we have for the team is that they need to figure out more ways for attracting the hackers to contribute to the eco-system either through long term incentives or inclusion with the team.
+
+# Authors
 
 - [@anassohail99](https://www.github.com/anassohail99)
 - [@Mubashir-ali-baig](https://github.com/Mubashir-ali-baig)
