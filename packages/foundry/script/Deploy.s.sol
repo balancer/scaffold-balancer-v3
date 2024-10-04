@@ -24,12 +24,12 @@ contract DeployScript is
 {
     function run() external scaffoldExport {
         // Deploy mock tokens to use for the pools and hooks
-        (address mockToken1, address mockToken2, address mockVeBAL) = deployMockTokens();
+        (address mockToken1, address mockToken2, address mockVeBAL, address mockStable) = deployMockTokens();
 
         // Deploy, register, and initialize a constant sum pool with a swap fee discount hook
         deployConstantSumPool(mockToken1, mockToken2, mockVeBAL);
 
-        deployConstantSumPoolWithCheckHook(mockToken2);
+        deployConstantSumPoolWithCheckHook(mockStable);
 
         // Deploy, register, and initialize a constant product pool with a lottery hook
         deployConstantProductPool(mockToken1, mockToken2);

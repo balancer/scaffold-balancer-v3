@@ -23,6 +23,7 @@ import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 // Interface for ERC721 NFT contract
 interface IERC721 {
     function ownerOf(uint256 tokenId) external view returns (address owner);
+    function transferFrom(address from, address to, uint256 tokenId) external;
 }
 
 // Interface for the custom NFT contract
@@ -41,25 +42,23 @@ interface ICustomNFT is IERC721 {
 contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     using FixedPoint for uint256;
 
-    // Changed from immutable to public
     address public nftContract;
     uint256 public nftId;
-
-    // Track the first user who initialized the pool and their initial liquidity amounts
     address public firstDepositor;
     uint256 public initialToken1Amount;
     uint256 public initialToken2Amount;
-
-    // Error to throw when the hook doesn't own the required NFT
-    error DoesNotOwnRequiredNFT(address hook, address nftContract, uint256 nftId);
-
-    // Error to throw when the NFT's linked token doesn't match any of the pool tokens
-    error LinkedTokenNotInPool(address linkedToken);
-
-    error InsufficientLiquidityToRemove(address user, uint256 currentAmount, uint256 initialAmount);
+    uint256 public redeemRatio;
+    address public poolAddress;
 
     uint64 public exitFeePercentage;
     uint64 public constant MAX_EXIT_FEE_PERCENTAGE = 10e16;
+
+    error DoesNotOwnRequiredNFT(address hook, address nftContract, uint256 nftId);
+    error LinkedTokenNotInPool(address linkedToken);
+    error InsufficientLiquidityToRemove(address user, uint256 currentAmount, uint256 initialAmount);
+    error InsufficientStableForSettlement(uint256 required, uint256 available);
+    error ExitFeeAboveLimit(uint256 feePercentage, uint256 limit);
+    error PoolDoesNotSupportDonation();
 
     event NftCheckHookRegistered(address indexed hooksContract, address indexed pool);
     event ExitFeeCharged(address indexed pool, IERC20 indexed token, uint256 feeAmount);
@@ -67,9 +66,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     event NftContractUpdated(address indexed oldContract, address indexed newContract);
     event NftIdUpdated(uint256 oldId, uint256 newId);
     event InitialLiquidityRecorded(address indexed user, uint256 token1Amount, uint256 token2Amount);
-
-    error ExitFeeAboveLimit(uint256 feePercentage, uint256 limit);
-    error PoolDoesNotSupportDonation();
+    event LiquiditySettled(uint256 totalEscrowedAmount, address indexed originalDepositor);
+    event Redeemed(address indexed user, uint256 poolTokenAmount, uint256 stableTokenAmount);
 
     constructor(IVault vault, address _nftContract, uint256 _nftId) VaultGuard(vault) Ownable(msg.sender) {
         nftContract = _nftContract;
@@ -90,6 +88,9 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         if (IERC721(nftContract).ownerOf(nftId) != address(this)) {
             revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
         }
+
+        // save pool address for later use
+        poolAddress = pool;
 
         // Get the linked token from the NFT - this requires the NFT
         address linkedToken = ICustomNFT(nftContract).getNftData(nftId).linkedToken;
@@ -140,10 +141,10 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         
         // Ensure the first depositor has the same amount of both tokens after removal (no rug pulling allowed)
         if (msg.sender == firstDepositor) {
-            IERC20[] memory tokens = _vault.getPoolTokens(pool);
+            IERC20[] memory poolTokens = _vault.getPoolTokens(pool);
 
-            uint256 currentToken1Amount = tokens[0].balanceOf(msg.sender);
-            uint256 currentToken2Amount = tokens[1].balanceOf(msg.sender);
+            uint256 currentToken1Amount = poolTokens[0].balanceOf(msg.sender);
+            uint256 currentToken2Amount = poolTokens[1].balanceOf(msg.sender);
 
             if (currentToken1Amount < initialToken1Amount) {
                 revert InsufficientLiquidityToRemove(msg.sender, currentToken1Amount, initialToken1Amount);
@@ -230,4 +231,73 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         initialToken2Amount = token2Amount;
         emit InitialLiquidityRecorded(msg.sender, token1Amount, token2Amount);
     }
+
+    /**
+    * @notice Allows the contract owner to settle and release the NFT to the original depositor.
+    * @dev This function calculates outstanding shares and deposits the equivalent stable token amount in escrow.
+    */
+    function settle() external onlyOwner {
+        require(firstDepositor != address(0), "Initial liquidity not recorded");
+        require(firstDepositor != msg.sender, "Initial depositor is only one that can settle");
+
+        // Calculate total outstanding shares in the pool
+        IERC20 poolToken = IERC20(address(_vault.getPoolTokens(poolAddress)[0])); // Assuming the first token is the asset token
+        IERC20 stableToken = IERC20(address(_vault.getPoolTokens(poolAddress)[1])); // Assuming the first token is the asset token
+        uint256 totalSupply = poolToken.totalSupply();
+        uint256 poolBalance = poolToken.balanceOf(address(this)) + poolToken.balanceOf(firstDepositor);
+        uint256 outstandingShares = totalSupply - poolBalance;
+
+        // Calculate the equivalent stable token amount using the current pool/stable ratio
+        uint256 poolTokenBalance = poolToken.balanceOf(address(this));
+        uint256 stableTokenBalance = stableToken.balanceOf(address(this));
+        uint256 stablePoolRatio = poolTokenBalance / stableTokenBalance;
+        // Ensure the stable pool ratio is not below what the initial price of asset was, which was 1:1
+        // will need to refactor for 80/20 pools
+        redeemRatio = stablePoolRatio > 1 ? stablePoolRatio : 1;
+
+        // how much stable tokens are required to settle the outstanding shares
+        uint256 stableAmountRequired = outstandingShares * redeemRatio;
+
+        // Check if the contract holds enough stable tokens for settlement
+        if (IERC20(stableToken).balanceOf(msg.sender) < stableAmountRequired) {
+            revert InsufficientStableForSettlement(stableAmountRequired, IERC20(stableToken).balanceOf(msg.sender));
+        }
+
+        // Transfer the stableAmountRequired from the msg.sender to the hook contract
+        IERC20(stableToken).transferFrom(msg.sender, address(this), stableAmountRequired);
+        
+        // Release the NFT back to the original depositor
+        IERC721(nftContract).transferFrom(address(this), firstDepositor, nftId);
+        
+        // Remove the initial liquidity from the pool
+        // _vault.removeLiquidity(
+        //     poolAddress
+        //     firstDepositor,
+        //     initialToken1Amount,
+        //     initialToken2Amount,
+        //     0, // minBptAmountOut is set to 0 to allow the removal of all initial liquidity
+        //     bytes("") // userData is not used in this context
+        // );
+
+        emit LiquiditySettled(stableAmountRequired, firstDepositor);
+    }
+
+    /**
+    * @notice Allows users with linked tokens to redeem their tokens for the stable token in escrow.
+    */
+    function redeem() external {
+        IERC20 poolToken = IERC20(address(_vault.getPoolTokens(poolAddress)[0])); // Assuming the first token is the asset token
+        IERC20 stableToken = IERC20(address(_vault.getPoolTokens(poolAddress)[1]));
+        uint256 redeemableBalance = poolToken.balanceOf(msg.sender);
+        require(redeemableBalance > 0, "Sender has no redeemable tokens");
+
+        // Calculate the stable token amount to be transferred based on the ratio
+        uint256 stableAmountToTransfer = redeemableBalance * redeemRatio;
+
+        // Transfer the stable tokens to the user
+        IERC20(stableToken).transfer(msg.sender, stableAmountToTransfer);
+
+        emit Redeemed(msg.sender, redeemableBalance, stableAmountToTransfer);
+    }
+
 }
