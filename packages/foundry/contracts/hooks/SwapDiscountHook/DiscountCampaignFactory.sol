@@ -190,7 +190,7 @@ contract DiscountCampaignFactory is ReentrancyGuard, IDiscountCampaignFactory, O
                 campaignID: keccak256(abi.encode(block.timestamp, params.expirationTime)),
                 rewardAmount: params.rewardAmount,
                 expirationTime: block.timestamp + params.expirationTime,
-                coolDownPeriod: block.timestamp + params.coolDownPeriod,
+                coolDownPeriod: params.coolDownPeriod,
                 discountRate: params.discountAmount,
                 rewardToken: params.rewardToken,
                 poolAddress: params.pool,
