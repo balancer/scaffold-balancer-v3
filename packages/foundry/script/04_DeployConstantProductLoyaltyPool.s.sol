@@ -17,6 +17,7 @@ import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantProductFactory } from "../contracts/factories/ConstantProductFactory.sol";
 import { LoyaltyHook } from "../contracts/hooks/LoyaltyHook.sol";
 import { LoyaltyToken } from "../contracts/mocks/LoyaltyToken.sol";
+import { LoyaltyRewardStrategy } from "../contracts/hooks/strategies/LoyaltyRewardStrategy.sol";
 
 /**
  * @title Deploy Constant Product Pool
@@ -37,7 +38,9 @@ contract DeployConstantProductLoyaltyPool is PoolHelpers, ScaffoldHelpers {
         console.log("Constant Product Factory deployed at: %s", address(factory));
 
         // Deploy a hook
-        address loyaltyHook = address(new LoyaltyHook(vault, address(router), address(loyaltyToken)));
+        address loyaltyHook = address(
+            new LoyaltyHook(vault, address(router), address(loyaltyToken), address(createLoyaltyRewardStrategy()))
+        );
         console.log("LoyaltyHook deployed at address: %s", loyaltyHook);
 
         LoyaltyToken(loyaltyToken).grantMinterRole(address(loyaltyHook));
@@ -153,5 +156,39 @@ contract DeployConstantProductLoyaltyPool is PoolHelpers, ScaffoldHelpers {
             wethIsEth: wethIsEth,
             userData: userData
         });
+    }
+
+    /**
+     * @notice Deploys the LoyaltyRewardStrategy with defined parameters.
+     * @return LoyaltyRewardStrategy The deployed LoyaltyRewardStrategy contract instance.
+     */
+    function createLoyaltyRewardStrategy() internal returns (LoyaltyRewardStrategy) {
+        // Define thresholds for loyalty tiers
+        uint256[] memory thresholds = new uint256[](3);
+        thresholds[0] = 100 * 1e18; // TIER1_THRESHOLD: 100 tokens
+        thresholds[1] = 500 * 1e18; // TIER2_THRESHOLD: 500 tokens
+        thresholds[2] = 1000 * 1e18; // TIER3_THRESHOLD: 1000 tokens
+
+        // Define discount percentages for each tier
+        uint256[] memory discounts = new uint256[](3);
+        discounts[0] = 50 * 1e16; // TIER1_DISCOUNT: 50% discount
+        discounts[1] = 80 * 1e16; // TIER2_DISCOUNT: 80% discount
+        discounts[2] = 90 * 1e16; // TIER3_DISCOUNT: 90% discount
+
+        // Define decay parameters
+        uint256 decayPerAction = 10 * 1e16; // DECAY_PER_ACTION: 10% decay
+        uint256 maxDecay = 90 * 1e16; // MAX_DECAY: 90% max decay
+
+        // Deploy LoyaltyRewardStrategy contract
+        LoyaltyRewardStrategy loyaltyRewardStrategy = new LoyaltyRewardStrategy(
+            thresholds,
+            discounts,
+            decayPerAction,
+            maxDecay
+        );
+
+        console.log("LoyaltyRewardStrategy deployed at: %s", address(loyaltyRewardStrategy));
+
+        return loyaltyRewardStrategy;
     }
 }

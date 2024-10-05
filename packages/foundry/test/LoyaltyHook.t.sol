@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.24;
 
@@ -27,6 +27,7 @@ import { BasePoolMath } from "@balancer-labs/v3-vault/contracts/BasePoolMath.sol
 import { BalancerPoolToken } from "@balancer-labs/v3-vault/contracts/BalancerPoolToken.sol";
 
 import { LoyaltyHook } from "../contracts/hooks/LoyaltyHook.sol";
+import { LoyaltyRewardStrategy } from "../contracts/hooks/strategies/LoyaltyRewardStrategy.sol";
 import { LoyaltyToken } from "../contracts/mocks/LoyaltyToken.sol";
 import { ERC20TestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
 
@@ -44,15 +45,19 @@ contract LoyaltyHookTest is BaseVaultTest {
     uint64 private constant MAX_SWAP_FEE_PERCENTAGE = 10 * 1e16; // 10%
     uint64 private constant EXIT_FEE_PERCENTAGE = 10 * 1e16; // 10%
 
-    // Tested mint amount
+    // DiscountStrategy test params
+    uint256 DECAY_PER_ACTION = 10 * 1e16; // DECAY_PER_ACTION: 10% decay
+    uint256 MAX_DECAY = 90 * 1e16; // MAX_DECAY: 90% max decay
+
+    // Test mint amount
     uint256 private constant LOYALTY_MINT_AMOUNT = 701 * 1e18;
 
     uint256 internal daiIdx; // Index of DAI token in the pool
     uint256 internal usdcIdx; // Index of USDC token in the pool
 
-    LoyaltyToken internal loyaltyToken; // Instance of the LoyaltyToken contract
-
-    address payable internal trustedRouter; // Address of the trusted router
+    LoyaltyToken internal loyaltyToken;
+    LoyaltyRewardStrategy internal loyaltyRewardStrategy;
+    address payable internal trustedRouter;
 
     function setUp() public override {
         super.setUp();
@@ -66,10 +71,16 @@ contract LoyaltyHookTest is BaseVaultTest {
 
         // Deploy the LoyaltyToken contract with predefined name and symbol
         loyaltyToken = new LoyaltyToken("Loyalty", "LOYALTY");
+        loyaltyRewardStrategy = createLoyaltyRewardStrategy();
 
         // Deploy the LoyaltyHook contract with the Vault address, trusted router, and LoyaltyToken address
         vm.prank(lp); // Simulate the pool creator (lp) deploying the LoyaltyHook
-        LoyaltyHook loyaltyHook = new LoyaltyHook(IVault(address(vault)), trustedRouter, address(loyaltyToken));
+        LoyaltyHook loyaltyHook = new LoyaltyHook(
+            IVault(address(vault)),
+            trustedRouter,
+            address(loyaltyToken),
+            address(loyaltyRewardStrategy)
+        );
 
         // Grant the LoyaltyHook contract the minter role on the LoyaltyToken
         loyaltyToken.grantMinterRole(address(loyaltyHook));
@@ -147,9 +158,9 @@ contract LoyaltyHookTest is BaseVaultTest {
         uint256 discountedFeePercentage = MAX_SWAP_FEE_PERCENTAGE; // Initialize with max swap fee with no discount applied
         if (isUsingTrustedRouter) {
             // Calculate the discounted swap fee based on the user's loyalty status
-            discountedFeePercentage = LoyaltyHook(poolHooksContract).calculateDiscountedFee(
+            discountedFeePercentage = loyaltyRewardStrategy.calculateDiscountedFeePercentage(
                 discountedFeePercentage,
-                bob
+                loyaltyToken.balanceOf(bob)
             );
         }
 
@@ -230,9 +241,9 @@ contract LoyaltyHookTest is BaseVaultTest {
         uint256 exactAmountIn = poolInitAmount / 100; // Define the input amount for the swap
 
         // Calculate the discounted fee percentage based on Bob's loyalty status
-        uint256 discountedFeePercentage = LoyaltyHook(poolHooksContract).calculateDiscountedFee(
+        uint256 discountedFeePercentage = loyaltyRewardStrategy.calculateDiscountedFeePercentage(
             MAX_SWAP_FEE_PERCENTAGE,
-            bob
+            loyaltyToken.balanceOf(bob)
         );
 
         // Calculate the expected amount out after applying the discounted fee
@@ -290,9 +301,9 @@ contract LoyaltyHookTest is BaseVaultTest {
         uint256 amountOut = poolInitAmount / 2; // Define the amount to remove
 
         // Calculate the discounted exit fee percentage based on LP's loyalty status
-        uint256 discountedExitFeePercentage = LoyaltyHook(poolHooksContract).calculateDiscountedFee(
+        uint256 discountedExitFeePercentage = loyaltyRewardStrategy.calculateDiscountedFeePercentage(
             EXIT_FEE_PERCENTAGE,
-            lp
+            loyaltyToken.balanceOf(lp)
         );
 
         // Calculate the expected hook fee using the discounted exit fee percentage
@@ -481,9 +492,9 @@ contract LoyaltyHookTest is BaseVaultTest {
                 expectedMintAmount = bptAmount;
             } else {
                 // For subsequent additions, apply the decay factor
-                uint256 decayPercentage = LoyaltyHook(poolHooksContract).DECAY_PER_ACTION() * i;
-                if (decayPercentage > LoyaltyHook(poolHooksContract).MAX_DECAY()) {
-                    decayPercentage = LoyaltyHook(poolHooksContract).MAX_DECAY();
+                uint256 decayPercentage = DECAY_PER_ACTION * i;
+                if (decayPercentage > MAX_DECAY) {
+                    decayPercentage = MAX_DECAY;
                 }
                 expectedMintAmount = (bptAmount * (FixedPoint.ONE - decayPercentage)) / FixedPoint.ONE;
             }
@@ -613,7 +624,28 @@ contract LoyaltyHookTest is BaseVaultTest {
             poolHooksContract,
             liquidityManagement
         );
-
         return address(newPool);
+    }
+
+    /**
+     * @notice Deploys the LoyaltyRewardStrategy with defined parameters.
+     * @return LoyaltyRewardStrategy The deployed LoyaltyRewardStrategy contract instance.
+     */
+    function createLoyaltyRewardStrategy() internal returns (LoyaltyRewardStrategy) {
+        uint256[] memory thresholds = new uint256[](3);
+        thresholds[0] = 100 * 1e18; // TIER1_THRESHOLD: 100 tokens
+        thresholds[1] = 500 * 1e18; // TIER2_THRESHOLD: 500 tokens
+        thresholds[2] = 1000 * 1e18; // TIER3_THRESHOLD: 1000 tokens
+
+        uint256[] memory discounts = new uint256[](3);
+        discounts[0] = 50 * 1e16; // TIER1_DISCOUNT: 50% discount
+        discounts[1] = 80 * 1e16; // TIER2_DISCOUNT: 80% discount
+        discounts[2] = 90 * 1e16; // TIER3_DISCOUNT: 90% discount
+
+        uint256 decayPerAction = DECAY_PER_ACTION; // DECAY_PER_ACTION: 10% decay
+        uint256 maxDecay = MAX_DECAY; // MAX_DECAY: 90% max decay
+
+        // Deploy tLoyaltyRewardStrateegyegy contract
+        return new LoyaltyRewardStrategy(thresholds, discounts, decayPerAction, maxDecay);
     }
 }
