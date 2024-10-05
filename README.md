@@ -1,6 +1,6 @@
 # LoyaltyHook - BAL Hookathon submission
 
-An innovative Balancer V3 Pool Hook designed to incentivize user engagement and loyalty by rewarding users with Loyalty Tokens (`LOYALTY`) and providing dynamic fee adjustments based on their loyalty level.
+A Balancer V3 hook designed to incentivize user engagement and loyalty by rewarding users with Loyalty Tokens (`LOYALTY`) and providing dynamic fee adjustments based on their loyalty level.
 
 ## 🪧 Table of Contents
 
@@ -19,7 +19,7 @@ An innovative Balancer V3 Pool Hook designed to incentivize user engagement and 
 
 ## 📖 Overview
 
-The **LoyaltyHook** is a custom Balancer V3 Hook that enhances user engagement and loyalty by:
+The **LoyaltyHook** is a custom Balancer V3 hook that enhances user engagement and loyalty by:
 
 - Rewarding users with `LOYALTY` tokens when they interact with the pool.
 - Adjusting swap and exit fees dynamically based on a user's `LOYALTY` balance.
@@ -33,7 +33,7 @@ By integrating the LoyaltyHook, liquidity pools can incentivize users to partici
 
 Users earn `LOYALTY` tokens when they:
 
-- **Add liquidity**: Incentivises users to add liquidity to the pool. Rewards are mined in proportion to the amount of liquidity added.
+- **Add liquidity**: Incentivises users to add liquidity to the pool. Rewards are minted in proportion to the amount of liquidity added.
 - **Perform swaps**: Rewards users for trading within the pool. Rewards are minted in proportion to the size of the trade. 
 
 The amount of `LOYALTY` tokens minted is adjusted based on user activity and a decay mechanism to prevent excessive rewards.
@@ -169,7 +169,7 @@ contract LoyaltyToken is ERC20, AccessControl {
 
 ## 🚀 Usage
 
-### Deploying the Contracts
+### Deploying the contracts
 
 1. **Deploy LoyaltyToken**:
    - Deploy the `LoyaltyToken` contract.
@@ -294,7 +294,7 @@ The tokenised loyalty mechanism paves the way for extending LoyaltyHook's functi
 
 - **Staking**: Allow users to stake `LOYALTY` tokens to earn additional rewards or exclusive benefits.
 - **Governance**: Allow `LOYALTY` holders to participate in decision-making processes for the pool.
-- Cross-Platform Integrations: Leverage `LOYALTY` tokens on other DeFi platforms to increase their value.
+- **Cross-platform integrations**: Leverage `LOYALTY` tokens on other DeFi platforms to increase their value.
 - **Gamification**: Introduce milestones and badges to further incentivise user engagement.
 
 ## 📜 License
