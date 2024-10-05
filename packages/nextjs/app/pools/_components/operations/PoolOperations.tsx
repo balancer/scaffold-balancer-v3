@@ -110,6 +110,12 @@ const PoolOperationsAlerts = ({
     args: [100000000000000000000n],
   });
 
+  const { writeAsync: mintStable } = useScaffoldContractWrite({
+    contractName: "MockStable",
+    functionName: "mint",
+    args: [100000000000000000000n],
+  });
+
   const { writeAsync: mintRWAToken } = useScaffoldContractWrite({
     contractName: "ERC20Ownable",
     functionName: "mint",
@@ -121,6 +127,7 @@ const PoolOperationsAlerts = ({
     await mintToken1();
     await mintToken2();
     await mintRWAToken();
+    await mintStable();
     refetchTokenBalances();
   };
 
@@ -139,14 +146,14 @@ const PoolOperationsAlerts = ({
     );
   }
 
-  return (
-    <Alert type="info">
-      To mint 100 RWA:{" "}
-      <span className="link" onClick={() => mintRWAToken()}>
-        click here
-      </span>
-    </Alert>
-  );
+  // return (
+  //   <Alert type="info">
+  //     To mint 100 RWA:{" "}
+  //     <span className="link" onClick={() => mintRWAToken()}>
+  //       click here
+  //     </span>
+  //   </Alert>
+  // );
 
   if (isUnbalancedLiquidityDisabled) {
     return <Alert type="info">This pool only allows proportional liquidity operations</Alert>;

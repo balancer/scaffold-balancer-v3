@@ -68,11 +68,13 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
 
   const { data: linkedTokenAddress } = useScaffoldContractRead({
     contractName: "NftCheckHook",
+    // @ts-ignore
     functionName: "getLinkedTokenAddress",
   });
 
   const { data: token } = useScaffoldContractRead({
     contractName: "NftCheckHook",
+    // @ts-ignore
     functionName: "getToken",
   });
 
@@ -82,6 +84,7 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
     address: "0xB12FcB422aAe6720f882E22C340964a7723f2387",
     args: [
       poolAddress!,
+      // @ts-ignore
       linkedTokenAddress! > token! ? [token!, linkedTokenAddress!] : [linkedTokenAddress!, token!],
       [BigInt(50e18), BigInt(50e18)],
       BigInt(99e18),
