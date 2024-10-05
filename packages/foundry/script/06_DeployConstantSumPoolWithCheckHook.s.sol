@@ -18,6 +18,8 @@ import { NftCheckHook } from "../contracts/hooks/NftCheckHook.sol";
 import { MockNft } from "../contracts/mocks/MockNft.sol";
 import { MockERC20Factory } from "../contracts/mocks/MockERC20Factory.sol";
 import { ERC20Ownable } from "../contracts/mocks/ERC20Ownable.sol";
+import { Router } from "../contracts/mocks/Router.sol";
+
 
 /**
  * @title Deploy Constant Sum Pool
@@ -77,7 +79,7 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
 
         // Deploy a hook
         address nftCheckHook = address(
-            new NftCheckHook(vault, address(mockNft), tokenId)
+            new NftCheckHook(vault, address(mockNft), tokenId, linkedTokenAddress, token)
         );
         console.log("NftCheckHook deployed at address: %s", nftCheckHook);
 
@@ -99,19 +101,22 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         );
         console.log("SumPoolWithNftCheckHook deployed at: %s", pool);
 
+        Router router = new Router();  // this is deployed so we can get the abi to call the initialize function
+
+
         // Approve the router to spend tokens for pool initialization
         approveRouterWithPermit2(initConfig.tokens);
 
         // Seed the pool with initial liquidity
-        router.initialize(
-            pool,
-            initConfig.tokens,
-            initConfig.exactAmountsIn,
-            initConfig.minBptAmountOut,
-            initConfig.wethIsEth,
-            initConfig.userData
-        );
-        console.log("SumPoolWithNftCheckHook initialized successfully!");
+        // router.initialize(
+        //     pool,
+        //     initConfig.tokens,
+        //     initConfig.exactAmountsIn,
+        //     initConfig.minBptAmountOut,
+        //     initConfig.wethIsEth,
+        //     initConfig.userData
+        // );
+        // console.log("SumPoolWithNftCheckHook initialized successfully!");
         vm.stopBroadcast();
     }
 

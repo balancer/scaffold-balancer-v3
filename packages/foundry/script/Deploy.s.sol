@@ -27,7 +27,7 @@ contract DeployScript is
         (address mockToken1, address mockToken2, address mockVeBAL) = deployMockTokens();
 
         // Deploy, register, and initialize a constant sum pool with a swap fee discount hook
-        deployConstantSumPool(mockToken1, mockToken2, mockVeBAL);
+        // deployConstantSumPool(mockToken1, mockToken2, mockVeBAL);
 
         deployConstantSumPoolWithCheckHook(mockToken2);
 

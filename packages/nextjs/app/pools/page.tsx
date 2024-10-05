@@ -8,6 +8,7 @@ import { type NextPage } from "next";
 import { type Address } from "viem";
 import { Alert } from "~~/components/common";
 import { type Pool, type RefetchPool, useReadPool } from "~~/hooks/balancer/";
+import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
 /**
  * 1. Search by pool address or select from dropdown
@@ -62,11 +63,48 @@ const PoolPageContent = () => {
 };
 
 const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: RefetchPool }) => {
+  const searchParams = useSearchParams();
+  const poolAddress = searchParams.get("address");
+
+  const { data: linkedTokenAddress } = useScaffoldContractRead({
+    contractName: "NftCheckHook",
+    functionName: "getLinkedTokenAddress",
+  });
+
+  const { data: token } = useScaffoldContractRead({
+    contractName: "NftCheckHook",
+    functionName: "getToken",
+  });
+
+  const { writeAsync: initializePool } = useScaffoldContractWrite({
+    contractName: "Router",
+    functionName: "initialize",
+    address: "0xB12FcB422aAe6720f882E22C340964a7723f2387",
+    args: [
+      poolAddress!,
+      linkedTokenAddress! > token! ? [token!, linkedTokenAddress!] : [linkedTokenAddress!, token!],
+      [BigInt(50e18), BigInt(50e18)],
+      BigInt(99e18),
+      false,
+      "0x",
+    ],
+  });
+
   return (
     <>
       <h3 className="mb-7 font-semibold text-3xl xl:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-violet-400 to-orange-500">
         {pool.name}
       </h3>
+
+      {/* <button onClick={transferNft} className="p-2 m-2 border-2 rounded-full border-solid border-red-600">Transfer NFT</button> */}
+      <button
+        onClick={() => {
+          initializePool();
+        }}
+        className="p-2 mb-8 m-2 border-2 rounded-full border-solid border-red-600"
+      >
+        Initialize Pool
+      </button>
 
       <div className="w-full">
         <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">

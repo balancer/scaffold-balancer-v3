@@ -44,11 +44,15 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     // Changed from immutable to public
     address public nftContract;
     uint256 public nftId;
+    address private linkedTokenAddress;
+    address private token;
 
     // Track the first user who initialized the pool and their initial liquidity amounts
     address public firstDepositor;
     uint256 public initialToken1Amount;
     uint256 public initialToken2Amount;
+
+    TokenConfig[] private tokenConfigs;
 
     // Error to throw when the hook doesn't own the required NFT
     error DoesNotOwnRequiredNFT(address hook, address nftContract, uint256 nftId);
@@ -71,21 +75,34 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     error ExitFeeAboveLimit(uint256 feePercentage, uint256 limit);
     error PoolDoesNotSupportDonation();
 
-    constructor(IVault vault, address _nftContract, uint256 _nftId) VaultGuard(vault) Ownable(msg.sender) {
+    constructor(IVault vault, address _nftContract, uint256 _nftId, address _linkedTokenAddress, address _token) VaultGuard(vault) Ownable(msg.sender) {
         nftContract = _nftContract;
         nftId = _nftId;
+        linkedTokenAddress = _linkedTokenAddress;
+        token =_token;
     }
 
     function onRegister(
         address,
         address pool,
-        TokenConfig[] memory tokenConfigs,
+        TokenConfig[] memory _tokenConfigs,
         LiquidityManagement calldata liquidityManagement
     ) public override onlyVault returns (bool) {
         if (liquidityManagement.enableDonation == false) {
             revert PoolDoesNotSupportDonation();
         }
 
+        tokenConfigs = _tokenConfigs;
+
+        // Record the initial liquidity amounts for use in limiting the position from the depositor prematurely
+        recordInitialLiquidity(tokenConfigs[0].token.balanceOf(pool), tokenConfigs[1].token.balanceOf(pool));
+
+        emit NftCheckHookRegistered(address(this), pool);
+
+        return true;
+    }
+
+    function onBeforeInitialize(uint256[] memory /*exactAmountsIn*/, bytes memory /*userData*/) public view override returns (bool) {
         // Check if the hook owns the required NFT
         if (IERC721(nftContract).ownerOf(nftId) != address(this)) {
             revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
@@ -106,14 +123,10 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         if (!linkedTokenFound) {
             revert LinkedTokenNotInPool(linkedToken);
         }
-        
-        // Record the initial liquidity amounts for use in limiting the position from the depositor prematurely
-        recordInitialLiquidity(tokenConfigs[0].token.balanceOf(pool), tokenConfigs[1].token.balanceOf(pool));
-
-        emit NftCheckHookRegistered(address(this), pool);
 
         return true;
     }
+
 
     /// @inheritdoc IHooks
     function getHookFlags() public pure override returns (HookFlags memory) {
@@ -123,6 +136,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         // might not settle. (It should be false if the after hooks do something else.)
         hookFlags.shouldCallAfterRemoveLiquidity = true;
         hookFlags.shouldCallComputeDynamicSwapFee = true;
+        hookFlags.shouldCallBeforeInitialize = true;
         return hookFlags;
     }
 
@@ -229,5 +243,13 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         initialToken1Amount = token1Amount;
         initialToken2Amount = token2Amount;
         emit InitialLiquidityRecorded(msg.sender, token1Amount, token2Amount);
+    }
+
+    function getLinkedTokenAddress() external view returns(address) {
+        return linkedTokenAddress;
+    }
+
+    function getToken() external view returns(address) {
+        return token;
     }
 }

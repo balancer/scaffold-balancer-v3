@@ -36,7 +36,7 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
 
         // Deploy a hook
         address nftCheckHook = address(
-            new NftCheckHook(vault, nftContract, nftId)
+            new NftCheckHook(vault, nftContract, nftId, address(0), address(0))
         );
         console.log("NftCheckHook deployed at address: %s", nftCheckHook);
 
