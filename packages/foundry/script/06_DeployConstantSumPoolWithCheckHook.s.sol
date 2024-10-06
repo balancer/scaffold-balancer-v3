@@ -83,9 +83,8 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         );
         console.log("NftCheckHook deployed at address: %s", nftCheckHook);
 
-
         MockNft(mockNft).approve(nftCheckHook, tokenId);
-        MockNft(mockNft).transferFrom(deployerAddress, nftCheckHook, tokenId);
+        // MockNft(mockNft).transferFrom(deployerAddress, nftCheckHook, tokenId);
 
         // Deploy a pool and register it with the vault
         address pool = factory.create(
@@ -101,22 +100,11 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         );
         console.log("SumPoolWithNftCheckHook deployed at: %s", pool);
 
-        Router router = new Router();  // this is deployed so we can get the abi to call the initialize function
-
-
         // Approve the router to spend tokens for pool initialization
         approveRouterWithPermit2(initConfig.tokens);
 
-        // Seed the pool with initial liquidity
-        // router.initialize(
-        //     pool,
-        //     initConfig.tokens,
-        //     initConfig.exactAmountsIn,
-        //     initConfig.minBptAmountOut,
-        //     initConfig.wethIsEth,
-        //     initConfig.userData
-        // );
-        // console.log("SumPoolWithNftCheckHook initialized successfully!");
+        // deploy mock router so we can get the abi to call the initialize function
+        Router router = new Router();
         vm.stopBroadcast();
     }
 
