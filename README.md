@@ -1,6 +1,6 @@
 # LoyaltyHook - BAL Hookathon submission
 
-A Balancer V3 hook designed to incentivize user engagement and loyalty by rewarding users with Loyalty Tokens (`LOYALTY`) and providing dynamic fee adjustments based on their loyalty level.
+A Balancer V3 hook designed to increase user engagement by rewarding users with loyalty tokens (`LOYALTY`) and providing dynamic fee adjustments based on their `LOYALTY` token balance.
 
 ## 🪧 Table of Contents
 
