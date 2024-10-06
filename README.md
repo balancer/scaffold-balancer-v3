@@ -81,7 +81,7 @@ These tiers encourage users to accumulate `LOYALTY` tokens to benefit from great
 
 ![LoyaltyHook Architecture](loyaltyhook-schema.png)
 
-The LoyaltyHook system comprises four main components:
+The LoyaltyHook system has four main components:
 
 ### LoyaltyHook contract
 
@@ -113,7 +113,10 @@ interface ILoyaltyRewardStrategy {
         uint256 loyaltyBalance
     ) external view returns (uint256[] memory adjustedAmounts, uint256[] memory accruedFees);
 
-    function calculateMintAmount(uint256 baseAmount, uint256 actionCount) external view returns (uint256 mintAmount);
+    function calculateMintAmount(
+      uint256 baseAmount, 
+      uint256 actionCount
+    ) external view returns (uint256 mintAmount);
 }
 ```
 ### LoyaltyRewardStrategy contract
@@ -129,8 +132,6 @@ Using the strategy pattern, different reward strategies can be swapped in withou
 ### LoyaltyToken contract
 
 An ERC20 token contract that represents the `LOYALTY` tokens rewarded to users. It incorporates OpenZeppelin's `AccessControl` for role-based permissions.
-
-Key features:
 
 - **Minting Capability**: Allows minting of new tokens.
 - **Access Control**:
@@ -215,21 +216,19 @@ Imagine Alice, an active trader and liquidity provider, interacts with a Balance
 
 ## 🏦 Benefits
 
-### 👥 For users
+### For users
 
 - **Reduced fees**: Lower swap and exit fees based on loyalty tier.
 - **Rewards**: Earn `LOYALTY` tokens for interacting with the pool.
 - **Incentives**: Encourages consistent engagement with the pool.
 
-### 🏗 For pool creators
+### For pool creators
 
-- **Increased engagement**: Incentivizes users to interact more, increasing liquidity and trading volume.
-- **Modular architecture**: Easily update or swap reward strategies without modifying core contracts.
-- **Competitive advantage**: Offering loyalty rewards can attract more users to the pool.
+- **Increased engagement**: Incentivizes users to interact more, increasing liquidity and trading volume. Offering loyalty rewards can attract more users to the pool.
 
 ## 🧪 Testing
 
-Extensive testing has been conducted to ensure the reliability and correctness of the LoyaltyHook. The tests cover various scenarios to validate the functionality of the contracts. The test suite is implemented in the LoyaltyHookTest contract, utilizing Foundry's testing framework.
+Extensive testing has been carried out to ensure the reliability and accuracy of the LoyaltyHook. The tests cover various scenarios to validate the functionality of the contracts. The test suite is implemented in the `LoyaltyHookTest`` contract using Foundry.
 
 Tests include:
 
@@ -268,25 +267,14 @@ Developing the LoyaltyHook provided valuable insights into the Balancer V3 ecosy
 
 ### Overall experience
 
-Developing the LoyaltyHook was a rewarding experience, showcasing the flexibility and power of the Balancer V3 platform. The ability to customize pool behavior through hooks opens up possibilities for innovation in DeFi. The supportive documentation and tools provided made the development process smooth and enjoyable.
+Developing the LoyaltyHook has been a rewarding experience that demonstrates the flexibility and power of the Balancer V3. The ability to customise pool behaviour through hooks opens up possibilities for innovation in DeFi. The supportive documentation and tools provided made the development process smooth and enjoyable.
 
 ## 🛠 Development notes
 
 ### Extensibility
 
 - **Strategy pattern**: By using the `ILoyaltyRewardStrategy` interface, new strategies can be developed and integrated without changing the LoyaltyHook.
-- **Upgradeable parameters**: The owner can update tiers, decay factors, and fee percentages to adapt to changing market conditions.
-
-### Security considerations
-
-- **Access control**:
-  - Critical functions are restricted using `Ownable` and `AccessControl`.
-  - The `LoyaltyHook` only mints tokens if it has the `MINTER_ROLE`.
-  - The `DEFAULT_ADMIN_ROLE` in `LoyaltyToken` should be secured and possibly transferred to a multisig or governance contract.
-- **Validation**:
-  - Input validation to ensure parameters like fee percentages do not exceed maximum allowed values.
-- **Safe math**:
-  - Utilization of safe arithmetic operations to prevent overflows and underflows.
+- **Changeable parameters**: The owner can update tiers, decay factors, and fee percentages to adapt to changing market conditions.
 
 ## 📌 Roadmap
 
@@ -300,14 +288,6 @@ The tokenised loyalty mechanism paves the way for extending LoyaltyHook's functi
 ## 📜 License
 
 This project is licensed under the MIT License.
-
----
-
-**Note**: This Readme provides a comprehensive overview of the LoyaltyHook system, including its architecture, features, and benefits. For visual representation, please include the schema diagram in the designated section.
-
-Feel free to reach out for any questions or further discussions.
-
----
 
 # Thank you!
 
