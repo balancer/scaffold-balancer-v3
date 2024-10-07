@@ -1,109 +1,158 @@
 
-# SafeSwap Contract
+# SafeSwap
 
-The **SafeSwap** contract is an implementation based on the **Balancer V3 protocol**, designed to manage token swaps, liquidity additions, and liquidity removals in a decentralized way. This contract introduces custom hooks for liquidity operations and operates within the Balancer V3 framework, leveraging mathematical invariants and swap fees.
+SafeSwap is a decentralized automated market maker (AMM) built on the Balancer V3 protocol. It enables liquidity providers to add and remove liquidity in a pool while allowing users to swap between tokens. Additionally, SafeSwap introduces a unique discount mechanism for users holding a specific token, providing them with a 10% discount on swap fees.
 
-## Overview
+## Key Features
 
-The contract extends the core components of Balancer V3:
-- **BalancerPoolToken**: This provides the functionality of an ERC-20 compliant pool token, which represents the user's share in the liquidity pool.
-- **IPoolLiquidity**: This is an interface that manages the core pool liquidity operations.
-- **FixedPoint**: A math library that allows for accurate fixed-point arithmetic.
+- **Balancer V3 Integration**: Built on top of the Balancer V3 protocol with BalancerPoolToken, allowing flexible pool operations.
+- **Custom Liquidity Operations**: Custom hooks for adding and removing liquidity.
+- **Discount on Swap Fees**: Users holding a specific ERC-20 token are eligible for a 10% discount on the swap fee.
+- **Optimized Fee Structure**: The contract enforces a swap fee between 0% and 10%, with a default fee of 10%, reduced if the user qualifies for a discount.
 
-### Key Constants
+## Contract Structure
 
-- `_MIN_SWAP_FEE_PERCENTAGE`: Minimum swap fee percentage, set to `0`.
-- `_MAX_SWAP_FEE_PERCENTAGE`: Maximum swap fee percentage, capped at `10%` (0.1e18).
+### SafeSwap
 
-## Constructor
+The `SafeSwap` contract extends the Balancer V3 pool functionality with added customization for liquidity and swaps:
 
-The constructor initializes the `BalancerPoolToken` with the provided vault, pool name, and symbol.
+- **Discount Token**: The contract allows setting a discount token, an ERC-20 token. Users holding this token in their wallets receive a reduced swap fee.
+- **Swap Fee Logic**: The default swap fee is 10%, which can be reduced by 10% (i.e., down to 9%) if the user holds the discount token.
+- **Custom Liquidity Hooks**: Implementations for custom liquidity operations (`onAddLiquidityCustom` and `onRemoveLiquidityCustom`).
 
-### Parameters:
-- **vault**: The Balancer vault where the pool is registered.
-- **name**: Name of the pool token.
-- **symbol**: Symbol of the pool token.
+### Key Functions
 
----
+1. **`onSwap`**: Executes a token swap within the pool. If the user holds the discount token, they receive a 10% discount on the swap fee.
+   - Parameters:
+     - `params`: Pool swap parameters, including token balances and amounts.
+   - Returns:
+     - `amountCalculatedScaled18`: The calculated amount for the swap, adjusted for the discounted swap fee.
 
-## Core Functions
+2. **`computeInvariant`**: Calculates the pool's invariant based on the current token balances.
 
-### 1. **`onSwap`** 
-   - **Purpose**: Executes a swap in the pool by calculating the output token amount.
-   - **Parameters**: 
-     - `PoolSwapParams calldata params`: Contains balances and amount details for the swap.
-   - **Returns**: `amountCalculatedScaled18`: The calculated amount of the output token.
-   - **Logic**: 
-     - It uses a formula to compute the new balance of the output token based on the input token and respective balances.
-     - Formula: 
-       ```
-       amountCalculatedScaled18 = (params.balancesScaled18[params.indexOut] * params.amountGivenScaled18) 
-                                  / (params.balancesScaled18[params.indexIn] + params.amountGivenScaled18)
-       ```
+3. **`onAddLiquidityCustom`**: Custom implementation for adding liquidity to the pool.
+   - Returns:
+     - `amountsInScaled18`: Amount of tokens being added to the pool.
+     - `bptAmountOut`: Calculated pool token (BPT) amount the user receives.
+     - `swapFeeAmountsScaled18`: The swap fee charged for each token.
 
-### 2. **`computeInvariant`** 
-   - **Purpose**: Computes the pool’s invariant, which is a mathematical property representing the pool’s balance state.
-   - **Parameters**: 
-     - `balancesLiveScaled18`: An array of current pool balances (scaled to 18 decimals).
-   - **Returns**: `invariant`: The calculated invariant as a `uint256`.
-   - **Logic**: 
-     - The invariant is computed by multiplying all token balances and taking the square root to get a balance ratio between tokens.
+4. **`onRemoveLiquidityCustom`**: Custom implementation for removing liquidity from the pool.
+   - Returns:
+     - `bptAmountIn`: Amount of pool tokens (BPT) burned.
+     - `amountsOutScaled18`: Amount of tokens the user receives.
+     - `swapFeeAmountsScaled18`: The swap fee charged for each token.
 
-### 3. **`computeBalance`** 
-   - **Purpose**: Computes the new balance of a token after a liquidity operation based on the invariant growth ratio.
-   - **Parameters**: 
-     - `balancesLiveScaled18`: Current balances for tokens.
-     - `tokenInIndex`: The index of the token for which the balance is computed.
-     - `invariantRatio`: The ratio of the new invariant to the old one.
-   - **Returns**: `newBalance`: The new balance of the token.
-   - **Logic**: 
-     - Uses the invariant formula to calculate how the balance of a token would change after a liquidity change.
+### Discount Logic
 
-### 4. **`getMinimumSwapFeePercentage`** 
-   - **Purpose**: Returns the minimum swap fee percentage for a pool (which is 0).
-   - **Returns**: `_MIN_SWAP_FEE_PERCENTAGE`.
+The discount logic checks whether the user holds a specific ERC-20 token (the "discount token"). If the user holds this token, they are eligible for a 10% discount on the swap fee.
 
-### 5. **`getMaximumSwapFeePercentage`** 
-   - **Purpose**: Returns the maximum swap fee percentage (10%).
-   - **Returns**: `_MAX_SWAP_FEE_PERCENTAGE`.
+### Constructor Parameters
 
----
+The `SafeSwap` contract constructor takes the following parameters:
 
-## Custom Liquidity Hooks
+1. **`IVault vault`**: The Balancer Vault that manages the pool.
+2. **`string name`**: Name of the pool token (BPT).
+3. **`string symbol`**: Symbol of the pool token (BPT).
+4. **`address discountToken`**: The address of the ERC-20 token that provides users with the discount on swap fees.
 
-### 6. **`onAddLiquidityCustom`** 
-   - **Purpose**: Custom logic for adding liquidity to the pool.
-   - **Parameters**:
-     - `router`: The address that initiated the add liquidity operation.
-     - `maxAmountsInScaled18`: Maximum input amounts per token (scaled to 18 decimals).
-     - `minBptAmountOut`: Minimum output of pool tokens (BPT).
-     - `balancesScaled18`: Current pool balances (scaled to 18 decimals).
-     - `userData`: Arbitrary data sent with the request.
-   - **Returns**: 
-     - `amountsInScaled18`: Actual input amounts of tokens.
-     - `bptAmountOut`: Amount of pool tokens to be minted.
-     - `swapFeeAmountsScaled18`: Swap fees charged for each token.
-     - `returnData`: Custom return data.
-   - **Logic**: 
-     - It calculates the invariant before and after the liquidity addition.
-     - Updates the balances of tokens and returns the amount of pool tokens to mint.
+### Deployment
 
-### 7. **`onRemoveLiquidityCustom`** 
-   - **Purpose**: Custom logic for removing liquidity from the pool.
-   - **Parameters**:
-     - `router`: The address that initiated the remove liquidity operation.
-     - `maxBptAmountIn`: Maximum amount of pool tokens to burn.
-     - `minAmountsOutScaled18`: Minimum output amounts of each token.
-     - `balancesScaled18`: Current pool balances (scaled to 18 decimals).
-     - `userData`: Arbitrary data sent with the request.
-   - **Returns**:
-     - `bptAmountIn`: Amount of pool tokens burned.
-     - `amountsOutScaled18`: Amount of tokens withdrawn.
-     - `swapFeeAmountsScaled18`: Swap fees charged for each token.
-     - `returnData`: Custom return data.
-   - **Logic**: 
-     - It calculates the invariant before and after the liquidity removal.
-     - Reduces the pool token balances and returns the number of pool tokens burned.
+To deploy the contract, provide the following arguments to the constructor:
 
+```solidity
+constructor(
+    IVault vault,
+    string memory name,
+    string memory symbol,
+    address _discountToken
+)
+```
 
+- **`vault`**: Address of the Balancer Vault.
+- **`name`**: The name of the Balancer Pool Token (BPT).
+- **`symbol`**: The symbol of the Balancer Pool Token (BPT).
+- **`_discountToken`**: Address of the ERC-20 token that gives users a swap fee discount.
 
+### Example
+
+Deploying the `SafeSwap` contract:
+
+```solidity
+SafeSwap safeSwap = new SafeSwap(
+    vaultAddress,
+    "SafeSwap Pool Token",
+    "SSPT",
+    discountTokenAddress
+);
+```
+
+### Swap Fee Discount Example
+
+If a user holds the specified `discountToken`, they will receive a 10% discount on the swap fee:
+
+- Default swap fee: 10%
+- Discounted swap fee: 9% (if the user holds the discount token)
+
+## Installation
+
+To install and run the SafeSwap contract, follow these steps:
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/your-repo/safeswap.git
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Compile the contracts:
+
+```bash
+npx hardhat compile
+```
+
+4. Run tests:
+
+```bash
+npx hardhat test
+```
+
+## Usage
+
+Once deployed, users can interact with the `SafeSwap` contract to:
+
+1. **Swap tokens** using the `onSwap` function.
+2. **Add liquidity** with the `onAddLiquidityCustom` function.
+3. **Remove liquidity** with the `onRemoveLiquidityCustom` function.
+
+### Interacting with the Contract
+
+#### Swap Tokens
+
+To execute a swap, call the `onSwap` function:
+
+```solidity
+safeSwap.onSwap(swapParams);
+```
+
+If the user holds the discount token, the swap fee will automatically be reduced.
+
+#### Add Liquidity
+
+To add liquidity, call the `onAddLiquidityCustom` function:
+
+```solidity
+safeSwap.onAddLiquidityCustom(router, maxAmountsInScaled18, minBptAmountOut, balancesScaled18, userData);
+```
+
+#### Remove Liquidity
+
+To remove liquidity, call the `onRemoveLiquidityCustom` function:
+
+```solidity
+safeSwap.onRemoveLiquidityCustom(router, maxBptAmountIn, minAmountsOutScaled18, balancesScaled18, userData);
+```

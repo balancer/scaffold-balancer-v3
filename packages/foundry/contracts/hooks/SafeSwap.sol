@@ -1,28 +1,50 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.24;
-// import {BalancerPoolToken} from "../lib/balancer-v3-monorepo/pkg/vault/contracts/BalancerPoolToken.sol";
+
 import { BalancerPoolToken } from "@balancer-labs/balancer-v3-monorepo/pkg/vault/contracts/BalancerPoolToken.sol";
 import { IPoolLiquidity } from "@balancer-labs/balancer-v3-monorepo/pkg/interfaces/contracts/vault/IPoolLiquidity.sol";
 import { FixedPoint } from "@balancer-labs/balancer-v3-monorepo/pkg/solidity-utils/contracts/math/FixedPoint.sol";
 import { Math } from "@balancer-labs/balancer-v3-monorepo/pkg/vault/contracts/BasePoolMath.sol";
+import { IERC20 } from "@balancer-labs/balancer-v3-monorepo/pkg/interfaces/contracts/tokens/IERC20.sol";
 
 contract SafeSwap is IBasePool, IPoolLiquidity, BalancerPoolToken {
     using FixedPoint for uint256;
 
     uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 0;
     uint256 private constant _MAX_SWAP_FEE_PERCENTAGE = 0.1e18; // 10%
+    uint256 private constant _DISCOUNT_PERCENTAGE = 10; // 10% discount
 
-    constructor(IVault vault, string memory name, string memory symbol) BalancerPoolToken(vault, name, symbol) {}
+    address public discountToken; // Address of the token that provides a discount
+
+    constructor(
+        IVault vault,
+        string memory name,
+        string memory symbol,
+        address _discountToken // Address of the discount token to be passed in constructor
+    ) BalancerPoolToken(vault, name, symbol) {
+        discountToken = _discountToken;
+    }
 
     /**
      * @notice Execute a swap in the pool.
      * @param params Swap parameters
      * @return amountCalculatedScaled18 Calculated amount for the swap
      */
-    function onSwap(PoolSwapParams calldata params) external pure returns (uint256 amountCalculatedScaled18) {
+    function onSwap(PoolSwapParams calldata params) external view returns (uint256 amountCalculatedScaled18) {
+        uint256 swapFee = _MAX_SWAP_FEE_PERCENTAGE; // Default fee
+
+        // Check if the user holds the discount token and apply the discount if applicable
+        if (IERC20(discountToken).balanceOf(msg.sender) > 0) {
+            swapFee = swapFee - ((swapFee * _DISCOUNT_PERCENTAGE) / 100); // Apply 10% discount
+        }
+
+        // Swap logic with discounted swap fee
         amountCalculatedScaled18 =
             (params.balancesScaled18[params.indexOut] * params.amountGivenScaled18) /
             (params.balancesScaled18[params.indexIn] + params.amountGivenScaled18);
+
+        // Apply the swap fee (using the discounted or full fee)
+        amountCalculatedScaled18 = amountCalculatedScaled18.mulDown(FixedPoint.ONE - swapFee);
     }
 
     /**
