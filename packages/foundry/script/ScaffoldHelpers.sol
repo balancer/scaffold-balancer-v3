@@ -17,17 +17,18 @@ contract ScaffoldHelpers is Script {
     string path;
     Deployment[] public deployments;
 
-    function getDeployerPrivateKey() internal view returns (uint256 deployerPrivateKey) {
-        deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
-        if (deployerPrivateKey == 0) {
-            revert InvalidPrivateKey(
-                "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"
-            );
+    /**
+     * Use the pk defined by dev if they added one to a .env file,
+     * otherwise use the default anvil #0 account
+     */
+    function getDeployerPrivateKey() internal returns (uint256 deployerPrivateKey) {
+        try vm.envUint("DEPLOYER_PRIVATE_KEY") returns (uint256 key) {
+            deployerPrivateKey = key;
+        } catch {
+            deployerPrivateKey = 0;
         }
-    }
 
-    function setupLocalhostEnv() internal returns (uint256 localhostPrivateKey) {
-        if (block.chainid == 31337) {
+        if (block.chainid == 31337 && deployerPrivateKey == 0) {
             root = vm.projectRoot();
             path = string.concat(root, "/localhost.json");
             string memory json = vm.readFile(path);
@@ -35,7 +36,11 @@ contract ScaffoldHelpers is Script {
             string memory mnemonic = abi.decode(mnemonicBytes, (string));
             return vm.deriveKey(mnemonic, 0);
         } else {
-            return vm.envUint("DEPLOYER_PRIVATE_KEY");
+            if (deployerPrivateKey == 0) {
+                revert InvalidPrivateKey(
+                    "You don't have a deployer account. Make sure you have set DEPLOYER_PRIVATE_KEY in .env or use `yarn generate` to generate a new random account"
+                );
+            }
         }
     }
 
