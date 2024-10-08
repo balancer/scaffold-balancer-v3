@@ -17,6 +17,15 @@ contract ScaffoldHelpers is Script {
     string path;
     Deployment[] public deployments;
 
+    function getDeployerAddress() internal view returns (uint256 deployerPrivateKey) {
+        deployerPrivateKey = vm.envUint("DEPLOYER_ADDRESS");
+        if (deployerPrivateKey == 0) {
+            revert InvalidPrivateKey(
+                "You don't have a deployer address. Make sure you have set DEPLOYER_ADDRESS in .env"
+            );
+        }
+    }
+
     /**
      * Use the pk defined by dev if they added one to a .env file,
      * otherwise use the default anvil #0 account
@@ -27,17 +36,7 @@ contract ScaffoldHelpers is Script {
         } catch {
             deployerPrivateKey = 0;
         }
-    }
-
-    function getDeployerAddress() internal view returns (uint256 deployerPrivateKey) {
-        deployerPrivateKey = vm.envUint("DEPLOYER_ADDRESS");
-        if (deployerPrivateKey == 0) {
-            revert InvalidPrivateKey(
-                "You don't have a deployer address. Make sure you have set DEPLOYER_ADDRESS in .env"
-            );
-        }
-    }
-
+    
         if (block.chainid == 31337 && deployerPrivateKey == 0) {
             root = vm.projectRoot();
             path = string.concat(root, "/localhost.json");
