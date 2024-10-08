@@ -7,7 +7,7 @@ import "@openzeppelin-npm/security/Pausable.sol";
 import "@openzeppelin-npm/utils/Counters.sol";
 import "./MockERC20Factory.sol";
 
-contract NFTFactory is ERC721URIStorage, Ownable, Pausable {
+contract MockNft is ERC721URIStorage, Ownable, Pausable {
 	using Counters for Counters.Counter;
 	Counters.Counter private _tokenIdCounter;
 	address public linkedTokenFactoryAddress = 0x0000000000000000000000000000000000000000;
@@ -21,7 +21,7 @@ contract NFTFactory is ERC721URIStorage, Ownable, Pausable {
 		bool paused;
 	}
 
-	mapping(uint256 => NFTData) public nftData;
+	mapping(uint256 => NFTData) private nftData;
 	mapping(address => uint256[]) internal tokensByAddress;
 
 	function getTokensByAddress(address owner) public view returns (uint256[] memory) {
@@ -52,7 +52,7 @@ contract NFTFactory is ERC721URIStorage, Ownable, Pausable {
 		string memory symbol_,
 		address[] memory membersToFund,
 		uint256[] memory amountsToFund
-	) public virtual whenNotPaused returns (uint256) {
+	) public virtual whenNotPaused returns (uint256, address) {
 		require(!onlyOwnerCanMint || msg.sender == owner(), "Minting is restricted to the owner");
 
 		// increment id & mint
@@ -75,7 +75,7 @@ contract NFTFactory is ERC721URIStorage, Ownable, Pausable {
 			// TODO: find out why this is throwing error
 			// Create the associated ERC20 token by calling TokenFactory
 			// linkedTokenInterfaces[0] = "ERC20";
-			linkedTokenAddress = ERC20Factory(linkedTokenFactoryAddress).createToken(
+			linkedTokenAddress = MockERC20Factory(linkedTokenFactoryAddress).createToken(
 				name_,
 				symbol_,
 				to,
@@ -102,7 +102,7 @@ contract NFTFactory is ERC721URIStorage, Ownable, Pausable {
 		// tokensByAddress[to].push(tokenId); // Add token to the new owner's list
 
 		emit TokenMinted(tokenId, linkedTokenAddress);
-		return tokenId;
+		return (tokenId, linkedTokenAddress);
 	}
 
 	// Callable by both owner and individual NFT holder
@@ -181,5 +181,10 @@ contract NFTFactory is ERC721URIStorage, Ownable, Pausable {
 		}
 
 		super._beforeTokenTransfer(from, to, tokenId, batchSize);
+	}
+
+	// Getter
+	function getNftData(uint256 tokenId) external view returns (NFTData memory) {
+		return nftData[tokenId];
 	}
 }

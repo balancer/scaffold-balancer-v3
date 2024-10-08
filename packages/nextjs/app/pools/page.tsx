@@ -6,13 +6,15 @@ import { PoolOperations, PoolPageSkeleton, PoolSelector } from "./_components/";
 import { HooksConfig, PoolAttributes, PoolComposition, PoolConfig, UserLiquidity } from "./_components/info";
 import { type NextPage } from "next";
 import { type Address } from "viem";
+import { useAccount } from "wagmi";
 import { Alert } from "~~/components/common";
 import { type Pool, type RefetchPool, useReadPool } from "~~/hooks/balancer/";
+import { useDeployedContractInfo, useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
 /**
  * 1. Search by pool address or select from dropdown
  * 2. Display pool info including composition, attributes, and configurations
- * 3. Perform actions within the selected pool by swapping and adding/removing liquidity
+ * 3. Perform actions within the selected pool by spping and adding/removing liquidity
  */
 const Pools: NextPage = () => {
   return (
@@ -62,11 +64,79 @@ const PoolPageContent = () => {
 };
 
 const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: RefetchPool }) => {
+  const [tokenId, setTokenId] = useState("");
+
+  const { data: deployedContractData } = useDeployedContractInfo("NftCheckHook");
+  const nftCheckHook = deployedContractData?.address;
+
+  const searchParams = useSearchParams();
+  const poolAddress = searchParams.get("address");
+
+  const { data: linkedTokenAddress } = useScaffoldContractRead({
+    contractName: "NftCheckHook",
+    // @ts-ignore
+    functionName: "getLinkedTokenAddress",
+  });
+
+  const { data: token } = useScaffoldContractRead({
+    contractName: "NftCheckHook",
+    // @ts-ignore
+    functionName: "getToken",
+  });
+
+  const { writeAsync: initializePool } = useScaffoldContractWrite({
+    contractName: "Router",
+    functionName: "initialize",
+    address: "0xB12FcB422aAe6720f882E22C340964a7723f2387",
+    args: [
+      poolAddress!,
+      // @ts-ignore
+      linkedTokenAddress! > token! ? [token!, linkedTokenAddress!] : [linkedTokenAddress!, token!],
+      [BigInt(50e18), BigInt(50e18)],
+      BigInt(99e18),
+      false,
+      "0x",
+    ],
+  });
+
+  const { address: deployerAddress } = useAccount();
+  const { writeAsync: transferNft } = useScaffoldContractWrite({
+    contractName: "MockNft",
+    functionName: "transferFrom",
+    args: [deployerAddress, nftCheckHook, BigInt(tokenId)],
+  });
+
   return (
     <>
       <h3 className="mb-7 font-semibold text-3xl xl:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-violet-400 to-orange-500">
         {pool.name}
       </h3>
+      <input onChange={e => setTokenId(e.target.value)} placeholder="tokenId" />
+
+      <button
+        onClick={() => {
+          transferNft();
+        }}
+        className="p-2 m-2 border-2 rounded-full border-solid border-red-600"
+      >
+        Transfer NFT
+      </button>
+      <button
+        onClick={() => {
+          initializePool();
+        }}
+        className="p-2 m-2 border-2 rounded-full border-solid border-red-600"
+      >
+        Initialize Pool
+      </button>
+      <button
+        onClick={() => {
+          window.location.reload();
+        }}
+        className="p-2 mb-8 m-2 border-2 rounded-full border-solid border-red-600"
+      >
+        Reload
+      </button>
 
       <div className="w-full">
         <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">

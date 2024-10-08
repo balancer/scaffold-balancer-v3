@@ -4,6 +4,7 @@
   "scripts": {
     "account": "node script/ListAccount.js",
     "chain": "anvil --config-out localhost.json",
+    "clean": "forge clean",
     "compile": "forge compile",
     "deploy": "forge build --build-info --build-info-path out/build-info/ && forge script script/Deploy.s.sol --rpc-url ${1:-default_network} --broadcast --slow && node scripts-js/generateTsAbis.js",
     "flatten": "forge flatten",

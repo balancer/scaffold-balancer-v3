@@ -64,12 +64,14 @@ contract ERC20Ownable is ERC20, Ownable, Pausable {
 		return _customSymbol;
 	}
 
-	function mint(address to, uint256 amount) external onlyOwner notLocked whenNotPaused {
+	// DANGER: This function is not safe and should not be used in production, should be onlyOnwer
+	function mint(address to, uint256 amount) external notLocked whenNotPaused {
 		_mint(to, amount);
 		emit TokensMinted(to, amount);
 	}
 
-	function burn(address from, uint256 amount) external onlyOwner notLocked whenNotPaused {
+	// DANGER: This function is not safe and should not be used in production, should be onlyOnwer
+	function burn(address from, uint256 amount) external notLocked whenNotPaused {
 		_burn(from, amount);
 		emit TokensBurned(from, amount);
 	}
@@ -112,7 +114,7 @@ contract ERC20Ownable is ERC20, Ownable, Pausable {
 		super._transferOwnership(newOwner);
 		// Check if the factory address is defined and not an empty address
 		if (factory != address(0)) {
-			ERC20Factory(factory).notifyOwnershipChange(oldOwner, newOwner);
+			MockERC20Factory(factory).notifyOwnershipChange(oldOwner, newOwner);
 		}
 		emit OwnershipTransferred(oldOwner, newOwner);
 	}
