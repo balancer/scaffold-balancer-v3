@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PoolOperations, PoolPageSkeleton, PoolSelector } from "./_components/";
 import { HooksConfig, PoolAttributes, PoolComposition, PoolConfig, UserLiquidity } from "./_components/info";
+import { TransactionButton } from "./_components/operations/";
 import { type NextPage } from "next";
 import { type Address } from "viem";
 import { useAccount } from "wagmi";
@@ -64,8 +65,6 @@ const PoolPageContent = () => {
 };
 
 const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: RefetchPool }) => {
-  const [tokenId, setTokenId] = useState("");
-
   const { data: deployedContractData } = useDeployedContractInfo("NftCheckHook");
   const nftCheckHook = deployedContractData?.address;
 
@@ -74,20 +73,24 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
 
   const { data: linkedTokenAddress } = useScaffoldContractRead({
     contractName: "NftCheckHook",
-    // @ts-ignore
     functionName: "getLinkedTokenAddress",
   });
 
   const { data: token } = useScaffoldContractRead({
     contractName: "NftCheckHook",
-    // @ts-ignore
     functionName: "getToken",
   });
 
-  const { writeAsync: initializePool } = useScaffoldContractWrite({
+  const { data: hookBalance } = useScaffoldContractRead({
+    contractName: "MockNft",
+    functionName: "balanceOf",
+    args: [nftCheckHook],
+  });
+  const hookHasNft = hookBalance && hookBalance !== BigInt(0) ? true : false;
+
+  const { writeAsync: initializePool, isSuccess: initializeSuccess } = useScaffoldContractWrite({
     contractName: "Router",
     functionName: "initialize",
-    address: "0xB12FcB422aAe6720f882E22C340964a7723f2387",
     args: [
       poolAddress!,
       // @ts-ignore
@@ -100,47 +103,52 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
   });
 
   const { address: deployerAddress } = useAccount();
-  const { writeAsync: transferNft } = useScaffoldContractWrite({
+  const { writeAsync: transferNft, isSuccess: transferSuccess } = useScaffoldContractWrite({
     contractName: "MockNft",
     functionName: "transferFrom",
-    args: [deployerAddress, nftCheckHook, BigInt(tokenId)],
+    args: [deployerAddress, nftCheckHook, BigInt(0)],
   });
+
+  console.log("successes", hookHasNft, transferSuccess, initializeSuccess);
 
   return (
     <>
       <h3 className="mb-7 font-semibold text-3xl xl:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-violet-400 to-orange-500">
         {pool.name}
       </h3>
-      <input onChange={e => setTokenId(e.target.value)} placeholder="tokenId" />
-
-      <button
-        onClick={() => {
-          transferNft();
-        }}
-        className="p-2 m-2 border-2 rounded-full border-solid border-red-600"
-      >
-        Transfer NFT
-      </button>
-      <button
-        onClick={() => {
-          initializePool();
-        }}
-        className="p-2 m-2 border-2 rounded-full border-solid border-red-600"
-      >
-        Initialize Pool
-      </button>
-      <button
-        onClick={() => {
-          window.location.reload();
-        }}
-        className="p-2 mb-8 m-2 border-2 rounded-full border-solid border-red-600"
-      >
-        Reload
-      </button>
-
       <div className="w-full">
         <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
           <div className="flex flex-col gap-7">
+            <div className="w-full flex flex-col shadow-lg">
+              <div className="bg-base-200 p-5 rounded-lg">
+                <h5 className="text-xl font-bold mb-3">Pool Setup</h5>
+
+                <div className="bg-neutral rounded-lg">
+                  <div className="border-base-300 border-b p-4">
+                    <TransactionButton
+                      label="Transfer NFT"
+                      onClick={transferNft}
+                      className="mb-2"
+                      isFormEmpty={hookHasNft}
+                    />
+                    <TransactionButton
+                      label="Initialize Pool"
+                      onClick={initializePool}
+                      className="mb-2"
+                      isFormEmpty={!transferSuccess || initializeSuccess}
+                    />
+                    <TransactionButton
+                      label="Reload"
+                      onClick={() => {
+                        window.location.reload;
+                      }}
+                      className="mb-2"
+                      isFormEmpty={!transferSuccess && !initializeSuccess}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
             <UserLiquidity pool={pool} />
             <PoolComposition pool={pool} />
             <HooksConfig pool={pool} />
