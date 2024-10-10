@@ -7,6 +7,7 @@ import { DeployMockTokens } from "./00_DeployMockTokens.s.sol";
 import { DeployConstantSumPool } from "./01_DeployConstantSumPool.s.sol";
 import { DeployConstantProductPool } from "./02_DeployConstantProductPool.s.sol";
 import { DeployWeightedPool8020 } from "./03_DeployWeightedPool8020.s.sol";
+import { DeployConstantSumPoolWithCheckHook } from "./06_DeployConstantSumPoolWithCheckHook.s.sol";
 
 /**
  * @title Deploy Script
@@ -18,14 +19,17 @@ contract DeployScript is
     DeployMockTokens,
     DeployConstantSumPool,
     DeployConstantProductPool,
-    DeployWeightedPool8020
+    DeployWeightedPool8020,
+    DeployConstantSumPoolWithCheckHook
 {
     function run() external scaffoldExport {
         // Deploy mock tokens to use for the pools and hooks
-        (address mockToken1, address mockToken2, address mockVeBAL) = deployMockTokens();
+        (address mockToken1, address mockToken2, address mockVeBAL, address mockStable) = deployMockTokens();
 
         // Deploy, register, and initialize a constant sum pool with a swap fee discount hook
-        deployConstantSumPool(mockToken1, mockToken2, mockVeBAL);
+        // deployConstantSumPool(mockToken1, mockToken2, mockVeBAL);
+
+        deployConstantSumPoolWithCheckHook(mockStable);
 
         // Deploy, register, and initialize a constant product pool with a lottery hook
         deployConstantProductPool(mockToken1, mockToken2);

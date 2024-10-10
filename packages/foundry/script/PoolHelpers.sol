@@ -11,7 +11,6 @@ import { IBatchRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IBatc
 import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
 
 /**
  * @title Pool Helpers
