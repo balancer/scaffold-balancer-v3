@@ -20,6 +20,11 @@ import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/Fixe
 import { VaultGuard } from "@balancer-labs/v3-vault/contracts/VaultGuard.sol";
 import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 
+import { MockNft } from "../mocks/MockNft.sol";
+import { MockStable } from "../mocks/MockStable.sol";
+import { ERC20Ownable } from "../mocks/ERC20Ownable.sol";
+
+
 // Interface for ERC721 NFT contract
 interface IERC721 {
     function ownerOf(uint256 tokenId) external view returns (address owner);
@@ -44,14 +49,14 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
 
     address public nftContract;
     uint256 public nftId;
-    address public firstDepositor;
     uint256 public initialToken1Amount;
     uint256 public initialToken2Amount;
     uint256 public redeemRatio;
     address public poolAddress;
-    address private linkedTokenAddress;
-    address private token;
+    address private linkedToken;
+    address private stableToken;
     TokenConfig[] private tokenConfigs;
+    bool initialLiquidityRecorded;
 
     uint64 public exitFeePercentage;
     uint64 public constant MAX_EXIT_FEE_PERCENTAGE = 10e16;
@@ -72,11 +77,11 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     event LiquiditySettled(uint256 totalEscrowedAmount, address indexed originalDepositor);
     event Redeemed(address indexed user, uint256 poolTokenAmount, uint256 stableTokenAmount);
 
-    constructor(IVault vault, address _nftContract, uint256 _nftId, address _linkedTokenAddress, address _token) VaultGuard(vault) Ownable(msg.sender) {
+    constructor(IVault vault, address _nftContract, uint256 _nftId, address _linkedToken, address _stableToken) VaultGuard(vault) Ownable(msg.sender) {
         nftContract = _nftContract;
         nftId = _nftId;
-        linkedTokenAddress = _linkedTokenAddress;
-        token =_token;
+        linkedToken = _linkedToken;
+        stableToken = _stableToken;
     }
 
     function onRegister(
@@ -153,7 +158,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     ) public override onlyVault returns (bool, uint256[] memory hookAdjustedAmountsOutRaw) {
         
         // Ensure the first depositor has the same amount of both tokens after removal (no rug pulling allowed)
-        if (msg.sender == firstDepositor) {
+        if (msg.sender == owner()) {
             IERC20[] memory poolTokens = _vault.getPoolTokens(pool);
 
             uint256 currentToken1Amount = poolTokens[0].balanceOf(msg.sender);
@@ -238,68 +243,76 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     }
 
     function recordInitialLiquidity(uint256 token1Amount, uint256 token2Amount) public onlyVault {
-        require(firstDepositor == address(0), "Initial liquidity already recorded");
-        firstDepositor = msg.sender;
+        require(!initialLiquidityRecorded, "Initial liquidity already recorded");
+        initialLiquidityRecorded = true;
         initialToken1Amount = token1Amount;
         initialToken2Amount = token2Amount;
-        emit InitialLiquidityRecorded(msg.sender, token1Amount, token2Amount);
+        emit InitialLiquidityRecorded(owner(), token1Amount, token2Amount);
     }
 
-    function getLinkedTokenAddress() external view returns(address) {
-        return linkedTokenAddress;
+    function getLinkedToken() external view returns(address) {
+        return linkedToken;
     }
 
-    function getToken() external view returns(address) {
-        return token;
+    function getStableToken() external view returns(address) {
+        return stableToken;
     }
-    /**
-    * @notice Allows the contract owner to settle and release the NFT to the original depositor.
-    * @dev This function calculates outstanding shares and deposits the equivalent stable token amount in escrow.
-    */
-    function settle() external onlyOwner {
-        require(firstDepositor != address(0), "Initial liquidity not recorded");
-        require(firstDepositor != msg.sender, "Initial depositor is only one that can settle");
 
+    function getSettlementAmount() public returns(uint256 stableAmountRequired, uint256 hookBalance) {
         // Calculate total outstanding shares in the pool
-        IERC20 poolToken = IERC20(address(_vault.getPoolTokens(poolAddress)[0])); // Assuming the first token is the asset token
-        IERC20 stableToken = IERC20(address(_vault.getPoolTokens(poolAddress)[1])); // Assuming the first token is the asset token
-        uint256 totalSupply = poolToken.totalSupply();
-        uint256 poolBalance = poolToken.balanceOf(address(this)) + poolToken.balanceOf(firstDepositor);
-        uint256 outstandingShares = totalSupply - poolBalance;
+        ERC20Ownable linkedTokenErc20 = ERC20Ownable(linkedToken);
+        MockStable stableTokenErc20 = MockStable(stableToken);
+        uint256 totalSupply = linkedTokenErc20.totalSupply();  // 1000e18
+        uint256 poolBalance = linkedTokenErc20.balanceOf(address(this)) + linkedTokenErc20.balanceOf(owner());  // 0 + 950e18
+        uint256 outstandingShares = totalSupply - poolBalance;  // 50e18
 
         // Calculate the equivalent stable token amount using the current pool/stable ratio
-        uint256 poolTokenBalance = poolToken.balanceOf(address(this));
-        uint256 stableTokenBalance = stableToken.balanceOf(address(this));
-        uint256 stablePoolRatio = poolTokenBalance / stableTokenBalance;
+        uint256 linkedTokenBalance = linkedTokenErc20.balanceOf(poolAddress);
+        uint256 stableTokenBalance = stableTokenErc20.balanceOf(poolAddress);
+        uint256 stablePoolRatio = stableTokenBalance != 0 ? linkedTokenBalance / stableTokenBalance : 1;
         // Ensure the stable pool ratio is not below what the initial price of asset was, which was 1:1
         // will need to refactor for 80/20 pools
         redeemRatio = stablePoolRatio > 1 ? stablePoolRatio : 1;
 
         // how much stable tokens are required to settle the outstanding shares
-        uint256 stableAmountRequired = outstandingShares * redeemRatio;
+        stableAmountRequired = outstandingShares * redeemRatio;
+        hookBalance = stableTokenErc20.balanceOf(address(this));
+    }
+
+    /**
+    * @notice Allows the contract owner to settle and release the NFT to the original depositor.
+    * @dev This function calculates outstanding shares and deposits the equivalent stable token amount in escrow.
+    */
+    // for TESTING: address private x1;function getX1() external view returns(address) {return x1;}
+    function settle() external onlyOwner {
+        require(initialLiquidityRecorded, "Initial liquidity not recorded");
+
+        (uint256 stableAmountRequired, uint256 hookBalance) = getSettlementAmount();
 
         // Check if the contract holds enough stable tokens for settlement
-        if (IERC20(stableToken).balanceOf(msg.sender) < stableAmountRequired) {
-            revert InsufficientStableForSettlement(stableAmountRequired, IERC20(stableToken).balanceOf(msg.sender));
+        if (hookBalance < stableAmountRequired) {
+            revert InsufficientStableForSettlement(stableAmountRequired, hookBalance);
         }
-
-        // Transfer the stableAmountRequired from the msg.sender to the hook contract
-        IERC20(stableToken).transferFrom(msg.sender, address(this), stableAmountRequired);
         
         // Release the NFT back to the original depositor
-        IERC721(nftContract).transferFrom(address(this), firstDepositor, nftId);
+        MockNft(nftContract).approve(msg.sender, nftId);
+        MockNft(nftContract).transferFrom(address(this), msg.sender, nftId);
         
         // Remove the initial liquidity from the pool
         // _vault.removeLiquidity(
         //     poolAddress
-        //     firstDepositor,
+        //     owner(),
         //     initialToken1Amount,
         //     initialToken2Amount,
         //     0, // minBptAmountOut is set to 0 to allow the removal of all initial liquidity
         //     bytes("") // userData is not used in this context
         // );
 
-        emit LiquiditySettled(stableAmountRequired, firstDepositor);
+        emit LiquiditySettled(stableAmountRequired, owner());
+    }
+
+    function onERC721Received(address, address, uint256, bytes calldata) external pure returns (bytes4) {
+        return this.onERC721Received.selector;
     }
 
     /**

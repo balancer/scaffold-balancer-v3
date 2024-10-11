@@ -38,7 +38,7 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
 
         // Deploy an Nft and mint one
         MockNft mockNft = new MockNft("NFTFactory", "NFTF");
-
+        console.log("MockNft: %s", address(mockNft));
 
         MockERC20Factory mockERC20Factory = new MockERC20Factory("MockERC20Factory");
         MockNft(mockNft).setLinkedTokenFactory(address(mockERC20Factory));
@@ -82,9 +82,6 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
             new NftCheckHook(vault, address(mockNft), tokenId, linkedTokenAddress, token)
         );
         console.log("NftCheckHook deployed at address: %s", nftCheckHook);
-
-        MockNft(mockNft).approve(nftCheckHook, tokenId);
-        // MockNft(mockNft).transferFrom(deployerAddress, nftCheckHook, tokenId);
 
         // Deploy a pool and register it with the vault
         address pool = factory.create(

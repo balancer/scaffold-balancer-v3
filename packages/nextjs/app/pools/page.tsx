@@ -71,14 +71,21 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
   const searchParams = useSearchParams();
   const poolAddress = searchParams.get("address");
 
+  const { address: deployerAddress } = useAccount();
+  const { writeAsync: transferNft, isSuccess: transferSuccess } = useScaffoldContractWrite({
+    contractName: "MockNft",
+    functionName: "transferFrom",
+    args: [deployerAddress, nftCheckHook, BigInt(0)],
+  });
+
   const { data: linkedTokenAddress } = useScaffoldContractRead({
     contractName: "NftCheckHook",
-    functionName: "getLinkedTokenAddress",
+    functionName: "getLinkedToken",
   });
 
   const { data: token } = useScaffoldContractRead({
     contractName: "NftCheckHook",
-    functionName: "getToken",
+    functionName: "getStableToken",
   });
 
   const { data: hookBalance } = useScaffoldContractRead({
@@ -102,12 +109,32 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
     ],
   });
 
-  const { address: deployerAddress } = useAccount();
-  const { writeAsync: transferNft, isSuccess: transferSuccess } = useScaffoldContractWrite({
-    contractName: "MockNft",
-    functionName: "transferFrom",
-    args: [deployerAddress, nftCheckHook, BigInt(0)],
+  // transfer stable token
+  const { data: getSettlementAmount } = useScaffoldContractRead({
+    contractName: "NftCheckHook",
+    // @ts-ignore
+    functionName: "getSettlementAmount",
   });
+
+  const { writeAsync: transferStableTokens, isSuccess: transferStableTokensSuccess } = useScaffoldContractWrite({
+    contractName: "MockStable",
+    functionName: "transfer",
+    // @ts-ignore
+    args: [nftCheckHook, getSettlementAmount ? getSettlementAmount[0] - getSettlementAmount[1] : 0],
+  });
+
+  const { writeAsync: settlePool } = useScaffoldContractWrite({
+    contractName: "NftCheckHook",
+    functionName: "settle",
+  });
+
+  // const waitForApproval = () => {
+  //   setTimeout(()=>{if (approveStableTokensSuccess) {transferStableTokens();waitForTransfer();} else waitForApproval()}, 2000);
+  // }
+  // const { data: getTestVar } = useScaffoldContractRead({
+  //   contractName: "NftCheckHook",
+  //   functionName: "getSettlementAmount",
+  // });
 
   console.log("successes", hookHasNft, transferSuccess, initializeSuccess);
 
@@ -140,11 +167,35 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
                     <TransactionButton
                       label="Reload"
                       onClick={() => {
-                        window.location.reload;
+                        window.location.reload();
                       }}
                       className="mb-2"
                       isFormEmpty={!transferSuccess && !initializeSuccess}
                     />
+                    <div className="flex flex-row gap-2">
+                      <TransactionButton
+                        label="Transfer MST"
+                        onClick={() => {
+                          transferStableTokens();
+                        }}
+                        className="mb-2"
+                        isFormEmpty={!initializeSuccess}
+                      />
+                      <TransactionButton
+                        label="Settle"
+                        onClick={() => {
+                          settlePool();
+                        }}
+                        className="mb-2"
+                        isFormEmpty={!transferStableTokensSuccess}
+                      />
+                    </div>
+                    {/* <TransactionButton
+                      label="View value"
+                      onClick={() => {console.log(getTestVar);}}
+                      className="mb-2"
+                      isFormEmpty={false}
+                    /> */}
                   </div>
                 </div>
               </div>
