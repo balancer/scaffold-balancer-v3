@@ -71,11 +71,13 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
   const searchParams = useSearchParams();
   const poolAddress = searchParams.get("address");
 
-  const { address: deployerAddress } = useAccount();
+  const { address: userAddress } = useAccount();
+
+  // button: Transfer NFT
   const { writeAsync: transferNft, isSuccess: transferSuccess } = useScaffoldContractWrite({
     contractName: "MockNft",
     functionName: "transferFrom",
-    args: [deployerAddress, nftCheckHook, BigInt(0)],
+    args: [userAddress, nftCheckHook, BigInt(0)],
   });
 
   const { data: linkedTokenAddress } = useScaffoldContractRead({
@@ -95,6 +97,7 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
   });
   const hookHasNft = hookBalance && hookBalance !== BigInt(0) ? true : false;
 
+  // button: Initialize Pool
   const { writeAsync: initializePool, isSuccess: initializeSuccess } = useScaffoldContractWrite({
     contractName: "Router",
     functionName: "initialize",
@@ -109,33 +112,68 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
     ],
   });
 
-  // transfer stable token
   const { data: getSettlementAmount } = useScaffoldContractRead({
     contractName: "NftCheckHook",
     // @ts-ignore
     functionName: "getSettlementAmount",
   });
 
-  const { writeAsync: transferStableTokens, isSuccess: transferStableTokensSuccess } = useScaffoldContractWrite({
+  // button: Approve MST Transfer
+  const { writeAsync: approveStableTokens, isSuccess: approveStableTokensSuccess } = useScaffoldContractWrite({
     contractName: "MockStable",
-    functionName: "transfer",
+    functionName: "approve",
     // @ts-ignore
     args: [nftCheckHook, getSettlementAmount ? getSettlementAmount[0] - getSettlementAmount[1] : 0],
   });
 
+  // button: Settle
   const { writeAsync: settlePool } = useScaffoldContractWrite({
     contractName: "NftCheckHook",
     functionName: "settle",
   });
 
+  const { data: poolOwner } = useScaffoldContractRead({
+    contractName: "NftCheckHook",
+    functionName: "owner",
+  });
+
+  const { data: userRWATBalance } = useScaffoldContractRead({
+    contractName: "ERC20Ownable",
+    functionName: "balanceOf",
+    args: [userAddress],
+  });
+
+  // button: Approve RWAT Transfer
+  const { writeAsync: approveRWATTransfer } = useScaffoldContractWrite({
+    contractName: "ERC20Ownable",
+    functionName: "approve",
+    args: [nftCheckHook, userRWATBalance],
+  });
+
+  // button: Redeem
+  const { writeAsync: redeem } = useScaffoldContractWrite({
+    contractName: "NftCheckHook",
+    functionName: "redeem",
+  });
+
+  const { data: isPoolInitialized } = useScaffoldContractRead({
+    contractName: "Vault",
+    functionName: "isPoolInitialized",
+    args: [poolAddress!],
+  });
+
   // const waitForApproval = () => {
   //   setTimeout(()=>{if (approveStableTokensSuccess) {transferStableTokens();waitForTransfer();} else waitForApproval()}, 2000);
   // }
-  // const { data: getTestVar } = useScaffoldContractRead({
-  //   contractName: "NftCheckHook",
-  //   functionName: "getSettlementAmount",
-  // });
+  const { data: getTestVar } = useScaffoldContractRead({
+    contractName: "NftCheckHook",
+    // @ts-ignore
+    functionName: "getSettlementAmount",
+  });
 
+  console.log(userAddress);
+  console.log(poolOwner);
+  console.log("getSettlementAmount: ", getSettlementAmount);
   console.log("successes", hookHasNft, transferSuccess, initializeSuccess);
 
   return (
@@ -148,54 +186,88 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
           <div className="flex flex-col gap-7">
             <div className="w-full flex flex-col shadow-lg">
               <div className="bg-base-200 p-5 rounded-lg">
-                <h5 className="text-xl font-bold mb-3">Pool Setup</h5>
-
+                {!isPoolInitialized ? (
+                  <h5 className="text-xl font-bold mb-3">Pool Setup</h5>
+                ) : userAddress == poolOwner ? (
+                  <h5 className="text-xl font-bold mb-3">Settle Pool</h5>
+                ) : (
+                  <h5 className="text-xl font-bold mb-3">Redeem</h5>
+                )}
                 <div className="bg-neutral rounded-lg">
                   <div className="border-base-300 border-b p-4">
+                    {!isPoolInitialized ? (
+                      <>
+                        <TransactionButton
+                          label="Transfer NFT"
+                          onClick={transferNft}
+                          className="mb-2"
+                          isFormEmpty={hookHasNft}
+                        />
+                        <TransactionButton
+                          label="Initialize Pool"
+                          onClick={initializePool}
+                          className="mb-2"
+                          isFormEmpty={!transferSuccess || initializeSuccess}
+                        />
+                        <TransactionButton
+                          label="Reload"
+                          onClick={() => {
+                            window.location.reload();
+                          }}
+                          className="mb-2"
+                          isFormEmpty={!transferSuccess && !initializeSuccess}
+                        />
+                      </>
+                    ) : (
+                      <></>
+                    )}
+                    {isPoolInitialized && userAddress == poolOwner ? (
+                      <>
+                        <TransactionButton
+                          label="Approve MST Transfer"
+                          onClick={() => {
+                            approveStableTokens();
+                          }}
+                          className="mb-2"
+                          isFormEmpty={!initializeSuccess}
+                        />
+                        <TransactionButton
+                          label="Settle"
+                          onClick={() => {
+                            settlePool();
+                          }}
+                          className="mb-2"
+                          isFormEmpty={!approveStableTokensSuccess}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <TransactionButton
+                          label="Approve RWAT Transfer"
+                          onClick={() => {
+                            approveRWATTransfer();
+                          }}
+                          className="mb-2"
+                          isFormEmpty={false}
+                        />
+                        <TransactionButton
+                          label="Redeem"
+                          onClick={() => {
+                            redeem();
+                          }}
+                          className="mb-2"
+                          isFormEmpty={false}
+                        />
+                      </>
+                    )}
                     <TransactionButton
-                      label="Transfer NFT"
-                      onClick={transferNft}
-                      className="mb-2"
-                      isFormEmpty={hookHasNft}
-                    />
-                    <TransactionButton
-                      label="Initialize Pool"
-                      onClick={initializePool}
-                      className="mb-2"
-                      isFormEmpty={!transferSuccess || initializeSuccess}
-                    />
-                    <TransactionButton
-                      label="Reload"
+                      label="View value"
                       onClick={() => {
-                        window.location.reload();
+                        console.log(getTestVar);
                       }}
                       className="mb-2"
-                      isFormEmpty={!transferSuccess && !initializeSuccess}
-                    />
-                    <div className="flex flex-row gap-2">
-                      <TransactionButton
-                        label="Transfer MST"
-                        onClick={() => {
-                          transferStableTokens();
-                        }}
-                        className="mb-2"
-                        isFormEmpty={!initializeSuccess}
-                      />
-                      <TransactionButton
-                        label="Settle"
-                        onClick={() => {
-                          settlePool();
-                        }}
-                        className="mb-2"
-                        isFormEmpty={!transferStableTokensSuccess}
-                      />
-                    </div>
-                    {/* <TransactionButton
-                      label="View value"
-                      onClick={() => {console.log(getTestVar);}}
-                      className="mb-2"
                       isFormEmpty={false}
-                    /> */}
+                    />
                   </div>
                 </div>
               </div>

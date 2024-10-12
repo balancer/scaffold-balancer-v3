@@ -257,14 +257,19 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     function getStableToken() external view returns(address) {
         return stableToken;
     }
-
-    function getSettlementAmount() public returns(uint256 stableAmountRequired, uint256 hookBalance) {
+    uint256[] private x1;function getX1() external view returns(uint256[] memory) {return x1;}
+    function getSettlementAmount() public returns(uint256 stableAmountRequired, uint256 hookBalance, uint256[4] memory x1) {
         // Calculate total outstanding shares in the pool
         ERC20Ownable linkedTokenErc20 = ERC20Ownable(linkedToken);
         MockStable stableTokenErc20 = MockStable(stableToken);
         uint256 totalSupply = linkedTokenErc20.totalSupply();  // 1000e18
-        uint256 poolBalance = linkedTokenErc20.balanceOf(address(this)) + linkedTokenErc20.balanceOf(owner());  // 0 + 950e18
-        uint256 outstandingShares = totalSupply - poolBalance;  // 50e18
+        uint256 hookLinkedTokenBalance = linkedTokenErc20.balanceOf(address(this)); // 0
+        uint256[] memory poolBalance = _vault.getCurrentLiveBalances(poolAddress); // 0?
+        uint256 linkedTokenIndex = linkedToken > stableToken ? 1 : 0;
+        // x1 = _vault.getCurrentLiveBalances(poolAddress)[linkedTokenIndex];
+        uint256 ownerBalance = linkedTokenErc20.balanceOf(owner());  // 950e18
+        uint256 outstandingShares = totalSupply - hookLinkedTokenBalance - poolBalance[linkedTokenIndex] - ownerBalance;  // 50e18
+        x1 = [totalSupply, hookLinkedTokenBalance, poolBalance[linkedTokenIndex], ownerBalance];
 
         // Calculate the equivalent stable token amount using the current pool/stable ratio
         uint256 linkedTokenBalance = linkedTokenErc20.balanceOf(poolAddress);
@@ -287,12 +292,15 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     function settle() external onlyOwner {
         require(initialLiquidityRecorded, "Initial liquidity not recorded");
 
-        (uint256 stableAmountRequired, uint256 hookBalance) = getSettlementAmount();
+        (uint256 stableAmountRequired, uint256 hookBalance,) = getSettlementAmount();
 
         // Check if the contract holds enough stable tokens for settlement
         if (hookBalance < stableAmountRequired) {
             revert InsufficientStableForSettlement(stableAmountRequired, hookBalance);
         }
+
+        // Transfer the necessary stable tokens from the user
+        MockStable(stableToken).transferFrom(msg.sender, address(this), stableAmountRequired - hookBalance);
         
         // Release the NFT back to the original depositor
         MockNft(nftContract).approve(msg.sender, nftId);
@@ -318,17 +326,18 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     /**
     * @notice Allows users with linked tokens to redeem their tokens for the stable token in escrow.
     */
-    function redeem() external {
-        IERC20 poolToken = IERC20(address(_vault.getPoolTokens(poolAddress)[0])); // Assuming the first token is the asset token
-        IERC20 stableToken = IERC20(address(_vault.getPoolTokens(poolAddress)[1]));
-        uint256 redeemableBalance = poolToken.balanceOf(msg.sender);
+    function redeem() external payable {
+        ERC20Ownable linkedTokenErc20 = ERC20Ownable(linkedToken);
+        MockStable stableTokenErc20 = MockStable(stableToken);
+        uint256 redeemableBalance = linkedTokenErc20.balanceOf(msg.sender);
         require(redeemableBalance > 0, "Sender has no redeemable tokens");
 
         // Calculate the stable token amount to be transferred based on the ratio
         uint256 stableAmountToTransfer = redeemableBalance * redeemRatio;
 
-        // Transfer the stable tokens to the user
-        IERC20(stableToken).transfer(msg.sender, stableAmountToTransfer);
+        // Transfer the linked tokens from the user and the stable tokens to the user
+        linkedTokenErc20.transferFrom(msg.sender, address(this), redeemableBalance);
+        stableTokenErc20.transfer(msg.sender, stableAmountToTransfer);
 
         emit Redeemed(msg.sender, redeemableBalance, stableAmountToTransfer);
     }
