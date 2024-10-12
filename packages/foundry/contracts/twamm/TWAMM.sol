@@ -6,7 +6,7 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 import { IBasePool } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
 import "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol"; // Import VaultTypes.sol
 
-abstract contract TWAMM is IBasePool {
+contract TWAMM {
     IVault private vault;
     address private tokenA;
     address private tokenB;
@@ -62,12 +62,9 @@ abstract contract TWAMM is IBasePool {
         IERC20 token = isBuy ? IERC20(tokenA) : IERC20(tokenB);
         require(token.transferFrom(msg.sender, address(this), amount), "Transfer failed");
 
-        orders[msg.sender].push(Order({
-            amount: amount,
-            startTime: block.timestamp,
-            endTime: block.timestamp + duration,
-            isBuy: isBuy
-        }));
+        orders[msg.sender].push(
+            Order({ amount: amount, startTime: block.timestamp, endTime: block.timestamp + duration, isBuy: isBuy })
+        );
     }
 
     function cancelOrder(uint256 orderIndex) external {
@@ -87,8 +84,8 @@ abstract contract TWAMM is IBasePool {
             Order storage order = orders[msg.sender][i];
             if (block.timestamp >= order.endTime) {
                 uint256 amountOut = getAmountOut(order.amount, order.isBuy);
-                IERC20 tokenIn = order.isBuy ? IERC20(tokenA) : IERC20(tokenB);
-                IERC20 tokenOut = order.isBuy ? IERC20(tokenB) : IERC20(tokenA);
+                tokenIn = order.isBuy ? IERC20(tokenA) : IERC20(tokenB);
+                tokenOut = order.isBuy ? IERC20(tokenB) : IERC20(tokenA);
 
                 require(tokenOut.transfer(msg.sender, amountOut), "Transfer failed");
                 order.amount = 0; // Mark order as executed
@@ -96,16 +93,14 @@ abstract contract TWAMM is IBasePool {
         }
     }
 
-    function getAmountOut(uint256 amountIn, bool isBuy) internal view returns (uint256) {
+    function getAmountOut(uint256 amountIn, bool isBuy) internal pure returns (uint256) {
         // Implement the logic to calculate the amount out based on the TWAMM algorithm
         // This is a placeholder and should be replaced with actual logic
         return amountIn;
     }
 
     function swap(
-        VaultSwapParams memory vaultSwapParams, // Use VaultSwapParams instead of IVault.SingleSwap
-        uint256 limit,
-        uint256 deadline
+        VaultSwapParams memory vaultSwapParams
     ) external returns (uint256 amountCalculatedRaw, uint256 amountInRaw, uint256 amountOutRaw) {
         return vault.swap(vaultSwapParams); // Adjust the function call accordingly
     }
@@ -151,5 +146,9 @@ abstract contract TWAMM is IBasePool {
         if (remainingTokenOut > 0) {
             tokenOut.transfer(address(this), remainingTokenOut);
         }
+    }
+
+    function getOrders(address user) public view returns (Order[] memory) {
+        return orders[user];
     }
 }
