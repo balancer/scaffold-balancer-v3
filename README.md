@@ -1,3 +1,84 @@
+
+# TWAMM (Time-Weighted Automated Market Maker)
+
+## Overview
+
+TWAMM is a smart contract implementation designed to facilitate time-weighted automated market making on the [Ethereum blockchain](https://ethereum.org/en/developers/docs/smart-contracts/). It leverages the [Balancer V3 Vault](https://docs.balancer.fi) architecture to execute trades over a specified time interval, allowing users to create, execute, and manage orders in a decentralized manner.
+
+## Features
+
+- **Order Creation**: Users can create buy or sell orders specifying the amount and duration.
+- **Order Execution**: Orders are executed automatically based on the specified time intervals.
+- **Order Cancellation**: Users can cancel their orders before execution.
+- **Swap Functionality**: Integrates with Balancer V3 Vault for token swaps.
+- **Fund Withdrawal**: Users can withdraw remaining funds after the order execution period ends.
+
+## Contract Details
+
+- **TWAMM.sol**: The main contract implementing the TWAMM logic.
+- **TWAMMTest.sol**: Contains test cases for the TWAMM contract using a mock vault and ERC20 tokens.
+
+## Installation
+
+To set up the project, clone the repository and install the necessary dependencies:
+
+```bash
+git clone <repository-url>
+cd TWAMM
+npm install
+```
+
+## Usage
+
+### Deploying the Contract
+
+Deploy the `TWAMM` contract on an Ethereum-compatible blockchain:
+
+```solidity
+IVault vault = IVault(address(new MockVault()));
+IERC20 tokenA = IERC20(address(new MockERC20("TokenA", "TKA", 18)));
+IERC20 tokenB = IERC20(address(new MockERC20("TokenB", "TKB", 18)));
+
+TWAMM twamm = new TWAMM(
+    vault,
+    address(tokenA),
+    address(tokenB),
+    tokenA,
+    tokenB,
+    1000 ether,
+    1000 ether,
+    block.timestamp,
+    block.timestamp + 1 weeks,
+    1 hours
+);
+```
+
+### Running Tests
+
+To run the tests for the `TWAMM` contract, use the following command:
+
+```bash
+forge test
+```
+
+## Mock Contracts
+
+- **MockVault**: A mock implementation of the Balancer V3 Vault interface for testing purposes.
+- **MockERC20**: A simple [ERC20](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#IERC20) token implementation used in testing.
+
+## License
+
+This project is licensed under the [GPL-3.0-only License](https://www.gnu.org/licenses/gpl-faq.en.html).
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
+
+## Contact
+
+For any questions or support, please contact the project maintainers.       
+
+
 # 🏗︎ Scaffold Balancer v3
 
 A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
