@@ -140,7 +140,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         // in after hooks. Otherwise, the Vault will ignore any "hookAdjusted" amounts, and the transaction
         // might not settle. (It should be false if the after hooks do something else.)
         hookFlags.shouldCallAfterRemoveLiquidity = true;
-        hookFlags.shouldCallComputeDynamicSwapFee = true;
+        // hookFlags.shouldCallComputeDynamicSwapFee = true;
         hookFlags.shouldCallBeforeInitialize = true;
         return hookFlags;
     }
