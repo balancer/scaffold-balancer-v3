@@ -19,9 +19,9 @@ import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.so
  */
 contract PoolHelpers {
     // Balancer v3 Sepolia addresses (8th testnet release)
-    IVault internal vault = IVault(0x0EF1c156a7986F394d90eD1bEeA6483Cc435F542);
-    IRouter internal router = IRouter(0xB12FcB422aAe6720f882E22C340964a7723f2387);
-    IBatchRouter internal batchRouter = IBatchRouter(0x0418001D0d68C71d0E391fE46dC7aFCe045f34A0);
+    IVault internal vault = IVault(0x7966FE92C59295EcE7FB5D9EfDB271967BFe2fbA);
+    IRouter internal router = IRouter(0xDd10aDF05379D7C0Ee4bC9c72ecc5C01c40E25b8);
+    IBatchRouter internal batchRouter = IBatchRouter(0x48341a762AD5470f96F4B553681696d1e5eeac0A);
     IPermit2 internal permit2 = IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
 
     /**

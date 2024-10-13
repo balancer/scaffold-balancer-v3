@@ -19,4 +19,4 @@ sepolia = "${SEPOLIA_RPC_URL}"
 
 # [etherscan]
 # polygonMumbai = { key = "${ETHERSCAN_API_KEY}" }
-# sepolia = { key = "${ETHERSCAN_API_KEY}" }
+# sepolia = { key = "${ETHERSCAN_API_KEY}" }˘

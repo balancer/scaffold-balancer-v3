@@ -16,3 +16,6 @@
 [submodule "packages/foundry/lib/balancer-v3-monorepo"]
 	path = packages/foundry/lib/balancer-v3-monorepo
 	url = https://github.com/balancer/balancer-v3-monorepo
+[submodule "lib/chainlink-brownie-contracts"]
+	path = lib/chainlink-brownie-contracts
+	url = https://github.com/smartcontractkit/chainlink-brownie-contracts
