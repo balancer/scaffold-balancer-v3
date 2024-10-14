@@ -50,5 +50,5 @@ runs = 100000
 max_test_rejects = 600000
 
 [rpc_endpoints]
-    local = "http://127.0.0.1:8545"
+  local = "http://127.0.0.1:8545"
   default_network = "${local}"
