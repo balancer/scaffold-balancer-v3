@@ -123,7 +123,7 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
     contractName: "MockStable",
     functionName: "approve",
     // @ts-ignore
-    args: [nftCheckHook, getSettlementAmount ? getSettlementAmount[0] - getSettlementAmount[1] : 0],
+    args: [nftCheckHook, getSettlementAmount!],
   });
 
   // button: Settle
@@ -139,13 +139,17 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
 
   const { data: userRWATBalance } = useScaffoldContractRead({
     contractName: "ERC20Ownable",
+    // @ts-ignore
+    address: linkedTokenAddress,
     functionName: "balanceOf",
     args: [userAddress],
   });
+  console.log("RWAT USERBALANCE: ", userRWATBalance);
 
   // button: Approve RWAT Transfer
   const { writeAsync: approveRWATTransfer } = useScaffoldContractWrite({
     contractName: "ERC20Ownable",
+    address: linkedTokenAddress,
     functionName: "approve",
     args: [nftCheckHook, userRWATBalance],
   });
@@ -162,18 +166,12 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
     args: [poolAddress!],
   });
 
-  // const waitForApproval = () => {
-  //   setTimeout(()=>{if (approveStableTokensSuccess) {transferStableTokens();waitForTransfer();} else waitForApproval()}, 2000);
-  // }
-  const { data: getTestVar } = useScaffoldContractRead({
-    contractName: "NftCheckHook",
-    // @ts-ignore
-    functionName: "getSettlementAmount",
-  });
+  // const { data: getTestVar } = useScaffoldContractRead({
+  //   contractName: "NftCheckHook",
+  //   // @ts-ignore
+  //   functionName: "getSettlementAmount",
+  // });
 
-  console.log(userAddress);
-  console.log(poolOwner);
-  console.log("getSettlementAmount: ", getSettlementAmount);
   console.log("successes", hookHasNft, transferSuccess, initializeSuccess);
 
   return (
@@ -209,18 +207,18 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
                           className="mb-2"
                           isFormEmpty={!transferSuccess || initializeSuccess}
                         />
-                        <TransactionButton
-                          label="Reload"
-                          onClick={() => {
-                            window.location.reload();
-                          }}
-                          className="mb-2"
-                          isFormEmpty={!transferSuccess && !initializeSuccess}
-                        />
                       </>
                     ) : (
                       <></>
                     )}
+                    <TransactionButton
+                      label="Reload"
+                      onClick={() => {
+                        window.location.reload();
+                      }}
+                      className="mb-2"
+                      isFormEmpty={false}
+                    />
                     {isPoolInitialized && userAddress == poolOwner ? (
                       <>
                         <TransactionButton
@@ -229,7 +227,7 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
                             approveStableTokens();
                           }}
                           className="mb-2"
-                          isFormEmpty={!initializeSuccess}
+                          isFormEmpty={!isPoolInitialized}
                         />
                         <TransactionButton
                           label="Settle"
@@ -260,14 +258,14 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
                         />
                       </>
                     )}
-                    <TransactionButton
+                    {/* <TransactionButton
                       label="View value"
                       onClick={() => {
                         console.log(getTestVar);
                       }}
                       className="mb-2"
                       isFormEmpty={false}
-                    />
+                    /> */}
                   </div>
                 </div>
               </div>

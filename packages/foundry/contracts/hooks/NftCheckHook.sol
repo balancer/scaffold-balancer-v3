@@ -257,19 +257,18 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     function getStableToken() external view returns(address) {
         return stableToken;
     }
-    uint256[] private x1;function getX1() external view returns(uint256[] memory) {return x1;}
-    function getSettlementAmount() public returns(uint256 stableAmountRequired, uint256 hookBalance, uint256[4] memory x1) {
+
+    function getSettlementAmount() public returns(uint256 stableAmountRequired) {
         // Calculate total outstanding shares in the pool
         ERC20Ownable linkedTokenErc20 = ERC20Ownable(linkedToken);
         MockStable stableTokenErc20 = MockStable(stableToken);
         uint256 totalSupply = linkedTokenErc20.totalSupply();  // 1000e18
-        uint256 hookLinkedTokenBalance = linkedTokenErc20.balanceOf(address(this)); // 0
+        // uint256 hookLinkedTokenBalance = linkedTokenErc20.balanceOf(address(this)); // 0
         uint256[] memory poolBalance = _vault.getCurrentLiveBalances(poolAddress); // 0?
         uint256 linkedTokenIndex = linkedToken > stableToken ? 1 : 0;
-        // x1 = _vault.getCurrentLiveBalances(poolAddress)[linkedTokenIndex];
         uint256 ownerBalance = linkedTokenErc20.balanceOf(owner());  // 950e18
-        uint256 outstandingShares = totalSupply - hookLinkedTokenBalance - poolBalance[linkedTokenIndex] - ownerBalance;  // 50e18
-        x1 = [totalSupply, hookLinkedTokenBalance, poolBalance[linkedTokenIndex], ownerBalance];
+        // suppose that the hook has no linked token balance
+        uint256 outstandingShares = totalSupply - poolBalance[linkedTokenIndex] - ownerBalance;  // 50e18
 
         // Calculate the equivalent stable token amount using the current pool/stable ratio
         uint256 linkedTokenBalance = linkedTokenErc20.balanceOf(poolAddress);
@@ -278,10 +277,10 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         // Ensure the stable pool ratio is not below what the initial price of asset was, which was 1:1
         // will need to refactor for 80/20 pools
         redeemRatio = stablePoolRatio > 1 ? stablePoolRatio : 1;
+        redeemRatio = 1;
 
         // how much stable tokens are required to settle the outstanding shares
         stableAmountRequired = outstandingShares * redeemRatio;
-        hookBalance = stableTokenErc20.balanceOf(address(this));
     }
 
     /**
@@ -292,29 +291,20 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     function settle() external onlyOwner {
         require(initialLiquidityRecorded, "Initial liquidity not recorded");
 
-        (uint256 stableAmountRequired, uint256 hookBalance,) = getSettlementAmount();
+        uint256 stableAmountRequired = getSettlementAmount();
+
+        // Transfer the necessary stable tokens from the user
+        MockStable(stableToken).transferFrom(msg.sender, address(this), stableAmountRequired);
 
         // Check if the contract holds enough stable tokens for settlement
+        uint256 hookBalance = MockStable(stableToken).balanceOf(address(this));
         if (hookBalance < stableAmountRequired) {
             revert InsufficientStableForSettlement(stableAmountRequired, hookBalance);
         }
 
-        // Transfer the necessary stable tokens from the user
-        MockStable(stableToken).transferFrom(msg.sender, address(this), stableAmountRequired - hookBalance);
-        
         // Release the NFT back to the original depositor
         MockNft(nftContract).approve(msg.sender, nftId);
         MockNft(nftContract).transferFrom(address(this), msg.sender, nftId);
-        
-        // Remove the initial liquidity from the pool
-        // _vault.removeLiquidity(
-        //     poolAddress
-        //     owner(),
-        //     initialToken1Amount,
-        //     initialToken2Amount,
-        //     0, // minBptAmountOut is set to 0 to allow the removal of all initial liquidity
-        //     bytes("") // userData is not used in this context
-        // );
 
         emit LiquiditySettled(stableAmountRequired, owner());
     }
@@ -326,7 +316,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     /**
     * @notice Allows users with linked tokens to redeem their tokens for the stable token in escrow.
     */
-    function redeem() external payable {
+    function redeem() external {
         ERC20Ownable linkedTokenErc20 = ERC20Ownable(linkedToken);
         MockStable stableTokenErc20 = MockStable(stableToken);
         uint256 redeemableBalance = linkedTokenErc20.balanceOf(msg.sender);
