@@ -7,7 +7,7 @@
 
 # ...and not these directories...
 !contracts/
-!test/
+
 
 # ...even if they are in subdirectories
 !*/
