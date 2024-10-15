@@ -3,7 +3,7 @@ import { AddLiquidityForm, RemoveLiquidityForm, SwapForm } from ".";
 import { useAccount } from "wagmi";
 import { Alert } from "~~/components/common";
 import { Pool, RefetchPool, TokenBalances } from "~~/hooks/balancer";
-import { useAccountBalance, useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { useAccountBalance, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { useTokenBalancesOfUser } from "~~/hooks/token";
 
 type Operation = "Swap" | "AddLiquidity" | "RemoveLiquidity";
@@ -92,11 +92,11 @@ const PoolOperationsAlerts = ({
   const { balance } = useAccountBalance(address);
   const userHasNoTokens = Object.values(tokenBalances).every(balance => balance === 0n);
 
-  const { data: nftData } = useScaffoldContractRead({
-    contractName: "MockNft",
-    functionName: "getNftData",
-    args: [0n],
-  });
+  // const { data: nftData } = useScaffoldContractRead({
+  //   contractName: "MockNft",
+  //   functionName: "getNftData",
+  //   args: [0n],
+  // });
 
   const { writeAsync: mintToken1 } = useScaffoldContractWrite({
     contractName: "MockToken1",
@@ -116,17 +116,17 @@ const PoolOperationsAlerts = ({
     args: [100000000000000000000n],
   });
 
-  const { writeAsync: mintRWAToken } = useScaffoldContractWrite({
-    contractName: "ERC20Ownable",
-    functionName: "mint",
-    address: nftData?.linkedToken,
-    args: [address, 100000000000000000000n],
-  });
+  // const { writeAsync: mintRWAToken } = useScaffoldContractWrite({
+  //   contractName: "ERC20Ownable",
+  //   functionName: "mint",
+  //   address: nftData?.linkedToken,
+  //   args: [address, 100000000000000000000n],
+  // });
 
   const handleMintTokens = async () => {
     await mintToken1();
     await mintToken2();
-    await mintRWAToken();
+    // await mintRWAToken();
     await mintStable();
     refetchTokenBalances();
   };

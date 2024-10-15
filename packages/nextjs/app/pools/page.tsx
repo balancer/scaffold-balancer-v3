@@ -111,6 +111,7 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
       "0x",
     ],
   });
+  console.log("linkedToken, stableToken, poolAddress: ", linkedTokenAddress, token, poolAddress);
 
   const { data: getSettlementAmount } = useScaffoldContractRead({
     contractName: "NftCheckHook",
@@ -138,7 +139,7 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
   });
 
   const { data: userRWATBalance } = useScaffoldContractRead({
-    contractName: "ERC20Ownable",
+    contractName: "MockLinked",
     // @ts-ignore
     address: linkedTokenAddress,
     functionName: "balanceOf",
@@ -148,7 +149,7 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
 
   // button: Approve RWAT Transfer
   const { writeAsync: approveRWATTransfer } = useScaffoldContractWrite({
-    contractName: "ERC20Ownable",
+    contractName: "MockLinked",
     address: linkedTokenAddress,
     functionName: "approve",
     args: [nftCheckHook, userRWATBalance],

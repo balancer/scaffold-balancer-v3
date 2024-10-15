@@ -22,7 +22,7 @@ import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 
 import { MockNft } from "../mocks/MockNft.sol";
 import { MockStable } from "../mocks/MockStable.sol";
-import { ERC20Ownable } from "../mocks/ERC20Ownable.sol";
+import { MockLinked } from "../mocks/MockLinked.sol";
 
 
 // Interface for ERC721 NFT contract
@@ -77,11 +77,14 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     event LiquiditySettled(uint256 totalEscrowedAmount, address indexed originalDepositor);
     event Redeemed(address indexed user, uint256 poolTokenAmount, uint256 stableTokenAmount);
 
-    constructor(IVault vault, address _nftContract, uint256 _nftId, address _linkedToken, address _stableToken) VaultGuard(vault) Ownable(msg.sender) {
+    constructor(IVault vault, address _nftContract, uint256 _nftId, address _stableToken, string memory erc20name, string memory erc20symbol, uint256 erc20supply) VaultGuard(vault) Ownable(msg.sender) {
         nftContract = _nftContract;
         nftId = _nftId;
-        linkedToken = _linkedToken;
         stableToken = _stableToken;
+
+        MockLinked mockLinked = new MockLinked(erc20name, erc20symbol, erc20supply);
+        mockLinked.transfer(owner(), erc20supply);
+        linkedToken = address(mockLinked);
     }
 
     function onRegister(
@@ -99,6 +102,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         // save pool address for later use
         poolAddress = pool;
 
+
+        // TODO: check this. It's 0,0 right now
         // Record the initial liquidity amounts for use in limiting the position from the depositor prematurely
         recordInitialLiquidity(tokenConfigs[0].token.balanceOf(pool), tokenConfigs[1].token.balanceOf(pool));
 
@@ -260,7 +265,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
 
     function getSettlementAmount() public returns(uint256 stableAmountRequired) {
         // Calculate total outstanding shares in the pool
-        ERC20Ownable linkedTokenErc20 = ERC20Ownable(linkedToken);
+        MockLinked linkedTokenErc20 = MockLinked(linkedToken);
         MockStable stableTokenErc20 = MockStable(stableToken);
         uint256 totalSupply = linkedTokenErc20.totalSupply();  // 1000e18
         // uint256 hookLinkedTokenBalance = linkedTokenErc20.balanceOf(address(this)); // 0
@@ -309,15 +314,11 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         emit LiquiditySettled(stableAmountRequired, owner());
     }
 
-    function onERC721Received(address, address, uint256, bytes calldata) external pure returns (bytes4) {
-        return this.onERC721Received.selector;
-    }
-
     /**
     * @notice Allows users with linked tokens to redeem their tokens for the stable token in escrow.
     */
     function redeem() external {
-        ERC20Ownable linkedTokenErc20 = ERC20Ownable(linkedToken);
+        MockLinked linkedTokenErc20 = MockLinked(linkedToken);
         MockStable stableTokenErc20 = MockStable(stableToken);
         uint256 redeemableBalance = linkedTokenErc20.balanceOf(msg.sender);
         require(redeemableBalance > 0, "Sender has no redeemable tokens");
@@ -332,4 +333,9 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         emit Redeemed(msg.sender, redeemableBalance, stableAmountToTransfer);
     }
 
+    function onERC721Received(address, address, uint256, bytes calldata) external onlyOwner returns (bytes4) {
+        linkedToken = address(0x1);
+        return this.onERC721Received.selector;
+    }
+    
 }

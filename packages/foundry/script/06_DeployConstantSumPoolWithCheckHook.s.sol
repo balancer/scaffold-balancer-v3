@@ -17,8 +17,8 @@ import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.so
 import { NftCheckHook } from "../contracts/hooks/NftCheckHook.sol";
 import { MockNft } from "../contracts/mocks/MockNft.sol";
 import { MockERC20Factory } from "../contracts/mocks/MockERC20Factory.sol";
-import { ERC20Ownable } from "../contracts/mocks/ERC20Ownable.sol";
 import { Router } from "../contracts/mocks/Router.sol";
+import { MockLinked } from "../contracts/mocks/MockLinked.sol";
 
 
 /**
@@ -36,10 +36,52 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         ConstantSumFactory factory = new ConstantSumFactory(vault, 365 days); // pauseWindowDuration
         console.log("Constant Sum Factory deployed at: %s", address(factory));
 
+        // Deploy a Sample Token - will throw warning on deploy as it is not used in the following code
+        // however it is needed in order to interact with the contract via scaffold's patterns
+        MockLinked sampleToken = new MockLinked("sampleToken", "sampleToken", 1);
+
         // Deploy an Nft and mint one
         MockNft mockNft = new MockNft("NFTFactory", "NFTF");
         console.log("MockNft: %s", address(mockNft));
 
+        uint256 tokenId = mockNft.mintNft("https://0a050602b1c1aeae1063a0c8f5a7cdac.ipfscdn.io/ipfs/QmSiA82PQNuWuBfQtuzWKwnZV94qs34jrW1L6PaR69jeoE/metadata.json");
+
+        // Deploy a hook
+        address nftCheckHook = address(
+            new NftCheckHook(vault, address(mockNft), tokenId, token, "RWA Token", "RWAT", 1000e18)
+        );
+        console.log("NftCheckHook deployed at address: %s", nftCheckHook);
+
+        // Set the pool's deployment, registration, and initialization config
+        address linkedTokenAddress = NftCheckHook(nftCheckHook).getLinkedToken();
+        console.log("linkedTokenAddress: %s", linkedTokenAddress);
+        CustomPoolConfig memory poolConfig = getCheckSumPoolConfig(linkedTokenAddress, token);
+        InitializationConfig memory initConfig = getCheckSumPoolInitConfig(linkedTokenAddress, token);
+
+        // Deploy a pool and register it with the vault
+        address pool = factory.create(
+            poolConfig.name,
+            poolConfig.symbol,
+            poolConfig.salt,
+            poolConfig.tokenConfigs,
+            poolConfig.swapFeePercentage,
+            poolConfig.protocolFeeExempt,
+            poolConfig.roleAccounts,
+            nftCheckHook, // poolHooksContract --> calls onRegister
+            poolConfig.liquidityManagement
+        );
+        console.log("SumPoolWithNftCheckHook deployed at: %s", pool);
+
+        // Approve the router to spend tokens for pool initialization
+        approveRouterWithPermit2(initConfig.tokens);
+
+
+        
+
+
+
+
+/*
         MockERC20Factory mockERC20Factory = new MockERC20Factory("MockERC20Factory");
         MockNft(mockNft).setLinkedTokenFactory(address(mockERC20Factory));
         
@@ -61,7 +103,7 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
             amountsToFund
         );
 
-         (uint256 tokenId, address linkedTokenAddress) = MockNft(mockNft).mint(
+        (uint256 tokenId, address linkedTokenAddress) = MockNft(mockNft).mint(
             deployerAddress,
             "https://0a050602b1c1aeae1063a0c8f5a7cdac.ipfscdn.io/ipfs/QmSiA82PQNuWuBfQtuzWKwnZV94qs34jrW1L6PaR69jeoE/metadata.json",
             address(0),
@@ -99,9 +141,10 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
 
         // Approve the router to spend tokens for pool initialization
         approveRouterWithPermit2(initConfig.tokens);
-
+*/
         // deploy mock router so we can get the abi to call the initialize function
         Router router = new Router();
+
         vm.stopBroadcast();
     }
 
