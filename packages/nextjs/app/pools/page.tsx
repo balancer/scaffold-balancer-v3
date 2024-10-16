@@ -182,13 +182,7 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
   const nftAlert = () => (
     <div className="mt-2 flex flex-row justify-start">
       <Alert type="info">
-        <span
-          className="link"
-          onClick={
-            // @ts-ignore
-            () => navigator.clipboard.writeText(mockNft.address!)
-          }
-        >
+        <span className="link" onClick={() => navigator.clipboard.writeText(mockNft!.address!)}>
           NFT address
         </span>
       </Alert>
