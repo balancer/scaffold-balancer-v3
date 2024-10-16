@@ -92,12 +92,6 @@ const PoolOperationsAlerts = ({
   const { balance } = useAccountBalance(address);
   const userHasNoTokens = Object.values(tokenBalances).every(balance => balance === 0n);
 
-  // const { data: nftData } = useScaffoldContractRead({
-  //   contractName: "MockNft",
-  //   functionName: "getNftData",
-  //   args: [0n],
-  // });
-
   const { writeAsync: mintToken1 } = useScaffoldContractWrite({
     contractName: "MockToken1",
     functionName: "mint",
@@ -116,17 +110,9 @@ const PoolOperationsAlerts = ({
     args: [100000000000000000000n],
   });
 
-  // const { writeAsync: mintRWAToken } = useScaffoldContractWrite({
-  //   contractName: "ERC20Ownable",
-  //   functionName: "mint",
-  //   address: nftData?.linkedToken,
-  //   args: [address, 100000000000000000000n],
-  // });
-
   const handleMintTokens = async () => {
     await mintToken1();
     await mintToken2();
-    // await mintRWAToken();
     await mintStable();
     refetchTokenBalances();
   };
@@ -136,6 +122,7 @@ const PoolOperationsAlerts = ({
   }
 
   if (balance !== 0 && userHasNoTokens) {
+    return null;
     return (
       <Alert type="info">
         To mint 100 of each mock token:{" "}
@@ -148,8 +135,8 @@ const PoolOperationsAlerts = ({
 
   // return (
   //   <Alert type="info">
-  //     To mint 100 RWA:{" "}
-  //     <span className="link" onClick={() => mintRWAToken()}>
+  //     To mint 100 MST:{" "}
+  //     <span className="link" onClick={() => mintStable()}>
   //       click here
   //     </span>
   //   </Alert>

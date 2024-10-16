@@ -13,7 +13,8 @@ import {
     LiquidityManagement,
     RemoveLiquidityKind,
     TokenConfig,
-    HookFlags
+    HookFlags,
+    PoolSwapParams
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
@@ -57,6 +58,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     address private stableToken;
     TokenConfig[] private tokenConfigs;
     bool initialLiquidityRecorded;
+    bool poolIsSettled;
 
     uint64 public exitFeePercentage;
     uint64 public constant MAX_EXIT_FEE_PERCENTAGE = 10e16;
@@ -67,6 +69,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     error InsufficientStableForSettlement(uint256 required, uint256 available);
     error ExitFeeAboveLimit(uint256 feePercentage, uint256 limit);
     error PoolDoesNotSupportDonation();
+    error PoolIsSettled();
+    error CantAddLinkedTokenLiquidity();
 
     event NftCheckHookRegistered(address indexed hooksContract, address indexed pool);
     event ExitFeeCharged(address indexed pool, IERC20 indexed token, uint256 feeAmount);
@@ -131,6 +135,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         hookFlags.shouldCallAfterRemoveLiquidity = true;
         // hookFlags.shouldCallComputeDynamicSwapFee = true;
         hookFlags.shouldCallBeforeInitialize = true;
+        hookFlags.shouldCallBeforeSwap = true;
+        hookFlags.shouldCallBeforeAddLiquidity = true;
         return hookFlags;
     }
 
@@ -202,6 +208,28 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         return (true, hookAdjustedAmountsOutRaw);
     }
 
+    // random user cannot add linked token liquidity because problem at settlement
+    function onBeforeAddLiquidity(
+        address,
+        address,
+        AddLiquidityKind,
+        uint256[] memory maxAmountsInScaled18,
+        uint256,
+        uint256[] memory,
+        bytes memory
+    ) public view override returns (bool success) {
+       uint256 linkedTokenIndex = linkedToken > stableToken ? 1 : 0;
+       if (maxAmountsInScaled18[linkedTokenIndex] > 0)
+           revert CantAddLinkedTokenLiquidity();
+        success = true;
+    }
+
+    // random users cannot swap after pool is settled, but owner should be able to (TODO)
+    function onBeforeSwap(PoolSwapParams calldata, address pool) public view override returns (bool success) {
+        if (poolIsSettled) revert PoolIsSettled();
+        success = true;
+    }
+
     // Permissioned functions
 
     /**
@@ -247,6 +275,10 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         return stableToken;
     }
 
+    function getPoolIsSettled() external view returns(bool) {
+        return poolIsSettled;
+    }
+
     function getSettlementAmount() public returns(uint256 stableAmountRequired) {
         // Calculate total outstanding shares in the pool
         MockLinked linkedTokenErc20 = MockLinked(linkedToken);
@@ -266,10 +298,10 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         // Ensure the stable pool ratio is not below what the initial price of asset was, which was 1:1
         // will need to refactor for 80/20 pools
         redeemRatio = stablePoolRatio > 1 ? stablePoolRatio : 1;
-        redeemRatio = 1;
+        redeemRatio = 1.1 ether;
 
         // how much stable tokens are required to settle the outstanding shares
-        stableAmountRequired = outstandingShares * redeemRatio;
+        stableAmountRequired = outstandingShares * redeemRatio / 1e18;
     }
 
     /**
@@ -279,6 +311,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     // for TESTING: address private x1;function getX1() external view returns(address) {return x1;}
     function settle() external onlyOwner {
         require(initialLiquidityRecorded, "Initial liquidity not recorded");
+        poolIsSettled = true;
 
         uint256 stableAmountRequired = getSettlementAmount();
 
@@ -308,17 +341,16 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         require(redeemableBalance > 0, "Sender has no redeemable tokens");
 
         // Calculate the stable token amount to be transferred based on the ratio
-        uint256 stableAmountToTransfer = redeemableBalance * redeemRatio;
+        uint256 stableAmountToTransfer = redeemableBalance * redeemRatio / 1e18;
 
         // Transfer the linked tokens from the user and the stable tokens to the user
-        linkedTokenErc20.transferFrom(msg.sender, address(this), redeemableBalance);
+        linkedTokenErc20.transferFrom(msg.sender, owner(), redeemableBalance);
         stableTokenErc20.transfer(msg.sender, stableAmountToTransfer);
 
         emit Redeemed(msg.sender, redeemableBalance, stableAmountToTransfer);
     }
 
-    function onERC721Received(address, address, uint256, bytes calldata) external onlyOwner returns (bytes4) {
-        linkedToken = address(0x1);
+    function onERC721Received(address, address, uint256, bytes calldata) external view onlyOwner returns (bytes4) {
         return this.onERC721Received.selector;
     }
     
