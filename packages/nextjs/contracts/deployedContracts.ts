@@ -3920,7 +3920,7 @@ const deployedContracts = {
   },
   11155111: {
     MockToken1: {
-      address: "0x772dece05d3c9de703f1e1ee5851f6db29992e6d",
+      address: "0x239e733ff339495df5d28730b5cad2f77fe27407",
       abi: [
         {
           type: "constructor",
@@ -4278,7 +4278,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x39a45157b7bdce734eae910118340b677aaa9c56",
+      address: "0x40d514790c1c0528e7143def9104aebbf54ff1ce",
       abi: [
         {
           type: "constructor",

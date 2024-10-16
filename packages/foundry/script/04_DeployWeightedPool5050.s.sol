@@ -31,7 +31,7 @@ contract DeployWeightedPool5050 is PoolHelpers, ScaffoldHelpers {
         vm.startBroadcast(deployerPrivateKey);
 
         // Deploy a  factory
-        address factoryAddress = 0x765ce16dbb3D7e89a9beBc834C5D6894e7fAA93c;
+        address factoryAddress = 0x209e6cE55A89A39329C9666a5B8b371e84572aE8;
         WeightedPoolFactory factory =  WeightedPoolFactory(factoryAddress);
         console.log("Using existing pool factory: %s", address(factory));
 
