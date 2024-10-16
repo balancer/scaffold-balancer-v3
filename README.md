@@ -15,6 +15,7 @@ A Balancer V3 hook designed to increase user engagement by rewarding users with 
 - [👍 DevX feedback](#-devx-feedback)
 - [🛠 Development notes](#-development-notes)
 - [📌 Roadmap](#-roadmap)
+- [📚 Further reading](#-further-reading)
 - [📜 License](#-license)
 
 ## 📖 Overview
@@ -284,6 +285,13 @@ The tokenised loyalty mechanism paves the way for extending LoyaltyHook's functi
 - **Governance**: Allow `LOYALTY` holders to participate in decision-making processes for the pool.
 - **Cross-platform integrations**: Leverage `LOYALTY` tokens on other DeFi platforms to increase their value.
 - **Gamification**: Introduce milestones and badges to further incentivise user engagement.
+
+## 📚 Further reading
+
+For more information on the Balancer v3 architecture, hooks, and a detailed breakdown of the LoyaltyHook, please see to the following articles:
+
+- [Building a Balancer hook: Part 1 - Introduction to Balancer v3 and hooks](https://chainkraft.com/building-a-balancer-hook-part-1/)
+- [Building a Balancer hook: Part 2 - LoyaltyHook](https://chainkraft.com/building-a-balancer-hook-part-2/)
 
 ## 📜 License
 
