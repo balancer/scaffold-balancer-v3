@@ -118,22 +118,6 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
             revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
         }
 
-        // Get the linked token from the NFT - this requires the NFT
-        address linkedToken = ICustomNFT(nftContract).getNftData(nftId).linkedToken;
-
-        // Check if the linked token is one of the pool tokens
-        bool linkedTokenFound = false;
-        for (uint256 i = 0; i < tokenConfigs.length; i++) {
-            if (address(tokenConfigs[i].token) == address(linkedToken)) {
-                linkedTokenFound = true;
-                break;
-            }
-        }
-
-        if (!linkedTokenFound) {
-            revert LinkedTokenNotInPool(linkedToken);
-        }
-
         return true;
     }
 
