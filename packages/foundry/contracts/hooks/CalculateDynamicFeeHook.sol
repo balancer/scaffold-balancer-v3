@@ -15,7 +15,7 @@ import {
 
 contract CalculateDynamicFeeHook is BaseHooks, VaultGuard {
 
-        // Only pools from a specific factory are able to register and use this hook.
+    // Only pools from a specific factory are able to register and use this hook.
     address private immutable _allowedFactory;
     // Only trusted routers are allowed to call this hook, because the hook relies on the `getSender` implementation
     // implementation to work properly.

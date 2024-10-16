@@ -7,4 +7,4 @@
 permit2/=lib/permit2/
 forge-gas-snapshot/=node_modules/forge-gas-snapshot/src/
 @openzeppelin/=lib/openzeppelin-contracts/
-@chainlink/=lib/chainlink-brownie-contracts/
+@chainlink/=lib/chainlink-brownie-contracts
