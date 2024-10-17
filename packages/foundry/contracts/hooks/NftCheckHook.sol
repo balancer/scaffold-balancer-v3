@@ -298,7 +298,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         // Ensure the stable pool ratio is not below what the initial price of asset was, which was 1:1
         // will need to refactor for 80/20 pools
         redeemRatio = stablePoolRatio > 1 ? stablePoolRatio : 1;
-        redeemRatio = 1.1 ether;
+        // redeemRatio = 1.1 ether;
 
         // how much stable tokens are required to settle the outstanding shares
         stableAmountRequired = outstandingShares * redeemRatio / 1e18;
@@ -311,23 +311,23 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     // for TESTING: address private x1;function getX1() external view returns(address) {return x1;}
     function settle() external onlyOwner {
         require(initialLiquidityRecorded, "Initial liquidity not recorded");
-        poolIsSettled = true;
-
+        if (poolIsSettled) revert PoolIsSettled();
         uint256 stableAmountRequired = getSettlementAmount();
 
         // Transfer the necessary stable tokens from the user
         MockStable(stableToken).transferFrom(msg.sender, address(this), stableAmountRequired);
 
         // Check if the contract holds enough stable tokens for settlement
-        uint256 hookBalance = MockStable(stableToken).balanceOf(address(this));
-        if (hookBalance < stableAmountRequired) {
-            revert InsufficientStableForSettlement(stableAmountRequired, hookBalance);
-        }
+        // uint256 hookBalance = MockStable(stableToken).balanceOf(address(this));
+        // if (hookBalance < stableAmountRequired) {
+        //     revert InsufficientStableForSettlement(stableAmountRequired, hookBalance);
+        // }
 
         // Release the NFT back to the original depositor
-        MockNft(nftContract).approve(msg.sender, nftId);
+        // MockNft(nftContract).approve(msg.sender, nftId);
         MockNft(nftContract).transferFrom(address(this), msg.sender, nftId);
 
+        poolIsSettled = true;
         emit LiquiditySettled(stableAmountRequired, owner());
     }
 

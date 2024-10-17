@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ButtonForm, PoolOperations, PoolPageSkeleton, PoolSelector } from "./_components/";
 import { HooksConfig, PoolAttributes, PoolComposition, PoolConfig, UserLiquidity } from "./_components/info";
+import { MaxUint256 } from "ethers";
 import { type NextPage } from "next";
 import { type Address } from "viem";
 import { useAccount } from "wagmi";
@@ -65,7 +66,6 @@ const PoolPageContent = () => {
 
 const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: RefetchPool }) => {
   const { data: deployedContractData } = useDeployedContractInfo("NftCheckHook");
-  const { data: mockNft } = useDeployedContractInfo("MockNft");
 
   const nftCheckHook = deployedContractData?.address;
 
@@ -81,12 +81,12 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
     args: [userAddress, nftCheckHook, BigInt(0)],
   });
 
-  const { data: linkedToken } = useScaffoldContractRead({
+  const { data: linkedToken = "" } = useScaffoldContractRead({
     contractName: "NftCheckHook",
     functionName: "getLinkedToken",
   });
 
-  const { data: stableToken } = useScaffoldContractRead({
+  const { data: stableToken = "" } = useScaffoldContractRead({
     contractName: "NftCheckHook",
     functionName: "getStableToken",
   });
@@ -98,25 +98,10 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
   });
   const hookHasNft = hookBalance && hookBalance !== BigInt(0) ? true : false;
 
-  // button: Initialize Pool
   const { writeAsync: initializePool } = useScaffoldContractWrite({
     contractName: "Router",
     functionName: "initialize",
-    args: [
-      poolAddress!,
-      // @ts-ignore
-      linkedToken! > stableToken! ? [stableToken!, linkedToken!] : [linkedToken!, stableToken!],
-      [BigInt(50e18), BigInt(50e18)],
-      BigInt(99e18),
-      false,
-      "0x",
-    ],
-  });
-
-  const { data: getSettlementAmount } = useScaffoldContractRead({
-    contractName: "NftCheckHook",
-    // @ts-ignore
-    functionName: "getSettlementAmount",
+    args: [poolAddress || "", [stableToken, linkedToken], [BigInt(50e18), BigInt(50e18)], BigInt(99e18), false, "0x"],
   });
 
   // button: Approve MST Transfer
@@ -124,7 +109,7 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
     contractName: "MockStable",
     functionName: "approve",
     // @ts-ignore
-    args: [nftCheckHook, getSettlementAmount!],
+    args: [nftCheckHook, MaxUint256],
   });
 
   // button: Settle
@@ -138,20 +123,12 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
     functionName: "owner",
   });
 
-  const { data: userRWATBalance } = useScaffoldContractRead({
-    contractName: "MockLinked",
-    // @ts-ignore
-    address: linkedToken,
-    functionName: "balanceOf",
-    args: [userAddress],
-  });
-
   // button: Approve RWAT Transfer
   const { writeAsync: approveRWATTransfer } = useScaffoldContractWrite({
     contractName: "MockLinked",
     address: linkedToken,
     functionName: "approve",
-    args: [nftCheckHook, userRWATBalance],
+    args: [nftCheckHook, MaxUint256],
   });
 
   // button: Redeem
@@ -163,8 +140,10 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
   const { data: isPoolInitialized } = useScaffoldContractRead({
     contractName: "Vault",
     functionName: "isPoolInitialized",
-    args: [poolAddress!],
+    args: [poolAddress || ""],
   });
+
+  console.log("isPoolInitialized:", isPoolInitialized);
 
   const { data: poolIsSettled } = useScaffoldContractRead({
     contractName: "NftCheckHook",
@@ -179,25 +158,24 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
     args: [100000000000000000000n],
   });
 
-  const nftAlert = () => (
-    <div className="mt-2 flex flex-row justify-start">
-      <Alert type="info">
-        <span className="link" onClick={() => navigator.clipboard.writeText(mockNft!.address!)}>
-          NFT address
-        </span>
-      </Alert>
-    </div>
-  );
+  useEffect(() => {
+    if (isPoolInitialized) {
+      console.log("refectching pool");
+      refetchPool();
+    }
+  }, [isPoolInitialized, refetchPool]);
 
   const PoolActions = () => {
     if (userIsOwner) {
       if (poolIsSettled) {
         return (
-          <div className="max-w-48">
-            <Alert type="info">
-              <h5 className="text-xl font-bold mb-3 pt-2">Pool Is Settled</h5>
-            </Alert>
-          </div>
+          <ButtonForm
+            title={"Redeem"}
+            buttons={[
+              { label: "Approve RWAT Transfer", onClick: approveRWATTransfer, isFormEmpty: false },
+              { label: "Redeem", onClick: redeem, isFormEmpty: false },
+            ]}
+          />
         );
       } else {
         return (
@@ -214,7 +192,7 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
                     { label: "Settle", onClick: settlePool, isFormEmpty: !approveStableTokensSuccess },
                   ]
             }
-            Footer={nftAlert}
+            Footer={isPoolInitialized ? () => <div>If pool appears empty refresh the page</div> : undefined}
           />
         );
       }
