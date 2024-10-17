@@ -192,7 +192,6 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
                     { label: "Settle", onClick: settlePool, isFormEmpty: !approveStableTokensSuccess },
                   ]
             }
-            Footer={isPoolInitialized ? () => <div>If pool appears empty refresh the page</div> : undefined}
           />
         );
       }
