@@ -101,7 +101,14 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
   const { writeAsync: initializePool } = useScaffoldContractWrite({
     contractName: "Router",
     functionName: "initialize",
-    args: [poolAddress || "", [stableToken, linkedToken], [BigInt(50e18), BigInt(50e18)], BigInt(99e18), false, "0x"],
+    args: [
+      poolAddress || "",
+      linkedToken > stableToken ? [stableToken, linkedToken] : [linkedToken, stableToken],
+      [BigInt(50e18), BigInt(50e18)],
+      BigInt(99e18),
+      false,
+      "0x",
+    ],
   });
 
   // button: Approve MST Transfer

@@ -16,9 +16,9 @@ import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.sol";
 import { NftCheckHook } from "../contracts/hooks/NftCheckHook.sol";
 import { MockNft } from "../contracts/mocks/MockNft.sol";
-import { MockERC20Factory } from "../contracts/mocks/MockERC20Factory.sol";
 import { Router } from "../contracts/mocks/Router.sol";
 import { MockLinked } from "../contracts/mocks/MockLinked.sol";
+import { MockStable } from "../contracts/mocks/MockStable.sol";
 
 
 /**
@@ -75,73 +75,10 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         // Approve the router to spend tokens for pool initialization
         approveRouterWithPermit2(initConfig.tokens);
 
+        address testUserAddress = address(uint160(getTestUserAddress()));
+        MockStable(token).mint(100e18);
+        MockStable(token).transfer(testUserAddress, 100e18);
 
-        
-
-
-
-
-/*
-        MockERC20Factory mockERC20Factory = new MockERC20Factory("MockERC20Factory");
-        MockNft(mockNft).setLinkedTokenFactory(address(mockERC20Factory));
-        
-        address[] memory membersToFund = new address[](1);
-        membersToFund[0] = deployerAddress;
-        uint256[] memory amountsToFund = new uint256[](1);
-        amountsToFund[0] = 1000e18;
-
-        // Deploy a Sample Token - will throw warning on deploy as it is not used in the following code
-        // however it is needed in order to interact with the contract via scaffold's patterns
-        ERC20Ownable mockRwa = new ERC20Ownable(
-            "Sample Token",
-            "ST",
-            deployerAddress,
-            address(mockERC20Factory),
-            address(0),
-            0,
-            membersToFund,
-            amountsToFund
-        );
-
-        (uint256 tokenId, address linkedTokenAddress) = MockNft(mockNft).mint(
-            deployerAddress,
-            "https://0a050602b1c1aeae1063a0c8f5a7cdac.ipfscdn.io/ipfs/QmSiA82PQNuWuBfQtuzWKwnZV94qs34jrW1L6PaR69jeoE/metadata.json",
-            address(0),
-            new string[](0),
-            "RWA Token",
-            "RWAT",
-            membersToFund,
-            amountsToFund
-        );
-
-        // Set the pool's deployment, registration, and initialization config
-        console.log("linkedTokenAddress: %s", linkedTokenAddress);
-        CustomPoolConfig memory poolConfig = getCheckSumPoolConfig(linkedTokenAddress, token);
-        InitializationConfig memory initConfig = getCheckSumPoolInitConfig(linkedTokenAddress, token);
-
-        // Deploy a hook
-        address nftCheckHook = address(
-            new NftCheckHook(vault, address(mockNft), tokenId, linkedTokenAddress, token)
-        );
-        console.log("NftCheckHook deployed at address: %s", nftCheckHook);
-
-        // Deploy a pool and register it with the vault
-        address pool = factory.create(
-            poolConfig.name,
-            poolConfig.symbol,
-            poolConfig.salt,
-            poolConfig.tokenConfigs,
-            poolConfig.swapFeePercentage,
-            poolConfig.protocolFeeExempt,
-            poolConfig.roleAccounts,
-            nftCheckHook, // poolHooksContract
-            poolConfig.liquidityManagement
-        );
-        console.log("SumPoolWithNftCheckHook deployed at: %s", pool);
-
-        // Approve the router to spend tokens for pool initialization
-        approveRouterWithPermit2(initConfig.tokens);
-*/
         // deploy mock router so we can get the abi to call the initialize function
         Router router = new Router();
 

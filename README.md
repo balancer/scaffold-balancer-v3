@@ -47,7 +47,7 @@ yarn install
 ```
 
 3. Set the necessary environment variables in a `packages/foundry/.env` file [^1]
-   [^1]: The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must possess enough Sepolia ETH to deploy the contracts. The `SEPOLIA_RPC_URL` facilitates running a local fork and sending transactions to sepolia testnet. The `DEPLOYER_ADDRESS` is the address that matches the private key.
+   [^1]: The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must possess enough Sepolia ETH to deploy the contracts. The `SEPOLIA_RPC_URL` facilitates running a local fork and sending transactions to sepolia testnet. The `DEPLOYER_ADDRESS` is the address that matches the private key. The `TEST_USER_ADDRESS` is the address of a test user that demonstrates the use case.
 
 ```
 SEPOLIA_RPC_URL=...

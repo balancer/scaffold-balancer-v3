@@ -26,6 +26,15 @@ contract ScaffoldHelpers is Script {
         }
     }
 
+    function getTestUserAddress() internal view returns (uint256 deployerPrivateKey) {
+        deployerPrivateKey = vm.envUint("TEST_USER_ADDRESS");
+        if (deployerPrivateKey == 0) {
+            revert InvalidPrivateKey(
+                "You don't have a deployer address. Make sure you have set DEPLOYER_ADDRESS in .env"
+            );
+        }
+    }
+
     /**
      * Use the pk defined by dev if they added one to a .env file,
      * otherwise use the default anvil #0 account
