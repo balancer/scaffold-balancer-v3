@@ -13,7 +13,7 @@ It has been designed with RWA NFTs in mind.
 - [User Flow](#user-flow)
 - [Utilized Hooks](#utilized-hooks)
 - [Architecture](#architecture)
-- [Technical Notes](#technical-notes)
+- [Technical Notes](#orange-book-technical-notes)
 - [Future Plans](#future)
 
 ***
@@ -47,7 +47,7 @@ We architected it like this
 <img width="1470" alt="code" src="https://github.com/lifeparticle/Markdown-Cheatsheet/assets/1612112/b70541b0-fce8-4f5e-97f4-6443c20b98ec">
 
 ***
-## Technical Notes
+## :orange_book: Technical Notes
 Some thoughts on what we did
 
 ***
