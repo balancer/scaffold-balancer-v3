@@ -1,25 +1,27 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.24;
 
-// import {Chainlink, ChainlinkClient} from "./src/v0.8/ChainlinkClient.sol";
 import {Chainlink, ChainlinkClient} from "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+import {console} from "forge-std/console.sol";
 
-/**
- * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
- * DO NOT USE THIS CODE IN PRODUCTION.
- */
 
 contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
     using Chainlink for Chainlink.Request;
 
     uint256 private constant ORACLE_PAYMENT = (1 * LINK_DIVISIBILITY) / 10; // 0.1 * 10**18
-    uint256 public currentPrice;
+    string public poolName;
+    uint256 public balance;
 
-    event RequestEthereumPriceFulfilled(
+    event RequestPoolNameFullfilled(
         bytes32 indexed requestId,
-        uint256 indexed price
+        string _name
+    );
+
+    event RequestBalanceFullfilled(
+        bytes32 indexed requestId,
+        uint256 _balance
     );
 
     /**
@@ -31,31 +33,61 @@ contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
         _setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
     }
 
-    function requestEthereumPrice(
+    function requestPoolBalance(
         address _oracle,
         string memory _jobId
-    ) public onlyOwner {
+    ) public {
         Chainlink.Request memory req = _buildChainlinkRequest(
             stringToBytes32(_jobId),
             address(this),
-            this.fulfillEthereumPrice.selector
+            this.fulfillPoolBalance.selector
         );
+        string memory url = 'https://test-api-v3.balancer.fi/?query=query {poolGetPool(id:"0xEA34209c9c86b358Ebf9C92156aA8D12b81508B6", chain:SEPOLIA){poolTokens {balance}}}';
         req._add(
             "get",
-            "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
+            url
         );
-        req._add("path", "USD");
-        req._addInt("times", 100);
+        req._add("path", "data,poolGetPool,poolTokens,0,balance");
         _sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
     }
 
-    function fulfillEthereumPrice(
-        bytes32 _requestId,
-        uint256 _price
-    ) public recordChainlinkFulfillment(_requestId) {
-        emit RequestEthereumPriceFulfilled(_requestId, _price);
-        currentPrice = _price;
+    function fulfillPoolBalance(
+        bytes32 requestId,
+       bytes calldata data
+    ) public recordChainlinkFulfillment(requestId) {
+        (uint256 bal) = abi.decode(data, (uint256));
+        console.log("Balance found in fulfillPoolBalance: ", bal);
+        emit RequestBalanceFullfilled(requestId, bal);
+        balance = bal;
     }
+
+    function requestPoolName(
+        address _oracle,
+        string memory _jobId
+    ) public {
+        Chainlink.Request memory req = _buildChainlinkRequest(
+            stringToBytes32(_jobId),
+            address(this),
+            this.fulfillPoolName.selector
+        );
+        string memory url = 'https://test-api-v3.balancer.fi/?query=query {poolGetPool(id:"0xEA34209c9c86b358Ebf9C92156aA8D12b81508B6", chain:SEPOLIA){name}}';
+        req._add(
+            "get",
+            url
+        );
+        req._add("path", "data,poolGetPool,name");
+        _sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
+    }
+
+    function fulfillPoolName(
+        bytes32 requestId,
+       bytes calldata data
+    ) public recordChainlinkFulfillment(requestId) {
+        (string memory name) = abi.decode(data, (string));
+        emit RequestPoolNameFullfilled(requestId, name);
+        poolName = name;
+    }
+
 
     function getChainlinkToken() public view returns (address) {
         return _chainlinkTokenAddress();

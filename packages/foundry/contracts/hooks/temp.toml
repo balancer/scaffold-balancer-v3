@@ -1,0 +1,28 @@
+type = "directrequest"
+schemaVersion = 1
+name = "chalega2"
+externalJobID = "44acae1d-c4cf-4833-b429-d9df8f13b7ec"
+forwardingAllowed = false
+maxTaskDuration = "0s"
+contractAddress = "0xF74D7Ff8ba3358aAA53Ec868E2F5340E9737cbe2"
+evmChainID = "11155111"
+minIncomingConfirmations = 0
+minContractPaymentLinkJuels = "0"
+observationSource = """
+    decode_log   [type="ethabidecodelog"
+                  abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                  data="$(jobRun.logData)"
+                  topics="$(jobRun.logTopics)"]
+
+    decode_cbor  [type="cborparse" data="$(decode_log.data)"]
+    fetch        [type="http" method=GET url="$(decode_cbor.get)" allowUnrestrictedNetworkAccess="true"]
+    parse        [type="jsonparse" path="$(decode_cbor.path)" data="$(fetch)"]
+    encode_data  [type="ethabiencode" abi="(bytes balance)" data="{\\"balance\\": $(parse)}"]
+    encode_tx    [type="ethabiencode"
+                  abi="fulfillPoolBalance(bytes32 requestId,bytes calldata data)"
+                  data="{\\"requestId\\": $(decode_log.requestId), \\"data\\": $(encode_data)}"
+                  ]
+    submit_tx    [type="ethtx" to="0xF74D7Ff8ba3358aAA53Ec868E2F5340E9737cbe2" data="$(encode_tx)"]
+
+    decode_log -> decode_cbor -> fetch -> parse -> encode_data -> encode_tx -> submit_tx
+"""
