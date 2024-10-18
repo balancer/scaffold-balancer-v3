@@ -1,3 +1,12 @@
+# NFT ESCROW LP
+A Balancer v3 hook to allow a pool creator to create a liquidity pool for an NFT by placing it in escrow and minting an ERC20 to represent it fractionally.  The hook also enables the depositor to settle the pool at the current market rate - in essence this is buying back all outstanding tokens by depositing the required amount of the counterpart token into the escrow hook contract which then releases the NFT.
+
+Think of it is as a rug-proof pool that requires the current token value to be honored by depositing that value into the contract to be later redeemed by outstanding token holders.
+
+It has been designed with RWA NFTs in mind.
+
+***
+
 # 🏗︎ Scaffold Balancer v3
 
 A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
