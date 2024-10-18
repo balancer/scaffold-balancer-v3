@@ -1,13 +1,59 @@
 # NFT ESCROW LP
-A Balancer v3 hook to allow a pool creator to create a liquidity pool for an NFT by placing it in escrow and minting an ERC20 to represent it fractionally.  The hook also enables the depositor to settle the pool at the current market rate - in essence this is buying back all outstanding tokens by depositing the required amount of the counterpart token into the escrow hook contract which then releases the NFT.
+A Balancer v3 hook to allow a liquidity pool to be backed by an NFT.  This is accomplished by staking it into this escrow hook which mints an ERC20 to represent it fractionally.  The hook also enables the depositor to settle the pool at the current market rate - in essence this is buying back all outstanding tokens by depositing the required amount of the counterpart token into the escrow hook contract which then releases the NFT.
 
-Think of it is as a rug-proof pool that requires the current token value to be honored by depositing that value into the contract to be later redeemed by outstanding token holders.
+Think of it is as a rug-proof pool that requires the current token value to be honored in the equivilent counterpart token and held in escrow to be redeemed.
 
 It has been designed with RWA NFTs in mind.
 
 ***
+## 📜 Table of Contents
 
-# 🏗︎ Scaffold Balancer v3
+- [Introduction](#nft-escrow-lp)
+- [Architecture](#architecture)
+- [User Flow](#user-flow)
+- [Utilized Hooks](#utilized-hooks)
+  - [Normal](#normal)
+
+***
+## 🏡 Use Case
+This is the use case
+
+***
+## 🪝 User Flow
+We used the following user flow steps
+<table>
+<tr>
+<th>Before Hoisting</th>
+</tr>
+<tr>
+<td>
+console.log(fullName); // undefined
+fullName = "Dariana Trahan";
+console.log(fullName); // Dariana Trahan
+var fullName;
+</td>
+</tr>
+</table>
+
+***
+## 🪝 Utilized Hooks
+We used the following hooks 
+
+***
+## 🏗️ Architecture
+We architected it like this
+<img width="1470" alt="code" src="https://github.com/lifeparticle/Markdown-Cheatsheet/assets/1612112/b70541b0-fce8-4f5e-97f4-6443c20b98ec">
+
+***
+## ✍🏻 Technical Notes
+Some thoughts on what we did
+
+***
+## ✍🔮 Future
+Where we go from here
+
+***
+# 🏗︎ Built Using Scaffold Balancer v3
 
 A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
 
