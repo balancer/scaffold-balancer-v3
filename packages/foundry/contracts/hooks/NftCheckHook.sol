@@ -122,6 +122,18 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
             revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
         }
 
+        // Check if the linked token is one of the pool tokens
+        bool linkedTokenFound = false;
+        for (uint256 i = 0; i < tokenConfigs.length; i++) {
+            if (address(tokenConfigs[i].token) == linkedToken) {
+                linkedTokenFound = true;
+                break;
+            }
+        }
+        if (!linkedTokenFound) {
+            revert LinkedTokenNotInPool(linkedToken);
+        }
+
         return true;
     }
 
@@ -297,11 +309,11 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         uint256 stablePoolRatio = stableTokenBalance != 0 ? linkedTokenBalance / stableTokenBalance : 1;
         // Ensure the stable pool ratio is not below what the initial price of asset was, which was 1:1
         // will need to refactor for 80/20 pools
-        // redeemRatio = stablePoolRatio > 1 ? stablePoolRatio : 1;
-        redeemRatio = 1.1 ether;
+        redeemRatio = stablePoolRatio > 1 ? stablePoolRatio : 1;
+        // redeemRatio = 1.1 ether;
 
         // how much stable tokens are required to settle the outstanding shares
-        stableAmountRequired = outstandingShares * redeemRatio / 1e18;
+        stableAmountRequired = outstandingShares * redeemRatio;
     }
 
     /**
@@ -341,7 +353,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         require(redeemableBalance > 0, "Sender has no redeemable tokens");
 
         // Calculate the stable token amount to be transferred based on the ratio
-        uint256 stableAmountToTransfer = redeemableBalance * redeemRatio / 1e18;
+        uint256 stableAmountToTransfer = redeemableBalance * redeemRatio;
 
         // Transfer the linked tokens from the user and the stable tokens to the user
         linkedTokenErc20.transferFrom(msg.sender, owner(), redeemableBalance);
