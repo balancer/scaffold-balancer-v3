@@ -38,32 +38,72 @@ contract NFTLiquidityStakingHook is
     NFTGovernor public governor;
     RewardToken public rewardToken;
     uint256 public constant REWARD_RATE = 1e18;
+    enum NFTTier { None, Bronze, Silver, Gold }
+    struct TierInfo {
+    uint256 feeDiscount;
+    uint256 votingPower;
+    uint256 yieldBoost;
+    uint256 threshold;
+    uint256 requiredAmount;
+    }
 
-    mapping(address => mapping(address => StakingInfo)) private _stakingInfoMap;
-    mapping(address => mapping(address => uint256)) public lastUnstakeTime;
-    mapping(uint256 => address) private _tokenIdToPool;
-    uint256 private _tokenIdCounter;
+    mapping(NFTTier => TierInfo) public tierInfo;
 
-    mapping(uint256 => uint256) public nftTierToFeeDiscount;
-    mapping(uint256 => uint256) public nftTierToVotingPower;
-    mapping(uint256 => uint256) public nftTierToYieldBoost;
-    mapping(uint256 => mapping(address => uint256)) private _votePowerCheckpoints;
-    mapping(uint256 => uint256) private _totalSupplyCheckpoints;
-    uint256 private _currentCheckpoint;
+mapping(uint256 => mapping(address => uint256)) private _votePowerCheckpoints;
+mapping(uint256 => uint256) private _totalSupplyCheckpoints;
+uint256 private _currentCheckpoint;
 
-    mapping(address => mapping(uint256 => uint256)) private _ownedTokens;
-    mapping(address => uint256) private _ownedTokensCount;
+mapping(address => mapping(uint256 => uint256)) private _ownedTokens;
+mapping(address => uint256) private _ownedTokensCount;
 
-    uint256 public constant COOLDOWN_PERIOD = 7 days;
-    uint256 public constant UPGRADE_COOLDOWN_PERIOD = 7 days;
+uint256 public constant COOLDOWN_PERIOD = 7 days;
+uint256 public constant UPGRADE_COOLDOWN_PERIOD = 7 days;
+    tierInfo[NFTTier.Bronze] = TierInfo({
+        feeDiscount: 10,
+        votingPower: 1,
+        yieldBoost: 10,
+        threshold: 30 days,
+        requiredAmount: 1000 ether
+    });
+    tierInfo[NFTTier.Silver] = TierInfo({
+        feeDiscount: 20,
+        votingPower: 2,
+        yieldBoost: 20,
+        threshold: 90 days,
+        requiredAmount: 5000 ether
+    });
+    tierInfo[NFTTier.Gold] = TierInfo({
+        feeDiscount: 30,
+        votingPower: 3,
+        yieldBoost: 30,
+        threshold: 180 days,
+        requiredAmount: 10000 ether
+    });
+    // mapping(address => mapping(address => StakingInfo)) private _stakingInfoMap;
+    // mapping(address => mapping(address => uint256)) public lastUnstakeTime;
+    // mapping(uint256 => address) private _tokenIdToPool;
+    // uint256 private _tokenIdCounter;
 
-    uint256 public constant BRONZE_TIER_THRESHOLD = 30 days;
-    uint256 public constant SILVER_TIER_THRESHOLD = 90 days;
-    uint256 public constant GOLD_TIER_THRESHOLD = 180 days;
+    // mapping(uint256 => uint256) public nftTierToFeeDiscount;
+    // mapping(uint256 => uint256) public nftTierToVotingPower;
+    // mapping(uint256 => uint256) public nftTierToYieldBoost;
+    // mapping(uint256 => mapping(address => uint256)) private _votePowerCheckpoints;
+    // mapping(uint256 => uint256) private _totalSupplyCheckpoints;
+    // uint256 private _currentCheckpoint;
 
-    uint256 public constant BRONZE_TIER_AMOUNT = 1000 ether;
-    uint256 public constant SILVER_TIER_AMOUNT = 5000 ether;
-    uint256 public constant GOLD_TIER_AMOUNT = 10000 ether;
+    // mapping(address => mapping(uint256 => uint256)) private _ownedTokens;
+    // mapping(address => uint256) private _ownedTokensCount;
+
+    // uint256 public constant COOLDOWN_PERIOD = 7 days;
+    // uint256 public constant UPGRADE_COOLDOWN_PERIOD = 7 days;
+
+    // uint256 public constant BRONZE_TIER_THRESHOLD = 30 days;
+    // uint256 public constant SILVER_TIER_THRESHOLD = 90 days;
+    // uint256 public constant GOLD_TIER_THRESHOLD = 180 days;
+
+    // uint256 public constant BRONZE_TIER_AMOUNT = 1000 ether;
+    // uint256 public constant SILVER_TIER_AMOUNT = 5000 ether;
+    // uint256 public constant GOLD_TIER_AMOUNT = 10000 ether;
 
     NFTMetadata public nftMetadata;
 
@@ -126,12 +166,12 @@ contract NFTLiquidityStakingHook is
         );
     }
 
-    function setFeeDiscounts(uint256[] memory tiers, uint256[] memory discounts) external onlyOwner {
-        require(tiers.length == discounts.length, "Arrays must have the same length");
-        for (uint256 i = 0; i < tiers.length; i++) {
-            nftTierToFeeDiscount[tiers[i]] = discounts[i];
-        }
+    function setFeeDiscounts(NFTTier[] memory tiers, uint256[] memory discounts) external onlyOwner {
+    require(tiers.length == discounts.length, "Arrays must have the same length");
+    for (uint256 i = 0; i < tiers.length; i++) {
+        tierInfo[tiers[i]].feeDiscount = discounts[i];
     }
+}
     function getVotes(address account) public view returns (uint256) {
         uint256 totalVotingPower = 0;
         uint256 tokenId = 1;
@@ -182,60 +222,60 @@ contract NFTLiquidityStakingHook is
             _votePowerCheckpoints[_currentCheckpoint - 1][account];
     }
 
-    function calculateRewards(address user, address pool) public view returns (uint256) {
-        StakingInfo memory user_stakingInfoMap = _stakingInfoMap[user][pool];
-        uint256 timeElapsed = block.timestamp - user_stakingInfoMap.lastRewardClaim;
-        uint256 yieldBoost = getYieldBoost(user, pool);
-        return ((user_stakingInfoMap.stakedAmount * timeElapsed * REWARD_RATE * (100 + yieldBoost)) / 100) / 1e18;
+  function calculateRewards(address user, address pool) public view returns (uint256) {
+    StakingInfo memory info = _stakingInfoMap[user][pool];
+    uint256 timeElapsed = block.timestamp - info.lastRewardClaim;
+    uint256 baseReward = (info.stakedAmount * timeElapsed * REWARD_RATE) / 1e18;
+    uint256 boost = tierInfo[NFTTier(info.currentTier)].yieldBoost;
+    return baseReward + (baseReward * boost) / 100;
+}
+function setVotingPowers(NFTTier[] memory tiers, uint256[] memory powers) external onlyOwner {
+    require(tiers.length == powers.length, "Arrays must have the same length");
+    for (uint256 i = 0; i < tiers.length; i++) {
+        tierInfo[tiers[i]].votingPower = powers[i];
     }
+}
 
-    function setVotingPowers(uint256[] memory tiers, uint256[] memory votingPowers) external onlyOwner {
-        require(tiers.length == votingPowers.length, "Arrays must have the same length");
-        for (uint256 i = 0; i < tiers.length; i++) {
-            nftTierToVotingPower[tiers[i]] = votingPowers[i];
-        }
+   function setYieldBoosts(NFTTier[] memory tiers, uint256[] memory boosts) external onlyOwner {
+    require(tiers.length == boosts.length, "Arrays must have the same length");
+    for (uint256 i = 0; i < tiers.length; i++) {
+        tierInfo[tiers[i]].yieldBoost = boosts[i];
     }
-
-    function setYieldBoosts(uint256[] memory tiers, uint256[] memory boosts) external onlyOwner {
-        require(tiers.length == boosts.length, "Arrays must have the same length");
-        for (uint256 i = 0; i < tiers.length; i++) {
-            nftTierToYieldBoost[tiers[i]] = boosts[i];
-        }
-    }
+}
     function setRewardToken(address _rewardToken) external onlyOwner {
         rewardToken = RewardToken(_rewardToken);
     }
 
-    function getFeeDiscount(address user, address pool) public view returns (uint256) {
-        StakingInfo memory user_stakingInfoMap = _stakingInfoMap[user][pool];
-        return nftTierToFeeDiscount[user_stakingInfoMap.currentTier];
-    }
-    function getFeeDiscounts() public view returns (uint256[] memory tiers, uint256[] memory discounts) {
-        tiers = new uint256[](4);
-        discounts = new uint256[](4);
+   function getFeeDiscount(address user, address pool) public view returns (uint256) {
+    StakingInfo memory user_stakingInfoMap = _stakingInfoMap[user][pool];
+    return tierInfo[NFTTier(user_stakingInfoMap.currentTier)].feeDiscount;
+}
+function getFeeDiscounts() public view returns (uint256[] memory tiers, uint256[] memory discounts) {
+    tiers = new uint256[](4);
+    discounts = new uint256[](4);
 
-        tiers[0] = 0;
-        tiers[1] = 1;
-        tiers[2] = 2;
-        tiers[3] = 3;
+    tiers[0] = uint256(NFTTier.None);
+    tiers[1] = uint256(NFTTier.Bronze);
+    tiers[2] = uint256(NFTTier.Silver);
+    tiers[3] = uint256(NFTTier.Gold);
 
-        discounts[0] = nftTierToFeeDiscount[0];
-        discounts[1] = nftTierToFeeDiscount[1];
-        discounts[2] = nftTierToFeeDiscount[2];
-        discounts[3] = nftTierToFeeDiscount[3];
+    discounts[0] = tierInfo[NFTTier.None].feeDiscount;
+    discounts[1] = tierInfo[NFTTier.Bronze].feeDiscount;
+    discounts[2] = tierInfo[NFTTier.Silver].feeDiscount;
+    discounts[3] = tierInfo[NFTTier.Gold].feeDiscount;
 
-        return (tiers, discounts);
-    }
+    return (tiers, discounts);
+}
 
-    function getVotingPower(address user, address pool) public view returns (uint256) {
-        StakingInfo memory user_stakingInfoMap = _stakingInfoMap[user][pool];
-        return nftTierToVotingPower[user_stakingInfoMap.currentTier];
-    }
+ function getVotingPower(address user, address pool) public view returns (uint256) {
+    StakingInfo memory user_stakingInfoMap = _stakingInfoMap[user][pool];
+    return tierInfo[NFTTier(user_stakingInfoMap.currentTier)].votingPower;
+}
 
-    function getYieldBoost(address user, address pool) public view returns (uint256) {
-        StakingInfo memory user_stakingInfoMap = _stakingInfoMap[user][pool];
-        return nftTierToYieldBoost[user_stakingInfoMap.currentTier];
-    }
+   function getYieldBoost(address user, address pool) public view returns (uint256) {
+    StakingInfo memory user_stakingInfoMap = _stakingInfoMap[user][pool];
+    return tierInfo[NFTTier(user_stakingInfoMap.currentTier)].yieldBoost;
+}
     /// @inheritdoc IHooks
     function getHookFlags() public pure override(BaseHooks, IHooks) returns (HookFlags memory hookFlags) {
         hookFlags.shouldCallAfterAddLiquidity = true;
@@ -250,8 +290,7 @@ contract NFTLiquidityStakingHook is
         bytes memory userData
     ) external returns (bool success) {
         address user = router;
-        address pool = msg.sender;
-
+       address pool = IPoolInfo(msg.sender).getPoolAddress();
         StakingInfo storage user_stakingInfoMap = _stakingInfoMap[user][pool];
 
         if (user_stakingInfoMap.stakedAmount == 0) {
@@ -287,14 +326,14 @@ contract NFTLiquidityStakingHook is
     }
 
     function onAfterRemoveLiquidity(
-        address router,
-        uint256[] memory amountsOutScaled18,
-        uint256 bptAmountIn,
-        uint256[] memory balancesScaled18,
-        bytes memory userData
-    ) external returns (bool success) {
-        address user = router;
-        address pool = msg.sender;
+    address router,
+    uint256[] memory amountsOutScaled18,
+    uint256 bptAmountIn,
+    uint256[] memory balancesScaled18,
+    bytes memory userData
+) external override onlyVault returns (bool success) {
+    address user = router; // This is correct, as router is the user's address in this context
+    address pool = IPoolInfo(msg.sender).getPoolAddress(); // Get the actual pool address
 
         StakingInfo storage user_stakingInfoMap = _stakingInfoMap[user][pool];
 
@@ -319,20 +358,21 @@ contract NFTLiquidityStakingHook is
         return true;
     }
 
-    function _calculateTier(uint256 stakedAmount, uint256 stakingDuration) internal pure returns (uint256) {
-        if (stakingDuration >= GOLD_TIER_THRESHOLD && stakedAmount >= GOLD_TIER_AMOUNT) {
-            return 3;
-        } else if (stakingDuration >= SILVER_TIER_THRESHOLD && stakedAmount >= SILVER_TIER_AMOUNT) {
-            return 2;
-        } else if (stakingDuration >= BRONZE_TIER_THRESHOLD && stakedAmount >= BRONZE_TIER_AMOUNT) {
-            return 1;
-        } else {
-            return 0;
-        }
+    function _calculateTier(uint256 stakedAmount, uint256 stakingDuration) internal view returns (NFTTier) {
+    if (stakingDuration >= tierInfo[NFTTier.Gold].threshold && stakedAmount >= tierInfo[NFTTier.Gold].requiredAmount) {
+        return NFTTier.Gold;
+    } else if (stakingDuration >= tierInfo[NFTTier.Silver].threshold && stakedAmount >= tierInfo[NFTTier.Silver].requiredAmount) {
+        return NFTTier.Silver;
+    } else if (stakingDuration >= tierInfo[NFTTier.Bronze].threshold && stakedAmount >= tierInfo[NFTTier.Bronze].requiredAmount) {
+        return NFTTier.Bronze;
+    } else {
+        return NFTTier.None;
     }
+}
+
     function _adjustTier(address user, address pool) internal {
-        StakingInfo storage user_stakingInfoMap = _stakingInfoMap[user][pool];
-        uint256 stakingDuration = block.timestamp - user_stakingInfoMap.stakingStartTime;
+       StakingInfo storage user_stakingInfoMap = _stakingInfoMap[user][pool];
+       uint256 stakingDuration = block.timestamp - user_stakingInfoMap.lastMilestoneTime;
         user_stakingInfoMap.currentTier = _calculateTier(user_stakingInfoMap.stakedAmount, stakingDuration);
     }
 
@@ -357,7 +397,7 @@ contract NFTLiquidityStakingHook is
 
         uint256 newTier = _calculateTier(
             user_stakingInfoMap.stakedAmount,
-            block.timestamp - user_stakingInfoMap.stakingStartTime
+            block.timestamp - user_stakingInfoMap.lastMilestoneTime
         );
         require(newTier > user_stakingInfoMap.currentTier, "No upgrade available");
 

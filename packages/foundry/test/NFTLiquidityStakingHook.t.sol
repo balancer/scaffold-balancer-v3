@@ -18,13 +18,11 @@ import "../contracts/hooks/NFTLiquidityStaking/RewardToken.sol";
 import "@openzeppelin/contracts/governance/IGovernor.sol";
 import "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
 
-
-
 contract MockProtocolFeeController is IProtocolFeeController {
     function getProtocolFeePercentages(uint256) external pure returns (uint256, uint256) {
         return (0, 0);
     }
-    
+
     function collectAggregateFees(address) external pure {}
 
     function computeAggregateFeePercentage(
@@ -40,16 +38,27 @@ contract MockProtocolFeeController is IProtocolFeeController {
         address poolCreator,
         bool protocolFeeExempt
     ) external pure returns (uint256, uint256) {
-      
         return (0, 0);
     }
 
-    function getGlobalProtocolSwapFeePercentage() external pure returns (uint256) { return 0; }
-    function getGlobalProtocolYieldFeePercentage() external pure returns (uint256) { return 0; }
-    function getPoolCreatorFeeAmounts(address) external pure returns (uint256[] memory) { return new uint256[](0); }
-    function getPoolProtocolSwapFeeInfo(address) external pure returns (uint256, bool) { return (0, false); }
-    function getPoolProtocolYieldFeeInfo(address) external pure returns (uint256, bool) { return (0, false); }
-    function getProtocolFeeAmounts(address) external pure returns (uint256[] memory) { return new uint256[](0); }
+    function getGlobalProtocolSwapFeePercentage() external pure returns (uint256) {
+        return 0;
+    }
+    function getGlobalProtocolYieldFeePercentage() external pure returns (uint256) {
+        return 0;
+    }
+    function getPoolCreatorFeeAmounts(address) external pure returns (uint256[] memory) {
+        return new uint256[](0);
+    }
+    function getPoolProtocolSwapFeeInfo(address) external pure returns (uint256, bool) {
+        return (0, false);
+    }
+    function getPoolProtocolYieldFeeInfo(address) external pure returns (uint256, bool) {
+        return (0, false);
+    }
+    function getProtocolFeeAmounts(address) external pure returns (uint256[] memory) {
+        return new uint256[](0);
+    }
     function setGlobalProtocolSwapFeePercentage(uint256) external pure {}
     function setGlobalProtocolYieldFeePercentage(uint256) external pure {}
     function setPoolCreatorSwapFeePercentage(address, uint256) external pure {}
@@ -58,12 +67,13 @@ contract MockProtocolFeeController is IProtocolFeeController {
     function setProtocolYieldFeePercentage(address, uint256) external pure {}
     function updateProtocolSwapFeePercentage(address) external pure {}
     function updateProtocolYieldFeePercentage(address) external pure {}
-    function vault() external pure returns (IVault) { return IVault(address(0)); }
+    function vault() external pure returns (IVault) {
+        return IVault(address(0));
+    }
     function withdrawPoolCreatorFees(address) external pure {}
     function withdrawPoolCreatorFees(address, address) external pure {}
     function withdrawProtocolFees(address, address) external pure {}
 }
-
 
 contract MockAuthorizer is IAuthorizer {
     function canPerform(bytes32, address, address) external pure override returns (bool) {
@@ -90,8 +100,8 @@ contract NFTLiquidityStakingHookTest is Test {
 
     function setUp() public {
         console.log("Starting setUp()");
-    
-        address weth = 0x1D05f8153A0Dc80fB76fA728cFa3349624479ecb; 
+
+        address weth = 0x1D05f8153A0Dc80fB76fA728cFa3349624479ecb;
         address permit2 = address(0x5678);
 
         console.log("Creating NFTMetadata");
@@ -124,30 +134,28 @@ contract NFTLiquidityStakingHookTest is Test {
         console.log("PoolMock created at:", address(pool));
 
         console.log("Registering pool with factory");
-    try factory.registerPool(
-        address(pool),
-        new TokenConfig[](0),
-        PoolRoleAccounts({
-            pauseManager: address(0),
-            swapFeeManager: address(0),
-            poolCreator: address(0)
-        }),
-        address(hook), 
-        LiquidityManagement({
-            disableUnbalancedLiquidity: false,
-            enableAddLiquidityCustom: false,
-            enableRemoveLiquidityCustom: false,
-            enableDonation: false
-        })
-    ) {
-        console.log("Pool registered successfully");
-    } catch Error(string memory reason) {
-        console.log("Failed to register pool. Reason:", reason);
-        revert(reason);
-    } catch (bytes memory lowLevelData) {
-        console.log("Failed to register pool. Low-level error.");
-        revert("Low-level error in pool registration");
-    }
+        try
+            factory.registerPool(
+                address(pool),
+                new TokenConfig[](0),
+                PoolRoleAccounts({ pauseManager: address(0), swapFeeManager: address(0), poolCreator: address(0) }),
+                address(hook),
+                LiquidityManagement({
+                    disableUnbalancedLiquidity: false,
+                    enableAddLiquidityCustom: false,
+                    enableRemoveLiquidityCustom: false,
+                    enableDonation: false
+                })
+            )
+        {
+            console.log("Pool registered successfully");
+        } catch Error(string memory reason) {
+            console.log("Failed to register pool. Reason:", reason);
+            revert(reason);
+        } catch (bytes memory lowLevelData) {
+            console.log("Failed to register pool. Low-level error.");
+            revert("Low-level error in pool registration");
+        }
 
         alice = address(0x1);
         bob = address(0x2);
@@ -167,18 +175,21 @@ contract NFTLiquidityStakingHookTest is Test {
     }
 
     function simulateAddLiquidity(address user, address poolAddress, uint256 amount) internal {
-        vm.prank(address(0));
-        (bool success, ) = address(hook).call(
-            abi.encodeWithSignature(
-                "onAfterAddLiquidity(address,address,uint256,uint256,bytes)",
-                user,
-                poolAddress,
-                amount,
-                amount,
-                ""
-            )
+        vm.startPrank(address(vault));
+        uint256[] memory amountsIn = new uint256[](2);
+        amountsIn[0] = amount;
+        amountsIn[1] = amount;
+        uint256[] memory balances = new uint256[](2);
+        balances[0] = IERC20(poolAddress).balanceOf(address(pool));
+        balances[1] = IERC20(poolAddress).balanceOf(address(pool));
+        hook.onAfterAddLiquidity(
+            user,
+            amountsIn,
+            amount, // bptAmountOut
+            balances,
+            ""
         );
-        require(success, "onAfterAddLiquidity call failed");
+        vm.stopPrank();
     }
 
     function simulateRemoveLiquidity(address user, address poolAddress, uint256 amount) internal {
@@ -222,8 +233,8 @@ contract NFTLiquidityStakingHookTest is Test {
         vm.startPrank(alice);
         pool.approve(address(hook), STAKE_AMOUNT);
         simulateAddLiquidity(alice, address(pool), STAKE_AMOUNT);
-        vm.warp(block.timestamp + hook.BRONZE_TIER_THRESHOLD());
-        hook.upgradeNFT(1);
+     vm.warp(block.timestamp + hook.tierInfo(NFTTier.Bronze).threshold);
+hook.upgradeNFT(1);
         vm.stopPrank();
 
         (, , , uint256 currentTier, ) = hook.stakingInfo(alice, address(pool));
@@ -234,8 +245,8 @@ contract NFTLiquidityStakingHookTest is Test {
         vm.startPrank(alice);
         pool.approve(address(hook), STAKE_AMOUNT);
         simulateAddLiquidity(alice, address(pool), STAKE_AMOUNT);
-        vm.warp(block.timestamp + hook.BRONZE_TIER_THRESHOLD());
-        hook.upgradeNFT(1);
+       vm.warp(block.timestamp + hook.tierInfo(NFTTier.Bronze).threshold);
+hook.upgradeNFT(1);
         vm.stopPrank();
 
         uint256 discount = hook.getFeeDiscount(alice, address(pool));
@@ -246,8 +257,8 @@ contract NFTLiquidityStakingHookTest is Test {
         vm.startPrank(alice);
         pool.approve(address(hook), STAKE_AMOUNT);
         simulateAddLiquidity(alice, address(pool), STAKE_AMOUNT);
-        vm.warp(block.timestamp + hook.BRONZE_TIER_THRESHOLD());
-        hook.upgradeNFT(1);
+     vm.warp(block.timestamp + hook.tierInfo(NFTTier.Bronze).threshold);
+hook.upgradeNFT(1);
         vm.stopPrank();
 
         uint256 votingPower = hook.getVotes(alice);
@@ -275,8 +286,9 @@ contract NFTLiquidityStakingHookTest is Test {
         vm.startPrank(alice);
         pool.approve(address(hook), STAKE_AMOUNT);
         simulateAddLiquidity(alice, address(pool), STAKE_AMOUNT);
-        vm.warp(block.timestamp + hook.GOLD_TIER_THRESHOLD());
-        hook.upgradeNFT(1);
+       
+        vm.warp(block.timestamp + hook.tierInfo(NFTTier.Gold).threshold);
+       hook.upgradeNFT(1);
         vm.stopPrank();
 
         address[] memory targets = new address[](1);
@@ -313,8 +325,9 @@ contract NFTLiquidityStakingHookTest is Test {
         vm.startPrank(alice);
         pool.approve(address(hook), STAKE_AMOUNT);
         simulateAddLiquidity(alice, address(pool), STAKE_AMOUNT);
-        vm.warp(block.timestamp + hook.GOLD_TIER_THRESHOLD());
-        hook.upgradeNFT(1);
+       
+        vm.warp(block.timestamp + hook.tierInfo(NFTTier.Gold).threshold);
+      hook.upgradeNFT(1);
         vm.stopPrank();
 
         uint256 yieldBoost = hook.getYieldBoost(alice, address(pool));
@@ -325,8 +338,9 @@ contract NFTLiquidityStakingHookTest is Test {
         vm.startPrank(alice);
         pool.approve(address(hook), STAKE_AMOUNT);
         simulateAddLiquidity(alice, address(pool), STAKE_AMOUNT);
-        vm.warp(block.timestamp + hook.GOLD_TIER_THRESHOLD());
-        hook.upgradeNFT(1);
+
+        vm.warp(block.timestamp + hook.tierInfo(NFTTier.Gold).threshold);
+      hook.upgradeNFT(1);
         vm.stopPrank();
 
         string memory tokenURI = hook.tokenURI(1);
@@ -359,10 +373,10 @@ contract NFTLiquidityStakingHookTest is Test {
         vm.warp(block.timestamp + 13);
 
         vm.prank(alice);
-        governor.castVote(proposalId, 1); 
+        governor.castVote(proposalId, 1);
 
         vm.prank(bob);
-        governor.castVote(proposalId, 0); 
+        governor.castVote(proposalId, 0);
 
         vm.roll(block.number + governor.votingPeriod() + 1);
         vm.warp(block.timestamp + 7 days + 1);
@@ -403,20 +417,23 @@ contract NFTLiquidityStakingHookTest is Test {
         uint256 tokenId = hook.tokenOfOwnerByIndex(alice, 0);
         vm.stopPrank();
 
-        vm.warp(block.timestamp + hook.BRONZE_TIER_THRESHOLD());
+        uint256 initialDiscount = hook.getFeeDiscount(alice, address(pool));
+        assertEq(initialDiscount, 0, "Incorrect initial discount");
+
+        vm.warp(block.timestamp + hook.tierInfo(NFTTier.Bronze).threshold);
         hook.upgradeNFT(tokenId);
         uint256 bronzeDiscount = hook.getFeeDiscount(alice, address(pool));
-        assertEq(bronzeDiscount, 10, "Incorrect Bronze tier discount");
+        assertEq(bronzeDiscount, hook.tierInfo(NFTTier.Bronze).feeDiscount, "Incorrect Bronze tier discount");
 
-        vm.warp(block.timestamp + hook.SILVER_TIER_THRESHOLD());
+        vm.warp(block.timestamp + hook.tierInfo(NFTTier.Silver).threshold);
         hook.upgradeNFT(tokenId);
         uint256 silverDiscount = hook.getFeeDiscount(alice, address(pool));
-        assertEq(silverDiscount, 20, "Incorrect Silver tier discount");
+        assertEq(silverDiscount, hook.tierInfo(NFTTier.Silver).feeDiscount, "Incorrect Silver tier discount");
 
-        vm.warp(block.timestamp + hook.GOLD_TIER_THRESHOLD());
+        vm.warp(block.timestamp + hook.tierInfo(NFTTier.Gold).threshold);
         hook.upgradeNFT(tokenId);
         uint256 goldDiscount = hook.getFeeDiscount(alice, address(pool));
-        assertEq(goldDiscount, 30, "Incorrect Gold tier discount");
+        assertEq(goldDiscount, hook.tierInfo(NFTTier.Gold).feeDiscount, "Incorrect Gold tier discount");
     }
 
     function testYieldBoostCalculation() public {
@@ -426,17 +443,16 @@ contract NFTLiquidityStakingHookTest is Test {
         uint256 tokenId = hook.tokenOfOwnerByIndex(alice, 0);
         vm.stopPrank();
 
-        vm.warp(block.timestamp + hook.BRONZE_TIER_THRESHOLD());
+      vm.warp(block.timestamp + hook.tierInfo(NFTTier.Bronze).threshold);
         hook.upgradeNFT(tokenId);
         uint256 bronzeBoost = hook.getYieldBoost(alice, address(pool));
         assertEq(bronzeBoost, 10, "Incorrect Bronze tier yield boost");
 
-        vm.warp(block.timestamp + hook.SILVER_TIER_THRESHOLD());
+        vm.warp(block.timestamp + hook.tierInfo(NFTTier.Silver).threshold);
         hook.upgradeNFT(tokenId);
         uint256 silverBoost = hook.getYieldBoost(alice, address(pool));
         assertEq(silverBoost, 20, "Incorrect Silver tier yield boost");
-
-        vm.warp(block.timestamp + hook.GOLD_TIER_THRESHOLD());
+        vm.warp(block.timestamp + hook.tierInfo(NFTTier.Gold).threshold);
         hook.upgradeNFT(tokenId);
         uint256 goldBoost = hook.getYieldBoost(alice, address(pool));
         assertEq(goldBoost, 30, "Incorrect Gold tier yield boost");
