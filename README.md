@@ -121,8 +121,10 @@ yarn install
    [^1]: The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must possess enough Sepolia ETH to deploy the contracts. The `SEPOLIA_RPC_URL` facilitates running a local fork and sending transactions to sepolia testnet. The `DEPLOYER_ADDRESS` is the address that matches the private key. The `TEST_USER_ADDRESS` is the address of a test user that demonstrates the use case.
 
 ```
-SEPOLIA_RPC_URL=...
-DEPLOYER_ADDRESS=0x...
+DEPLOYER_PRIVATE_KEY=
+DEPLOYER_ADDRESS=
+TEST_USER_ADDRESS=
+SEPOLIA_RPC_URL=
 ```
 
 4. Start a local anvil fork of the Sepolia testnet
