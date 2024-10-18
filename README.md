@@ -9,17 +9,19 @@ It has been designed with RWA NFTs in mind.
 ## 📜 Table of Contents
 
 - [Introduction](#nft-escrow-lp)
-- [Architecture](#architecture)
-- [User Flow](#user-flow)
+- [Use Case](#🏡-use-case)
+- [User Flow](#🧍🏼-user-flow)
 - [Utilized Hooks](#utilized-hooks)
-  - [Normal](#normal)
+- [Architecture](#architecture)
+- [Technical Notes](#technical-notes)
+- [Future Plans](#future)
 
 ***
 ## 🏡 Use Case
 This is the use case
 
 ***
-## 🪝 User Flow
+##🧍🏼 User Flow
 We used the following user flow steps
 <table>
 <tr>
@@ -45,7 +47,7 @@ We architected it like this
 <img width="1470" alt="code" src="https://github.com/lifeparticle/Markdown-Cheatsheet/assets/1612112/b70541b0-fce8-4f5e-97f4-6443c20b98ec">
 
 ***
-## ✍🏻 Technical Notes
+## Technical Notes
 Some thoughts on what we did
 
 ***
