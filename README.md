@@ -1,4 +1,4 @@
-# NFT ESCROW LP
+# :bank: NFT ESCROW LP
 A Balancer v3 hook to allow a liquidity pool to be backed by an NFT.  This is accomplished by staking it into this escrow hook which mints an ERC20 to represent it fractionally.  The hook also enables the depositor to settle the pool at the current market rate - in essence this is buying back all outstanding tokens by depositing the required amount of the counterpart token into the escrow hook contract which then releases the NFT.
 
 Think of it is as a rug-proof pool that requires the current token value to be honored in the equivilent counterpart token and held in escrow to be redeemed.
@@ -8,7 +8,7 @@ It has been designed with RWA NFTs in mind.
 ***
 ## 📜 Table of Contents
 
-- [Introduction](#nft-escrow-lp)
+- [Introduction](#bank-nft-escrow-lp)
 - [Use Case](#house_with_garden-use-case)
 - [User Flow](#bearded_person-user-flow)
 - [Utilized Hooks](#hook-utilized-hooks)
