@@ -39,6 +39,8 @@ The **Dynamic Fee Hook** contract is a smart extension to the Balancer protocol,
 ## Conclusion:
 In summary, the Dynamic Fee Hook contract is a powerful tool that benefits both liquidity providers and token holders. By intelligently adjusting fees based on market conditions, it ensures pool stability and incentivizes long-term participation. This results in a more resilient and liquid trading environment, ultimately enhancing the overall health of the Balancer ecosystem.
 
+## Dev/X feedback:
+The Balancer V3 Hookathon had well-written instructions that were very easy to follow. Balancer provided documentation and a video explaining how to create a new hook, which is a great resource for new users. We didn't need support, but when  Discord channel was checked,  the Balancer team was actively answering questions from other participants, which was helpful. We could learn from the answers, and it gave hackers the confidence that if a hacker needed help, the Balancer team would assist.
 
 ## How to build / test
 
@@ -52,6 +54,8 @@ $ forge build
 ```shell
 $ forge test
 ```
+    ![Test result](img/hookTest.png "Test result")
+
 
 ### Gas Snapshots
 
