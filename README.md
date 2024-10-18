@@ -13,8 +13,8 @@ It has been designed with RWA NFTs in mind.
 - [User Flow](#user-flow)
 - [Utilized Hooks](#utilized-hooks)
 - [Architecture](#architecture)
-- [Technical Notes](#orange-book-technical-notes)
-- [Future Plans](#future)
+- [Technical Notes](#orangebook-technical-notes)
+- [Future Plans](#bangbang-future)
 
 ***
 ## Use Case 🏡 
@@ -51,7 +51,7 @@ We architected it like this
 Some thoughts on what we did
 
 ***
-## ✍🔮 Future
+## :bangbang: Future
 Where we go from here
 
 ***
