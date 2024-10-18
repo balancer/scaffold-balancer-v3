@@ -297,8 +297,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         uint256 stablePoolRatio = stableTokenBalance != 0 ? linkedTokenBalance / stableTokenBalance : 1;
         // Ensure the stable pool ratio is not below what the initial price of asset was, which was 1:1
         // will need to refactor for 80/20 pools
-        redeemRatio = stablePoolRatio > 1 ? stablePoolRatio : 1;
-        // redeemRatio = 1.1 ether;
+        // redeemRatio = stablePoolRatio > 1 ? stablePoolRatio : 1;
+        redeemRatio = 1.1 ether;
 
         // how much stable tokens are required to settle the outstanding shares
         stableAmountRequired = outstandingShares * redeemRatio / 1e18;
