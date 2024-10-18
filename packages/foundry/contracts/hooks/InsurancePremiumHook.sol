@@ -179,18 +179,19 @@ contract InsurancePremiumHook is BaseHooks, VaultGuard, Ownable {
         }
 
         address sender = IRouterCommon(router).getSender();
-        IERC20[] memory tokens = _vault.getPoolTokens(pool);
-        uint256[] memory accruedFees = new uint256[](tokens.length);
         hookAdjustedAmountsInRaw = amountsInRaw;
 
         if (addLiquidityHookFeePercentage > 0) {
+            IERC20[] memory tokens = _vault.getPoolTokens(pool);
+            uint256[] memory accruedFees = new uint256[](tokens.length);
             // Charge fees proportional to amounts in of each token.
             for (uint256 i = 0; i < amountsInRaw.length; i++) {
                 uint256 hookFee = amountsInRaw[i].mulDown(addLiquidityHookFeePercentage);
                 accruedFees[i] = hookFee;
                 hookAdjustedAmountsInRaw[i] += hookFee;
+                _vault.sendTo(tokens[i], address(this), hookFee);
             }
-        
+            
             // Sends the hook fee to the hook and registers the debt in the Vault.
             (,uint256 tokensOut,) = _vault.addLiquidity(
                 AddLiquidityParams({
@@ -234,16 +235,17 @@ contract InsurancePremiumHook is BaseHooks, VaultGuard, Ownable {
         }
 
         address sender = IRouterCommon(router).getSender();
-        IERC20[] memory tokens = _vault.getPoolTokens(pool);
-        uint256[] memory accruedFees = new uint256[](tokens.length);
         hookAdjustedAmountsOutRaw = amountsOutRaw;
 
         if (removeLiquidityHookFeePercentage > 0) {
+            IERC20[] memory tokens = _vault.getPoolTokens(pool);
+            uint256[] memory accruedFees = new uint256[](tokens.length);
             // Charge fees proportional to amounts in of each token.
             for (uint256 i = 0; i < amountsOutRaw.length; i++) {
                 uint256 hookFee = amountsOutRaw[i].mulDown(addLiquidityHookFeePercentage);
                 accruedFees[i] = hookFee;
                 hookAdjustedAmountsOutRaw[i] -= hookFee;
+                _vault.sendTo(tokens[i], address(this), hookFee);
             }
         
             // Sends the hook fee to the hook and registers the debt in the Vault.
