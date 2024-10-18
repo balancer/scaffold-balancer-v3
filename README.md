@@ -9,19 +9,20 @@ It has been designed with RWA NFTs in mind.
 ## 📜 Table of Contents
 
 - [Introduction](#nft-escrow-lp)
-- [Use Case](#use-case)
-- [User Flow](#user-flow)
-- [Utilized Hooks](#utilized-hooks)
-- [Architecture](#buildingconstruction-architecture)
+- [Use Case](#house_with_garden-use-case)
+- [User Flow](#bearded_person-user-flow)
+- [Utilized Hooks](#hook-utilized-hooks)
+- [Architecture](#building_construction-architecture)
 - [Technical Notes](#orange_book-technical-notes)
 - [Future Plans](#rocket-future)
+- [Getting Started](#Getting-Started-with-Scaffold-Balancer-v3)
 
 ***
-## Use Case 🏡 
+## :house_with_garden: Use Case 
 This is the use case
 
 ***
-## User Flow 🧍🏼 
+## :bearded_person: User Flow
 We used the following user flow steps
 <table>
 <tr>
@@ -38,7 +39,7 @@ var fullName;
 </table>
 
 ***
-## 🪝 Utilized Hooks
+## :hook: Utilized Hooks
 We used the following hooks 
 
 ***
@@ -55,7 +56,7 @@ Some thoughts on what we did
 Where we go from here
 
 ***
-# 🏗︎ Built Using Scaffold Balancer v3
+# Getting Started with Scaffold Balancer v3
 
 A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
 
