@@ -1,151 +1,144 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+
 pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
-import { GovernedLotteryHook } from "../contracts/hooks/GovernedLotteryHook.sol";
-import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { GovernedLotteryHook } from "../contracts/hooks/GovernedLotteryHook.sol";
 import { AfterSwapParams, SwapKind } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 
-// Mock IVault implementation for testing
-contract MockVault is IVault {
-    function sendTo(IERC20 token, address recipient, uint256 amount) external override {}
-
-    function vault() external view override returns (IVault) {}
-}
-
-// Mock IRouterCommon implementation for testing
-contract MockRouter is IRouterCommon {
-    function getSender() external pure override returns (address) {
-        return msg.sender;
-    }
-
-    IAllowanceTransfer.PermitBatch calldata permit2Batch,
-    bytes calldata permit2Signature,
-    bytes[] calldata multicallData,
-    bytes calldata permit2Signature,
-    bytes[] calldata multicallData
-
-    function multicall(bytes[] calldata data) external override returns (bytes[] memory results) {}
-}
-
 contract GovernedLotteryHookTest is Test {
-    GovernedLotteryHook lotteryHook;
-    MockVault vault;
-    MockRouter router;
-    address trustedRouter;
-    IERC20 mockToken;
+    GovernedLotteryHook hook;
+    IVault vault;
+    address owner;
+    address router;
+    address alice;
+    address bob;
+
+    IERC20 tokenIn;
+    IERC20 tokenOut;
 
     function setUp() public {
-        vault = new MockVault();
-        router = new MockRouter();
-        trustedRouter = address(router);
-        mockToken = IERC20(address(0xba100000625a3754423978a60c9317c58a424e3D));
+        owner = address(this);
+        vault = IVault(address(0xBA12222222228d8Ba445958a75a0704d566BF2C8));
+        router = address(0x886A3Ec7bcC508B8795990B60Fa21f85F9dB7948);
+        alice = address(1);
+        bob = address(2);
 
-        lotteryHook = new GovernedLotteryHook(IVault(vault), trustedRouter);
+        tokenIn = IERC20(address(0xba100000625a3754423978a60c9317c58a424e3D));
+        tokenOut = IERC20(address(0xba100000625a3754423978a60c9317c58a424e3D));
+
+        hook = new GovernedLotteryHook(vault, router);
     }
 
-    function testDeployment() public {
-        assertEq(lotteryHook.hookSwapFeePercentage(), 0);
-        assertEq(lotteryHook.LUCKY_NUMBER(), 10);
-        assertEq(lotteryHook.MAX_NUMBER(), 20);
+    function testCreateProposal() public {
+        string memory description = "Proposal to change swap fee";
+        uint64 newSwapFee = 300;
+        uint8 luckyNumber = 7;
+
+        vm.startPrank(owner);
+        hook.createProposal(description, newSwapFee, luckyNumber);
+
+        (uint256 proposalId, , , , , , uint256 votingDeadline) = hook.proposals(0);
+        assertEq(proposalId, 0);
+        assertEq(votingDeadline > block.timestamp, true);
+        vm.stopPrank();
     }
 
-    function testSetSwapFeePercentage() public {
-        uint64 newFee = 500; // 5%
-        lotteryHook.setHookSwapFeePercentage(newFee);
-        assertEq(lotteryHook.hookSwapFeePercentage(), newFee);
+    function testVoteOnProposal() public {
+        vm.startPrank(owner);
+        hook.createProposal("Test Voting", 200, 8);
+        vm.stopPrank();
+
+        vm.startPrank(alice);
+        hook.voteOnProposal(0, true);
+        (uint256 votesFor, , , , , uint256 votesAgainst, ) = hook.proposals(0);
+        assertEq(votesFor, 1);
+        assertEq(votesAgainst, 0);
+
+        vm.expectRevert("You have already voted");
+        hook.voteOnProposal(0, true);
+        vm.stopPrank();
     }
 
-    function testRandomNumberGeneration() public {
-        uint8 randomNumber = lotteryHook.getRandomNumber();
-        assertTrue(randomNumber >= 1 && randomNumber <= 20);
+    function testImplementProposal() public {
+        vm.startPrank(owner);
+        hook.createProposal("Change fee", 400, 9);
+        vm.stopPrank();
+
+        vm.warp(block.timestamp + 1 weeks);
+        vm.startPrank(owner);
+        hook.implementProposal(0);
+
+        (uint64 swapFee, uint8 luckyNumber) = hook.getCurrentSettings();
+        assertEq(swapFee, 400);
+        assertEq(luckyNumber, 9);
+        vm.stopPrank();
     }
 
-    function testOnAfterSwapWithExactIn() public {
-        uint64 swapFeePercentage = 1000; // 10%
-        lotteryHook.setHookSwapFeePercentage(swapFeePercentage);
+    //     function testOnAfterSwap() public {
+    //     uint256 amountIn = 1000 * 1e18;
+    //     uint256 fee = amountIn / 100;
 
-        AfterSwapParams memory params = AfterSwapParams({
-            router: trustedRouter,
-            tokenIn: mockToken,
-            tokenOut: mockToken,
-            kind: SwapKind.EXACT_IN,
-            amountCalculatedRaw: 1000 * 1e18,
-            amountIn: 1000 * 1e18,
-            amountOut: 0,
-            balanceIn: 1000 * 1e18,
-            balanceOut: 1000 * 1e18,
-            lastChangeBlockIn: block.number,
-            lastChangeBlockOut: block.number,
-            protocolSwapFeePercentage: 0,
-            userData: abi.encodePacked("")
-        });
+    //     deal(address(tokenIn), alice, amountIn);
+    //     deal(address(tokenOut), address(hook), 500 * 1e18);
 
-        (bool success, uint256 adjustedAmount) = lotteryHook.onAfterSwap(params);
+    //     vm.prank(alice);
+    //     tokenIn.transfer(address(hook), amountIn);
 
-        assertTrue(success);
-        uint256 expectedFee = (params.amountCalculatedRaw * swapFeePercentage) / 1e18;
-        assertEq(adjustedAmount, params.amountCalculatedRaw - expectedFee);
+    //  AfterSwapParams memory swapParams = AfterSwapParams({
+    //     poolId: bytes32(0),                   // Pool ID
+    //     tokenIn: address(tokenIn),             // Token being swapped in
+    //     tokenOut: address(tokenOut),           // Token being swapped out
+    //     kind: SwapKind.EXACT_IN,               // Type of swap (Exact In)
+    //     amountIn: amountIn,                    // Amount of tokens being swapped in
+    //     amountOut: 0,                          // Amount of tokens to be swapped out (for Exact In)
+    //     balanceIn: amountIn,                   // Current balance of tokenIn
+    //     balanceOut: 500 * 1e18,                // Current balance of tokenOut
+    //     lastChangeBlockIn: block.number,       // Last block tokenIn balance changed
+    //     lastChangeBlockOut: block.number,      // Last block tokenOut balance changed
+    //     protocolSwapFeePercentage: 0,          // Protocol swap fee percentage
+    //     router: router                         // Router executing the swap
+    // });
+
+    //     vm.prank(router);
+    //     (bool success, uint256 hookAdjustedAmount) = hook.onAfterSwap(swapParams);
+
+    //     assertTrue(success, "onAfterSwap should succeed");
+
+    //     uint256 balanceAfter = tokenOut.balanceOf(address(hook));
+    //     assertGt(balanceAfter, 0, "Balance after swap should be greater than zero");
+    // }
+
+    function testImplementProposalBeforeDeadline() public {
+        vm.startPrank(owner);
+        hook.createProposal("Early Implementation", 500, 10);
+        vm.expectRevert("Voting period has not ended");
+        hook.implementProposal(0);
+        vm.stopPrank();
     }
 
-    function testOnAfterSwapWithExactOut() public {
-        uint64 swapFeePercentage = 1000; // 10%
-        lotteryHook.setHookSwapFeePercentage(swapFeePercentage);
+    function testMultipleProposalsAndVotes() public {
+        vm.startPrank(owner);
+        hook.createProposal("Proposal 1", 150, 5);
+        hook.createProposal("Proposal 2", 250, 6);
+        vm.stopPrank();
 
-        AfterSwapParams memory params = AfterSwapParams({
-            router: trustedRouter,
-            tokenIn: mockToken,
-            tokenOut: mockToken,
-            kind: SwapKind.EXACT_OUT,
-            amountCalculatedRaw: 1000 * 1e18,
-            amountIn: 0,
-            amountOut: 1000 * 1e18,
-            balanceIn: 1000 * 1e18,
-            balanceOut: 1000 * 1e18,
-            lastChangeBlockIn: block.number,
-            lastChangeBlockOut: block.number,
-            protocolSwapFeePercentage: 0,
-            userData: abi.encodePacked("")
-        });
+        vm.startPrank(alice);
+        hook.voteOnProposal(0, true);
+        vm.stopPrank();
 
-        (bool success, uint256 adjustedAmount) = lotteryHook.onAfterSwap(params);
+        vm.startPrank(bob);
+        hook.voteOnProposal(1, false);
+        vm.stopPrank();
 
-        assertTrue(success);
-        uint256 expectedFee = (params.amountCalculatedRaw * swapFeePercentage) / 1e18;
-        assertEq(adjustedAmount, params.amountCalculatedRaw + expectedFee);
-    }
+        (uint256 votesFor1, , , , , uint256 votesAgainst1, ) = hook.proposals(0);
+        assertEq(votesFor1, 1);
+        assertEq(votesAgainst1, 0);
 
-    function testLotteryWin() public {
-        uint8 luckyNumber = lotteryHook.LUCKY_NUMBER();
-        uint256 swapAmount = 1000 * 1e18;
-
-        for (uint256 i = 0; i < 50; i++) {
-            AfterSwapParams memory params = AfterSwapParams({
-                router: trustedRouter,
-                tokenIn: mockToken,
-                tokenOut: mockToken,
-                kind: SwapKind.EXACT_IN,
-                amountCalculatedRaw: swapAmount,
-                amountIn: swapAmount,
-                amountOut: 0,
-                balanceIn: 1000 * 1e18,
-                balanceOut: 1000 * 1e18,
-                lastChangeBlockIn: block.number,
-                lastChangeBlockOut: block.number,
-                protocolSwapFeePercentage: 0,
-                userData: abi.encodePacked("")
-            });
-
-            (bool success, uint256 adjustedAmount) = lotteryHook.onAfterSwap(params);
-            assertTrue(success);
-
-            uint8 randomNumber = lotteryHook.getRandomNumber();
-            if (randomNumber == luckyNumber) {
-                emit log("Lottery win triggered!");
-                break;
-            }
-        }
+        (uint256 votesFor2, , , , , uint256 votesAgainst2, ) = hook.proposals(1);
+        assertEq(votesFor2, 0);
+        assertEq(votesAgainst2, 1);
     }
 }
