@@ -9,19 +9,19 @@ It has been designed with RWA NFTs in mind.
 ## 📜 Table of Contents
 
 - [Introduction](#nft-escrow-lp)
-- [Use Case](#🏡-use-case)
-- [User Flow](#🧍🏼-user-flow)
+- [Use Case](#use-case)
+- [User Flow](#user-flow)
 - [Utilized Hooks](#utilized-hooks)
 - [Architecture](#architecture)
 - [Technical Notes](#technical-notes)
 - [Future Plans](#future)
 
 ***
-## 🏡 Use Case
+## Use Case 🏡 
 This is the use case
 
 ***
-##🧍🏼 User Flow
+## User Flow 🧍🏼 
 We used the following user flow steps
 <table>
 <tr>
