@@ -19,41 +19,54 @@ It has been designed with RWA NFTs in mind.
 
 ***
 ## :house_with_garden: Use Case 
-This is the use case
+A user has created an NFT that represents a real world asset, such as an AirBnB.  In order to sell parts of their AirBnB and see what the dynamic market value of their asset is they create a liquidity pool with 20% of the equity paired with 20% of a stable coin pegging the price to $100,000.  They stake their RWA NFT in order to assure the token holders that infact there is an NFT that represents the asset, and assure the potential buyers that it is not being used in any other financial instrument.
+
+Swapping occurs as guests in the AirBnB are given the opportunity to invest.  The price increases 20% as supply is decreased in the pool.  In time the owner discovers a new financing defi product that also requires the NFT and desires to withdraw.  Since it would be nearly impossible to contact the existing token holders and purchase them back, he is given the ability to deposit the stable coin needed in order to cover the existing outstanding tokens.  If there are 10 tokens out of 100 that are not in the pool or in the depositor's wallet and with the asset price of $120,000 he must deposit $12,000 into the liquidity pool in order to withdraw his NFT.  Token holders may now redeem their 10 tokens, each one being worth $1,200.
 
 ***
 ## :bearded_person: User Flow
-We used the following user flow steps
-<table>
-<tr>
-<th>Before Hoisting</th>
-</tr>
-<tr>
-<td>
-console.log(fullName); // undefined
-fullName = "Dariana Trahan";
-console.log(fullName); // Dariana Trahan
-var fullName;
-</td>
-</tr>
-</table>
+> Mint RWA NFT & Linked "RWAT" ERC20 Tokens
+> Create Pool with RWAT & STABLE
+> Stake NFT into hook
+> Initialize Pool
+> Swapping Occurs
+> Settlement is initiated, transfering outstanding token balance in and NFT out
+> Initial liquidity is withdrawn
+> Oustanding tokens redeemed for STABLE from the hook contract
 
 ***
 ## :hook: Utilized Hooks
-We used the following hooks 
+<table>
+<tr><th>onRegister</th></tr>
+<tr><td>
+Initial liquidity values are recorded to be referenced later to ensure the initial depositor does not withdraw more than their initial deposit
+</td></tr>
+<tr><th>onBeforeInitialize</th></tr>
+<tr><td>
+We require that the NFT is deposited and that one of the tokens in the pool is the cooresponding linked erc20 token
+</td></tr>
+<tr><th>onAfterRemoveLiquidity</th></tr>
+<tr><td>
+Checking to make sure that the depositor has not removed more tokens than they originally deposited.  This is our anti-rug pull check, locking in the liquidity until after the NFT has been withdrawn.
+</td></tr>
+<tr><th>onBeforeSwap</th></tr>
+<tr><td>
+Check if pool has been settled in order to halt trading if so.
+</td></tr>
+</table>
 
 ***
 ## :building_construction: Architecture
-We architected it like this
+This pool relies upon certain 
 <img width="1470" alt="code" src="https://github.com/lifeparticle/Markdown-Cheatsheet/assets/1612112/b70541b0-fce8-4f5e-97f4-6443c20b98ec">
 
 ***
 ## :orange_book: Technical Notes
-Some thoughts on what we did
+There are a few functions that we needed to add to the hook in order to make this work such as settle, redeem, getSettlementAmount, recordInitialLiquidity & setNft.  We could also add some additional functions to that allow for some advanced functionality, such as detaching the linked token upon settle and minting a new fresh one for the NFT upon withdrawl but figure that will be it's own process.  We also thought of combining the settle with liquidity withdrawl, but it was a more complex hook use case so kept it in two seperate operations. Ideally we will extend this hook to work with the weighted pool.  This will allow for smaller amount of capital to be used to peg an asset to a particular price but will need to take the ratio into account for the settlement amount. 
 
 ***
 ## :rocket: Future
-Where we go from here
+We'd like to continue developing this in order to fit into an entire ecosystem where a user can utilize the value of their asset, as determined via the pool, in for use in a loan product.  This would enable the LTV to be responsive to market price and could enable other novel hook use cases.  Also adding cross-chain multi-assest compatibility so that there is only one liquidity pool for an asset, but is accessible via any chain and any asset ie "zap in" would be usefull going forward.
 
 ***
 # Getting Started with Scaffold Balancer v3
