@@ -12,9 +12,9 @@ It has been designed with RWA NFTs in mind.
 - [Use Case](#use-case)
 - [User Flow](#user-flow)
 - [Utilized Hooks](#utilized-hooks)
-- [Architecture](#architecture)
-- [Technical Notes](#orangebook-technical-notes)
-- [Future Plans](#bangbang-future)
+- [Architecture](#buildingconstruction-architecture)
+- [Technical Notes](#orange_book-technical-notes)
+- [Future Plans](#rocket-future)
 
 ***
 ## Use Case 🏡 
@@ -42,7 +42,7 @@ var fullName;
 We used the following hooks 
 
 ***
-## 🏗️ Architecture
+## :building_construction: Architecture
 We architected it like this
 <img width="1470" alt="code" src="https://github.com/lifeparticle/Markdown-Cheatsheet/assets/1612112/b70541b0-fce8-4f5e-97f4-6443c20b98ec">
 
@@ -51,7 +51,7 @@ We architected it like this
 Some thoughts on what we did
 
 ***
-## :bangbang: Future
+## :rocket: Future
 Where we go from here
 
 ***
