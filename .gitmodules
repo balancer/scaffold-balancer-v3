@@ -16,3 +16,4 @@
 [submodule "packages/foundry/lib/balancer-v3-monorepo"]
 	path = packages/foundry/lib/balancer-v3-monorepo
 	url = https://github.com/balancer/balancer-v3-monorepo
+	commit = c3770eea2d9ac8e9aaa0d1bb1778422c4c3a19c1
