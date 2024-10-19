@@ -26,7 +26,10 @@ import { MockStable } from "../contracts/mocks/MockStable.sol";
  * @notice Deploys, registers, and initializes a constant sum pool that uses a swap fee discount hook
  */
 contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
-    function deployConstantSumPoolWithCheckHook(address token) internal {
+    function deployConstantSumPoolWithCheckHook(address token)
+        public
+        returns(address linkedTokenAddress, address nftCheckHook, MockNft mockNft)
+    {
         // Start creating the transactions
         address deployerAddress = address(uint160(getDeployerAddress()));
         uint256 deployerPrivateKey = getDeployerPrivateKey();
@@ -41,19 +44,19 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         MockLinked sampleToken = new MockLinked("sampleToken", "sampleToken", 1);
 
         // Deploy an Nft and mint one
-        MockNft mockNft = new MockNft("NFTFactory", "NFTF");
+        mockNft = new MockNft("NFTFactory", "NFTF");
         console.log("MockNft: %s", address(mockNft));
 
         uint256 tokenId = mockNft.mintNft("https://0a050602b1c1aeae1063a0c8f5a7cdac.ipfscdn.io/ipfs/QmSiA82PQNuWuBfQtuzWKwnZV94qs34jrW1L6PaR69jeoE/metadata.json");
 
         // Deploy a hook
-        address nftCheckHook = address(
+        nftCheckHook = address(
             new NftCheckHook(vault, address(mockNft), tokenId, token, "RWA Token", "RWAT", 1000e18)
         );
         console.log("NftCheckHook deployed at address: %s", nftCheckHook);
 
         // Set the pool's deployment, registration, and initialization config
-        address linkedTokenAddress = NftCheckHook(nftCheckHook).getLinkedToken();
+        linkedTokenAddress = NftCheckHook(nftCheckHook).getLinkedToken();
         console.log("linkedTokenAddress: %s", linkedTokenAddress);
         CustomPoolConfig memory poolConfig = getCheckSumPoolConfig(linkedTokenAddress, token);
         InitializationConfig memory initConfig = getCheckSumPoolInitConfig(linkedTokenAddress, token);
@@ -80,7 +83,7 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         MockStable(token).transfer(testUserAddress, 100e18);
 
         // deploy mock router so we can get the abi to call the initialize function
-        Router router = new Router();
+        Router router2 = new Router();
 
         vm.stopBroadcast();
     }

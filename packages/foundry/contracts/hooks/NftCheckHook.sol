@@ -48,7 +48,7 @@ interface ICustomNFT is IERC721 {
 contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     using FixedPoint for uint256;
 
-    address public nftContract;
+    address private nftContract;
     uint256 public nftId;
     uint256 public initialToken1Amount;
     uint256 public initialToken2Amount;
@@ -57,8 +57,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     address private linkedToken;
     address private stableToken;
     TokenConfig[] private tokenConfigs;
-    bool initialLiquidityRecorded;
-    bool poolIsSettled;
+    bool private initialLiquidityRecorded;
+    bool private poolIsSettled;
 
     uint64 public exitFeePercentage;
     uint64 public constant MAX_EXIT_FEE_PERCENTAGE = 10e16;
@@ -291,6 +291,14 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         return poolIsSettled;
     }
 
+    function getInitialLiquidityRecorded() external view returns(bool) {
+        return initialLiquidityRecorded;
+    }
+
+    function getNftContract() external view returns(address) {
+        return nftContract;
+    }
+
     function getSettlementAmount() public returns(uint256 stableAmountRequired) {
         // Calculate total outstanding shares in the pool
         MockLinked linkedTokenErc20 = MockLinked(linkedToken);
@@ -306,14 +314,14 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         // Calculate the equivalent stable token amount using the current pool/stable ratio
         uint256 linkedTokenBalance = linkedTokenErc20.balanceOf(poolAddress);
         uint256 stableTokenBalance = stableTokenErc20.balanceOf(poolAddress);
-        uint256 stablePoolRatio = stableTokenBalance != 0 ? linkedTokenBalance / stableTokenBalance : 1;
+        uint256 stablePoolRatio = (stableTokenBalance != 0 ? linkedTokenBalance / stableTokenBalance : 1) * 1 ether;
         // Ensure the stable pool ratio is not below what the initial price of asset was, which was 1:1
         // will need to refactor for 80/20 pools
-        redeemRatio = stablePoolRatio > 1 ? stablePoolRatio : 1;
+        redeemRatio = stablePoolRatio > 1.1 ether ? stablePoolRatio : 1.1 ether;
         // redeemRatio = 1.1 ether;
 
         // how much stable tokens are required to settle the outstanding shares
-        stableAmountRequired = outstandingShares * redeemRatio;
+        stableAmountRequired = outstandingShares * redeemRatio / 1 ether;
     }
 
     /**
@@ -353,7 +361,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         require(redeemableBalance > 0, "Sender has no redeemable tokens");
 
         // Calculate the stable token amount to be transferred based on the ratio
-        uint256 stableAmountToTransfer = redeemableBalance * redeemRatio;
+        uint256 stableAmountToTransfer = redeemableBalance * redeemRatio / 1 ether;
 
         // Transfer the linked tokens from the user and the stable tokens to the user
         linkedTokenErc20.transferFrom(msg.sender, owner(), redeemableBalance);
