@@ -167,15 +167,18 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
 
     /**
      * @notice Add liquidity to a given prediction market
-     * @dev The deposit token taken from the user balance will be the token0 of the given market, which is the first token in the sorted pair
+     * @dev The deposit token taken from the user balance will be the token0 of the given market, which is the 
+     * first token in the sorted pair
      *
-     * User positions will be credited based on the current balance of "bets" between bull/bear outcomes. If the market is uninitalized then
-     * the user will receive equal amounts of bull/bear units, representing a 50/50 probability of each outcome.
+     * User positions will be credited based on the current balance of "bets" between bull/bear outcomes. If the 
+     * market is uninitalized then the user will receive equal amounts of bull/bear units, representing a 50/50 
+     * probability of each outcome.
      *
-     * The total value of a market at any given time is equal of the deposited liquidity. This is the amount that will be split between the assets
-     * when the market is settled. For example, a market with 100 USDC deposited and a 80/20 balance split between bull / bear would imply a 
-     * bull price/probability of ($.8) and a bear price/probability of ($.2). If this ratio continued to settlement then each bull unit would
-     * be worth $1.25 while each bear unit is worth $0
+     * The total value of a market at any given time is equal of the deposited liquidity. This is the amount that 
+     * will be split between the assets when the market is settled. For example, a market with 100 USDC deposited 
+     * and a 80/20 balance split between bull / bear would imply a bull price/probability of ($.8) and a bear 
+     * price/probability of ($.2). If this ratio continued to settlement then each bull unit would be worth $1.25 
+     * while each bear unit is worth $0
      *
      * One can think of this style of prediction market as an implementation of on-chain binary options 
      *
