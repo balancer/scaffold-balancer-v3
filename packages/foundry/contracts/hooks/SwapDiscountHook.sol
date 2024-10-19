@@ -3,54 +3,37 @@
 pragma solidity ^0.8.24;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
 import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
+import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol"; // Importing IRouterCommon
 import {
-    AddLiquidityKind,
     LiquidityManagement,
-    RemoveLiquidityKind,
-    AfterSwapParams,
-    SwapKind,
     TokenConfig,
+    PoolSwapParams,
     HookFlags
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
 
-import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
+import { VaultGuard } from "@balancer-labs/v3-vault/contracts/VaultGuard.sol";
 import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 
-contract SwapDiscountHook is BaseHooks {
-    using FixedPoint for uint256;
-    using SafeERC20 for IERC20;
-
+contract SafeSwapDiscount is BaseHooks, VaultGuard {
     address private immutable _allowedFactory;
     address private immutable _trustedRouter;
-    address public discountToken; // The token to check for discount eligibility (BAL)
-    uint256 public requiredBalance; // The balance of BAL required for discount eligibility
-    uint64 public hookSwapDiscountPercentage; // The discount percentage to apply
+    IERC20 private immutable _discountToken;
 
-    // modifier onlyVault() {
-    //     require(msg.sender == address(IVault), "Caller is not the vault");
-    //     _;
-    // }
+    event SwapDiscountHookRegistered(address indexed hooksContract, address indexed factory, address indexed pool);
 
-    constructor(
-        IVault vault,
-        address allowedFactory,
-        address trustedRouter,
-        address _discountToken,
-        uint64 _hookSwapDiscountPercentage,
-        uint256 _requiredBalance // Setting the required balance for discount eligibility
-    ) BaseHooks() {
+    constructor(IVault vault, address allowedFactory, address discountToken, address trustedRouter) VaultGuard(vault) {
         _allowedFactory = allowedFactory;
         _trustedRouter = trustedRouter;
-        discountToken = _discountToken;
-        hookSwapDiscountPercentage = _hookSwapDiscountPercentage;
-        requiredBalance = _requiredBalance; // Store the required balance
+        _discountToken = IERC20(discountToken);
+    }
+
+    /// @inheritdoc IHooks
+    function getHookFlags() public pure override returns (HookFlags memory hookFlags) {
+        hookFlags.shouldCallComputeDynamicSwapFee = true;
     }
 
     /// @inheritdoc IHooks
@@ -59,37 +42,28 @@ contract SwapDiscountHook is BaseHooks {
         address pool,
         TokenConfig[] memory,
         LiquidityManagement calldata
-    ) public view override returns (bool) {
+    ) public override onlyVault returns (bool) {
+        emit SwapDiscountHookRegistered(address(this), factory, pool);
+
         return factory == _allowedFactory && IBasePoolFactory(factory).isPoolFromFactory(pool);
     }
 
     /// @inheritdoc IHooks
-    function getHookFlags() public pure override returns (HookFlags memory hookFlags) {
-        hookFlags.shouldCallAfterSwap = true;
-        return hookFlags;
-    }
-
-    /// @inheritdoc IHooks
-    function onAfterSwap(
-        AfterSwapParams calldata params
-    ) public view override returns (bool success, uint256 discountedAmount) {
-        discountedAmount = params.amountCalculatedRaw;
-
-        // Check if the user holds enough BAL tokens for a discount
-        if (
-            hookSwapDiscountPercentage > 0 &&
-            address(params.tokenOut) == discountToken &&
-            params.kind == SwapKind.EXACT_IN
-        ) {
-            // Get the sender's balance of the discount token
-            uint256 userBalance = IERC20(discountToken).balanceOf(IRouterCommon(params.router).getSender());
-
-            // Apply discount if user holds enough BAL tokens
-            if (userBalance >= requiredBalance) {
-                discountedAmount = discountedAmount.mulDown(hookSwapDiscountPercentage);
-                return (true, discountedAmount);
-            }
+    function onComputeDynamicSwapFeePercentage(
+        PoolSwapParams calldata params,
+        address,
+        uint256 staticSwapFeePercentage
+    ) public view override onlyVault returns (bool, uint256) {
+        if (params.router != _trustedRouter) {
+            return (true, staticSwapFeePercentage);
         }
-        return (true, discountedAmount); // No discount applied, return original amount
+
+        address user = IRouterCommon(params.router).getSender();
+
+        if (_discountToken.balanceOf(user) > 0) {
+            return (true, staticSwapFeePercentage / 2);
+        }
+
+        return (true, staticSwapFeePercentage);
     }
 }
