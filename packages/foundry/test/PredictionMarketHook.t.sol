@@ -25,7 +25,8 @@ import { PoolMock } from "@balancer-labs/v3-vault/contracts/test/PoolMock.sol";
 import { PredictionMarketHook } from "../contracts/prediction-market/PredictionMarketHook.sol";
 import { 
     PredictionMarket,
-    Position 
+    Position,
+    Side 
 } from "../contracts/prediction-market/Types.sol";
 
 
@@ -80,28 +81,28 @@ contract PredictionMarketHookTest is BaseVaultTest {
         vm.expectRevert(PredictionMarketHook.PoolNotFound.selector);
 
         //passing any non registered address should revert. Using the vault address here
-        PredictionMarketHook(poolHooksContract).addLiquidity(address(vault), address(usdc), address(weth), block.timestamp+60, 1e18);
+        PredictionMarketHook(poolHooksContract).addLiquidity(address(vault), address(usdc), address(weth), block.timestamp+60, 1e18, Side.Both);
     }
 
     function testAddLiquidityWithNonPoolTokens() public {
         vm.prank(alice);
         vm.expectRevert(PredictionMarketHook.InvalidTokenPair.selector);
 
-        PredictionMarketHook(poolHooksContract).addLiquidity(pool, address(usdc), address(dai), block.timestamp+60, 1e18);
+        PredictionMarketHook(poolHooksContract).addLiquidity(pool, address(usdc), address(dai), block.timestamp+60, 1e18, Side.Both);
     }
 
     function testAddLiquidityWithSameToken() public {
         vm.prank(alice);
         vm.expectRevert(PredictionMarketHook.InvalidTokenPair.selector);
 
-        PredictionMarketHook(poolHooksContract).addLiquidity(pool, address(usdc), address(usdc), block.timestamp+60, 1e18);
+        PredictionMarketHook(poolHooksContract).addLiquidity(pool, address(usdc), address(usdc), block.timestamp+60, 1e18, Side.Both);
     }
 
     function testAddLiquidityWithCloseTimestampInPast() public {
         vm.prank(alice);
         vm.expectRevert(PredictionMarketHook.TimestampIsInPast.selector);
 
-        PredictionMarketHook(poolHooksContract).addLiquidity(pool, address(usdc), address(dai), block.timestamp-60, 1e18);
+        PredictionMarketHook(poolHooksContract).addLiquidity(pool, address(usdc), address(dai), block.timestamp-60, 1e18, Side.Both);
     }
 
     function testSuccessfultAddLiquidity() public {
@@ -120,14 +121,16 @@ contract PredictionMarketHookTest is BaseVaultTest {
         uint256 endTimestamp = block.timestamp+60;
         bytes32 marketId = hook.getMarketId(pool, tokenA, tokenB, endTimestamp);
         
-        Position memory position = hook.addLiquidity(pool, tokenA, tokenB, endTimestamp, amountIn);
+        Position memory position = hook.addLiquidity(pool, tokenA, tokenB, endTimestamp, amountIn, Side.Both);
 
-        //(bytes32 id,,,,uint256 liquidity,,,,) = hook.markets(marketId);
+        PredictionMarket memory market = hook.getMarketById(marketId);
 
-        //vm.assertEq(marketId, id);
-        vm.assertEq(position.bullAmount, 0);
-        vm.assertEq(position.bearAmount, 0);
-        //vm.assertEq(amountIn, liquidity);
+        vm.assertEq(pool, market.pool);
+        vm.assertEq(marketId, market.id);
+        vm.assertEq(position.bullAmount, amountIn/2);
+        vm.assertEq(position.bearAmount, amountIn/2);
+        vm.assertEq(amountIn, market.liquidity);
+        vm.assertEq(1e18, market.openPrice);
     }
 
 

@@ -2,6 +2,12 @@
 
 pragma solidity ^0.8.24;
 
+enum Side {
+    Bull,
+    Bear,
+    Both
+}
+
 struct Position {
     uint256 bullAmount;
     uint256 bearAmount;
@@ -9,6 +15,7 @@ struct Position {
 
 struct PredictionMarket {
     bytes32 id;
+    address pool;
     address token0;
     address token1;
     uint256 endTime;
@@ -17,4 +24,5 @@ struct PredictionMarket {
     uint256 balanceBear;
     uint256 openPrice;
     uint256 closePrice;
+    uint256 swapFees;
 }

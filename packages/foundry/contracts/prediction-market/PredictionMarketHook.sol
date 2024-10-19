@@ -28,7 +28,8 @@ import { PredictionMarketStorage } from './lib/PredictionMarketStorage.sol';
 import { PositionStorage } from './lib/PositionStorage.sol';
 import { 
     PredictionMarket,
-    Position 
+    Position,
+    Side 
 } from './Types.sol';
 
 import {console} from "forge-std/console.sol";
@@ -50,6 +51,12 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
     using PredictionMarketStorage for mapping(bytes32 => PredictionMarket);
     using PositionStorage for mapping(bytes32 => mapping(address => Position));
 
+    /**
+     * @notice fee charged by hook to market participants
+     * @dev fees are charged on deposit, swap and withdrawls
+     */
+    uint256 public constant FEE = 10000; // 1%
+    
     /**
      * @notice Mapping between prediction market id and the corresponding markets
      * @dev mapping(marketId => PredictionMarket)
@@ -166,6 +173,17 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
     }
 
     /**
+     * @notice Get a market given it's id
+     * @param id The market id
+     * @return market The resolved prediction market
+     */
+    function getMarketById(
+        bytes32 id
+    ) public view returns (PredictionMarket memory) {
+        return markets.get(id);
+    }
+
+    /**
      * @notice Add liquidity to a given prediction market
      * @dev The deposit token taken from the user balance will be the token0 of the given market, which is the 
      * first token in the sorted pair
@@ -187,6 +205,7 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
      * @param tokenB Second token in the pair
      * @param closedAtTimestamp Timestamp for when the market closes
      * @param amount Deposit amount
+     * @param side Side to add liquidity to, optionally choose both to add proportionally
      * @return position Resulting user liquidity position after deposit
      */
     function addLiquidity(
@@ -194,7 +213,8 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
         address tokenA,
         address tokenB,
         uint256 closedAtTimestamp,
-        uint256 amount
+        uint256 amount,
+        Side side
     ) public returns (Position memory position) {
         // only create prediction markets for pools registered with the hook
         if(!_isPoolRegistered[pool]) {
@@ -215,7 +235,7 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
         // get the corresponding prediction market to the user request. If one is not found, then we will receive a fresh
         // market. We pass the current price of the pair for this case. In either scenario we need to call store to save 
         // the market after we add user liquidity to it.
-        PredictionMarket memory market = markets.getOrCreate(pool, tokenA, tokenB, closedAtTimestamp, 0);
+        PredictionMarket memory market = markets.getOrCreate(pool, tokenA, tokenB, closedAtTimestamp, _vault);
 
         // transfer deposit funds from the user account to the hook contract. The user position will be updated for bull 
         // and bear units corresponding to the current market prices after fees. 
@@ -223,13 +243,15 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
 
         uint256 depositAmountAfterFees = _takeFees(pool, market.token0, amount);
 
-        (uint256 bullAmount, uint256 bearAmount) = market.addLiquidity(depositAmountAfterFees);
+        (uint256 bullAmount, uint256 bearAmount) = market.addLiquidity(depositAmountAfterFees, side);
+
+        markets.store(market);
 
         // Apply user position deltas and store the updated market. Add liquidity deltas are always positive uint256, so we 
         // need to convert them to int256() prior to calling applyPositionDelta(int256, int256).
-        position = positions.applyPositionDelta(market.id, msg.sender, bullAmount.toInt256(), bearAmount.toInt256());
+        Position memory updatedPosition = positions.applyPositionDelta(market.id, msg.sender, bullAmount.toInt256(), bearAmount.toInt256());
 
-        markets.store(market);
+        return updatedPosition;
     }
 
     /**

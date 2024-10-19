@@ -4,10 +4,20 @@ pragma solidity ^0.8.24;
 
 import { PredictionMarket } from '../Types.sol';
 import { PredictionMarketLib } from './PredictionMarketLib.sol';
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 
 library PredictionMarketStorage {
     using PredictionMarketLib for PredictionMarket;
 
+    /**
+     * @dev Get the unique market identifier for the given inputs
+     * @param pool Address of the pool
+     * @param tokenA First token in the trading pair
+     * @param tokenB Second token in the trading pair
+     * @param closedAtTimestamp Closing time of the market
+     *
+     * @return id Unique market identifier
+     */
     function getMarketId(
         address pool,
         address tokenA,
@@ -26,17 +36,24 @@ library PredictionMarketStorage {
         self[market.id] = market;
     }
 
+    function get(
+        mapping(bytes32 => PredictionMarket) storage self,
+        bytes32 id
+    ) internal view returns (PredictionMarket memory){
+        return self[id];
+    }
+
     function getOrCreate(
         mapping(bytes32 => PredictionMarket) storage self,
         address pool,
         address tokenA,
         address tokenB,
         uint256 closedAtTimestamp,
-        uint256 price
-    ) internal returns (PredictionMarket memory) {
+        IVault vault
+    ) internal returns (PredictionMarket memory market) {
         bytes32 marketId = getMarketId(pool, tokenA, tokenB, closedAtTimestamp);
 
-        PredictionMarket memory market = self[marketId];
+        market = self[marketId];
 
         if(market.isInitalized()) { 
             return market;
@@ -44,17 +61,21 @@ library PredictionMarketStorage {
 
         (address token0, address token1) = _sortTokens(tokenA, tokenB);
 
-        return PredictionMarket({
+        market = PredictionMarket({
             id: getMarketId(pool, tokenA, tokenB, closedAtTimestamp),
+            pool: pool,
             token0: token0,
             token1: token1,
             liquidity: 0,
             balanceBull: 0,
             balanceBear: 0,
-            openPrice: price,
+            openPrice: 0,
             closePrice: 0,
-            endTime: closedAtTimestamp
+            endTime: closedAtTimestamp,
+            swapFees: 0
         });
+
+        market.openPrice = market.quoteUnderlying(vault);
     }
 
     function _sortTokens(
