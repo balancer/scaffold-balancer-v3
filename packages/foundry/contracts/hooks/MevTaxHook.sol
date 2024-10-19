@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.24;
-import "forge-std/console.sol";
 
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
 import { PoolSwapParams, TokenConfig, LiquidityManagement, HookFlags } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
@@ -45,9 +43,11 @@ contract MevTaxHook is BaseHooks, VaultGuard {
         uint256 staticSwapFeePercentage
     ) public view override returns (bool success, uint256 dynamicSwapFeePercentage) {
 
-        // Overflow check in case of unexpected gas behavior from builders/sequencers
+        // Default to static swap fee if there are gas price shenanigans going on
+        // such as unexpected gas behavior from builders/sequencers or query functions
+        // using placeholder values for `tx.gasprice` and/or `block.basefee`
         if (tx.gasprice < block.basefee) {
-            return (false, 0);
+            return (true, staticSwapFeePercentage);
         }
 
         // Unchecked because of the check above
