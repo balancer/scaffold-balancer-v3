@@ -8,13 +8,17 @@ import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { MockToken1 } from "../contracts/mocks/MockToken1.sol";
 import { MockToken2 } from "../contracts/mocks/MockToken2.sol";
 import { MockVeBAL } from "../contracts/mocks/MockVeBAL.sol";
+import { LoyaltyToken } from "../contracts/mocks/LoyaltyToken.sol";
 
 /**
  * @title Deploy Mock Tokens
  * @notice Deploys mock tokens for use with pools and hooks
  */
 contract DeployMockTokens is ScaffoldHelpers {
-    function deployMockTokens() internal returns (address mockToken1, address mockToken2, address mockVeBAL) {
+    function deployMockTokens()
+        internal
+        returns (address mockToken1, address mockToken2, address mockVeBAL, address loyaltyToken)
+    {
         // Start creating the transactions
         uint256 deployerPrivateKey = getDeployerPrivateKey();
         vm.startBroadcast(deployerPrivateKey);
@@ -28,6 +32,10 @@ contract DeployMockTokens is ScaffoldHelpers {
         // Used for the VeBALFeeDiscountHook
         mockVeBAL = address(new MockVeBAL("Vote-escrow BAL", "veBAL", 1000e18));
         console.log("Mock Vote-escrow BAL deployed at: %s", mockVeBAL);
+
+        // Used for the LoyaltyHook
+        loyaltyToken = address(new LoyaltyToken("Loyalty Token", "LOYALTY"));
+        console.log("Mock Loyalty Token deployed at: %s", loyaltyToken);
 
         vm.stopBroadcast();
     }
