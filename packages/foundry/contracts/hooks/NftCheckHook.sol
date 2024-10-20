@@ -100,23 +100,14 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         if (liquidityManagement.enableDonation == false) {
             revert PoolDoesNotSupportDonation();
         }
-
         tokenConfigs = _tokenConfigs;
-
-        // save pool address for later use
         poolAddress = pool;
 
-
-        // TODO: check this. It's 0,0 right now
-        // Record the initial liquidity amounts for use in limiting the position from the depositor prematurely
-        recordInitialLiquidity(tokenConfigs[0].token.balanceOf(pool), tokenConfigs[1].token.balanceOf(pool));
-
         emit NftCheckHookRegistered(address(this), pool);
-
         return true;
     }
 
-    function onBeforeInitialize(uint256[] memory /*exactAmountsIn*/, bytes memory /*userData*/) public view override returns (bool) {
+    function onBeforeInitialize(uint256[] memory /*exactAmountsIn*/, bytes memory /*userData*/) public override returns (bool) {
         // Check if the hook owns the required NFT
         if (IERC721(nftContract).ownerOf(nftId) != address(this)) {
             revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
@@ -133,6 +124,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         if (!linkedTokenFound) {
             revert LinkedTokenNotInPool(linkedToken);
         }
+        // Record the initial liquidity amounts
+        recordInitialLiquidity(tokenConfigs[0].token.balanceOf(poolAddress), tokenConfigs[1].token.balanceOf(poolAddress));
 
         return true;
     }
