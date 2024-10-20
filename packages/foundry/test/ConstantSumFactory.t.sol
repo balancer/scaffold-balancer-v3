@@ -33,7 +33,7 @@ contract ConstantSumFactoryTest is Test {
         tokenA = new ERC20TestToken("Token A", "TKNA", 18);
         tokenB = new ERC20TestToken("Token B", "TKNB", 6);
     }
-
+     
     function _createPool(
         string memory name,
         string memory symbol,

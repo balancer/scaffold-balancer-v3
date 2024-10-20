@@ -39,7 +39,7 @@ contract ConstantSumPoolTest is BasePoolTest {
         isTestSwapFeeEnabled = false;
 
         BasePoolTest.setUp();
-
+     
         (daiIdx, usdcIdx) = getSortedIndexes(address(dai), address(usdc));
 
         poolMinSwapFeePercentage = 0.001e18; // 0.001%
@@ -76,7 +76,7 @@ contract ConstantSumPoolTest is BasePoolTest {
         );
         return address(newPool);
     }
-
+           
     function initPool() internal override {
         vm.startPrank(lp);
         bptAmountOut = _initPool(

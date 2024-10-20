@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.24;
 
-import {
+import {     
     LiquidityManagement,
     PoolRoleAccounts,
     TokenConfig
@@ -10,7 +10,7 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 import { BasePoolFactory } from "@balancer-labs/v3-pool-utils/contracts/BasePoolFactory.sol";
 
 import { ConstantSumPool } from "../pools/ConstantSumPool.sol";
-
+    
 /**
  * @title Constant Sum Factory
  * @notice This custom pool factory is based on the example from the Balancer v3 docs
@@ -65,3 +65,4 @@ contract ConstantSumFactory is BasePoolFactory {
         );
     }
 }
+     

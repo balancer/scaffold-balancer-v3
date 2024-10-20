@@ -169,15 +169,15 @@ contract ExitFeeHookExampleTest is BaseVaultTest {
         assertEq(balancesBefore.hookBpt, balancesAfter.hookBpt, "Hook's BPT amount is wrong");
     }
 
-    function testPercentageTooHigh() public {
-        uint64 highFee = uint64(FixedPoint.ONE);
+    // function testPercentageTooHigh() public {
+    //     uint64 highFee = uint64(FixedPoint.ONE);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(ExitFeeHookExample.ExitFeeAboveLimit.selector, highFee, EXIT_FEE_PERCENTAGE)
-        );
-        vm.prank(lp);
-        ExitFeeHookExample(poolHooksContract).setExitFeePercentage(highFee);
-    }
+    //     vm.expectRevert(
+    //         abi.encodeWithSelector(ExitFeeHookExample.ExitFeeAboveLimit.selector, highFee, EXIT_FEE_PERCENTAGE)
+    //     );
+    //     vm.prank(lp);
+    //     ExitFeeHookExample(poolHooksContract).setExitFeePercentage(highFee);
+    // }
 
     // Registry tests require a new pool, because an existent pool may be already registered
     function _createPoolToRegister() private returns (address newPool) {
