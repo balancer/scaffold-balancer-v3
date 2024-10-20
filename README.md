@@ -5,6 +5,10 @@ Think of it is as a pool that requires the current linked token value to be hono
 
 The NftCheckHook is applicable on any NFT. Our example is using an nft which supposedly represents a real world asset.
 
+Team name: NFT ESCROW LP
+Hook official name: RWA NFT LPv3
+Hook unofficial name: NftCheckHook
+
 ***
 ## 📜 Table of Contents
 
@@ -34,8 +38,8 @@ Swapping occurs as guests in the AirBnB are given the opportunity to invest.  Th
 > Stake NFT into hook
 > Initialize Pool
 > Swapping Occurs
-> Settlement is initiated by the NFT owner, transfering stable tokens to the hook that correspond to the value of the outstanding linked tokens and returning the NFT to the owner
-> Initial liquidity is withdrawn by owner
+> Settlement is initiated by the NFT owner, transfering stable tokens to the hook and the hook returns the NFT to the owner
+> Initial liquidity is withdrawn by the owner
 > Oustanding linked tokens are redeemed for MST from the hook contract
 
 ***
