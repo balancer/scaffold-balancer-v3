@@ -4,7 +4,6 @@ pragma solidity ^0.8.24;
 
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
 import "./balancer-v2-oracle/interface/IPriceOracle.sol";
-import "./balancer-v2-oracle/library/Errors.sol";
 import "./balancer-v2-oracle/library/WeightedPool2TokensMiscData.sol";
 import "./balancer-v2-oracle/library/WeightedOracleMath.sol";
 import "./balancer-v2-oracle/PoolPriceOracle.sol";
@@ -19,11 +18,7 @@ contract VolatilityOracle is PoolPriceOracle {
 
     constructor() {}
 
-    function getLatestIndex() public view returns (uint256) {
-        return _miscData.oracleIndex();
-    }
-
-    function getVolatility(uint256 ago) public view returns (uint256 volatility) {
+    function getVolatility(uint256 ago) external view returns (uint256 volatility) {
         if (ago == 0) return 0;
 
         console.log("(getVolatility) Here 1", _miscData.oracleIndex(), ago);
@@ -54,7 +49,7 @@ contract VolatilityOracle is PoolPriceOracle {
             uint256 timestamp2 = ((logPairPrices[i].timestamp));
             console.log("(getVolatility) timestamp2", timestamp2);
 
-            uint256 priceChange = absoluteSubtraction(price2, price1);
+            uint256 priceChange = _absoluteSubtraction(price2, price1);
             console.log("(getVolatility) priceChange", priceChange);
             uint256 priceChangeFraction = priceChange.divDown(price1);
             console.log("(getVolatility) priceChangeFraction", priceChangeFraction);
@@ -71,7 +66,7 @@ contract VolatilityOracle is PoolPriceOracle {
 
         console.log("(getVolatility) timeDuration", timeDuration);
 
-        volatility = calculateStdDev(ratesOfChange, validValues);
+        volatility = _calculateStdDev(ratesOfChange, validValues);
         // calculate volatility over ago time interval
         volatility = volatility.mulDown(timeDuration).divDown(ago) / FixedPoint.ONE;
         console.log("(getVolatility) volatility", volatility);
@@ -79,62 +74,7 @@ contract VolatilityOracle is PoolPriceOracle {
         return volatility;
     }
 
-    function calculateStdDev(uint256[] memory numbers, uint256 numbersLength) public view returns (uint256) {
-        if (numbersLength == 0) return 0;
-        if (numbers.length == 0) return 0;
-        // throw error if array is elmpty
-        console.log("(calculateStdDev) entered here");
-        console.log("(calculateStdDev) numbersLength", numbersLength);
-
-        // Calculate mean first
-        uint256 sum = 0;
-        for (uint256 i = numbers.length - numbersLength; i < numbers.length; i++) {
-            console.log("(calculateStdDev) numbers[i] i", i, numbers[i]);
-            sum += numbers[i];
-        }
-
-        console.log("(calculateStdDev) sum", sum);
-        uint256 mean = (sum) / numbersLength;
-
-        console.log("(calculateStdDev) mean", mean);
-
-        // Calculate sum of squared differences from mean
-        uint256 sumSquaredDiff = 0;
-        for (uint256 i = numbers.length - numbersLength; i < numbers.length; i++) {
-            console.log("(calculateStdDev) numbers[i]", numbers[i]);
-            if (numbers[i] > mean) {
-                uint256 diff = ((numbers[i]) - mean);
-                console.log("(calculateStdDev) diff", diff);
-                sumSquaredDiff += (diff * diff);
-            } else {
-                uint256 diff = (mean - (numbers[i]));
-                console.log("(calculateStdDev) diff", diff);
-                sumSquaredDiff += (diff * diff);
-            }
-        }
-
-        console.log("(calculateStdDev) sumSquaredDiff", sumSquaredDiff);
-
-        // Calculate variance (mean of squared differences)
-        uint256 variance = (sumSquaredDiff) / numbersLength;
-
-        console.log("(calculateStdDev) variance", variance);
-
-        // Calculate standard deviation (square root of variance)
-        return customSqrt(variance);
-    }
-
-    function customSqrt(uint256 x) public pure returns (uint256) {
-        uint256 z = (x + 1) / 2;
-        uint256 y = x;
-        while (z < y) {
-            y = z;
-            z = (x / z + z) / 2;
-        }
-        return y;
-    }
-
-    function _updateOracle(uint256 balanceToken0, uint256 balanceToken1) external {
+    function updateOracle(uint256 balanceToken0, uint256 balanceToken1) public {
         console.log("(_updateOracle) Entered1");
         bytes32 miscData = _miscData;
 
@@ -176,19 +116,65 @@ contract VolatilityOracle is PoolPriceOracle {
         console.log("(_updateOracle) Finished");
     }
 
-    function getLargestSafeQueryWindow() external pure returns (uint256) {
-        return 34 hours;
+    function _calculateStdDev(uint256[] memory numbers, uint256 numbersLength) internal view returns (uint256) {
+        if (numbersLength == 0) return 0;
+        if (numbers.length == 0) return 0;
+        // throw error if array is elmpty
+        console.log("(calculateStdDev) entered here");
+        console.log("(calculateStdDev) numbersLength", numbersLength);
+
+        // Calculate mean first
+        uint256 sum = 0;
+        for (uint256 i = numbers.length - numbersLength; i < numbers.length; i++) {
+            console.log("(calculateStdDev) numbers[i] i", i, numbers[i]);
+            sum += numbers[i];
+        }
+
+        console.log("(calculateStdDev) sum", sum);
+        uint256 mean = (sum) / numbersLength;
+
+        console.log("(calculateStdDev) mean", mean);
+
+        // Calculate sum of squared differences from mean
+        uint256 sumSquaredDiff = 0;
+        for (uint256 i = numbers.length - numbersLength; i < numbers.length; i++) {
+            console.log("(calculateStdDev) numbers[i]", numbers[i]);
+            if (numbers[i] > mean) {
+                uint256 diff = ((numbers[i]) - mean);
+                console.log("(calculateStdDev) diff", diff);
+                sumSquaredDiff += (diff * diff);
+            } else {
+                uint256 diff = (mean - (numbers[i]));
+                console.log("(calculateStdDev) diff", diff);
+                sumSquaredDiff += (diff * diff);
+            }
+        }
+
+        console.log("(calculateStdDev) sumSquaredDiff", sumSquaredDiff);
+
+        // Calculate variance (mean of squared differences)
+        uint256 variance = (sumSquaredDiff) / numbersLength;
+
+        console.log("(calculateStdDev) variance", variance);
+
+        // Calculate standard deviation (square root of variance)
+        return _customSqrt(variance);
     }
 
-    function getLatest(IPriceOracle.Variable variable) external view returns (uint256) {
-        int256 instantValue = _getInstantValue(variable, _miscData.oracleIndex());
-        return WeightedOracleMath._fromLowResLog(instantValue);
-    }
-
-    function absoluteSubtraction(uint256 a, uint256 b) public pure returns (uint256) {
+    function _absoluteSubtraction(uint256 a, uint256 b) internal pure returns (uint256) {
         int256 result = int256(a) - int256(b);
         int256 absVal = result < 0 ? -result : result;
 
         return uint256(absVal);
+    }
+
+    function _customSqrt(uint256 x) internal pure returns (uint256) {
+        uint256 z = (x + 1) / 2;
+        uint256 y = x;
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
+        }
+        return y;
     }
 }

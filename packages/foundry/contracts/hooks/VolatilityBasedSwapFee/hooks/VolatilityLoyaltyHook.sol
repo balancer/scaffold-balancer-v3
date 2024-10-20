@@ -123,7 +123,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
             // revert with error
         }
 
-        volatilityOracle._updateOracle(balancesScaled18[1 - tokenIndex], balancesScaled18[tokenIndex]);
+        volatilityOracle.updateOracle(balancesScaled18[1 - tokenIndex], balancesScaled18[tokenIndex]);
 
         return (true, amountsOutRaw); // check if false works here
     }
@@ -153,7 +153,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
             // revert with error
         }
 
-        volatilityOracle._updateOracle(balancesScaled18[1 - tokenIndex], balancesScaled18[tokenIndex]);
+        volatilityOracle.updateOracle(balancesScaled18[1 - tokenIndex], balancesScaled18[tokenIndex]);
 
         return (true, amountsInRaw); // check if false works here
     }
@@ -162,10 +162,10 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
         console.log("(onAfterSwap) executed now");
         VolatilityOracle volatilityOracle = VolatilityOracle(_oracleAddress);
         if (address(params.tokenIn) == _tokenAddress) {
-            volatilityOracle._updateOracle(params.tokenOutBalanceScaled18, params.tokenInBalanceScaled18);
+            volatilityOracle.updateOracle(params.tokenOutBalanceScaled18, params.tokenInBalanceScaled18);
             // emit event
         } else if (address(params.tokenOut) == _tokenAddress) {
-            volatilityOracle._updateOracle(params.tokenInBalanceScaled18, params.tokenOutBalanceScaled18);
+            volatilityOracle.updateOracle(params.tokenInBalanceScaled18, params.tokenOutBalanceScaled18);
             // emit event
         } else {
             // revert with error
