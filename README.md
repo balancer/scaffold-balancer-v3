@@ -1,3 +1,4 @@
+# Prediction Market Hook
 Asset price prediction markets (binary options in tradfi) are a popular way for market participants to get leverage, hedge or speculate on short term price movements. In their current form, they exist on-chain as services with either partially or fully centralized components. 
 
 This hook allows any registered pool to permissionlessly host prediction markets and use incentives to maintain the integrity of the market by giving 0% swap fees to prediction market participants to incentivize arbitrage.
