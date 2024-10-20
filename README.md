@@ -5,9 +5,9 @@ Think of it is as a pool that requires the current linked token value to be hono
 
 The NftCheckHook is applicable on any NFT. Our example is using an nft which supposedly represents a real world asset.
 
-Team name: NFT ESCROW LP
-Hook official name: RWA NFT LPv3
-Hook unofficial name: NftCheckHook
+Team name: NFT ESCROW LP <br>
+Hook official name: RWA NFT LPv3 <br>
+Hook unofficial name: NftCheckHook <br>
 
 ***
 ## 📜 Table of Contents
