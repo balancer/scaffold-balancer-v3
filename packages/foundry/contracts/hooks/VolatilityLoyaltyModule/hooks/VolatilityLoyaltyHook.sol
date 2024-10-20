@@ -41,7 +41,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard, Ownable {
     address private _oracleAddress;
     address private _loyaltyModuleAddress;
     address private _volatilityModuleAddress;
-    address private _factoryAddress;
+    address private _allowedFactory;
     bool public isLoyaltyDiscountEnabled;
     bool public isVolatilityFeeEnabled;
 
@@ -53,12 +53,14 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard, Ownable {
         address tokenAddress,
         address oracleAddress,
         address loyaltyModuleAddress,
-        address volatilityModuleAddress
+        address volatilityModuleAddress,
+        address allowedFactory
     ) VaultGuard(vault) Ownable(msg.sender) {
         _tokenAddress = tokenAddress;
         _oracleAddress = oracleAddress;
         _loyaltyModuleAddress = loyaltyModuleAddress;
         _volatilityModuleAddress = volatilityModuleAddress;
+        _allowedFactory = allowedFactory;
     }
 
     // --------------------------------------------------------------------
@@ -75,12 +77,12 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard, Ownable {
     // only 2 token pools
     // from a registered factory
     function onRegister(
-        address,
-        address,
+        address factory,
+        address pool,
         TokenConfig[] memory,
         LiquidityManagement calldata
     ) public override onlyVault returns (bool) {
-        return true;
+        return factory == _allowedFactory && IBasePoolFactory(factory).isPoolFromFactory(pool);
     }
 
     function getHookFlags() public pure override returns (HookFlags memory hookFlags) {
@@ -103,19 +105,8 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard, Ownable {
         bytes memory
     ) public override onlyVault returns (bool, uint256[] memory) {
         console.log("(onAfterRemoveLiquidity) executed now");
-        address[] memory tokenAddresses = getAllTokenConfigs(_factoryAddress); // -> need to do this cuz we do not know that what index points to what token address
         IVolatilityOracle volatilityOracle = IVolatilityOracle(_oracleAddress);
-        uint256 tokenIndex;
-
-        if (tokenAddresses[0] == _tokenAddress) {
-            tokenIndex = 0;
-            // emit event
-        } else if (tokenAddresses[1] == _tokenAddress) {
-            tokenIndex = 1;
-            // emit event
-        } else {
-            // revert with error
-        }
+        uint256 tokenIndex = 1; // 2 token pool, 2nd token is the token under consideration
 
         volatilityOracle.updateOracle(balancesScaled18[1 - tokenIndex], balancesScaled18[tokenIndex]);
 
@@ -133,19 +124,8 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard, Ownable {
         bytes memory
     ) public override onlyVault returns (bool, uint256[] memory) {
         console.log("(onAfterAddLiquidity) executed now");
-        address[] memory tokenAddresses = getAllTokenConfigs(_factoryAddress); // -> need to do this cuz we do not know that what index points to what token address
         IVolatilityOracle volatilityOracle = IVolatilityOracle(_oracleAddress);
-        uint256 tokenIndex;
-
-        if (tokenAddresses[0] == _tokenAddress) {
-            tokenIndex = 0;
-            // emit event
-        } else if (tokenAddresses[1] == _tokenAddress) {
-            tokenIndex = 1;
-            // emit event
-        } else {
-            // revert with error
-        }
+        uint256 tokenIndex = 1; // 2 token pool, 2nd token is the token under consideration
 
         volatilityOracle.updateOracle(balancesScaled18[1 - tokenIndex], balancesScaled18[tokenIndex]);
 
@@ -239,15 +219,5 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard, Ownable {
     function getVolatilityFee() public view returns (uint256) {
         IVolatilityDiscount volatilityModule = IVolatilityDiscount(_volatilityModuleAddress);
         return volatilityModule.getVolatilityFeePercent(_oracleAddress);
-    }
-
-    function getAllTokenConfigs(address contractAddress) internal returns (address[] memory) {
-        bytes memory data = abi.encodeWithSignature("tokenConfigs()");
-        (bool success, bytes memory result) = contractAddress.call(data);
-        require(success, "tokenConfigs call failed"); // change into revert
-        address[] memory tokenAddresses = abi.decode(result, (address[]));
-        console.log("tokenAddresses.length", tokenAddresses.length);
-
-        return tokenAddresses;
     }
 }

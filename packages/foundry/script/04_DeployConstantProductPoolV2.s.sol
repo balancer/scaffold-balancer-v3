@@ -47,7 +47,8 @@ contract DeployConstantProductPoolV2 is PoolHelpers, ScaffoldHelpers {
                 token2,
                 address(new VolatilityOracle()),
                 address(new LoyaltyDiscount()),
-                address(new VolatilityDiscount())
+                address(new VolatilityDiscount()),
+                address(factory)
             )
         );
         console.log("volatilityLoyaltyHook deployed at address: %s", volatilityLoyaltyHook);
