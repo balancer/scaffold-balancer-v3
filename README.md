@@ -7,7 +7,7 @@ The NftCheckHook is applicable on any NFT. Our example is using an nft which sup
 
 Team name: NFT ESCROW LP <br>
 Hook official name: RWA NFT LPv3 <br>
-Hook unofficial name: NftCheckHook <br>  <br>
+Hook unofficial name: NftCheckHook <br>  
 
 spyros-zikos address: 0x24708B03D32265D3E050aC65D1Ea1c0033b4a019
 
