@@ -11,6 +11,7 @@ enum Side {
 struct Position {
     uint256 bullAmount;
     uint256 bearAmount;
+    bool collected;
 }
 
 struct PredictionMarket {
@@ -24,5 +25,8 @@ struct PredictionMarket {
     uint256 balanceBear;
     uint256 openPrice;
     uint256 closePrice;
-    uint256 swapFees;
+    uint256 fees;
+    uint256 closingBullValue;
+    uint256 closingBearValue;
+    bool settled;
 }

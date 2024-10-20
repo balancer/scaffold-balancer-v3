@@ -41,8 +41,10 @@ library PredictionMarketLib {
     function quote(
         PredictionMarket memory self
     ) internal pure returns (uint256 quoteBull, uint256 quoteBear) {
-        quoteBull = Math.mulDiv(self.balanceBull, 1e18, self.liquidity);
-        quoteBear = Math.mulDiv(self.balanceBear, 1e18, self.liquidity);
+        uint256 liquidity = netLiquidity(self);
+
+        quoteBull = Math.mulDiv(self.balanceBull, 1e18, liquidity);
+        quoteBear = Math.mulDiv(self.balanceBear, 1e18, liquidity);
     }
 
     /**
@@ -105,8 +107,19 @@ library PredictionMarketLib {
     }
 
     /**
+     * @notice Calculate the net available liquidity in the market after fees
+     * @dev Used to calculate quotes since we keep all liquidity in the market until settlement
+     * @param self The prediction market
+     * @return liquidity Calculated net liquidity amount
+     */
+    function netLiquidity(PredictionMarket memory self) internal pure returns (uint256 liquidity) {
+        return self.liquidity - self.fees;
+    }
+
+    /**
      * @notice Whether swaps can be facilitated in the market
      * @dev If a market has liquidity on only 1 side, then a swap is not possible
+     * @param self The prediction market
      */
     function canSwap(PredictionMarket memory self) internal view returns (bool) {
         return isActive(self) && self.balanceBear * self.balanceBull != 0;
@@ -118,19 +131,34 @@ library PredictionMarketLib {
      * @param self The prediction market
      * @param amount The deposited liquidity amount
      * @param side The side to add liquidit to
+     * @param feePercentage The fee amount
      * @return bullAmount The bull amount of units credited
      * @return bearAmount The bear amount of units credited
      */
     function addLiquidity(
         PredictionMarket memory self,
+        Side side,
         uint256 amount,
-        Side side
+        uint256 feePercentage
     ) internal returns (uint256 bullAmount, uint256 bearAmount) {
         if(side == Side.Both){
-            return _addProportionalLiquidity(self, amount);
+            return _addProportionalLiquidity(self, amount, feePercentage);
         } else {
-            return _addSingleSidedLiquidity(self, side, amount);
+            return _addSingleSidedLiquidity(self, side, amount, feePercentage);
         }
+    }
+
+    /**
+     * @notice get the fee amount given an amount and fee percentage
+     * @param amount The total amount
+     * @param feePercentage The fee amount
+     * @return fee The calculated fee amount
+     */
+    function _calculateFees(
+        uint256 amount,
+        uint256 feePercentage
+    ) private pure returns (uint256 fee) {
+        return Math.mulDiv(amount, feePercentage, 1e6);
     }
 
     /**
@@ -140,10 +168,14 @@ library PredictionMarketLib {
      * For new markets (no pre-existing liquidity), users are credited an equal balance of bull/bear
      * @param self The prediction market
      * @param amount The deposited liquidity amount
+     * @param feePercentage The fee percentage
+     * @return bullAmount Bull units credited
+     * @return bearAmount Bear units credited 
      */
     function _addProportionalLiquidity(
         PredictionMarket memory self,
-        uint256 amount
+        uint256 amount,
+        uint256 feePercentage
     ) private returns (uint256 bullAmount, uint256 bearAmount) {
         if(self.liquidity == 0){
             bullAmount = amount/2;
@@ -160,6 +192,7 @@ library PredictionMarketLib {
         self.liquidity += amount;
         self.balanceBear += bullAmount;
         self.balanceBull += bearAmount;
+        self.fees += _calculateFees(amount, feePercentage);
     }
 
     /**
@@ -168,11 +201,15 @@ library PredictionMarketLib {
      * @param self The prediction market
      * @param amount The deposited liquidity amount
      * @param side Side of the market to add liquidity to 
+     * @param feePercentage The fee percentage
+     * @return bullAmount Bull units credited
+     * @return bearAmount Bear units credited 
      */
     function _addSingleSidedLiquidity(
         PredictionMarket memory self,
         Side side,
-        uint256 amount
+        uint256 amount,
+        uint256 feePercentage
     ) private returns (uint256 bullAmount, uint256 bearAmount) {
         // Revert if there is no liquidity in the market, then amounts will be equal to the deposited amount
         // otherwise amounts will equal the proportioned amount based on current market values
@@ -189,25 +226,33 @@ library PredictionMarketLib {
         self.liquidity += amount;
         self.balanceBear += bearAmount;
         self.balanceBull += bullAmount;
+        self.fees += _calculateFees(amount, feePercentage);
     }
 
     /**
      * @notice Given an input amount and side, returns the maximum output amount of the other side
-     * @dev Exchange fees are not taken into account here sice fees are calculated once markets are settled
      * @param self The prediction market
      * @param amountIn The deposited liquidity amount
      * @param side Side to swap FROM
+     * @param feeAmount Fee percentage to charge for the swap
+     * @return amountOut Output amount
+     * @return fees The fee amount collected for the swap
      */
     function getAmountOut(
         PredictionMarket memory self,
         Side side,
-        uint256 amountIn
-    ) internal pure returns (uint256 amountOut) {
+        uint256 amountIn,
+        uint256 feeAmount
+    ) internal pure returns (uint256 amountOut, uint256 fees) {
         (uint256 reserveIn, uint256 reserveOut) = side == Side.Bull ? 
             (self.balanceBull, self.balanceBear) :
             (self.balanceBear, self.balanceBull);
 
-        return Math.mulDiv(amountIn, reserveOut, reserveIn);
+        uint256 amountInAfterFees = Math.mulDiv(amountIn, 1e6-feeAmount, 1e6);
+        uint256 denominator = reserveIn * 1e6;
+
+        amountOut = Math.mulDiv(amountInAfterFees, reserveOut, denominator);
+        fees = amountIn - amountInAfterFees;
     }
 
     /**
@@ -216,29 +261,26 @@ library PredictionMarketLib {
      * @param self The prediction market
      * @param amountIn The deposited liquidity amount
      * @param side Side to swap FROM
-     * @param fee Swap fee perentage
+     * @param feeAmount Fee percentage to charge for the swap
      * @return amountOut Units in the opposing side quoted from the swap
      */
     function swap(
         PredictionMarket memory self,
         Side side,
         uint256 amountIn,
-        uint256 fee
+        uint256 feeAmount
     ) internal view returns (uint256 amountOut) {
         // revert if the market has 0 liquidity on either side
         if(!canSwap(self)){
             revert CannotSwapInMarket();
         }
 
-        // fees are determined by the asset value in terms of the liquidity token
-        (uint256 quoteBull, uint256 quoteBear) = quote(self);
-        uint256 sideQuote = side == Side.Bull ? quoteBull : quoteBear;
-        uint256 liquidityTokenValue = Math.mulDiv(sideQuote, amountIn, 1e18);
-        uint256 swapFeeAmt = Math.mulDiv(liquidityTokenValue, fee, 1e6);
-
         // determine the output amount based on the side and amountIn 
-        amountOut = getAmountOut(self, side, amountIn);
+        uint256 fees;
 
+        (amountOut, fees) = getAmountOut(self, side, amountIn, feeAmount);
+
+        self.fees += fees;
 
         // update the market to reflect the swap
         if(side == Side.Bull){
@@ -248,8 +290,6 @@ library PredictionMarketLib {
             self.balanceBear -= amountIn;
             self.balanceBull += amountOut;
         }
-
-        self.swapFees += swapFeeAmt;
     }
 
     

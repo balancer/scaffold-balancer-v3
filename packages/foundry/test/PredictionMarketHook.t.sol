@@ -22,6 +22,8 @@ import { ArrayHelpers } from "@balancer-labs/v3-solidity-utils/contracts/test/Ar
 import { BaseVaultTest } from "@balancer-labs/v3-vault/test/foundry/utils/BaseVaultTest.sol";
 import { PoolMock } from "@balancer-labs/v3-vault/contracts/test/PoolMock.sol";
 
+import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
+
 import { PredictionMarketHook } from "../contracts/prediction-market/PredictionMarketHook.sol";
 import { 
     PredictionMarket,
@@ -105,7 +107,7 @@ contract PredictionMarketHookTest is BaseVaultTest {
         PredictionMarketHook(poolHooksContract).addLiquidity(pool, address(usdc), address(dai), block.timestamp-60, 1e18, Side.Both);
     }
 
-    function testSuccessfultAddLiquidity() public {
+    function testSuccessfulAddLiquidity() public {
         vm.startPrank(alice);
 
         uint8 decimals = address(usdc) > address(weth) ? usdc.decimals() : weth.decimals();
@@ -125,12 +127,15 @@ contract PredictionMarketHookTest is BaseVaultTest {
 
         PredictionMarket memory market = hook.getMarketById(marketId);
 
+        uint256 expectedFee = Math.mulDiv(amountIn, hook.FEE(), 1e6);
+
         vm.assertEq(pool, market.pool);
         vm.assertEq(marketId, market.id);
         vm.assertEq(position.bullAmount, amountIn/2);
         vm.assertEq(position.bearAmount, amountIn/2);
         vm.assertEq(amountIn, market.liquidity);
         vm.assertEq(1e18, market.openPrice);
+        vm.assertEq(expectedFee, market.fees);
     }
 
 
