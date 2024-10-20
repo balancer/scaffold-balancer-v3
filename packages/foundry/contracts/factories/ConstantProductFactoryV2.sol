@@ -17,6 +17,8 @@ import { ConstantProductPool } from "../pools/ConstantProductPool.sol";
  * https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/deploy-custom-amm-using-factory.html
  */
 contract ConstantProductFactoryV2 is BasePoolFactory {
+    error OnlyTwoTokenPoolsAllowed();
+
     /**
      * @dev The pool's creationCode is used to deploy pools via CREATE3
      * @notice The pool creationCode cannot be changed after the factory has been deployed
@@ -51,6 +53,8 @@ contract ConstantProductFactoryV2 is BasePoolFactory {
         address poolHooksContract,
         LiquidityManagement memory liquidityManagement
     ) external returns (address pool) {
+        if (tokens.length != 2) revert OnlyTwoTokenPoolsAllowed();
+
         // First deploy a new pool
         pool = _create(abi.encode(getVault(), name, symbol), salt);
         // Then register the pool
