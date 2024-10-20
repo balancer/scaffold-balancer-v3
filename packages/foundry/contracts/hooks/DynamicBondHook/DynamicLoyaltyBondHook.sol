@@ -84,6 +84,7 @@ import {
         return 750; // Example: 75% utilization in basis points
     }*/
 
+
 contract DynamicLoyaltyBondHook is 
 IHooks, 
 BaseHooks, 
@@ -93,7 +94,7 @@ VaultGuard,
 ReentrancyGuard {
     IVault public vault;
 
-    enum BondTier { Explorer, Strategist, Veteran }
+    enum BondTier { None, Explorer, Strategist, Veteran }
     
     struct TierInfo {
         uint256 maturityPeriod;
@@ -209,6 +210,36 @@ ReentrancyGuard {
         uint256 rewards = calculateRewards(msg.sender);
         userRewards[msg.sender] += rewards; // Update user rewards
         emit RewardsClaimed(msg.sender, rewards);
+    }
+
+    function getBondBenefits() public view returns (BondTier[] memory tiers, uint256[] memory maturityPeriods, 
+                                                    uint256[] memory swapFeeRefunds, uint256[] memory multipliers, 
+                                                    string[] memory descriptions) {
+        tiers = new BondTier      maturityPeriods = new uint256 ;
+        swapFeeRefunds = new uint256 ;
+        multipliers = new uint256 ;
+        descriptions = new string ;
+
+        // A bond tier details
+        tiers[0] = BondTier.ExplorerBond;
+        maturityPeriods[0] = tierInfo[BondTier.ExplorerBond].maturityPeriod;
+        swapFeeRefunds[0] = tierInfo[BondTier.ExplorerBond].swapFeeRefund;
+        multipliers[0] = tierInfo[BondTier.ExplorerBond].multiplierBoost;
+        descriptions[0] = tierInfo[BondTier.ExplorerBond].description;
+
+        tiers[1] = BondTier.StrategistBond;
+        maturityPeriods[1] = tierInfo[BondTier.StrategistBond].maturityPeriod;
+        swapFeeRefunds[1] = tierInfo[BondTier.StrategistBond].swapFeeRefund;
+        multipliers[1] = tierInfo[BondTier.StrategistBond].multiplierBoost;
+        descriptions[1] = tierInfo[BondTier.StrategistBond].description;
+
+        tiers[2] = BondTier.VeteranBond;
+        maturityPeriods[2] = tierInfo[BondTier.VeteranBond].maturityPeriod;
+        swapFeeRefunds[2] = tierInfo[BondTier.VeteranBond].swapFeeRefund;
+        multipliers[2] = tierInfo[BondTier.VeteranBond].multiplierBoost;
+        descriptions[2] = tierInfo[BondTier.VeteranBond].description;
+
+        return (tiers, maturityPeriods, swapFeeRefunds, multipliers, descriptions);
     }
 
     function calculateRewards(address user) internal view returns (uint256) {
