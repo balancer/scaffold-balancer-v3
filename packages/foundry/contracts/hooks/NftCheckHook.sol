@@ -130,15 +130,10 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         return true;
     }
 
-
     /// @inheritdoc IHooks
     function getHookFlags() public pure override returns (HookFlags memory) {
         HookFlags memory hookFlags;
-        // `enableHookAdjustedAmounts` must be true for all contracts that modify the `amountCalculated`
-        // in after hooks. Otherwise, the Vault will ignore any "hookAdjusted" amounts, and the transaction
-        // might not settle. (It should be false if the after hooks do something else.)
         hookFlags.shouldCallAfterRemoveLiquidity = true;
-        // hookFlags.shouldCallComputeDynamicSwapFee = true;
         hookFlags.shouldCallBeforeInitialize = true;
         hookFlags.shouldCallBeforeSwap = true;
         hookFlags.shouldCallBeforeAddLiquidity = true;
@@ -230,7 +225,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     }
 
     // random users cannot swap after pool is settled, but owner should be able to (TODO)
-    function onBeforeSwap(PoolSwapParams calldata, address pool) public view override returns (bool success) {
+    function onBeforeSwap(PoolSwapParams calldata, address) public view override returns (bool success) {
         if (poolIsSettled) revert PoolIsSettled();
         success = true;
     }
@@ -297,21 +292,17 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         MockLinked linkedTokenErc20 = MockLinked(linkedToken);
         MockStable stableTokenErc20 = MockStable(stableToken);
         uint256 totalSupply = linkedTokenErc20.totalSupply();  // 1000e18
-        // uint256 hookLinkedTokenBalance = linkedTokenErc20.balanceOf(address(this)); // 0
         uint256[] memory poolBalance = _vault.getCurrentLiveBalances(poolAddress); // 0?
         uint256 linkedTokenIndex = linkedToken > stableToken ? 1 : 0;
         uint256 ownerBalance = linkedTokenErc20.balanceOf(owner());  // 950e18
-        // suppose that the hook has no linked token balance
         uint256 outstandingShares = totalSupply - poolBalance[linkedTokenIndex] - ownerBalance;  // 50e18
 
         // Calculate the equivalent stable token amount using the current pool/stable ratio
         uint256 linkedTokenBalance = linkedTokenErc20.balanceOf(poolAddress);
         uint256 stableTokenBalance = stableTokenErc20.balanceOf(poolAddress);
         uint256 stablePoolRatio = (stableTokenBalance != 0 ? linkedTokenBalance / stableTokenBalance : 1) * 1 ether;
-        // Ensure the stable pool ratio is not below what the initial price of asset was, which was 1:1
-        // will need to refactor for 80/20 pools
+        // Ensure the stable pool ratio is not below what the initial ratio
         redeemRatio = stablePoolRatio > 1.1 ether ? stablePoolRatio : 1.1 ether;
-        // redeemRatio = 1.1 ether;
 
         // how much stable tokens are required to settle the outstanding shares
         stableAmountRequired = outstandingShares * redeemRatio / 1 ether;
@@ -321,7 +312,6 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     * @notice Allows the contract owner to settle and release the NFT to the original depositor.
     * @dev This function calculates outstanding shares and deposits the equivalent stable token amount in escrow.
     */
-    // for TESTING: address private x1;function getX1() external view returns(address) {return x1;}
     function settle() external onlyOwner {
         require(initialLiquidityRecorded, "Initial liquidity not recorded");
         if (poolIsSettled) revert PoolIsSettled();
@@ -329,15 +319,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
 
         // Transfer the necessary stable tokens from the user
         MockStable(stableToken).transferFrom(msg.sender, address(this), stableAmountRequired);
-
-        // Check if the contract holds enough stable tokens for settlement
-        // uint256 hookBalance = MockStable(stableToken).balanceOf(address(this));
-        // if (hookBalance < stableAmountRequired) {
-        //     revert InsufficientStableForSettlement(stableAmountRequired, hookBalance);
-        // }
-
-        // Release the NFT back to the original depositor
-        // MockNft(nftContract).approve(msg.sender, nftId);
+        // Return the nft to the user
         MockNft(nftContract).transferFrom(address(this), msg.sender, nftId);
 
         poolIsSettled = true;
@@ -366,5 +348,4 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     function onERC721Received(address, address, uint256, bytes calldata) external view onlyOwner returns (bytes4) {
         return this.onERC721Received.selector;
     }
-    
 }
