@@ -16,7 +16,82 @@ import {
     HookFlags
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 
-contract DynamicLoyaltyBondHook is IHooks, BaseHooks, ERC721, Ownable, VaultGuard, ReentrancyGuard {
+/*contract DynamicLoyaltyBondHook is Ownable, ReentrancyGuard {
+    IVault public vault;
+    uint256 public penaltyPeriod = 7 days;
+    uint256 public baseFee = 100; // 1% in basis points
+    uint256 public maxFee = 300;  // 3%
+    uint256 public earlyWithdrawalPenalty = 50; // 0.5%
+
+    event BondRegistered(address indexed pool);
+    event LiquidityAdded(address indexed user, uint256 amount);
+    event LiquidityRemoved(address indexed user, uint256 amount, uint256 penalty);
+    event SwapFeeAdjusted(uint256 newFee);
+
+    mapping(address => uint256) public bondTimestamp;
+    mapping(address => uint256) public userRewards;
+
+    constructor(IVault _vault) {
+        vault = _vault;
+    }
+
+    function onRegister(address pool) external onlyOwner {
+        emit BondRegistered(pool);
+    }
+
+    function onAfterAddLiquidity(address user, uint256 amount) external nonReentrant {
+        require(msg.sender == address(vault), "Only Vault can call");
+        bondTimestamp[user] = block.timestamp;
+        emit LiquidityAdded(user, amount);
+    }
+
+    function onBeforeRemoveLiquidity(address user, uint256 amount) external nonReentrant {
+        require(msg.sender == address(vault), "Only Vault can call");
+
+        uint256 timeElapsed = block.timestamp - bondTimestamp[user];
+        uint256 penalty = 0;
+
+        if (timeElapsed < penaltyPeriod) {
+            penalty = (amount * earlyWithdrawalPenalty) / 10000;
+            require(IERC20(address(vault)).transfer(address(vault), penalty), 
+                    "Penalty transfer failed");
+        }
+
+        emit LiquidityRemoved(user, amount, penalty);
+    }
+
+    function claimRewards(address user) external nonReentrant {
+        uint256 rewards = userRewards[user];
+        require(rewards > 0, "No rewards available");
+        userRewards[user] = 0;
+        IERC20(address(vault)).transfer(user, rewards);
+    }
+
+    function onComputeDynamicSwapFeePercentage() external view returns (uint256) {
+        uint256 utilization = _getPoolUtilization();
+        uint256 volatility = _getMarketVolatilityFactor();
+        uint256 newFee = baseFee + (utilization / 10) + volatility;
+
+        if (newFee > maxFee) newFee = maxFee;
+        emit SwapFeeAdjusted(newFee);
+        return newFee;
+    }
+
+    function _getMarketVolatilityFactor() internal view returns (uint256) {
+        return 25;  // Adds 0.25% to fee
+    }
+
+    function _getPoolUtilization() internal view returns (uint256) {
+        return 750; // Example: 75% utilization in basis points
+    }*/
+
+contract DynamicLoyaltyBondHook is 
+IHooks, 
+BaseHooks, 
+ERC721, 
+Ownable, 
+VaultGuard, 
+ReentrancyGuard {
     IVault public vault;
 
     enum BondTier { Explorer, Strategist, Veteran }
