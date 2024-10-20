@@ -1,9 +1,9 @@
 # :bank: NFT ESCROW LP
-A Balancer v3 hook to allow a liquidity pool to be backed by an NFT.  This is accomplished by staking it into this escrow hook which mints an ERC20 to represent it fractionally.  The hook also enables the depositor to settle the pool at the current market rate - in essence this is buying back all outstanding tokens by depositing the required amount of the counterpart token into the escrow hook contract which then releases the NFT.
+NftCheckHook is a Balancer v3 hook to allow a liquidity pool to be backed by an NFT.  This is accomplished by staking it into this escrow hook which mints an ERC20 to represent it fractionally.  The hook also enables the depositor to settle the pool at the current market rate - in essence this is buying paying for all outstanding NFT-based ERC20 tokens (aka linked or asset tokens) by depositing the required amount of the counterpart (stable) token into the escrow hook contract which then releases the NFT.  Then the holders of the linked tokens can redeem their linked tokens for stable tokens using the hook.
 
-Think of it is as a rug-proof pool that requires the current token value to be honored in the equivilent counterpart token and held in escrow to be redeemed.
+Think of it is as a pool that requires the current linked token value to be honored in the equivalent counterpart (stable) token and held in escrow to be redeemed by linked token holders.
 
-It has been designed with RWA NFTs in mind.
+The NftCheckHook is applicable on any NFT. Our example is using an nft which supposedly represents a real world asset.
 
 ***
 ## 📜 Table of Contents
@@ -20,35 +20,40 @@ It has been designed with RWA NFTs in mind.
 
 ***
 ## :house_with_garden: Use Case 
+This use case makes the assumption that we have a weighted pool combined with the NftCheckHook.  However, we haven't tested this and our code and demo use the constant sum pool.  The difference is that on the constant sum pool there is no price adjustment as required by this use case.
+
 A user has created an NFT that represents a real world asset, such as an AirBnB.  In order to sell parts of their AirBnB and see what the dynamic market value of their asset is they create a liquidity pool with 20% of the equity paired with 20% of a stable coin pegging the price to $100,000.  They stake their RWA NFT in order to assure the token holders that infact there is an NFT that represents the asset, and assure the potential buyers that it is not being used in any other financial instrument.
 
 Swapping occurs as guests in the AirBnB are given the opportunity to invest.  The price increases 20% as supply is decreased in the pool.  In time the owner discovers a new financing defi product that also requires the NFT and desires to withdraw.  Since it would be nearly impossible to contact the existing token holders and purchase them back, he is given the ability to deposit the stable coin needed in order to cover the existing outstanding tokens.  If there are 10 tokens out of 100 that are not in the pool or in the depositor's wallet and with the asset price of $120,000 he must deposit $12,000 into the liquidity pool in order to withdraw his NFT.  Token holders may now redeem their 10 tokens, each one being worth $1,200.
 
 ***
 ## :bearded_person: User Flow
-> Mint RWA NFT & Linked "RWAT" ERC20 Tokens
-> Create Pool with RWAT & STABLE
+> Mint RWA NFT 
+> Create NftCheckHook which mint the NFT owner some linked "RWAT" ERC20 tokens
+> Create Pool with RWAT tokens & MST stable tokens
 > Stake NFT into hook
 > Initialize Pool
 > Swapping Occurs
-> Settlement is initiated, transfering outstanding token balance in and NFT out
-> Initial liquidity is withdrawn
-> Oustanding tokens redeemed for STABLE from the hook contract
+> Settlement is initiated by the NFT owner, transfering stable tokens to the hook that correspond to the value of the outstanding linked tokens and returning the NFT to the owner
+> Initial liquidity is withdrawn by owner
+> Oustanding linked tokens are redeemed for MST from the hook contract
 
 ***
 ## :video_camera: Demo
 https://www.youtube.com/watch?v=0zS-bFA9sNE&feature=youtu.be
-
+NOTES:
+1. The MockStable balance of the hook is greater than 10 because of the 1.1 multiplier minus the fees. We use the 1.1 multiplier as an extra way to reward the user for getting the nft-based erc20 tokens.
+   
 ***
 ## :hook: Utilized Hooks
 <table>
 <tr><th>onRegister</th></tr>
 <tr><td>
-Initial liquidity values are recorded to be referenced later to ensure the initial depositor does not withdraw more than their initial deposit
+Ensure that pool supports donations, update global variables, emit hook registration event.
 </td></tr>
 <tr><th>onBeforeInitialize</th></tr>
 <tr><td>
-We require that the NFT is deposited and that one of the tokens in the pool is the cooresponding linked erc20 token
+We require that the NFT is deposited and that one of the tokens in the pool is the cooresponding linked erc20 token. Initial liquidity values are recorded to be referenced later to ensure the initial depositor does not withdraw more than their initial deposit.
 </td></tr>
 <tr><th>onAfterRemoveLiquidity</th></tr>
 <tr><td>
@@ -70,7 +75,7 @@ Many thanks from elamore and Tony Nacu to `daniel | Beethoven X`, `matthu.eth`, 
 
 ***
 ## :rocket: Future
-We'd like to continue developing this in order to fit into an entire ecosystem where a user can utilize the value of their asset, as determined via the pool, in for use in a loan product.  This would enable the LTV to be responsive to market price and could enable other novel hook use cases.  Also adding cross-chain multi-assest compatibility so that there is only one liquidity pool for an asset, but is accessible via any chain and any asset ie "zap in" would be usefull going forward.
+We'd like to continue developing this in order to fit into an entire ecosystem where a user can utilize the value of their asset, as determined via the pool, for use in a loan product.  This would enable the LTV to be responsive to market price and could enable other novel hook use cases.  Also adding cross-chain multi-assest compatibility so that there is only one liquidity pool for an asset, but is accessible via any chain and any asset ie "zap in" would be usefull going forward.
 
 ***
 # Getting Started with Scaffold Balancer v3
