@@ -35,11 +35,7 @@ contract LoyaltyDiscount is ILoyaltyDiscount {
         uint256 variableFee = 0;
 
         uint256 loyaltyDiscount = getLoyaltyDiscount(uint256(loyaltyIndex));
-        console.log(
-            "(getSwapFeeWithLoyaltyDiscount) loyaltyIndex, loyaltyDiscount",
-            uint256(loyaltyIndex),
-            loyaltyDiscount
-        );
+        console.log("(getSwapFeeWithLoyaltyDiscount) loyaltyIndex, loyaltyDiscount", loyaltyIndex, loyaltyDiscount);
 
         // idea is to first apply a flat fee of 1%, over and above that apply any loyalty discount but have a limit on it
         // fixedFee will be minimum 1%, anything extra goes into loyalty fee unless it reaches the cap of _LOYALTY_FEE_CAP, anything above goes into variable fee
