@@ -1,67 +1,83 @@
 # Volatility and Loyalty Hook for Balancer V3 Hackathon
 
-The hook aims to stimulate trading activity in a newly launched pool of a project on Balancer by rewarding users in the form of a discount on the static swap fee for buying the project tokens from the pool and holding them for a longer duration at the same time keeping the volatility in check by increasing the swap fee.
+The Volatility and Loyalty Hook aims to stimulate trading activity in a newly launched pool on Balancer by rewarding users with discounts on swap fees when they hold project tokens for a longer duration. It simultaneously ensures stability by increasing swap fees during periods of high volatility.
 
-### Hook lifecycle points
-##### onAfterRemoveLiquidity(), onAfterAddLiquidity() :
-Updates the new price of the token in the Volatility Oracle along with the timestamps.
+## Contents
+- [Hook Lifecycle Points](#hook-lifecycle-points)
+- [Swap Fee Calculation](#swap-fee-calculation)
+  - [Swap Fee with Loyalty Discount](#swap-fee-with-loyalty-discount)
+  - [Volatility Fee](#volatility-fee)
+- [Volatility Percentage Calculation](#volatility-percentage-calculation)
+- [References](#references)
 
-##### onAfterSwap():
-Updates the new price of the token in the Volatility Oracle along with the timestamps.
+## Hook Lifecycle Points
 
-Updates the loyalty index of the user.
+- **onAfterRemoveLiquidity(), onAfterAddLiquidity():**  
+  Updates the new token price in the Volatility Oracle along with the timestamps.
+  
+- **onAfterSwap():**  
+  Updates the new token price in the Volatility Oracle along with the timestamps.  
+  Updates the loyalty index of the user.
 
+- **onComputeDynamicSwapFeePercentage():**  
+  Calculates the swap fee based on the pool's volatility and the user's loyalty index.
 
-##### onComputeDynamicSwapFeePercentage():
-Calculates the swap fee based on the pool volatility and user's loyalty index.
+![Balancer Hook Diagram](https://github.com/user-attachments/assets/6453b5b8-03ad-4108-bc66-228cc684716f)
 
-![BalancerHookDiagram](https://github.com/user-attachments/assets/6453b5b8-03ad-4108-bc66-228cc684716f)
+## Swap Fee Calculation
 
+The swap fee is calculated as the sum of the **swapFeeWithLoyaltyDiscount** and the **volatilityFee**.
 
-### Swap fee Calculation
-##### swap fee = swapFeeWithLoyaltyDiscount + volatilityFee
+### Swap Fee with Loyalty Discount
 
-##### swapFeeWithLoyaltyDiscount
-It reduces the staticSwapFee, but maintains a **minimum fee that needs to be paid** and also maintains a **cap on the loyalty discount** that can be availed so that it is not misused by whales.
-In the following example, minimum fee that needs to be paid = 1 % and cap on the loyalty discount = 1%.
+This reduces the static swap fee but maintains a **minimum fee** and a **cap on the loyalty discount** to prevent exploitation by large holders (whales).
 
-Lets say the MAX_LOYALTY_FEE is 1%, then
+- **Minimum fee that must be paid:** 1%
+- **Cap on loyalty discount:** 1%
 
+Let’s assume `MAX_LOYALTY_FEE = 1%`. The logic is as follows:
 
-if (staticSwapFee <= 1%) swapFeeWithLoyaltyDiscount = staticSwapFee;
+- If `staticSwapFee <= 1%`:  
+  `swapFeeWithLoyaltyDiscount = staticSwapFee`
+  
+- If `1% < staticSwapFee < 2%` (1% + `MAX_LOYALTY_FEE`):  
+  `swapFeeWithLoyaltyDiscount = 1% + (staticSwapFee - 1%) * (1 - loyaltyPercentage)`
 
-else if (1% < staticSwapFee < 2% *{1% + MAX_LOYALTY_FEE}* ) swapFeeWithLoyaltyDiscount = 1% + (staticSwapFee - 1%) * (1 - loyaltyPercentage);
+- If `staticSwapFee == 2%` (1% + `MAX_LOYALTY_FEE`):  
+  `swapFeeWithLoyaltyDiscount = 1% + MAX_LOYALTY_FEE * (1 - loyaltyPercentage)`
 
-else if (staticSwapFee == 2% *{1% + MAX_LOYALTY_FEE}* ) swapFeeWithLoyaltyDiscount = 1% + MAX_LOYALTY_FEE * (1 - loyaltyPercentage);
+- Else:  
+  `swapFeeWithLoyaltyDiscount = 1% + MAX_LOYALTY_FEE * (1 - loyaltyPercentage) + (staticSwapFee - 1% - MAX_LOYALTY_FEE)`
 
-else swapFeeWithLoyaltyDiscount = 1% + MAX_LOYALTY_FEE * (1 - loyaltyPercentage) + (staticSwapFee - 1% - MAX_LOYALTY_FEE);
+#### Loyalty Percentage Calculation
 
-#### To calculate loyaltyPercentage, we calculate a loyaltyIndex as:
+We calculate a **loyaltyIndex** based on the time the tokens have been held, preventing **flash loan attacks**:
 
-newLoyaltyIndex = previousLoyaltyIndex + (tokens held at the previous transaction) * (current timestamp - previous swap transaction timestamp)
+`newLoyaltyIndex = previousLoyaltyIndex + (tokens held at the previous transaction) * (current timestamp - previous swap transaction timestamp)`
 
-Using loyaltyIndex, we calculate the loyaltyPercentage using a tier based system.
+Using this **loyaltyIndex**, we calculate the **loyaltyPercentage** through a tier-based system.
 
-This method of calculating the loyaltyIndex based on the time the tokens are held prevent the pool from **flash loan attacks**.
+The loyalty index is refreshed if the previous transaction occurred more than **_LOYALTY_REFRESH_WINDOW** (30 days) ago.
 
-The loyalty index is refreshed if the previous transaction happened **_LOYALTY_REFRESH_WINDOW** (30 days) ago.
+### Volatility Fee
 
+`volatilityFee = MAX_VOLATILITY_FEE * volatilityPercentage`
 
-##### volatilityFee
-volatilityFee = MAX_VOLATILITY_FEE * volatilityPercentage
+## Volatility Percentage Calculation
 
-##### How is volatilityPercentage calculated
-Maintain the (price, timestamp) objects in a circular buffer, have a time interval lets say 2 minutes, during which the last price update shall be considered, for example, if a price object was inserted, and within 2mins another object is to be inserted, then it will override the previous object, but if inserted after 2mins, then it will be inserted as a new entry into the buffer. This way we can maintain a constant size circular buffer.
+The volatility percentage is calculated using a circular buffer to maintain a history of price and timestamp objects. The buffer ensures price updates are stored at intervals of, for example, 2 minutes. If an update occurs within this interval, the previous entry is overwritten; if it occurs later, a new entry is added.
 
-The implementation of the PriceOracle using a circular buffer has been inspired from the implementation of the PriceOracle in balancer v2 - https://etherscan.deth.net/address/0xA5bf2ddF098bb0Ef6d120C98217dD6B141c74EE0
+Once the prices over a span of time are captured, the price 1 hour ago (or a shorter duration for demo purposes) is extracted using **binary search** from the oracle.
 
-Once we have the prices over a span of time, we extract the prices for 1 hour (in demo it maybe less) ago using **binary search** from the oracle, and the formula used to calculate the volatility is:
+The formula for calculating volatility is:
 
 <img width="378" alt="Screenshot 2024-10-21 at 1 58 47 AM" src="https://github.com/user-attachments/assets/02f19b11-0132-400c-a19a-5a3db1834584">
 
-where tf and ti are respectively the final and initial timestamps of the samples collected from the buffer for last **ago** seconds.
+Where:
+- **tf** and **ti** are the final and initial timestamps of the samples collected from the buffer for the last **ago** seconds.
 
-The unit of the volatility is **% price change per second**.
+The unit of volatility is **% price change per second**. A tier-based system is then used to calculate the **volatility fee percent**.
 
-Using this volatility value, we evaluate the volatility fee percent using a tier based system.
-
+## References
+- Implementation of PriceOracle in Balancer V2:  
+  [Etherscan](https://etherscan.deth.net/address/0xA5bf2ddF098bb0Ef6d120C98217dD6B141c74EE0)
