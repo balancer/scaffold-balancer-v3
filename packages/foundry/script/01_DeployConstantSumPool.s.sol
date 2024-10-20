@@ -40,7 +40,7 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
 
         // Deploy a hook
         address LPIncentivizedHook_ = address(
-            new LPIncentivizedHook(vault, address(factory), address(router), mockLPRewardToken ,LPIncentivizedHook.LPIncentiveFactor(true,true))
+            new LPIncentivizedHook(vault, address(factory), address(router), mockLPRewardToken ,LPIncentivizedHook.LPIncentiveFactor(true,false))
         );
         console.log("LPIncentivizedHook deployed at address: %s", LPIncentivizedHook_);
 
