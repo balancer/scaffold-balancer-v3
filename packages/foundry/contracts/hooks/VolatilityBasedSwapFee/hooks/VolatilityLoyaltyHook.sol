@@ -43,7 +43,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
     bool public _isVolatilityFeeEnabled; // making public for debugging purposes only
 
     uint256 private constant _LOYALTY_REFRESH_WINDOW = 30 days;
-    uint256 private constant _VOLATILITY_WINDOW = 1 hours;
+    uint256 private constant _VOLATILITY_WINDOW = 10 seconds;
     uint256 private constant _LOYALTY_FEE_CAP = 0.01e18; // 1 %
     uint256 private constant _VOLATILITY_FEE_CAP = 0.04e18; // 4 %
 
@@ -393,21 +393,21 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
 
     // volatility -> percent change per second
     function getVolatilityFeePercentOnCap(uint256 volatility) public pure returns (uint256) {
-        if (volatility > 0 && volatility <= 0.001e18) { // less than 0.1 %
+        if (volatility > 0 && volatility <= 0.0001e18) { // less than 0.01 %/second
             return 0; // no fee
-        } else if (volatility > 0.001e18 && volatility <= 0.005e18) { // less than 0.5 %
+        } else if (volatility > 0.001e18 && volatility <= 0.005e18) { // less than 0.05 %/second
             return 0.1e18; // 10% of max fee
-        } else if (volatility > 0.005e18 && volatility <= 0.015e18) { // less than 1.5 %
+        } else if (volatility > 0.005e18 && volatility <= 0.015e18) { // less than 0.15 %/second
             return 0.2e18; // 20% of max fee
-        } else if (volatility > 0.015e18 && volatility <= 0.02e18) { // less than 2 %
+        } else if (volatility > 0.015e18 && volatility <= 0.02e18) { // less than 0.2 %/second
             return 0.3e18; // 30% of max fee
-        } else if (volatility > 0.02e18 && volatility <= 0.05e18) { // less than 5 %
+        } else if (volatility > 0.02e18 && volatility <= 0.05e18) { // less than 0.5 %/second
             return 0.5e18; // 50% of max fee
-        } else if (volatility > 0.05e18 && volatility <= 0.1e18) { // less than 10 %
+        } else if (volatility > 0.05e18 && volatility <= 0.1e18) { // less than 1 %/second
             return 0.7e18; // 70% of max fee
-        } else if (volatility > 0.1e18 && volatility <= 0.2e18) { // less than 20 %
+        } else if (volatility > 0.1e18 && volatility <= 0.2e18) { // less than 2 %/second
             return 0.9e18; // 90% of max fee
-        } else if (volatility > 0.2e18) { // greater than 20%
+        } else if (volatility > 0.2e18) { // greater than 2%/second
             return 1e18; // 100% of max fee
         } else {
             return 0; // no fee

@@ -3,7 +3,6 @@
 pragma solidity ^0.8.24;
 
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
-import "./balancer-v2-oracle/interface/IPriceOracle.sol";
 import "./balancer-v2-oracle/library/WeightedPool2TokensMiscData.sol";
 import "./balancer-v2-oracle/library/WeightedOracleMath.sol";
 import "./balancer-v2-oracle/PoolPriceOracle.sol";
@@ -56,7 +55,7 @@ contract VolatilityOracle is PoolPriceOracle {
             uint256 timeChange = timestamp2 - timestamp1;
             console.log("(getVolatility) timeChange", timeChange);
 
-            uint256 rateOfChange = priceChangeFraction.divDown(timeChange);
+            uint256 rateOfChange = priceChangeFraction.divDown(timeChange) / FixedPoint.ONE;
             console.log("(getVolatility) rateOfChange", rateOfChange);
 
             ratesOfChange[i - 1] = rateOfChange;
@@ -64,11 +63,12 @@ contract VolatilityOracle is PoolPriceOracle {
             timeDuration += (timestamp2 - timestamp1);
         }
 
-        console.log("(getVolatility) timeDuration", timeDuration);
+        console.log("(getVolatility) timeDuration, ago", timeDuration, ago);
 
         volatility = _calculateStdDev(ratesOfChange, validValues);
+        console.log("(getVolatility) volatility before scale", volatility);
         // calculate volatility over ago time interval
-        volatility = volatility.mulDown(timeDuration).divDown(ago) / FixedPoint.ONE;
+        volatility = volatility.mulDown(timeDuration * FixedPoint.ONE).divDown(ago * FixedPoint.ONE);
         console.log("(getVolatility) volatility", volatility);
 
         return volatility;
@@ -100,9 +100,7 @@ contract VolatilityOracle is PoolPriceOracle {
         uint256 oracleUpdatedIndex = _processPriceData(
             oracleCurrentSampleInitialTimestamp,
             oracleCurrentIndex,
-            logSpotPrice,
-            logBPTPrice,
-            miscData.logInvariant()
+            logSpotPrice
         );
         console.log("(_updateOracle) oracleUpdatedIndex", oracleUpdatedIndex);
 

@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MockToken1: {
-      address: "0x245c3A921aFd9337035F29AbCEFB8C9Ed7dfd634",
+      address: "0x7de46319F7A830E54Ae5782254D48F82A87B17a2",
       abi: [
         {
           type: "constructor",
@@ -365,7 +365,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0xEcDc661BE586608601b12e5fdB2aE962CA06A09d",
+      address: "0x1B90434B56172df0857d653aABCFDB0Ed18CdCfe",
       abi: [
         {
           type: "constructor",
@@ -723,7 +723,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0xACD6Be8Af27DBAACf971e97b4b82f9e7C5711701",
+      address: "0xA735b068f78abB08777b3BD5ed0B53a5156ae7db",
       abi: [
         {
           type: "constructor",
@@ -1081,7 +1081,7 @@ const deployedContracts = {
       },
     },
     ConstantSumFactory: {
-      address: "0x1926612eA79067517e512Ec964427e84f8f053C4",
+      address: "0xED8dd432482Ed2378CFFBCf0C36668ac89DDa9cA",
       abi: [
         {
           type: "constructor",
@@ -1465,7 +1465,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHookExample: {
-      address: "0x02c652B8E0436214E2E00C950ABbcD35A7f64811",
+      address: "0x0eC96bB13b8B72C7b71aC6A1b821C0B46E19228b",
       abi: [
         {
           type: "constructor",
@@ -2175,7 +2175,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactory: {
-      address: "0x188c09BcDb4332C605B31124fE6da2462C21da01",
+      address: "0xF51b23855e2A5AB789316442680E56C6859f2112",
       abi: [
         {
           type: "constructor",
@@ -2559,7 +2559,7 @@ const deployedContracts = {
       },
     },
     LotteryHookExample: {
-      address: "0x39F7A39bF5d6999507AD5ae011FfDa87188DBe00",
+      address: "0xb39abe0fB525Fc930a67d7B8D6Ea849162cac87C",
       abi: [
         {
           type: "constructor",
@@ -3513,7 +3513,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactoryV2: {
-      address: "0xcf80929D0A03858cAB7aa4e2BA9a9c7F30F1445A",
+      address: "0xA2CAFbf75A54b9C2a132D11f2a5Dd9C9f5A7c27d",
       abi: [
         {
           type: "constructor",
@@ -3897,198 +3897,12 @@ const deployedContracts = {
       },
     },
     VolatilityOracle: {
-      address: "0x6bC86a0f742089e2c7b5867065BE30b692E67fF7",
+      address: "0x2E25dBD208cE2DD520836a782707F11f05c30ea2",
       abi: [
         {
           type: "constructor",
           inputs: [],
           stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "_findNearestSample",
-          inputs: [
-            {
-              name: "lookUpDate",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "offset",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "prev",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-            {
-              name: "next",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "_findNearestSample1",
-          inputs: [
-            {
-              name: "lookUpDate",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "offset",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "prev",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "next",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "_getInstantValue",
-          inputs: [
-            {
-              name: "variable",
-              type: "uint8",
-              internalType: "enum IPriceOracle.Variable",
-            },
-            {
-              name: "index",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "int256",
-              internalType: "int256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "_samples",
-          inputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "_updateOracle",
-          inputs: [
-            {
-              name: "balanceToken0",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "balanceToken1",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "absoluteSubtraction",
-          inputs: [
-            {
-              name: "a",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "b",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "pure",
-        },
-        {
-          type: "function",
-          name: "calculateStdDev",
-          inputs: [
-            {
-              name: "numbers",
-              type: "uint256[]",
-              internalType: "uint256[]",
-            },
-            {
-              name: "numbersLength",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "customSqrt",
-          inputs: [
-            {
-              name: "x",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "pure",
         },
         {
           type: "function",
@@ -4128,87 +3942,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "findAllSamples1",
-          inputs: [
-            {
-              name: "latestIndex",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "ago",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "logPairPrices",
-              type: "tuple[]",
-              internalType: "struct PoolPriceOracle.LogPairPrices[]",
-              components: [
-                {
-                  name: "logPairPrice",
-                  type: "int256",
-                  internalType: "int256",
-                },
-                {
-                  name: "timestamp",
-                  type: "uint256",
-                  internalType: "uint256",
-                },
-              ],
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getLargestSafeQueryWindow",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "pure",
-        },
-        {
-          type: "function",
-          name: "getLatest",
-          inputs: [
-            {
-              name: "variable",
-              type: "uint8",
-              internalType: "enum IPriceOracle.Variable",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getLatestIndex",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
           name: "getSample",
           inputs: [
             {
@@ -4224,50 +3957,12 @@ const deployedContracts = {
               internalType: "int256",
             },
             {
-              name: "accLogPairPrice",
-              type: "int256",
-              internalType: "int256",
-            },
-            {
-              name: "logBptPrice",
-              type: "int256",
-              internalType: "int256",
-            },
-            {
-              name: "accLogBptPrice",
-              type: "int256",
-              internalType: "int256",
-            },
-            {
-              name: "logInvariant",
-              type: "int256",
-              internalType: "int256",
-            },
-            {
-              name: "accLogInvariant",
-              type: "int256",
-              internalType: "int256",
-            },
-            {
               name: "timestamp",
               type: "uint256",
               internalType: "uint256",
             },
           ],
           stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getTotalSamples",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "pure",
         },
         {
           type: "function",
@@ -4289,6 +3984,24 @@ const deployedContracts = {
           stateMutability: "view",
         },
         {
+          type: "function",
+          name: "updateOracle",
+          inputs: [
+            {
+              name: "balanceToken0",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "balanceToken1",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
           type: "error",
           name: "InvalidExponent",
           inputs: [],
@@ -4305,18 +4018,12 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        _findNearestSample: "contracts/hooks/VolatilityBasedSwapFee/balancer-v2-oracle/PoolPriceOracle.sol",
-        _findNearestSample1: "contracts/hooks/VolatilityBasedSwapFee/balancer-v2-oracle/PoolPriceOracle.sol",
-        _getInstantValue: "contracts/hooks/VolatilityBasedSwapFee/balancer-v2-oracle/PoolPriceOracle.sol",
-        _samples: "contracts/hooks/VolatilityBasedSwapFee/balancer-v2-oracle/PoolPriceOracle.sol",
         findAllSamples: "contracts/hooks/VolatilityBasedSwapFee/balancer-v2-oracle/PoolPriceOracle.sol",
-        findAllSamples1: "contracts/hooks/VolatilityBasedSwapFee/balancer-v2-oracle/PoolPriceOracle.sol",
         getSample: "contracts/hooks/VolatilityBasedSwapFee/balancer-v2-oracle/PoolPriceOracle.sol",
-        getTotalSamples: "contracts/hooks/VolatilityBasedSwapFee/balancer-v2-oracle/PoolPriceOracle.sol",
       },
     },
     VolatilityLoyaltyHook: {
-      address: "0x47F53217EF97038F5f6e89f5a999693703391955",
+      address: "0x03D4039762C9831981D8051dF0aEDFFC72F8FCAa",
       abi: [
         {
           type: "constructor",
@@ -5281,7 +4988,7 @@ const deployedContracts = {
       },
     },
     WeightedPoolFactory: {
-      address: "0x5d4368E38E993C70B3bB429cAAAa70a047791b1f",
+      address: "0x94464BcbFb7133c1e13f499Ad3De7AdE3CcCC749",
       abi: [
         {
           type: "constructor",
@@ -5686,7 +5393,7 @@ const deployedContracts = {
       },
     },
     ExitFeeHookExample: {
-      address: "0x8d762e0B52fC2330f6ae3d6E07f9ae47B385c2C6",
+      address: "0xD5194dB8A45960840A4cEFD66a32c7A2923f6D22",
       abi: [
         {
           type: "constructor",

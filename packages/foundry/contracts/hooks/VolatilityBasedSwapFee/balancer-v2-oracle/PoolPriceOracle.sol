@@ -5,8 +5,6 @@ pragma solidity ^0.8.24;
 import "./library/Buffer.sol";
 import "./library/Samples.sol";
 
-import "./interface/IPriceOracle.sol";
-
 import "forge-std/console.sol";
 
 contract PoolPriceOracle {
@@ -15,7 +13,7 @@ contract PoolPriceOracle {
 
     uint256 private constant _MAX_SAMPLE_DURATION = 1 seconds;
 
-    mapping(uint256 => bytes32) public _samples;
+    mapping(uint256 => bytes32) private _samples;
 
     struct LogPairPrices {
         int256 logPairPrice;
@@ -45,7 +43,7 @@ contract PoolPriceOracle {
             mid = midWithoutOffset.add(offset);
             console.log("(findAllSamples) midWithoutOffset, mid", midWithoutOffset, mid);
 
-            (, , , , , , uint256 timestamp) = getSample(mid.add(offset));
+            (, uint256 timestamp) = getSample(mid.add(offset));
 
             sampleTimestamp = timestamp;
             console.log("(findAllSamples) sampleTimestamp", sampleTimestamp);
@@ -80,7 +78,7 @@ contract PoolPriceOracle {
         LogPairPrices[] memory logPairPrices = new LogPairPrices[](upperBound - lowerBound + 1);
 
         for (uint256 i = lowerBound; i <= upperBound; i = i.next()) {
-            (int256 logPairPrice, , , , , , uint256 timestamp) = getSample(i.add(offset));
+            (int256 logPairPrice, uint256 timestamp) = getSample(i.add(offset));
             console.log("(findAllSamples) i, timestamp", i, timestamp, uint256(logPairPrice));
             logPairPrices[i - lowerBound] = (LogPairPrices(logPairPrice, timestamp));
         }
@@ -88,21 +86,7 @@ contract PoolPriceOracle {
         return logPairPrices;
     }
 
-    function getSample(
-        uint256 index
-    )
-        public
-        view
-        returns (
-            int256 logPairPrice,
-            int256 accLogPairPrice,
-            int256 logBptPrice,
-            int256 accLogBptPrice,
-            int256 logInvariant,
-            int256 accLogInvariant,
-            uint256 timestamp
-        )
-    {
+    function getSample(uint256 index) public view returns (int256 logPairPrice, uint256 timestamp) {
         // add error for buffer size
 
         bytes32 sample = _getSample(index);
@@ -112,11 +96,9 @@ contract PoolPriceOracle {
     function _processPriceData(
         uint256 latestSampleCreationTimestamp,
         uint256 latestIndex,
-        int256 logPairPrice,
-        int256 logBptPrice,
-        int256 logInvariant
+        int256 logPairPrice
     ) internal returns (uint256) {
-        bytes32 sample = _getSample(latestIndex).update(logPairPrice, logBptPrice, logInvariant, block.timestamp);
+        bytes32 sample = _getSample(latestIndex).update(logPairPrice, block.timestamp);
 
         bool newSample = block.timestamp - latestSampleCreationTimestamp >= _MAX_SAMPLE_DURATION;
         latestIndex = newSample ? latestIndex.next() : latestIndex;
