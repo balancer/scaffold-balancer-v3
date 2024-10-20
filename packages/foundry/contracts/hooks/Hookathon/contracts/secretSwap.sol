@@ -20,47 +20,44 @@ import "fhevm/lib/TFHE.sol";
 import "fhevm/gateway/GatewayCaller.sol";
 
 /**
- * @notice Hook that randomly rewards accumulated fees to a user performing a swap.
- * @dev In this example, every time a swap is executed in a pool registered with this hook, a "random" number is drawn.
- * If the drawn number is not equal to the LUCKY_NUMBER, the user will pay fees to the hook contract. But, if the
- * drawn number is equal to LUCKY_NUMBER, the user won't pay hook fees and will receive all fees accrued by the hook.
+ * @title SecretSwapHook
+ * @notice This contract implements a secret swap mechanism using Balancer V3 hooks and FHE (Fully Homomorphic Encryption).
+ *         Users can deposit tokens, withdraw tokens, or perform a standard swap using this hook.
+ *         The operations (deposit or withdraw) are encrypted using Zama's Co-Processor model for confidential transactions.
  */
-contract LotteryHookExample is BaseHooks, VaultGuard, Ownable, GatewayCaller {
+contract SecretSwapHook is BaseHooks, VaultGuard, Ownable, GatewayCaller {
     using FixedPoint for uint256;
     using EnumerableMap for EnumerableMap.IERC20ToUint256Map;
     using SafeERC20 for IERC20;
 
-    // Trusted router is needed since we rely on `getSender` to know which user should receive the prize.
+    // Router and factory addresses for swap validation
     address private immutable _trustedRouter;
     address private immutable _allowedFactory;
 
-    mapping(address => mapping(IERC20 => euint64)) private userAddressToThereCreditValue;
+    // Tracks user credit balances (encrypted using TFHE) per token
+    mapping(address => mapping(IERC20 => euint64)) private userAddressToCreditValue;
+
+    // Division factor for scaling token amounts
     uint256 constant DIVISION_FACTOR = 10 ** 12;
-    uint256 private _counter = 0;
 
     /**
-     * @notice A new `LotteryHookExample` contract has been registered successfully for a given factory and pool.
-     * @dev If the registration fails the call will revert, so there will be no event.
-     * @param hooksContract This contract
-     * @param pool The pool on which the hook was registered
+     * @notice Event emitted when the SecretSwapHook is registered for a pool.
      */
     event SecretSwapHookRegistered(address indexed hooksContract, address indexed pool);
+
+    /**
+     * @notice Event emitted when tokens are deposited into the contract.
+     */
+    event TokenDeposited(address indexed hooksContract, IERC20 indexed token, uint256 amount);
 
     struct CallBackStruct {
         address userAddress;
         IERC20 token1;
         IERC20 token2;
     }
-    mapping(uint256 id => CallBackStruct callBackStruct) public requestIdToCallBackStruct;
 
-    /**
-     * @notice Fee collected and added to the lottery pot.
-     * @dev The current user did not win the lottery.
-     * @param hooksContract This contract
-     * @param token The token in which the fee was collected
-     * @param amount The amount of the fee collected
-     */
-    event TokenDeposited(address indexed hooksContract, IERC20 indexed token, uint256 amount);
+    // Map request ID to callback struct for handling decryption callbacks
+    mapping(uint256 id => CallBackStruct) public requestIdToCallBackStruct;
 
     constructor(IVault vault, address router) VaultGuard(vault) Ownable(msg.sender) {
         _trustedRouter = router;
@@ -74,7 +71,6 @@ contract LotteryHookExample is BaseHooks, VaultGuard, Ownable, GatewayCaller {
         LiquidityManagement calldata
     ) public override onlyVault returns (bool) {
         emit SecretSwapHookRegistered(address(this), pool);
-
         return true;
     }
 
@@ -86,16 +82,21 @@ contract LotteryHookExample is BaseHooks, VaultGuard, Ownable, GatewayCaller {
         return hookFlags;
     }
 
-    /// @inheritdoc IHooks
+    /**
+     * @notice Called after a swap operation, this function handles deposits, withdrawals, or standard swaps
+     *         based on the user's selected operation (encoded in `params.userData`).
+     * @param params Swap parameters, including tokens, amounts, and user data.
+     */
     function onAfterSwap(
         AfterSwapParams calldata params
     ) public override onlyVault returns (bool success, uint256 hookAdjustedAmountCalculatedRaw) {
         uint256 operation = abi.decode(params.userData, (uint256));
 
-        // Do Deposit
+        // Handle deposit operation (1)
         if (params.router == _trustedRouter && operation == 1) {
             hookAdjustedAmountCalculatedRaw = params.amountCalculatedRaw;
             uint256 amount = params.amountCalculatedRaw.mulDown(1);
+            
             if (params.kind == SwapKind.EXACT_IN) {
                 uint256 feeToPay = _depositToken(params.router, params.tokenOut, amount);
                 if (feeToPay > 0) {
@@ -109,42 +110,52 @@ contract LotteryHookExample is BaseHooks, VaultGuard, Ownable, GatewayCaller {
             }
             return (true, hookAdjustedAmountCalculatedRaw);
         }
-        // Do Withdraw
+        // Handle withdrawal operation (2)
         else if (params.router == _trustedRouter && operation == 2) {
             _withdrawToken(params.router, params.tokenIn, params.tokenOut);
         } else {
+            // Default case: standard swap
             return (true, hookAdjustedAmountCalculatedRaw);
         }
     }
 
-    // If drawnNumber == LUCKY_NUMBER, user wins the pot and pays no fees. Otherwise, the hook fee adds to the pot.
+    /**
+     * @notice Handles deposit of tokens into the contract. User receives encrypted credits.
+     * @param router Address of the router that initiated the swap.
+     * @param token Token to be deposited.
+     * @param amount Amount of the token to be deposited.
+     */
     function _depositToken(address router, IERC20 token, uint256 amount) private returns (uint256) {
         address user = IRouterCommon(router).getSender();
         if (amount > 0) {
             _vault.sendTo(token, address(this), amount);
-            userAddressToThereCreditValue[user][token] = TFHE.add(
-                userAddressToThereCreditValue[user][token],
+            userAddressToCreditValue[user][token] = TFHE.add(
+                userAddressToCreditValue[user][token],
                 TFHE.asEuint64(amount / DIVISION_FACTOR)
             );
-            TFHE.allow(userAddressToThereCreditValue[user][token], address(this));
-            TFHE.allow(userAddressToThereCreditValue[user][token], owner());
+            TFHE.allow(userAddressToCreditValue[user][token], address(this));
+            TFHE.allow(userAddressToCreditValue[user][token], owner());
             emit TokenDeposited(address(this), token, amount);
         }
         return amount;
     }
 
+    /**
+     * @notice Handles token withdrawal by decrypting user's credit balance and transferring tokens.
+     * @param router Address of the router that initiated the swap.
+     * @param token1 First token for withdrawal.
+     * @param token2 Second token for withdrawal.
+     */
     function _withdrawToken(address router, IERC20 token1, IERC20 token2) private returns (uint256) {
         address user = IRouterCommon(router).getSender();
 
-        euint64 token1Amount = TFHE.asEuint64(0);
-        if (TFHE.isInitialized(userAddressToThereCreditValue[user][token1])) {
-            token1Amount = userAddressToThereCreditValue[user][token1];
-        }
+        euint64 token1Amount = TFHE.isInitialized(userAddressToCreditValue[user][token1])
+            ? userAddressToCreditValue[user][token1]
+            : TFHE.asEuint64(0);
 
-        euint64 token2Amount = TFHE.asEuint64(0);
-        if (TFHE.isInitialized(userAddressToThereCreditValue[user][token2])) {
-            token2Amount = userAddressToThereCreditValue[user][token2];
-        }
+        euint64 token2Amount = TFHE.isInitialized(userAddressToCreditValue[user][token2])
+            ? userAddressToCreditValue[user][token2]
+            : TFHE.asEuint64(0);
 
         TFHE.allow(token1Amount, address(this));
         TFHE.allow(token2Amount, address(this));
@@ -166,12 +177,19 @@ contract LotteryHookExample is BaseHooks, VaultGuard, Ownable, GatewayCaller {
         return 0;
     }
 
+    /**
+     * @notice Callback function after decryption to transfer tokens to user.
+     * @param requestID ID of the decryption request.
+     * @param _token1Amount Decrypted amount of token1.
+     * @param _token2Amount Decrypted amount of token2.
+     */
     function callBackResolver(
         uint256 requestID,
         uint64 _token1Amount,
         uint64 _token2Amount
     ) external onlyGateway returns (bool) {
         CallBackStruct memory _callBackStruct = requestIdToCallBackStruct[requestID];
+
         if (_token1Amount > 0) {
             _callBackStruct.token1.safeTransfer(_callBackStruct.userAddress, _token1Amount * DIVISION_FACTOR);
         }
@@ -179,32 +197,50 @@ contract LotteryHookExample is BaseHooks, VaultGuard, Ownable, GatewayCaller {
             _callBackStruct.token2.safeTransfer(_callBackStruct.userAddress, _token2Amount * DIVISION_FACTOR);
         }
 
-        userAddressToThereCreditValue[_callBackStruct.userAddress][_callBackStruct.token1] = TFHE.asEuint64(0);
-        userAddressToThereCreditValue[_callBackStruct.userAddress][_callBackStruct.token2] = TFHE.asEuint64(0);
+        userAddressToCreditValue[_callBackStruct.userAddress][_callBackStruct.token1] = TFHE.asEuint64(0);
+        userAddressToCreditValue[_callBackStruct.userAddress][_callBackStruct.token2] = TFHE.asEuint64(0);
 
         return true;
     }
 
+    /**
+     * @notice Transfer encrypted credits between users.
+     * @param to Recipient address.
+     * @param token Token being transferred.
+     * @param encryptedAmount Encrypted amount of the token.
+     * @param inputProof Proof for the transfer.
+     */
     function transferCredits(address to, IERC20 token, einput encryptedAmount, bytes calldata inputProof) public {
         euint64 amount = TFHE.asEuint64(encryptedAmount, inputProof);
-        ebool canTransfer = TFHE.le(amount, userAddressToThereCreditValue[msg.sender][token]);
+        ebool canTransfer = TFHE.le(amount, userAddressToCreditValue[msg.sender][token]);
         _transfer(msg.sender, to, amount, canTransfer, token);
     }
 
-    // Transfers an encrypted amount.
+    /**
+     * @notice Internal function for transferring encrypted credits between users.
+     * @param from Sender address.
+     * @param to Recipient address.
+     * @param amount Encrypted amount.
+     * @param isTransferable Boolean indicating if the transfer is allowed.
+     * @param token Token being transferred.
+     */
     function _transfer(address from, address to, euint64 amount, ebool isTransferable, IERC20 token) internal virtual {
-        // Add to the balance of `to` and subract from the balance of `from`.
         euint64 transferValue = TFHE.select(isTransferable, amount, TFHE.asEuint64(0));
-        euint64 newBalanceTo = TFHE.add(userAddressToThereCreditValue[to][token], transferValue);
-        userAddressToThereCreditValue[to][token] = newBalanceTo;
+        euint64 newBalanceTo = TFHE.add(userAddressToCreditValue[to][token], transferValue);
+        userAddressToCreditValue[to][token] = newBalanceTo;
+
         TFHE.allow(newBalanceTo, address(this));
         TFHE.allow(newBalanceTo, to);
-        euint64 newBalanceFrom = TFHE.sub(userAddressToThereCreditValue[from][token], transferValue);
-        userAddressToThereCreditValue[from][token] = newBalanceFrom;
+
+        euint64 newBalanceFrom = TFHE.sub(userAddressToCreditValue[from][token], transferValue);
+        userAddressToCreditValue[from][token] = newBalanceFrom;
+
         TFHE.allow(newBalanceFrom, address(this));
         TFHE.allow(newBalanceFrom, from);
+
         emit Transfer(from, to);
     }
 
+    // Event emitted when credits are transferred
     event Transfer(address, address);
 }

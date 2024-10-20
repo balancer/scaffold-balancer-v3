@@ -1,232 +1,121 @@
-# Hardhat Template [![Open in Gitpod][gitpod-badge]][gitpod] [![Github Actions][gha-badge]][gha] [![Hardhat][hardhat-badge]][hardhat] [![License: MIT][license-badge]][license]
+## SecretSwap: Confidential Swaps 
 
-[gitpod]: https://gitpod.io/#https://github.com/zama-ai/fhevm-hardhat-template
-[gitpod-badge]: https://img.shields.io/badge/Gitpod-Open%20in%20Gitpod-FFB45B?logo=gitpod
-[gha]: https://github.com/zama-ai/fhevm-hardhat-template/actions
-[gha-badge]: https://github.com/zama-ai/fhevm-hardhat-template/actions/workflows/ci.yml/badge.svg
-[hardhat]: https://hardhat.org/
-[hardhat-badge]: https://img.shields.io/badge/Built%20with-Hardhat-FFDB1C.svg
-[license]: https://opensource.org/licenses/MIT
-[license-badge]: https://img.shields.io/badge/License-MIT-blue.svg
+SecretSwap allows users to perform confidential token swaps using Balancer V3 hooks and Fully Homomorphic Encryption (FHE) provided by Zama's Co-Processor Model. Users can choose to either:
+- **Deposit tokens** into the contract (operation `1`)
+- **Withdraw tokens** (operation `2`)
+- **Perform a standard swap** without any operation specified.
 
-A Hardhat-based template for developing Solidity smart contracts, with sensible defaults.
+### How It Works
 
-- [Hardhat](https://github.com/nomiclabs/hardhat): compile, run and test smart contracts
-- [TypeChain](https://github.com/ethereum-ts/TypeChain): generate TypeScript bindings for smart contracts
-- [Ethers](https://github.com/ethers-io/ethers.js/): renowned Ethereum library and wallet implementation
-- [Solhint](https://github.com/protofire/solhint): code linter
-- [Solcover](https://github.com/sc-forks/solidity-coverage): code coverage
-- [Prettier Plugin Solidity](https://github.com/prettier-solidity/prettier-plugin-solidity): code formatter
+1. **Deposit:**
+   - When a user performs a deposit (operation `1`), their tokens are securely transferred to the contract, and they receive **encrypted credits** representing their balance.
+   - The contract uses FHE to keep the user's balance confidential, and credits are stored securely.
+   
+2. **Withdraw:**
+   - When a user withdraws (operation `2`), their **encrypted credits** are decrypted using Zama's Co-Processor Model, and the corresponding token amounts are transferred back to the user.
+   - Users can withdraw their full balance in both `tokenA` and `tokenB` based on their current credit value.
 
-## Getting Started
+3. **Standard Swap:**
+   - If no operation is specified (or an invalid operation is provided), the tokens proceed with a standard Balancer V3 swap.
 
-Click the [`Use this template`](https://github.com/zama-ai/fhevm-hardhat-template/generate) button at the top of the
-page to create a new repository with this repo as the initial state.
+### Key Features
+- **Confidentiality:** All operations are handled in a privacy-preserving manner using FHE, ensuring that no sensitive information is leaked on-chain.
+- **Flexible Swaps:** Users can seamlessly perform standard token swaps alongside confidential deposits and withdrawals.
+- **Encrypted Credits:** Token balances are encrypted and managed using FHE, enabling secure, private transactions.
+- **Decryption via Callback:** Upon withdrawal, encrypted credit balances are decrypted using the FHE gateway, and tokens are securely transferred to the user.
 
-## Features
+### Operations
+- **Operation 1 (Deposit):** Deposit tokens into the SecretSwap contract. Users receive encrypted credits.
+- **Operation 2 (Withdraw):** Withdraw tokens based on the encrypted credits.
+- **No Operation:** Perform a normal swap using Balancer V3 without any encrypted actions.
 
-This template builds upon the frameworks and libraries mentioned above, so for details about their specific features,
-please consult their respective documentations.
+---
 
-For example, for Hardhat, you can refer to the [Hardhat Tutorial](https://hardhat.org/tutorial) and the
-[Hardhat Docs](https://hardhat.org/docs). You might be in particular interested in reading the
-[Testing Contracts](https://hardhat.org/tutorial/testing-contracts) section.
+### Setup and Run Instructions
 
-### Sensible Defaults
+### Prerequisites
 
-This template comes with sensible default configurations in the following files:
+Before you begin, ensure you have the following installed:
 
-```text
-├── .editorconfig
-├── .eslintignore
-├── .eslintrc.yml
-├── .gitignore
-├── .prettierignore
-├── .prettierrc.yml
-├── .solcover.js
-├── .solhint.json
-└── hardhat.config.ts
+- [Docker](https://docs.docker.com/engine/install/)
+- [pnpm](https://pnpm.io/installation)
+- Node.js (version 20 or higher)
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/zama-ai/fhevm-hardhat-template
+cd fhevm-hardhat-template
 ```
 
-### VSCode Integration
+### 2. Install Dependencies
 
-This template is IDE agnostic, but for the best user experience, you may want to use it in VSCode alongside Nomic
-Foundation's [Solidity extension](https://marketplace.visualstudio.com/items?itemName=NomicFoundation.hardhat-solidity).
-
-### GitHub Actions
-
-This template comes with GitHub Actions pre-configured. Your contracts will be linted and tested on every push and pull
-request made to the `main` branch.
-
-Note though that to make this work, you must use your `INFURA_API_KEY` and your `MNEMONIC` as GitHub secrets.
-
-You can edit the CI script in [.github/workflows/ci.yml](./.github/workflows/ci.yml).
-
-## Usage
-
-### Pre Requisites
-
-Install [docker](https://docs.docker.com/engine/install/)
-
-Install [pnpm](https://pnpm.io/installation)
-
-Before being able to run any command, you need to create a `.env` file and set a BIP-39 compatible mnemonic as an
-environment variable. You can follow the example in `.env.example` and start with the following command:
-
-```sh
-cp .env.example .env
-```
-
-If you don't already have a mnemonic, you can use this [website](https://iancoleman.io/bip39/) to generate one.
-
-Then, proceed with installing dependencies - please **_make sure to use Node v20_** or more recent or this will fail:
-
-```sh
+```bash
 pnpm install
 ```
 
-### Start fhEVM
+### 3. Set Up `.env` File
 
-During installation (see previous section) we recommend you for easier setup to not change the default `.env` : simply
-copy the original `.env.example` file to a new `.env` file in the root of the repo.
+```bash
+cp .env.example .env
+```
 
-Then, start a local fhEVM docker compose that inlcudes everything needed to deploy FHE encrypted smart contracts using:
+Generate a mnemonic using [this tool](https://iancoleman.io/bip39/) and paste it into the `.env` file.
 
-```sh
-# In one terminal, keep it opened
-# The node logs are printed
+### 4. Start fheVM
+
+To start the local FHEVM environment using Docker:
+
+```bash
 pnpm fhevm:start
 ```
 
-Previous command will take 2 to 3 minutes to do the whole initial setup - wait until the blockchain logs appear to make
-sure setup is complete (we are working on making initial deployment faster).
+Wait until the blockchain logs are printed, indicating that the setup is complete.
 
-You can then run the tests simply in a new terminal via :
+### 5. Run Tests
 
-```
+In another terminal, run the tests to verify the contracts:
+
+```bash
 pnpm test
 ```
 
-Once your done with your tests, to stop the node:
+### 6. Stop fheVM
 
-```sh
+When you are finished, stop the local node:
+
+```bash
 pnpm fhevm:stop
 ```
 
-### Compile
+### Contract Compilation
 
-Compile the smart contracts with Hardhat:
+To compile the contracts:
 
-```sh
+```bash
 pnpm compile
 ```
 
-### TypeChain
+### Further Testing
 
-Compile the smart contracts and generate TypeChain bindings:
-
-```sh
-pnpm typechain
-```
-
-### List accounts
-
-From the mnemonic in .env file, list all the derived Ethereum adresses:
-
-```sh
-pnpm task:accounts
-```
-
-### Get some native coins
-
-In order to interact with the blockchain, one need some coins. This command will give coins to the first 5 addresses
-derived from the mnemonic in .env file.
-
-```sh
-pnpm fhevm:faucet
-```
-
-<br />
-<details>
-  <summary>To get the first derived address from mnemonic</summary>
-<br />
-
-```sh
-pnpm task:getEthereumAddress
-```
-
-</details>
-<br />
-
-### Test
-
-Run the tests with Hardhat:
-
-```sh
-pnpm test
-```
-
-### Lint Solidity
-
-Lint the Solidity code:
-
-```sh
-pnpm lint:sol
-```
-
-### Lint TypeScript
-
-Lint the TypeScript code:
-
-```sh
-pnpm lint:ts
-```
-
-### Report Gas
-
-See the gas usage per unit test and average gas per method call:
-
-```sh
-REPORT_GAS=true pnpm test
-```
-
-### Clean
-
-Delete the smart contract artifacts, the coverage reports and the Hardhat cache:
-
-```sh
-pnpm clean
-```
-
-### Mocked mode
-
-The mocked mode allows faster testing and the ability to analyze coverage of the tests. In this mocked version,
-encrypted types are not really encrypted, and the tests are run on the original version of the EVM, on a local hardhat
-network instance. To run the tests in mocked mode, you can use directly the following command:
+To run tests in mocked mode (faster), use:
 
 ```bash
 pnpm test:mock
 ```
 
-To analyze the coverage of the tests (in mocked mode necessarily, as this cannot be done on the real fhEVM node), you
-can use this command :
+To analyze test coverage:
 
 ```bash
 pnpm coverage:mock
 ```
 
-Then open the file `coverage/index.html`. You can see there which line or branch for each contract which has been
-covered or missed by your test suite. This allows increased security by pointing out missing branches not covered yet by
-the current tests.
-
-> [!Note]
-> Due to intrinsic limitations of the original EVM, the mocked version differ in few corner cases from the real fhEVM, the main difference is the difference in gas prices for the FHE operations. This means that before deploying to production, developers still need to run the tests with the original fhEVM node, as a final check in non-mocked mode, with `pnpm test`.
-
-### Syntax Highlighting
-
-If you use VSCode, you can get Solidity syntax highlighting with the
-[hardhat-solidity](https://marketplace.visualstudio.com/items?itemName=NomicFoundation.hardhat-solidity) extension.
+---
 
 ## License
 
-This project is licensed under MIT.
+This project is licensed under the MIT License.
+
+---
+
+This README provides a clear explanation of how SecretSwap works, instructions for setup, and testing guidance for running the contracts on the `fhevm` using Balancer V3 hooks.
