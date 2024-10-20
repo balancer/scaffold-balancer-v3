@@ -11,6 +11,7 @@ It has been designed with RWA NFTs in mind.
 - [Introduction](#bank-nft-escrow-lp)
 - [Use Case](#house_with_garden-use-case)
 - [User Flow](#bearded_person-user-flow)
+- [Demo](#video_camera-demo)
 - [Utilized Hooks](#hook-utilized-hooks)
 - [Technical Notes](#orange_book-technical-notes)
 - [Acknowledgments](#pray-acknowledgments)
@@ -35,6 +36,10 @@ Swapping occurs as guests in the AirBnB are given the opportunity to invest.  Th
 > Oustanding tokens redeemed for STABLE from the hook contract
 
 ***
+## :video_camera: Demo
+https://youtu.be/0zS-bFA9sNE
+***
+
 ## :hook: Utilized Hooks
 <table>
 <tr><th>onRegister</th></tr>
