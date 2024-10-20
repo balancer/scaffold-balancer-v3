@@ -12,7 +12,6 @@ It has been designed with RWA NFTs in mind.
 - [Use Case](#house_with_garden-use-case)
 - [User Flow](#bearded_person-user-flow)
 - [Utilized Hooks](#hook-utilized-hooks)
-- [Architecture](#building_construction-architecture)
 - [Technical Notes](#orange_book-technical-notes)
 - [Future Plans](#rocket-future)
 - [Getting Started](#Getting-Started-with-Scaffold-Balancer-v3)
@@ -54,11 +53,6 @@ Checking to make sure that the depositor has not removed more tokens than they o
 Check if pool has been settled in order to halt trading if so.
 </td></tr>
 </table>
-
-***
-## :building_construction: Architecture
-This pool relies upon certain 
-<img width="1470" alt="code" src="https://github.com/lifeparticle/Markdown-Cheatsheet/assets/1612112/b70541b0-fce8-4f5e-97f4-6443c20b98ec">
 
 ***
 ## :orange_book: Technical Notes
