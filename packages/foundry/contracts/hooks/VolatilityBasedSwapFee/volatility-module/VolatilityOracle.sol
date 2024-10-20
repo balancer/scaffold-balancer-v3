@@ -3,13 +3,14 @@
 pragma solidity ^0.8.24;
 
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
-import "./balancer-v2-oracle/library/WeightedPool2TokensMiscData.sol";
-import "./balancer-v2-oracle/library/WeightedOracleMath.sol";
-import "./balancer-v2-oracle/PoolPriceOracle.sol";
+import "../balancer-v2-oracle/library/WeightedPool2TokensMiscData.sol";
+import "../balancer-v2-oracle/library/WeightedOracleMath.sol";
+import "../balancer-v2-oracle/PoolPriceOracle.sol";
+import "./IVolatilityOracle.sol";
 
 import "forge-std/console.sol";
 
-contract VolatilityOracle is PoolPriceOracle {
+contract VolatilityOracle is IVolatilityOracle, PoolPriceOracle {
     using FixedPoint for uint256;
     using WeightedPool2TokensMiscData for bytes32;
 

@@ -27,7 +27,7 @@ import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/Fixe
 import { BaseHooks } from "@balancer-labs/v3-vault/contracts/BaseHooks.sol";
 import { VaultGuard } from "@balancer-labs/v3-vault/contracts/VaultGuard.sol";
 
-import { VolatilityOracle } from "../VolatilityOracle.sol";
+import { IVolatilityOracle } from "../volatility-module/IVolatilityOracle.sol";
 
 import "forge-std/console.sol";
 
@@ -110,7 +110,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
     ) public override returns (bool, uint256[] memory) {
         console.log("(onAfterRemoveLiquidity) executed now");
         address[] memory tokenAddresses = getAllTokenConfigs(_factoryAddress); // -> need to do this cuz we do not know that what index points to what token address
-        VolatilityOracle volatilityOracle = VolatilityOracle(_oracleAddress);
+        IVolatilityOracle volatilityOracle = IVolatilityOracle(_oracleAddress);
         uint256 tokenIndex;
 
         if (tokenAddresses[0] == _tokenAddress) {
@@ -140,7 +140,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
     ) public override returns (bool, uint256[] memory) {
         console.log("(onAfterAddLiquidity) executed now");
         address[] memory tokenAddresses = getAllTokenConfigs(_factoryAddress); // -> need to do this cuz we do not know that what index points to what token address
-        VolatilityOracle volatilityOracle = VolatilityOracle(_oracleAddress);
+        IVolatilityOracle volatilityOracle = IVolatilityOracle(_oracleAddress);
         uint256 tokenIndex;
 
         if (tokenAddresses[0] == _tokenAddress) {
@@ -160,7 +160,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
 
     function onAfterSwap(AfterSwapParams calldata params) public override returns (bool, uint256) {
         console.log("(onAfterSwap) executed now");
-        VolatilityOracle volatilityOracle = VolatilityOracle(_oracleAddress);
+        IVolatilityOracle volatilityOracle = IVolatilityOracle(_oracleAddress);
         if (address(params.tokenIn) == _tokenAddress) {
             volatilityOracle.updateOracle(params.tokenOutBalanceScaled18, params.tokenInBalanceScaled18);
             // emit event
@@ -252,7 +252,10 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
             ? getSwapFeeWithLoyaltyDiscount(user, staticSwapFeePercentage)
             : staticSwapFeePercentage;
 
-        console.log("(onComputeDynamicSwapFeePercentage) swapFeePercentWithLoyaltyDiscount", swapFeePercentWithLoyaltyDiscount);
+        console.log(
+            "(onComputeDynamicSwapFeePercentage) swapFeePercentWithLoyaltyDiscount",
+            swapFeePercentWithLoyaltyDiscount
+        );
 
         uint256 volatilityFeePercent = _isVolatilityFeeEnabled ? getVolatilityFeePercent() : 0;
 
@@ -381,7 +384,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
     }
 
     function getVolatilityFeePercent() public view returns (uint256) {
-        VolatilityOracle volatilityOracle = VolatilityOracle(_oracleAddress);
+        IVolatilityOracle volatilityOracle = IVolatilityOracle(_oracleAddress);
         uint256 volatility = volatilityOracle.getVolatility(_VOLATILITY_WINDOW);
         console.log("(getVolatilityFee) volatility", volatility);
         uint256 volatilityFeePercent = getVolatilityFeePercentOnCap(volatility);
@@ -393,21 +396,29 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
 
     // volatility -> percent change per second
     function getVolatilityFeePercentOnCap(uint256 volatility) public pure returns (uint256) {
-        if (volatility > 0 && volatility <= 0.0001e18) { // less than 0.01 %/second
+        if (volatility > 0 && volatility <= 0.0001e18) {
+            // less than 0.01 %/second
             return 0; // no fee
-        } else if (volatility > 0.001e18 && volatility <= 0.005e18) { // less than 0.05 %/second
+        } else if (volatility > 0.001e18 && volatility <= 0.005e18) {
+            // less than 0.05 %/second
             return 0.1e18; // 10% of max fee
-        } else if (volatility > 0.005e18 && volatility <= 0.015e18) { // less than 0.15 %/second
+        } else if (volatility > 0.005e18 && volatility <= 0.015e18) {
+            // less than 0.15 %/second
             return 0.2e18; // 20% of max fee
-        } else if (volatility > 0.015e18 && volatility <= 0.02e18) { // less than 0.2 %/second
+        } else if (volatility > 0.015e18 && volatility <= 0.02e18) {
+            // less than 0.2 %/second
             return 0.3e18; // 30% of max fee
-        } else if (volatility > 0.02e18 && volatility <= 0.05e18) { // less than 0.5 %/second
+        } else if (volatility > 0.02e18 && volatility <= 0.05e18) {
+            // less than 0.5 %/second
             return 0.5e18; // 50% of max fee
-        } else if (volatility > 0.05e18 && volatility <= 0.1e18) { // less than 1 %/second
+        } else if (volatility > 0.05e18 && volatility <= 0.1e18) {
+            // less than 1 %/second
             return 0.7e18; // 70% of max fee
-        } else if (volatility > 0.1e18 && volatility <= 0.2e18) { // less than 2 %/second
+        } else if (volatility > 0.1e18 && volatility <= 0.2e18) {
+            // less than 2 %/second
             return 0.9e18; // 90% of max fee
-        } else if (volatility > 0.2e18) { // greater than 2%/second
+        } else if (volatility > 0.2e18) {
+            // greater than 2%/second
             return 1e18; // 100% of max fee
         } else {
             return 0; // no fee
