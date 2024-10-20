@@ -44,7 +44,7 @@ Swapping occurs as guests in the AirBnB are given the opportunity to invest.  Th
 
 ***
 ## :video_camera: Demo
-https://www.youtube.com/watch?v=0zS-bFA9sNE&feature=youtu.be
+https://www.youtube.com/watch?v=0zS-bFA9sNE&feature=youtu.be  
 <br>
 NOTES:
 1. The MockStable balance of the hook is greater than 10 because of the 1.1 multiplier minus the fees. We use the 1.1 multiplier as an extra way to reward the user for getting the nft-based erc20 tokens.
