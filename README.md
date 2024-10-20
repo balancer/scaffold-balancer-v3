@@ -32,15 +32,15 @@ Swapping occurs as guests in the AirBnB are given the opportunity to invest.  Th
 
 ***
 ## :bearded_person: User Flow
-> Mint RWA NFT 
-> Create NftCheckHook which mint the NFT owner some linked "RWAT" ERC20 tokens
-> Create Pool with RWAT tokens & MST stable tokens
-> Stake NFT into hook
-> Initialize Pool
-> Swapping Occurs
-> Settlement is initiated by the NFT owner, transfering stable tokens to the hook and the hook returns the NFT to the owner
-> Initial liquidity is withdrawn by the owner
-> Oustanding linked tokens are redeemed for MST from the hook contract
+- Mint RWA NFT 
+- Create NftCheckHook which mint the NFT owner some linked "RWAT" ERC20 tokens
+- Create Pool with RWAT tokens & MST stable tokens
+- Stake NFT into hook
+- Initialize Pool
+- Swapping Occurs
+- Settlement is initiated by the NFT owner, transfering stable tokens to the hook and the hook returns the NFT to the owner
+- Initial liquidity is withdrawn by the owner
+- Oustanding linked tokens are redeemed for MST from the hook contract
 
 ***
 ## :video_camera: Demo
