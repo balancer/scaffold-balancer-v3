@@ -1,0 +1,17 @@
+type            = "cron"
+schemaVersion   = 1
+name = "cron-1"
+evmChainID = "11155111"
+schedule        = "@every 1m"
+observationSource = """
+    fetch        [type="http" method=GET url="http://ec2-15-206-127-108.ap-south-1.compute.amazonaws.com:3000" allowUnrestrictedNetworkAccess="true"]
+    parse        [type="jsonparse" path="dynamic_fees" data="$(fetch)"]
+    encode_data  [type="ethabiencode" abi="(bytes fees)" data="{\\"fees\\": $(parse)}"]
+    encode_tx    [type="ethabiencode"
+                  abi="fulfillDynamicFees(bytes32 requestId,bytes calldata data)"
+                  data="{\\"data\\": $(encode_data)}"
+                  ]
+    submit_tx    [type="ethtx" to="0xF74D7Ff8ba3358aAA53Ec868E2F5340E9737cbe2" data="$(encode_tx)"]
+
+    fetch -> parse -> encode_data -> encode_tx -> submit_tx
+"""

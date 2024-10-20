@@ -1,7 +1,6 @@
 type = "directrequest"
 schemaVersion = 1
-name = "chalega2"
-externalJobID = "44acae1d-c4cf-4833-b429-d9df8f13b7ec"
+name = "chalega3"
 forwardingAllowed = false
 maxTaskDuration = "0s"
 contractAddress = "0xF74D7Ff8ba3358aAA53Ec868E2F5340E9737cbe2"

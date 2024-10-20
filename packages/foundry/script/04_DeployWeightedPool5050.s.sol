@@ -15,8 +15,8 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 import { PoolHelpers, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { WeightedPoolFactory } from "@balancer-labs/v3-pool-weighted/contracts/WeightedPoolFactory.sol";
-// import { ExitFeeHookExample } from "../contracts/hooks/ExitFeeHookExample.sol";
 
+import {CalculateDynamicFeeHook} from "../contracts/hooks/CalculateDynamicFeeHook.sol";
 /**
  * @title Deploy Weighted Pool of 2 tokens
  * @notice Deploys, registers, and initializes a 4 token weighted pool that uses an Exit Fee Hook
@@ -35,9 +35,9 @@ contract DeployWeightedPool5050 is PoolHelpers, ScaffoldHelpers {
         WeightedPoolFactory factory =  WeightedPoolFactory(factoryAddress);
         console.log("Using existing pool factory: %s", address(factory));
 
-        // // Deploy a hook
-        // address exitFeeHook = address(new ExitFeeHookExample(vault));
-        // console.log("ExitFeeHookExample deployed at address: %s", exitFeeHook);
+        // Deploy a hook
+        CalculateDynamicFeeHook dynamicFeeHook = new CalculateDynamicFeeHook(vault, address(factory), address(router));
+        console.log("Dynamic Fee Hook deployed at: %s", address(dynamicFeeHook));
 
         // Deploy a pool and register it with the vault
         /// @notice passing args directly to avoid stack too deep error
@@ -48,9 +48,9 @@ contract DeployWeightedPool5050 is PoolHelpers, ScaffoldHelpers {
             getNormailzedWeights(), // uint256[] normalizedWeights
             getRoleAccounts(), // PoolRoleAccounts roleAccounts
             0.001e18, // uint256 swapFeePercentage (.01%)
-            address(0), // address poolHooksContract
+            address(dynamicFeeHook), // address poolHooksContract
             true, //bool enableDonation
-            true, // bool disableUnbalancedLiquidity (must be true for the ExitFee Hook)
+            false, // bool disableUnbalancedLiquidity (must be true for the ExitFee Hook)
             keccak256(abi.encode(block.number)) // bytes32 salt
         );
         console.log("Weighted Pool deployed at: %s", pool);
