@@ -13,7 +13,7 @@ It has been designed with RWA NFTs in mind.
 - [User Flow](#bearded_person-user-flow)
 - [Utilized Hooks](#hook-utilized-hooks)
 - [Technical Notes](#orange_book-technical-notes)
-- [Acknowledgments](#rocket-acknowledgments)
+- [Acknowledgments](#pray-acknowledgments)
 - [Future Plans](#rocket-future)
 - [Getting Started](#Getting-Started-with-Scaffold-Balancer-v3)
 
@@ -60,7 +60,7 @@ Check if pool has been settled in order to halt trading if so.
 There are a few functions that we needed to add to the hook in order to make this work such as settle, redeem, getSettlementAmount, recordInitialLiquidity & setNft.  We could also add some additional functions to that allow for some advanced functionality, such as detaching the linked token upon settle and minting a new fresh one for the NFT upon withdrawl but figure that will be it's own process.  We also thought of combining the settle with liquidity withdrawl, but it was a more complex hook use case so kept it in two seperate operations. Ideally we will extend this hook to work with the weighted pool.  This will allow for smaller amount of capital to be used to peg an asset to a particular price but will need to take the ratio into account for the settlement amount. 
 
 ***
-## :rocket: Acknowledgments
+## :pray: Acknowledgments
 Many thanks from elamore and Tony Nacu to `daniel | Beethoven X`, `matthu.eth`, `Tritium` and `burns` for answering the (often stupid) questions that we had. Without their help this project would not be possible.
 
 ***
