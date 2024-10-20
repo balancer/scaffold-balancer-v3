@@ -153,6 +153,25 @@ contract TestNftCheckHook is BaseVaultTest {
         assertEq(linkedToken.balanceOf(hookOwner), OWNER_LINKED_TOKEN_INITIAL_BALANCE - POOL_INITIAL_AMOUNT + USDC_SWAP_AMOUNT_IN, 'hookOwner wrong linked token balance');
         assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN + settlementAmount, 'randomUser wrong usdc balance');
         assertEq(linkedToken.balanceOf(randomUser), 0, 'randomuser wrong linked token balance');
+
+
+        // random user swaps usdc for linked tokens BUT REVERTS BECAUSE POOL SETTLED
+        vm.startPrank(randomUser);
+        usdc.approve(address(permit2), type(uint256 ).max);
+        permit2.approve(address(usdc), address(router), type(uint160).max, type(uint48).max);
+        
+        vm.expectRevert();
+        RouterMock(router).swapSingleTokenExactIn(
+            pool,
+            usdc,
+            IERC20(linkedTokenAddress),
+            USDC_SWAP_AMOUNT_IN,
+            0,
+            MAX_UINT256,
+            false,
+            bytes("")
+        );
+        vm.stopPrank();
     }
 
     function mintNft() internal {
