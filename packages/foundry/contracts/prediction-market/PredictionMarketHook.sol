@@ -17,7 +17,9 @@ import {
     LiquidityManagement,
     RemoveLiquidityKind,
     TokenConfig,
-    HookFlags
+    HookFlags,
+    PoolSwapParams,
+    AfterSwapParams
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
@@ -51,6 +53,7 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
     using PredictionMarketLib for PredictionMarket;
     using PredictionMarketStorage for mapping(bytes32 => PredictionMarket);
     using PositionStorage for mapping(bytes32 => mapping(address => Position));
+    using PositionStorage for Position;
 
     /// @notice fee charged by hook to prediction market participants
     uint256 public constant FEE = 10000; // 1%
@@ -87,6 +90,15 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
      * if it has been brought out of balance by a malicious actor
      */ 
     mapping(address => uint256) private _lastSwapBlockByPool;
+
+    /**
+     * @notice Lookup of user address and pool prediction market participation end time
+     * @dev Market participants are incentivized with 0 swap fees. This lookup is used to determine when 
+     * if a user is a participant in a market priced by a given pool
+     *
+     * mapping(userAddress => mapping(pool => marketCloseTimestamp))
+     */
+    mapping(address => mapping(address => uint256)) private _predictionMarketPartipants;
     
 
     /**
@@ -109,23 +121,27 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
     /// @notice Time provided timestamp is in the past
     error TimestampIsInPast();
 
-    /// @notice Market is not initalized and cannot be closed
-    error MarketIsNotInitalized();
 
-    /// @notice Market is still active and cannot be closed
-    error MarketIsActive();
-
-    /// @notice Settlement cannot occur too soon after the last pool swap
-    error SettlementTooSoonAfterSwap();
-
-    
- 
     constructor(
         IVault vault,
         address allowedFactory
     ) VaultGuard(vault) Ownable(msg.sender) {
         factory = allowedFactory;
     }
+
+    /// @inheritdoc IHooks
+    function getHookFlags() public pure override returns (HookFlags memory) {
+        HookFlags memory hookFlags;
+
+        hookFlags.shouldCallAfterSwap = true;
+        hookFlags.shouldCallComputeDynamicSwapFee = true;
+        
+        return hookFlags;
+    }
+
+    /************************************
+     * Hook Overrides    
+     ************************************/
 
     /// @inheritdoc IHooks
     function onRegister(
@@ -147,17 +163,35 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
     }
 
     /// @inheritdoc IHooks
-    function getHookFlags() public pure override returns (HookFlags memory) {
-        HookFlags memory hookFlags;
+    function onComputeDynamicSwapFeePercentage(
+        PoolSwapParams calldata,
+        address pool,
+        uint256 staticSwapFeePercentage
+    ) public view override returns (bool, uint256) {
+        // if the swapper is participating in an unexpired prediction market, then allow them to swap
+        // for 0 fee. This is to incentivize arbitrage that will bring the pool price back into balance
+        // to protect the pool price from being manipulated.
+        uint256 timestamp = _predictionMarketPartipants[msg.sender][pool];
 
-        hookFlags.shouldCallBeforeSwap = true;
-        hookFlags.shouldCallAfterSwap = true;
-        hookFlags.shouldCallComputeDynamicSwapFee = true;
-        
-        return hookFlags;
+        if(timestamp > block.timestamp){
+            return (true, 0);
+        }
+
+        return (true, staticSwapFeePercentage);
     }
 
-    // Prediction Market Methods    
+    /// @inheritdoc IHooks
+    function onAfterSwap(AfterSwapParams calldata params) public override returns (bool, uint256) {
+        // Record the last swap block for the pool. Used later to determine whether a market should
+        // be settled.
+        _lastSwapBlockByPool[params.pool] = block.number;
+        
+        return (true, params.amountCalculatedRaw);
+    }
+
+    /************************************
+     * Prediction Market Methods    
+     ************************************/ 
 
     /**
      * @notice Get the market id from the given market params
@@ -238,16 +272,25 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
             revert InvalidTokenPair();
         }
         
+        // add liquidity to the corresponding prediction market to the user request. If one is not found, one will be created
+        (uint256 bullAmount, uint256 bearAmount, PredictionMarket memory market) = 
+            markets.addLiquidity(pool, tokenA, tokenB, closedAtTimestamp, _vault, side, amount, FEE);
+
         // transfer deposit funds from the user account to the hook contract. The user position will be updated for bull 
         // and bear units corresponding to the current market prices after fees. 
         IERC20(market.token0).safeTransferFrom(msg.sender, address(this), amount);
 
-        // add liquidity to the corresponding prediction market to the user request. If one is not found, one will be created
-        (uint256 bullAmount, uint256 bearAmount) = markets.addLiquidity(pool, tokenA, tokenB, closedAtTimestamp, _vault, side, amount, FEE);
-
         // Apply user position deltas and store the updated market. Add liquidity deltas are always positive uint256, so we 
         // need to convert them to int256() prior to calling applyPositionDelta(int256, int256).
         Position memory updatedPosition = positions.applyPositionDelta(market.id, msg.sender, bullAmount.toInt256(), bearAmount.toInt256());
+
+        // record the market particpation for the user and pool combination. This will allow the user to have 0 tx fees when 
+        // swapping in the pool to incentivize keeping the pool balanced via arbitrage. The latest timestamp value should be stored.
+        uint256 currentTimestamp = _predictionMarketPartipants[msg.sender][pool];
+
+        if(closedAtTimestamp > currentTimestamp){
+            _predictionMarketPartipants[msg.sender][pool] = closedAtTimestamp;
+        }
 
         return updatedPosition;
     }
@@ -265,9 +308,9 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
         address pool = markets[marketId].pool;
         uint256 lastSwapBlock = _lastSwapBlockByPool[pool];
 
-        PredictionMarket memory settledMarket = markets.settle(marketId, lastSwapBlock, SETTLEMENT_WAITING_PERIOD);
+        PredictionMarket memory settledMarket = markets.settle(marketId, lastSwapBlock, SETTLEMENT_WAITING_PERIOD, _vault);
 
-        _donate(settledMarket.pool, settledMarket.fees, settledMarket.token0);
+        _donate(settledMarket.pool, settledMarket.token0, settledMarket.fees);
 
         return settledMarket;
     }
@@ -279,15 +322,27 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
      * @return winnings the amount claimed to the msg.sender
      */
     function collect(bytes32 marketId) public returns (uint256 winnings){
-        PredictionMarket memory market = markets[id];
+        // fetch the market and settle it try to settle it if it's still open
+        PredictionMarket memory market = markets[marketId];
 
         if(!market.settled){
             settle(marketId);
         }
 
-        uint256 userClaimAmount = positions.claim(market);
+        // determine the amount of funds to send to the user if any then mark the position as claimed
+        Position memory position = positions[marketId][msg.sender];
 
-        SafeERC20(market.token0).transfer(msg.sender, userClaimAmount);
+        if(position.collected){
+            return 0;
+        }
+
+        uint256 userClaimAmount = position.getClaimableBalance(market);
+
+        positions[marketId][msg.sender].collected = true;
+
+        if(userClaimAmount > 0){
+            IERC20(market.token0).safeTransfer(msg.sender, userClaimAmount);
+        }
 
         return userClaimAmount;
     }
@@ -305,7 +360,7 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
     function swap(
         bytes32 marketId,
         Side from,
-        uint245 amountIn
+        uint256 amountIn
     ) public returns (Position memory position) {
         // get output amount from the market and prepare amount deltas
         uint256 amountOut = markets.swap(marketId, from, amountIn, FEE);
@@ -315,7 +370,7 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
 
         (int256 bullAmountDelta, int256 bearAmountDelta) = from == Side.Bull ? 
             (amountInDelta, amountOutdelta) :
-            (amountOutdelta, amountInDelta)
+            (amountOutdelta, amountInDelta);
 
         // update the position with the amount deltas
         Position memory updatedPosition = positions.applyPositionDelta(marketId, msg.sender, bullAmountDelta, bearAmountDelta);
