@@ -34,16 +34,16 @@ import { IVolatilityDiscount } from "../volatility-module/IVolatilityDiscount.so
 import "forge-std/console.sol";
 
 // only for 2 token pools
-contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
+contract VolatilityLoyaltyHook is BaseHooks, VaultGuard, Ownable {
     using FixedPoint for uint256;
 
-    address public _tokenAddress; // making public for debugging purposes only
-    address public _oracleAddress; // making public for debugging purposes only
-    address public _loyaltyModuleAddress; // making public for debugging purposes only
-    address public _volatilityModuleAddress; // making public for debugging purposes only
-    address public _factoryAddress; // allow only contant product factory
-    bool public _isLoyaltyDiscountEnabled; // making public for debugging purposes only
-    bool public _isVolatilityFeeEnabled; // making public for debugging purposes only
+    address private _tokenAddress;
+    address private _oracleAddress;
+    address private _loyaltyModuleAddress;
+    address private _volatilityModuleAddress;
+    address private _factoryAddress;
+    bool public isLoyaltyDiscountEnabled;
+    bool public isVolatilityFeeEnabled;
 
     // add checks :
     // only 2-token pools
@@ -54,7 +54,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
         address oracleAddress,
         address loyaltyModuleAddress,
         address volatilityModuleAddress
-    ) VaultGuard(vault) {
+    ) VaultGuard(vault) Ownable(msg.sender) {
         _tokenAddress = tokenAddress;
         _oracleAddress = oracleAddress;
         _loyaltyModuleAddress = loyaltyModuleAddress;
@@ -76,10 +76,10 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
     // from a registered factory
     function onRegister(
         address,
-        address pool,
+        address,
         TokenConfig[] memory,
         LiquidityManagement calldata
-    ) public override returns (bool) {
+    ) public override onlyVault returns (bool) {
         return true;
     }
 
@@ -101,7 +101,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
         uint256[] memory amountsOutRaw,
         uint256[] memory balancesScaled18,
         bytes memory
-    ) public override returns (bool, uint256[] memory) {
+    ) public override onlyVault returns (bool, uint256[] memory) {
         console.log("(onAfterRemoveLiquidity) executed now");
         address[] memory tokenAddresses = getAllTokenConfigs(_factoryAddress); // -> need to do this cuz we do not know that what index points to what token address
         IVolatilityOracle volatilityOracle = IVolatilityOracle(_oracleAddress);
@@ -131,7 +131,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
         uint256,
         uint256[] memory balancesScaled18,
         bytes memory
-    ) public override returns (bool, uint256[] memory) {
+    ) public override onlyVault returns (bool, uint256[] memory) {
         console.log("(onAfterAddLiquidity) executed now");
         address[] memory tokenAddresses = getAllTokenConfigs(_factoryAddress); // -> need to do this cuz we do not know that what index points to what token address
         IVolatilityOracle volatilityOracle = IVolatilityOracle(_oracleAddress);
@@ -152,7 +152,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
         return (true, amountsInRaw); // check if false works here
     }
 
-    function onAfterSwap(AfterSwapParams calldata params) public override returns (bool, uint256) {
+    function onAfterSwap(AfterSwapParams calldata params) public override onlyVault returns (bool, uint256) {
         // update volatility data
         console.log("(onAfterSwap) executed now");
         IVolatilityOracle volatilityOracle = IVolatilityOracle(_oracleAddress);
@@ -192,7 +192,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
     ) public view override onlyVault returns (bool, uint256) {
         address user = IRouterCommon(params.router).getSender();
 
-        uint256 swapFeePercentWithLoyaltyDiscount = _isLoyaltyDiscountEnabled
+        uint256 swapFeePercentWithLoyaltyDiscount = isLoyaltyDiscountEnabled
             ? getSwapFeeWithLoyaltyDiscount(user, staticSwapFeePercentage)
             : staticSwapFeePercentage;
 
@@ -201,7 +201,7 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
             swapFeePercentWithLoyaltyDiscount
         );
 
-        uint256 volatilityFeePercent = _isVolatilityFeeEnabled ? getVolatilityFee() : 0;
+        uint256 volatilityFeePercent = isVolatilityFeeEnabled ? getVolatilityFee() : 0;
 
         console.log("(onComputeDynamicSwapFeePercentage) volatilityFee", volatilityFeePercent);
 
@@ -216,12 +216,12 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard {
     // ------------------- External Functions -----------------------------
     // --------------------------------------------------------------------
 
-    function changeLoyaltyDiscountSetting() public {
-        _isLoyaltyDiscountEnabled = !_isLoyaltyDiscountEnabled;
+    function changeLoyaltyDiscountSetting() public onlyOwner {
+        isLoyaltyDiscountEnabled = !isLoyaltyDiscountEnabled;
     }
 
-    function changeVolatilityFeeSetting() public {
-        _isVolatilityFeeEnabled = !_isVolatilityFeeEnabled;
+    function changeVolatilityFeeSetting() public onlyOwner {
+        isVolatilityFeeEnabled = !isVolatilityFeeEnabled;
     }
 
     // --------------------------------------------------------------------
