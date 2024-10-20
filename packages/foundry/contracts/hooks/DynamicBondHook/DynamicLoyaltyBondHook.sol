@@ -15,6 +15,11 @@ import {
     HookFlags
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 
+import { IDynamicLoyaltyBondHook } from "./script/IDynamicLoyaltyBondHook.sol";
+import "./LoyaltyBondStructure.sol";
+import "./NFTGovernor.sol";
+import "./BadgeToken.sol";
+
 /*contract DynamicLoyaltyBondHook is Ownable, ReentrancyGuard {
     IVault public vault;
     uint256 public penaltyPeriod = 7 days;
