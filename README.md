@@ -37,9 +37,9 @@ Swapping occurs as guests in the AirBnB are given the opportunity to invest.  Th
 
 ***
 ## :video_camera: Demo
-https://youtu.be/0zS-bFA9sNE
-***
+[https://youtu.be/0zS-bFA9sNE](https://www.youtube.com/watch?v=0zS-bFA9sNE&feature=youtu.be)
 
+***
 ## :hook: Utilized Hooks
 <table>
 <tr><th>onRegister</th></tr>
