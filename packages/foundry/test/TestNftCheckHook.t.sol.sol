@@ -47,6 +47,8 @@ contract TestNftCheckHook is BaseVaultTest {
 
     address payable internal hookOwner;
     uint256 internal hookOwnerKey;
+    address payable internal randomUser;
+    uint256 internal randomUserKey;
     address payable internal trustedRouter;
 
     MockNft mockNft;
@@ -58,18 +60,28 @@ contract TestNftCheckHook is BaseVaultTest {
     bool linkedTokenIsMinted;
     address linkedTokenAddress;
 
-    uint256 constant LINKED_TOKEN_SUPPLY = 1e5*1e18;
+    uint256 constant OWNER_LINKED_TOKEN_INITIAL_BALANCE = 1e3*1e18;
+    uint256 constant OWNER_USDC_INITIAL_BALANCE = 1e3*1e18;
+    uint256 constant RANDOM_USER_USDC_INITIAL_BALANCE = 100*1e18;
+    uint256 constant POOL_INITIAL_AMOUNT = 50e18;
+
+    uint256 constant USDC_SWAP_AMOUNT_IN = 40e18;
 
     function setUp() public override {
-        (hookOwner, hookOwnerKey) = createUser("hookOwner");
-        users.push(hookOwner);
-        userKeys.push(hookOwnerKey);
+        address hookOwnerP;
+        (hookOwnerP, hookOwnerKey) = makeAddrAndKey("hookOwner");
+        hookOwner = payable(hookOwnerP);
+        address randomUserP;
+        (randomUserP, randomUserKey) = makeAddrAndKey("randomUser");
+        randomUser = payable(randomUserP);
 
-        vm.prank(hookOwner);
         mintNft();
 
         super.setUp();
+        poolInitAmount = POOL_INITIAL_AMOUNT; // overriding
         poolHooksContract = nftCheckHook; // overriding
+        usdc.mint(hookOwner, OWNER_USDC_INITIAL_BALANCE);
+        usdc.mint(randomUser, RANDOM_USER_USDC_INITIAL_BALANCE);
 
         linkedTokenAddress = NftCheckHook(nftCheckHook).getLinkedToken(); // get linked token address
         linkedToken = MockLinked(linkedTokenAddress); // linked token
@@ -78,85 +90,88 @@ contract TestNftCheckHook is BaseVaultTest {
         (linkedTokenIdx, usdcIdx) = getSortedIndexes(address(linkedToken), address(usdc));
 
         pool = createPool();
-        approveForPool(IERC20(pool));
+        // approveForPool(IERC20(pool));
         vaultConvertFactor = vault.getConvertFactor();
-
-        InitializationConfig memory initConfig = getCheckSumPoolInitConfig(address(linkedToken), address(usdc));
-        approveRouterWithPermit2(initConfig.tokens);
-        // Grants LP the ability to change the static swap fee percentage.
-        // authorizer.grantRole(vault.getActionId(IVaultAdmin.setStaticSwapFeePercentage.selector), lp);
-        
-        // initPool();
-    }
-
-    function mintNft() internal {
-        mockNft = new MockNft("NFTFactory", "NFTF");
-        vm.prank(hookOwner);
-        tokenId = mockNft.mintNft("https://0a050602b1c1aeae1063a0c8f5a7cdac.ipfscdn.io/ipfs/QmSiA82PQNuWuBfQtuzWKwnZV94qs34jrW1L6PaR69jeoE/metadata.json");
-    }
-
-    function getCheckSumPoolInitConfig(
-        address token1,
-        address token2
-    ) internal returns (InitializationConfig memory config) {
-        IERC20[] memory tokens = new IERC20[](2); // Array of tokens to be used in the pool
-        tokens[0] = IERC20(token1);
-        tokens[1] = IERC20(token2);
-        uint256[] memory exactAmountsIn = new uint256[](2); // Exact amounts of tokens to be added, sorted in token alphanumeric order
-        exactAmountsIn[0] = poolInitAmount; // amount of token1 to send during pool initialization
-        exactAmountsIn[1] = poolInitAmount; // amount of token2 to send during pool initialization
-        uint256 minBptAmountOut = bptAmountRoundDown; // Minimum amount of pool tokens to be received
-        bool wethIsEth = false; // If true, incoming ETH will be wrapped to WETH; otherwise the Vault will pull WETH tokens
-        bytes memory userData = bytes(""); // Additional (optional) data required for adding initial liquidity
-
-        config = InitializationConfig({
-            tokens: InputHelpers.sortTokens(tokens),
-            exactAmountsIn: exactAmountsIn,
-            minBptAmountOut: minBptAmountOut,
-            wethIsEth: wethIsEth,
-            userData: userData
-        });
-    }
-
-
-
-    function createHook() internal override returns (address) {
-        // HookFlags memory hookFlags;
-
-        trustedRouter = payable(router);
-
-        // hookOwner will be the owner of the hook. Only hookOwner is able to set hook fee percentages.
-        vm.prank(hookOwner);
-        nftCheckHook = address(
-            new NftCheckHook(vault, address(mockNft), tokenId, address(usdc), "RWA Token", "RWAT", LINKED_TOKEN_SUPPLY)
-        );
-        vm.label(nftCheckHook, "Nft Check Hook");
-        return nftCheckHook;
     }
 
     function testMintNft() public {
         assertEq(mockNft.balanceOf(hookOwner) > 0, true, "hookOwner does not have an NFT");
     }
 
-    function testLinkedTokenInitialBalances() public {
-        uint256 hookOwnerBalance = linkedToken.balanceOf(hookOwner);
-        assertEq(hookOwnerBalance, LINKED_TOKEN_SUPPLY, "hookOwner has no linked tokens");
-        uint256 bobBalance = linkedToken.balanceOf(bob);
-        assertEq(bobBalance, 0, "Bob has some linked tokens");
-    }
+    function testInitialBalances() public {
+        uint256 hookOwnerLinkedBalance = linkedToken.balanceOf(hookOwner);
+        assertEq(hookOwnerLinkedBalance, OWNER_LINKED_TOKEN_INITIAL_BALANCE, "hookOwner wrong liniked tokens balance");
+        uint256 hookOwnerUsdcBalance = usdc.balanceOf(hookOwner);
+        assertEq(hookOwnerUsdcBalance, OWNER_USDC_INITIAL_BALANCE, "hookOwner wrong usdc tokens balance");
 
-    // function testInitializePoolWithoutNftTransfer() public {
-    //     assertEq(address(mockNft), NftCheckHook(nftCheckHook).getNftContract());
-    //     vm.expectRevert();
-    //     initPool();
-    // }
+        uint256 randomUserLinkedBalance = linkedToken.balanceOf(randomUser);
+        assertEq(randomUserLinkedBalance, 0, "RandomUser has some linked tokens");
+        uint256 randomUserUsdcBalance = usdc.balanceOf(randomUser);
+        assertEq(randomUserUsdcBalance, RANDOM_USER_USDC_INITIAL_BALANCE, "RandomUser wrong usdc tokens balance");
+    }
 
     function testInitializePoolWithNftTransfer() public {
         assertEq(address(mockNft), NftCheckHook(nftCheckHook).getNftContract());
         vm.prank(hookOwner);
         mockNft.transferFrom(hookOwner, nftCheckHook, 0);
-        // permit2.approve(linkedTokenAddress, address(vault), 1000e18, 0);
         initPool();
+
+        // random user swaps usdc for linked tokens
+        vm.startPrank(randomUser);
+        usdc.approve(address(permit2), type(uint256 ).max);
+        permit2.approve(address(usdc), address(router), type(uint160).max, type(uint48).max);
+
+        RouterMock(router).swapSingleTokenExactIn(
+            pool,
+            usdc,
+            IERC20(linkedTokenAddress),
+            USDC_SWAP_AMOUNT_IN,
+            0,
+            MAX_UINT256,
+            false,
+            bytes("")
+        );
+        vm.stopPrank();
+
+        assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN, "RandomUser wrong usdc tokens balance");
+        assertEq(linkedToken.balanceOf(randomUser), USDC_SWAP_AMOUNT_IN, "RandomUser wrong linked tokens balance");
+
+        // hook owner settles pool
+        vm.startPrank(hookOwner);
+        usdc.approve(nftCheckHook, type(uint256 ).max);
+        NftCheckHook(nftCheckHook).settle();
+        vm.stopPrank();
+
+        // random user redeems
+        vm.startPrank(randomUser);
+        linkedToken.approve(nftCheckHook, type(uint256 ).max);
+        NftCheckHook(nftCheckHook).redeem();
+        vm.stopPrank();
+
+        uint256 settlementAmount =  (USDC_SWAP_AMOUNT_IN * 1.1 ether) / 1 ether;
+        assertEq(usdc.balanceOf(hookOwner), OWNER_USDC_INITIAL_BALANCE - POOL_INITIAL_AMOUNT - settlementAmount, 'hookOwner wrong usdc balance');
+        assertEq(linkedToken.balanceOf(hookOwner), OWNER_LINKED_TOKEN_INITIAL_BALANCE - POOL_INITIAL_AMOUNT + USDC_SWAP_AMOUNT_IN, 'hookOwner wrong linked token balance');
+        assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN + settlementAmount, 'randomUser wrong usdc balance');
+        assertEq(linkedToken.balanceOf(randomUser), 0, 'randomuser wrong linked token balance');
+    }
+
+    function mintNft() internal {
+        vm.prank(hookOwner);
+        mockNft = new MockNft("NFTFactory", "NFTF");
+        vm.prank(hookOwner);
+        tokenId = mockNft.mintNft("https://0a050602b1c1aeae1063a0c8f5a7cdac.ipfscdn.io/ipfs/QmSiA82PQNuWuBfQtuzWKwnZV94qs34jrW1L6PaR69jeoE/metadata.json");
+    }
+
+    function createHook() internal override returns (address) {
+        trustedRouter = payable(router);
+
+        // hookOwner will be the owner of the hook. Only hookOwner is able to set hook fee percentages.
+        vm.prank(hookOwner);
+        nftCheckHook = address(
+            new NftCheckHook(vault, address(mockNft), tokenId, address(usdc), "RWA Token", "RWAT", OWNER_LINKED_TOKEN_INITIAL_BALANCE)
+        );
+        vm.label(nftCheckHook, "Nft Check Hook");
+        return nftCheckHook;
     }
 
     function createPool() internal override returns (address) {
@@ -184,63 +199,15 @@ contract TestNftCheckHook is BaseVaultTest {
         return address(newPool);
     }
 
-    function _registerPoolWithHook(address exitFeePool, TokenConfig[] memory tokenConfig, address factory) private {
-        PoolRoleAccounts memory roleAccounts;
-        LiquidityManagement memory liquidityManagement = LiquidityManagement({
-            disableUnbalancedLiquidity: false,
-            enableAddLiquidityCustom: false,
-            enableRemoveLiquidityCustom: false,
-            enableDonation: true
-        });
-
-        PoolFactoryMock(factory).registerPool(
-            exitFeePool,
-            tokenConfig,
-            roleAccounts,
-            poolHooksContract,
-            liquidityManagement
-        );
-    }
-
     function initPool() internal override {
         if (mockNft.ownerOf(tokenId) == nftCheckHook) {
             vm.startPrank(hookOwner);
-            permit2.approve(address(linkedToken), nftCheckHook, type(uint160).max, type(uint48).max);
-            permit2.approve(address(usdc), nftCheckHook, type(uint160).max, type(uint48).max);
-            permit2.approve(address(linkedToken), address(vault), type(uint160).max, type(uint48).max);
-            permit2.approve(address(usdc), address(vault), type(uint160).max, type(uint48).max);
+            usdc.approve(address(permit2), type(uint256 ).max);
+            linkedToken.approve(address(permit2), type(uint256 ).max);
+            permit2.approve(address(linkedToken), address(router), type(uint160).max, type(uint48).max);
+            permit2.approve(address(usdc), address(router), type(uint160).max, type(uint48).max);
             _initPool(pool, [poolInitAmount, poolInitAmount].toMemoryArray(), 0);
             vm.stopPrank();
-        }
-    }
-
-    function approveRouterWithPermit2(IERC20[] memory tokens) internal {
-        approveSpenderOnToken(address(permit2), tokens);
-        approveSpenderOnPermit2(address(router), tokens);
-    }
-
-    /**
-     * @notice Max approving to speed up UX on frontend
-     * @param spender Address of the spender
-     * @param tokens Array of tokens to approve
-     */
-    function approveSpenderOnToken(address spender, IERC20[] memory tokens) internal {
-        uint256 maxAmount = type(uint256).max;
-        for (uint256 i = 0; i < tokens.length; ++i) {
-            tokens[i].approve(spender, maxAmount);
-        }
-    }
-
-    /**
-     * @notice Max approving to speed up UX on frontend
-     * @param spender Address of the spender
-     * @param tokens Array of tokens to approve
-     */
-    function approveSpenderOnPermit2(address spender, IERC20[] memory tokens) internal {
-        uint160 maxAmount = type(uint160).max;
-        uint48 maxExpiration = type(uint48).max;
-        for (uint256 i = 0; i < tokens.length; ++i) {
-            permit2.approve(address(tokens[i]), spender, maxAmount, maxExpiration);
         }
     }
 
