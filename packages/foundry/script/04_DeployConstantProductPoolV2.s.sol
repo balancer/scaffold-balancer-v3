@@ -16,7 +16,9 @@ import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpe
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantProductFactoryV2 } from "../contracts/factories/ConstantProductFactoryV2.sol";
 import { VolatilityLoyaltyHook } from "../contracts/hooks/VolatilityBasedSwapFee/hooks/VolatilityLoyaltyHook.sol";
-import { VolatilityOracle } from "../contracts/hooks/VolatilityBasedSwapFee/VolatilityOracle.sol";
+import { VolatilityOracle } from "../contracts/hooks/VolatilityBasedSwapFee/volatility-module/VolatilityOracle.sol";
+import { LoyaltyDiscount } from "../contracts/hooks/VolatilityBasedSwapFee/loyalty-module/LoyaltyDiscount.sol";
+import { VolatilityDiscount } from "../contracts/hooks/VolatilityBasedSwapFee/volatility-module/VolatilityDiscount.sol";
 
 /**
  * @title Deploy Constant Product Pool
@@ -37,10 +39,16 @@ contract DeployConstantProductPoolV2 is PoolHelpers, ScaffoldHelpers {
         console.log("Constant Product Factory deployed at: %s", address(factory));
 
         // Deploy a hook
-        address volatilityLoyaltyHook = address(new VolatilityLoyaltyHook(vault, token2, 1e18, address(new VolatilityOracle())));
+        address volatilityLoyaltyHook = address(
+            new VolatilityLoyaltyHook(
+                vault,
+                token2,
+                address(new VolatilityOracle()),
+                address(new LoyaltyDiscount()),
+                address(new VolatilityDiscount())
+            )
+        );
         console.log("volatilityLoyaltyHook deployed at address: %s", volatilityLoyaltyHook);
-
-        
 
         // Deploy a pool and register it with the vault
         address pool = factory.create(

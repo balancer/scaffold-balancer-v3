@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MockToken1: {
-      address: "0x7de46319F7A830E54Ae5782254D48F82A87B17a2",
+      address: "0xfD4CF923519d89ee75040cE47e486f6ccEc7CCff",
       abi: [
         {
           type: "constructor",
@@ -365,7 +365,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x1B90434B56172df0857d653aABCFDB0Ed18CdCfe",
+      address: "0x9F0Af544f0aD99f714547E317E3c8e221E01eB51",
       abi: [
         {
           type: "constructor",
@@ -723,7 +723,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0xA735b068f78abB08777b3BD5ed0B53a5156ae7db",
+      address: "0x30EE1286362f52F415ac401973c4656891E7243d",
       abi: [
         {
           type: "constructor",
@@ -1081,7 +1081,7 @@ const deployedContracts = {
       },
     },
     ConstantSumFactory: {
-      address: "0xED8dd432482Ed2378CFFBCf0C36668ac89DDa9cA",
+      address: "0x4fd03C44F03FBaf5F928Ee54Fb61Eb2D49FB69aA",
       abi: [
         {
           type: "constructor",
@@ -1465,7 +1465,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHookExample: {
-      address: "0x0eC96bB13b8B72C7b71aC6A1b821C0B46E19228b",
+      address: "0x806652C0D0e01eCeB33c97aA2fE977ddA2498C90",
       abi: [
         {
           type: "constructor",
@@ -2175,7 +2175,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactory: {
-      address: "0xF51b23855e2A5AB789316442680E56C6859f2112",
+      address: "0x2Ab98Ca74DC10853F5702345a709e2ad0D1727C9",
       abi: [
         {
           type: "constructor",
@@ -2559,7 +2559,7 @@ const deployedContracts = {
       },
     },
     LotteryHookExample: {
-      address: "0xb39abe0fB525Fc930a67d7B8D6Ea849162cac87C",
+      address: "0x8A8645B800601d8B93978a354A705EB9fd0AFF30",
       abi: [
         {
           type: "constructor",
@@ -3513,7 +3513,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactoryV2: {
-      address: "0xA2CAFbf75A54b9C2a132D11f2a5Dd9C9f5A7c27d",
+      address: "0xE6005881b7a9b74EEC6fa6db9993E31aC3215Bf2",
       abi: [
         {
           type: "constructor",
@@ -3897,7 +3897,7 @@ const deployedContracts = {
       },
     },
     VolatilityOracle: {
-      address: "0x2E25dBD208cE2DD520836a782707F11f05c30ea2",
+      address: "0x489CBd6EBd61616a2b4164F3E4E22Ab732C7FE40",
       abi: [
         {
           type: "constructor",
@@ -4018,12 +4018,141 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
+        getVolatility: "contracts/hooks/VolatilityBasedSwapFee/volatility-module/IVolatilityOracle.sol",
+        updateOracle: "contracts/hooks/VolatilityBasedSwapFee/volatility-module/IVolatilityOracle.sol",
         findAllSamples: "contracts/hooks/VolatilityBasedSwapFee/balancer-v2-oracle/PoolPriceOracle.sol",
         getSample: "contracts/hooks/VolatilityBasedSwapFee/balancer-v2-oracle/PoolPriceOracle.sol",
       },
     },
+    LoyaltyDiscount: {
+      address: "0xd0D8BD92CDeFc1de505FFe4f93197f460C2ACdd6",
+      abi: [
+        {
+          type: "function",
+          name: "getSwapFeeWithLoyaltyDiscount",
+          inputs: [
+            {
+              name: "user",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "staticSwapFeePercentage",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "updateLoyaltyDataForUser",
+          inputs: [
+            {
+              name: "user",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "tokenAddress",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "tokenIn",
+              type: "address",
+              internalType: "contract IERC20",
+            },
+            {
+              name: "amountInScaled18",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "amountOutScaled18",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "userLoyaltyData",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "firstTransactionTimestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "cumulativeLoyalty",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "tokens",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "lastTimestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+      ],
+      inheritedFunctions: {
+        getSwapFeeWithLoyaltyDiscount: "contracts/hooks/VolatilityBasedSwapFee/loyalty-module/ILoyaltyDiscount.sol",
+        updateLoyaltyDataForUser: "contracts/hooks/VolatilityBasedSwapFee/loyalty-module/ILoyaltyDiscount.sol",
+      },
+    },
+    VolatilityDiscount: {
+      address: "0xD64A276D1bE46f3C7a474dc02CFdf9c0c89e49A5",
+      abi: [
+        {
+          type: "function",
+          name: "getVolatilityFeePercent",
+          inputs: [
+            {
+              name: "oracleAddress",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+      ],
+      inheritedFunctions: {
+        getVolatilityFeePercent: "contracts/hooks/VolatilityBasedSwapFee/volatility-module/IVolatilityDiscount.sol",
+      },
+    },
     VolatilityLoyaltyHook: {
-      address: "0x03D4039762C9831981D8051dF0aEDFFC72F8FCAa",
+      address: "0x38Ad6BfD56Ad7bd423Cc93943F59B8BdbCDE87c4",
       abi: [
         {
           type: "constructor",
@@ -4039,12 +4168,17 @@ const deployedContracts = {
               internalType: "address",
             },
             {
-              name: "variableFeeCap",
-              type: "uint256",
-              internalType: "uint256",
+              name: "oracleAddress",
+              type: "address",
+              internalType: "address",
             },
             {
-              name: "oracleAddress",
+              name: "loyaltyModuleAddress",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "volatilityModuleAddress",
               type: "address",
               internalType: "address",
             },
@@ -4092,6 +4226,19 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "_loyaltyModuleAddress",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "_oracleAddress",
           inputs: [],
           outputs: [
@@ -4118,13 +4265,13 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "_variableFeeCap",
+          name: "_volatilityModuleAddress",
           inputs: [],
           outputs: [
             {
               name: "",
-              type: "uint256",
-              internalType: "uint256",
+              type: "address",
+              internalType: "address",
             },
           ],
           stateMutability: "view",
@@ -4142,47 +4289,6 @@ const deployedContracts = {
           inputs: [],
           outputs: [],
           stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "getCurrentLoyaltyIndex",
-          inputs: [
-            {
-              name: "loyaltyData",
-              type: "tuple",
-              internalType: "struct VolatilityLoyaltyHook.LoyaltyData",
-              components: [
-                {
-                  name: "firstTransactionTimestamp",
-                  type: "uint256",
-                  internalType: "uint256",
-                },
-                {
-                  name: "cumulativeLoyalty",
-                  type: "uint256",
-                  internalType: "uint256",
-                },
-                {
-                  name: "tokens",
-                  type: "uint256",
-                  internalType: "uint256",
-                },
-                {
-                  name: "lastTimestamp",
-                  type: "uint256",
-                  internalType: "uint256",
-                },
-              ],
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
         },
         {
           type: "function",
@@ -4251,25 +4357,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "getLoyaltyDiscount",
-          inputs: [
-            {
-              name: "loyaltyIndex",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "pure",
-        },
-        {
-          type: "function",
           name: "getSwapFeeWithLoyaltyDiscount",
           inputs: [
             {
@@ -4294,7 +4381,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "getVolatilityFeePercent",
+          name: "getVolatilityFee",
           inputs: [],
           outputs: [
             {
@@ -4304,25 +4391,6 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getVolatilityFeePercentOnCap",
-          inputs: [
-            {
-              name: "volatility",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "pure",
         },
         {
           type: "function",
@@ -4890,53 +4958,6 @@ const deployedContracts = {
           stateMutability: "nonpayable",
         },
         {
-          type: "function",
-          name: "setVariableFeeCap",
-          inputs: [
-            {
-              name: "variableFeeCap",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "userLoyaltyData",
-          inputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "firstTransactionTimestamp",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "cumulativeLoyalty",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "tokens",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "lastTimestamp",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
           type: "event",
           name: "PriceDataUpdated",
           inputs: [
@@ -4988,7 +5009,7 @@ const deployedContracts = {
       },
     },
     WeightedPoolFactory: {
-      address: "0x94464BcbFb7133c1e13f499Ad3De7AdE3CcCC749",
+      address: "0xb876CD94E3F5398B3c1f9409fAc477450eE8e608",
       abi: [
         {
           type: "constructor",
@@ -5393,7 +5414,7 @@ const deployedContracts = {
       },
     },
     ExitFeeHookExample: {
-      address: "0xD5194dB8A45960840A4cEFD66a32c7A2923f6D22",
+      address: "0x1dd0c507B6F26F8EC59e556B0232c4f08920deBa",
       abi: [
         {
           type: "constructor",
