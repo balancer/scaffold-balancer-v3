@@ -118,8 +118,8 @@ contract LoyaltyDiscount is ILoyaltyDiscount {
             ? currentTimestamp
             : oldFirstTransactionTimestamp;
 
-        uint256 newTokens = (uint256(additionalTokens) + oldTokens) > 0
-            ? uint256(uint256(additionalTokens) + oldTokens)
+        uint256 newTokens = (additionalTokens + int256(oldTokens)) > 0
+            ? uint256(additionalTokens + int256(oldTokens))
             : 0; // loyalty and tokens can never be zero
 
         userLoyaltyData[user] = LoyaltyData(

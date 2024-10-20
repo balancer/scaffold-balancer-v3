@@ -16,8 +16,6 @@ contract VolatilityOracle is IVolatilityOracle, PoolPriceOracle {
 
     bytes32 internal _miscData;
 
-    constructor() {}
-
     function getVolatility(uint256 ago) external view returns (uint256 volatility) {
         if (ago == 0) return 0;
 

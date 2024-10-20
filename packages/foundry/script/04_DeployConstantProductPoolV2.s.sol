@@ -15,10 +15,12 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantProductFactoryV2 } from "../contracts/factories/ConstantProductFactoryV2.sol";
-import { VolatilityLoyaltyHook } from "../contracts/hooks/VolatilityBasedSwapFee/hooks/VolatilityLoyaltyHook.sol";
-import { VolatilityOracle } from "../contracts/hooks/VolatilityBasedSwapFee/volatility-module/VolatilityOracle.sol";
-import { LoyaltyDiscount } from "../contracts/hooks/VolatilityBasedSwapFee/loyalty-module/LoyaltyDiscount.sol";
-import { VolatilityDiscount } from "../contracts/hooks/VolatilityBasedSwapFee/volatility-module/VolatilityDiscount.sol";
+import { VolatilityLoyaltyHook } from "../contracts/hooks/VolatilityLoyaltyModule/hooks/VolatilityLoyaltyHook.sol";
+import { VolatilityOracle } from "../contracts/hooks/VolatilityLoyaltyModule/volatility-module/VolatilityOracle.sol";
+import { LoyaltyDiscount } from "../contracts/hooks/VolatilityLoyaltyModule/loyalty-module/LoyaltyDiscount.sol";
+import {
+    VolatilityDiscount
+} from "../contracts/hooks/VolatilityLoyaltyModule/volatility-module/VolatilityDiscount.sol";
 
 /**
  * @title Deploy Constant Product Pool
