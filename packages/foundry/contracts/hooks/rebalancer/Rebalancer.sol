@@ -29,7 +29,8 @@ import {
     AddLiquidityParams,
     PoolRoleAccounts,
     AfterSwapParams,
-    SwapKind
+    SwapKind,
+    PoolSwapParams
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 
 import { MinimalRouterWithSwap } from "./MinimalRouterWithSwap.sol";
@@ -222,6 +223,8 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
         hookFlags.enableHookAdjustedAmounts = true;
         hookFlags.shouldCallBeforeAddLiquidity = true;
         hookFlags.shouldCallAfterRemoveLiquidity = true;
+        hookFlags.shouldCallComputeDynamicSwapFee = true;
+        hookFlags.shouldCallAfterSwap = true;
         return hookFlags;
     }
 
@@ -260,15 +263,26 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
         address pool = params.pool;
         if (rebalanceData[pool].length == 0) {
             revert RebalanceDataNotSet(pool);
-       }
-    
+        }
+
         (bool rebalanceRequired, uint256[] memory priceActionRatio) = isRebalanceRequired(pool);
         if (rebalanceRequired) {
-            emit RebalanceStarted(pool); 
+            emit RebalanceStarted(pool);
             rebalance(pool, priceActionRatio);
         }
 
         return (true, params.amountCalculatedRaw);
+    }
+
+    /// @inheritdoc IHooks
+    function onComputeDynamicSwapFeePercentage(
+        PoolSwapParams calldata params,
+        address pool,
+        uint256 staticSwapFeePercentage
+    ) public view override onlyVault returns (bool, uint256) {
+        uint256 dynamicFee = IOracle(oracle).getFee(pool);
+
+        return (true, dynamicFee);
     }
 
     /***************************************************************************
@@ -299,6 +313,7 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
     /***************************************************************************
                                   internal Functions
     ***************************************************************************/
+
     function rebalance(address pool, uint256[] memory priceActionRatio) internal {
         RebalanceData[] memory poolRebalanceData = rebalanceData[pool];
         WeightedPoolDynamicData memory poolData = IWeightedPool(pool).getWeightedPoolDynamicData();
