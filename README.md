@@ -1,301 +1,77 @@
-# 🏗︎ Scaffold Balancer v3
+# Prediction Market Hook
+Asset price prediction markets (binary options in tradfi) are a popular way for market participants to get leverage, hedge or speculate on short term price movements. In their current form, they exist on-chain as services with either partially or fully centralized components. 
 
-A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
+This hook allows any registered pool to permissionlessly host prediction markets. Participants speculate on whether the price of a pair at some point in the future will be above or below the current price. Each side(bull/bear) has a corresponding floating market price governed by UniswapV2 math. At expiration the winners split the balance of the deposited liquidity minus fees.
 
-[![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/f862091d-2fe9-4b4b-8d70-cb2fdc667384)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
+Hooks are critical to the proper function of the market as it uses incentives to maintain the integrity of the market by giving 0% swap fees to prediction market participants to incentivize arbitrage.
 
-### 🔁 Development Life Cycle
+Liquidity providers are compensated by receiving 100% of the swap fees generated from prediction markets. As such, this hook introduces an additional revenue source for liquidity provides that does not depend on price movement. One can think of this style of hook as offering additional value to the ecosystem that participants are willing to compensate LP's for.
 
-1. Learn the core concepts for building on top of Balancer v3
-2. Configure and deploy factories, pools, and hooks contracts to a local anvil fork of Sepolia
-3. Interact with pools via a frontend that runs at [localhost:3000](http://localhost:3000/)
+## How it Brings Value
+1. Open the doors for new prediction markets by removing centralized components and friction. Any asset pair hosted in a balancer pool can now become its own prediction market.
 
-### 🪧 Table Of Contents
+1. Introduce a novel approach to reducing Impermanent Loss in volatile pools by introducing an additional source of fee revenue.
 
-- [🧑‍💻 Environment Setup](#-environment-setup)
-- [👩‍🏫 Learn Core Concepts](#-learn-core-concepts)
-- [🕵️ Explore the Examples](#-explore-the-examples)
-- [🌊 Create a Custom Pool](#-create-a-custom-pool)
-- [🏭 Create a Pool Factory](#-create-a-pool-factory)
-- [🪝 Create a Pool Hook](#-create-a-pool-hook)
-- [🚢 Deploy the Contracts](#-deploy-the-contracts)
-- [🧪 Test the Contracts](#-test-the-contracts)
+1. Decentralized leveraged trading for short term traders. Traders have the opportunity to 2x+ capital within short time intervals.
 
-## 🧑‍💻 Environment Setup
+1. LP's can hedge expected price movements during volatile markets to further reduce IL.
 
-### 1. Requirements 📜
+## How it Works
+After pool registration, any asset with a non zero balance can become part of a pair used in a prediction market. Below is a description of the core components when interacting with a market.
 
-- [Node (>= v18.17)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
-- [Foundry](https://book.getfoundry.sh/getting-started/installation) (>= v0.2.0)
+### Creating a position
+Users can create a new or  add to a position by calling **addLiquidity**. The function takes in the pool, pair, liquidity amount and end date of the market. If the market does not exist then it will be automatically created. Users can add liquidity in proportional amounts or single sided. 
 
-### 2. Quickstart 🏃
+After adding liquidity a users internal balance of bull/bear units will be updated. In the event of a new pool creation and proportional liquidity each side will be valued at 50% of the input token, representing a 50% probability of each outcome.
 
-1. Ensure you have the latest version of foundry installed
+A 1% transaction fee is charged for each liquidity addition.
 
-```
-foundryup
-```
+### Swapping
+Unlike other platforms, users can swap between sides as markets develop. To do this one can call the **swap** method with an input amount, the side to swap from and the marketId.
 
-2. Clone this repo & install dependencies
+The swap uses an implementation of uniswapV2 math to determine the swap exchange rate. The users balance and the market balances are updated after the swap.
 
-```bash
-git clone https://github.com/balancer/scaffold-balancer-v3.git
-cd scaffold-balancer-v3
-yarn install
-```
+A 1% transaction fee is charged for each swap.
 
-3. Set a `SEPOLIA_RPC_URL` in the `packages/foundry/.env` file
+### Settling the Market (determining payouts)
+Upon closing of  market (the duration has expired), the market can be settled by calling the **settle** method. At this time the winning side of the market is determined ad the payouts for the bull/bear sides are calculated.
 
-```
-SEPOLIA_RPC_URL=...
-```
+The winning payout will be a split between the total deposited liquidity and the total amount to units on the winning side. For example, if 10ETH are deposited and 7ETH of value is on the winning side then the value of each winning unit received a 1.42x payout.
 
-4. Start a local anvil fork of the Sepolia testnet
+One should consider that during the duration of the market being open, prices will range/move. So that unit of the winning side may have been able to be purchased at say .2 (20% probability). This structure of a dynamic market rewards traders with forecasting ability and thus will attract volume to the market
 
-```bash
-yarn fork
-```
+### Collecting Payouts
+A winning user can claim their payout by calling the **collect** method with the corresponding marketId. 
 
-5. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts
-   > By default, the anvil account #0 will be the deployer and recieve the mock tokens and BPT from pool initialization
+## Guarding Against Price Manipulation
+Price manipulation is an obvious concern for a market like this. A bad actor is incentivized to the move the pool price right before settlement. To remove this risk a few measures are taken.
 
-```bash
-yarn deploy
-```
+1. Prediction market participants are incentivized to be arbitragers. This is done by overriding the computeDynamicSwapFeePercentage method to give market participants a 0% trading fee. This trading fee discount makes arbitrage available to bring prices back into line quickly if the are manipulated by a bad actor.
 
-6. Start the nextjs frontend
+2. There is a built in waiting period between the last swap/liquidity action in a pool and when it can be settled. Configured in blocks, this gives arbitrage enough time to rebalance prices before taking a final price snapshot during settlement.
 
-```bash
-yarn start
-```
+When combined, the system properly incentivizes participants to rebalance the pool in the event of manipulation of a bad actor.
 
-7. Explore the frontend
+## Overriden Hook Methods
+**onComputeDynamicSwapFeePercentage:** Used to give prediction market participants 0% trading fees. Allowing them to arbitragers responsible for maintaining price integrity of the pool.
 
-- Navigate to http://localhost:3000 to see the home page
-- Visit the [Pools Page](http://localhost:3000/pools) to search by address or select using the pool buttons
-- Vist the [Debug Page](http://localhost:3000/debug) to see the mock tokens, factory, and hooks contracts
+**onAfterSwap:** Record the last activity block number for a given pool. Used during settlement in conjunction with the settlement waiting period.
 
-8. Run the Foundry tests
+**onAfterAddLiquidity:** Record the last activity block since non proportional adds will impact price
 
-```
-yarn test
-```
+**onAfterRemoveLiquidity:** Record the last activity block since non proportional removes will impact price
 
-### 3. Scaffold ETH 2 Tips 🏗️
+## Custom Hook Methods
+**addLiquidity:** Create or add to a prediction market position.
 
-SE-2 offers a variety of configuration options for connecting an account, choosing networks, and deploying contracts
+**swap:** Swap from one side of the market to the other
 
-<details><summary><strong>🔥 Burner Wallet</strong></summary>
+**settle:** Close a market and compute winning payouts
 
-If you do not have an active wallet extension connected to your web browser, then scaffold eth will automatically connect to a "burner wallet" that is randomly generated on the frontend and saved to the browser's local storage. When using the burner wallet, transactions will be instantly signed, which is convenient for quick iterative development.
+**collect:** Claim payouts from a market
 
-To force the use of burner wallet, disable your browsers wallet extensions and refresh the page. Note that the burner wallet comes with 0 ETH to pay for gas so you will need to click the faucet button in top right corner. Also the mock tokens for the pool are minted to your deployer account set in `.env` so you will want to navigate to the "Debug Contracts" page to mint your burner wallet some mock tokens to use with the pool.
+## Next Steps
 
-![Burner Wallet](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/0a1f3456-f22a-46b5-9e05-0ef5cd17cce7)
-
-![Debug Tab Mint](https://github.com/Dev-Rel-as-a-Service/scaffold-balancer-v3/assets/73561520/fbb53772-8f6d-454d-a153-0e7a2925ef9f)
-
-</details>
-
-<details><summary><strong>👛 Browser Extension Wallet</strong></summary>
-    
-- To use your preferred browser extension wallet, ensure that the account you are using matches the PK you previously provided in the `foundry/.env` file
-- You may need to add a local development network with rpc url `http://127.0.0.1:8545/` and chain id `31337`. Also, you may need to reset the nonce data for your wallet exension if it gets out of sync.
-
-</details>
-
-<details><summary><strong>🐛 Debug Contracts Page </strong></summary>
-
-The [Debug Contracts Page](http://localhost:3000/debug) can be useful for viewing and interacting with all of the externally avaiable read and write functions of a contract. The page will automatically hot reload with contracts that are deployed via the `01_DeployConstantSumFactory.s.sol` script. We use this handy setup to mint `mockERC20` tokens to any connected wallet
-
-</details>
-
-<details><summary><strong>🌐 Changing The Frontend Network Connection</strong></summary>
-
-- The network the frontend points at is set via `targetNetworks` in the `scaffold.config.ts` file using `chains` from viem.
-- By default, the frontend runs on a local node at `http://127.0.0.1:8545`
-
-```typescript
-const scaffoldConfig = {
-  targetNetworks: [chains.foundry],
-```
-
-</details>
-
-<details><summary><strong>🍴 Changing The Forked Network</strong></summary>
-
-- By default, the `yarn fork` command points at sepolia, but any of the network aliases from the `[rpc_endpoints]` of `foundry.toml` can be used to modify the `"fork"` alias in the `packages/foundry/package.json` file
-
-```json
-	"fork": "anvil --fork-url ${0:-sepolia} --chain-id 31337 --config-out localhost.json",
-```
-
-- To point the frontend at a different forked network, change the `targetFork` in `scaffold.config.ts`
-
-```typescript
-const scaffoldConfig = {
-  // The networks the frontend can connect to
-  targetNetworks: [chains.foundry],
-
-  // If using chains.foundry as your targetNetwork, you must specify a network to fork
-  targetFork: chains.sepolia,
-```
-
-</details>
-
-## 👩‍🏫 Learn Core Concepts
-
-- [Contract Architecture](https://docs-v3.balancer.fi/concepts/core-concepts/architecture.html)
-- [Balancer Pool Tokens](https://docs-v3.balancer.fi/concepts/core-concepts/balancer-pool-tokens.html)
-- [Balancer Pool Types](https://docs-v3.balancer.fi/concepts/explore-available-balancer-pools/)
-- [Building Custom AMMs](https://docs-v3.balancer.fi/build-a-custom-amm/)
-- [Exploring Hooks and Custom Routers](https://pitchandrolls.com/2024/08/30/unlocking-the-power-of-balancer-v3-exploring-hooks-and-custom-routers/)
-- [Hook Development Tips](https://medium.com/@johngrant/unlocking-the-power-of-balancer-v3-hook-development-made-simple-831391a68296)
-
-![v3-components](https://github.com/user-attachments/assets/ccda9323-790f-4276-b092-c867fd80bf9e)
-
-## 🕵️ Explore the Examples
-
-Each of the following examples have turn key deploy scripts that can be found in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory
-
-### 1. Constant Sum Pool with Dynamic Swap Fee Hook
-
-The swap fee percentage is altered by the hook contract before the pool calculates the amount for the swap
-
-![dynamic-fee-hook](https://github.com/user-attachments/assets/5ba69ea3-6894-4eeb-befa-ed87cfeb6b13)
-
-### 2. Constant Product Pool with Lottery Hook
-
-An after swap hook makes a request to an oracle contract for a random number
-
-![after-swap-hook](https://github.com/user-attachments/assets/594ce1ac-2edc-4d16-9631-14feb2d085f8)
-
-### 3. Weighted Pool with Exit Fee Hook
-
-An after remove liquidity hook adjusts the amounts before the vault transfers tokens to the user
-
-![after-remove-liquidity-hook](https://github.com/user-attachments/assets/2e8f4a5c-f168-4021-b316-28a79472c8d1)
-
-## 🌊 Create a Custom Pool
-
-[![custom-amm-video](https://github.com/user-attachments/assets/e6069a51-f1b5-4f98-a2a9-3a2098696f96)](https://www.youtube.com/watch?v=kXynS3jAu0M)
-
-### 1. Review the Docs 📖
-
-- [Create a custom AMM with a novel invariant](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html)
-
-### 2. Recall the Key Requirements 🔑
-
-- Must inherit from `IBasePool` and `BalancerPoolToken`
-- Must implement `onSwap`, `computeInvariant`, and `computeBalance`
-- Must implement `getMaximumSwapFeePercentage` and `getMinimumSwapFeePercentage`
-
-### 3. Write a Custom Pool Contract 📝
-
-- To get started, edit the`ConstantSumPool.sol` contract directly or make a copy
-
-## 🏭 Create a Pool Factory
-
-After designing a pool contract, the next step is to prepare a factory contract because Balancer's off-chain infrastructure uses the factory address as a means to identify the type of pool, which is important for integration into the UI, SDK, and external aggregators
-
-### 1. Review the Docs 📖
-
-- [Deploy a Custom AMM Using a Factory](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/deploy-custom-amm-using-factory.html)
-
-### 2. Recall the Key Requirements 🔑
-
-- A pool factory contract must inherit from [BasePoolFactory](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/factories/BasePoolFactory.sol)
-- Use the internal `_create` function to deploy a new pool
-- Use the internal `_registerPoolWithVault` fuction to register a pool immediately after creation
-
-### 3. Write a Factory Contract 📝
-
-- To get started, edit the`ConstantSumFactory.sol` contract directly or make a copy
-
-## 🪝 Create a Pool Hook
-
-[![hook-video](https://github.com/user-attachments/assets/96e12c29-53c2-4a52-9437-e477f6d992d1)](https://www.youtube.com/watch?v=kaz6duliRPA)
-
-### 1. Review the Docs 📖
-
-- [Extend an Existing Pool Type Using Hooks](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/extend-existing-pool-type-using-hooks.html)
-
-### 2. Recall the Key Requirements 🔑
-
-- A hooks contract must inherit from [BasePoolHooks.sol](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/BaseHooks.sol)
-- A hooks contract should also inherit from [VaultGuard.sol](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/VaultGuard.sol)
-- Must implement `onRegister` to determine if a pool is allowed to use the hook contract
-- Must implement `getHookFlags` to define which hooks are supported
-- The `onlyVault` modifier should be applied to all hooks functions (i.e. `onRegister`, `onBeforeSwap`, `onAfterSwap` ect.)
-
-### 3. Write a Hook Contract 📝
-
-- To get started, edit the `VeBALFeeDiscountHook.sol` contract directly or make a copy
-
-## 🚢 Deploy the Contracts
-
-The deploy scripts are located in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory. To better understand the lifecycle of deploying a pool that uses a hooks contract, see the diagram below
-
-![pool-deploy-scripts](https://github.com/user-attachments/assets/bb906080-8f42-46c0-af90-ba01ba1754fc)
-
-### 1. Modifying the Deploy Scripts 🛠️
-
-For all the scaffold integrations to work properly, each deploy script must be imported into `Deploy.s.sol` and inherited by the `DeployScript` contract in `Deploy.s.sol`
-
-### 2. Broadcast the Transactions 📡
-
-#### Deploy to local fork
-
-1. Run the following command
-
-```bash
-yarn deploy
-```
-
-#### Deploy to a live network
-
-1. Add a `DEPLOYER_PRIVATE_KEY` to the `packages/foundry/.env` file
-
-```
-DEPLOYER_PRIVATE_KEY=0x...
-SEPOLIA_RPC_URL=...
-```
-
-> The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must hold enough Sepolia ETH to deploy the contracts. This account will receive the BPT from pool initialization
-
-2. Run the following command
-
-```
-yarn deploy --network sepolia
-```
-
-## 🧪 Test the Contracts
-
-The [balancer-v3-monorepo](https://github.com/balancer/balancer-v3-monorepo) provides testing utility contracts like [BasePoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/test/foundry/utils/BasePoolTest.sol) and [BaseVaultTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/test/foundry/utils/BaseVaultTest.sol). Therefore, the best way to begin writing tests for custom factories, pools, and hooks contracts is to leverage the examples established by the source code.
-
-### 1. Testing Factories 👨‍🔬
-
-The `ConstantSumFactoryTest` roughly mirrors the [WeightedPool8020FactoryTest
-](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool8020Factory.t.sol)
-
-```
-yarn test --match-contract ConstantSumFactoryTest
-```
-
-### 2. Testing Pools 🏊
-
-The `ConstantSumPoolTest` roughly mirrors the [WeightedPoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool.t.sol)
-
-```
-yarn test --match-contract ConstantSumPoolTest
-```
-
-### 3. Testing Hooks 🎣
-
-The `VeBALFeeDiscountHookExampleTest` mirrors the [VeBALFeeDiscountHookExampleTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-hooks/test/foundry/VeBALFeeDiscountHookExample.t.sol)
-
-```
-yarn test --match-contract VeBALFeeDiscountHookExampleTest
-```
+- Add more unit tests
+- Add KYC to comply with laws in certain juristictions
+- Audit
