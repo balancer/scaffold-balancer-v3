@@ -89,7 +89,7 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
      * This is to mitigate price manipulation possibilities by allowing arbitrage to bring the pool back into balance
      * if it has been brought out of balance by a malicious actor
      */ 
-    mapping(address => uint256) private _lastSwapBlockByPool;
+    mapping(address => uint256) private _lastActivityBlockByPool;
 
     /**
      * @notice Lookup of user address and pool prediction market participation end time
@@ -133,6 +133,8 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
     function getHookFlags() public pure override returns (HookFlags memory) {
         HookFlags memory hookFlags;
 
+        hookFlags.shouldCallAfterAddLiquidity = true;
+        hookFlags.shouldCallAfterRemoveLiquidity = true;
         hookFlags.shouldCallAfterSwap = true;
         hookFlags.shouldCallComputeDynamicSwapFee = true;
         
@@ -184,9 +186,41 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
     function onAfterSwap(AfterSwapParams calldata params) public override returns (bool, uint256) {
         // Record the last swap block for the pool. Used later to determine whether a market should
         // be settled.
-        _lastSwapBlockByPool[params.pool] = block.number;
+        _lastActivityBlockByPool[params.pool] = block.number;
         
         return (true, params.amountCalculatedRaw);
+    }
+
+    /// @inheritdoc IHooks
+    function onAfterAddLiquidity(
+        address,
+        address pool,
+        AddLiquidityKind,
+        uint256[] memory,
+        uint256[] memory amountsInRaw,
+        uint256,
+        uint256[] memory,
+        bytes memory
+    ) public override returns (bool, uint256[] memory) {
+        _lastActivityBlockByPool[pool] = block.number;
+
+        return (true, amountsInRaw);
+    }
+
+    /// @inheritdoc IHooks
+    function onAfterRemoveLiquidity(
+        address,
+        address pool,
+        RemoveLiquidityKind,
+        uint256,
+        uint256[] memory,
+        uint256[] memory amountsOutRaw,
+        uint256[] memory,
+        bytes memory
+    ) public override returns (bool, uint256[] memory) {
+        _lastActivityBlockByPool[pool] = block.number;
+
+        return (true, amountsOutRaw);
     }
 
     /************************************
@@ -306,9 +340,9 @@ contract PredictionMarketHook is BaseHooks, VaultGuard, Ownable {
      */
     function settle(bytes32 marketId) public returns (PredictionMarket memory market) {
         address pool = markets[marketId].pool;
-        uint256 lastSwapBlock = _lastSwapBlockByPool[pool];
+        uint256 lastActivityBlock = _lastActivityBlockByPool[pool];
 
-        PredictionMarket memory settledMarket = markets.settle(marketId, lastSwapBlock, SETTLEMENT_WAITING_PERIOD, _vault);
+        PredictionMarket memory settledMarket = markets.settle(marketId, lastActivityBlock, SETTLEMENT_WAITING_PERIOD, _vault);
 
         _donate(settledMarket.pool, settledMarket.token0, settledMarket.fees);
 
