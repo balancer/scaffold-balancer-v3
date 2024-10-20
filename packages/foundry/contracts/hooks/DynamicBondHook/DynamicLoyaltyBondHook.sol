@@ -17,7 +17,7 @@ import {
 
 import { IDynamicLoyaltyBondHook } from "./script/IDynamicLoyaltyBondHook.sol";
 import "./LoyaltyBondStructure.sol";
-import "./NFTGovernor.sol";
+import "./AccessControl.sol";
 import "./BadgeToken.sol";
 
 /*contract DynamicLoyaltyBondHook is Ownable, ReentrancyGuard {
