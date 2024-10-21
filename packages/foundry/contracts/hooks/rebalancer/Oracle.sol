@@ -3,16 +3,16 @@ pragma solidity ^0.8.24;
 
 import {IOracle,TokenData} from "./interfaces/IOracle.sol";
 
-abstract contract Oracle is IOracle {
-    uint24 immutable public baseFee;
+contract Oracle is IOracle {
+    uint256 immutable public baseFee;
     address public oracle;
 
-    event FeeUpdate(address indexed pool, uint24 fee); 
+    event FeeUpdate(address indexed pool, uint256 fee); 
     event PositionUpdate(address indexed pool, TokenData); 
 
     error UnAuthorized();
 
-    mapping (address => uint24) public dynamicFee;
+    mapping (address => uint256) public dynamicFee;
 
     mapping(address => TokenData[]) public poolTokens;
     error NotOracle();
@@ -24,28 +24,33 @@ abstract contract Oracle is IOracle {
         _;
     }
 
-    constructor(uint24 _baseFee, address _oracle) {
+    constructor(uint256 _baseFee, address _oracle) {
         baseFee = _baseFee;
         oracle = _oracle;
     }
 
-    function setFee(address pool, uint24 fee) external override onlyOracle {
+    function setFee(address pool, uint256 fee) external override  {
         dynamicFee[pool] = fee;
         emit FeeUpdate(pool, fee);
     }
 
-    function setPoolTokenData(
+    function setPoolTokensData(
         address pool,
-        uint i,
-        uint256 latestRoundPrice,
-        uint256 predictedPrice
-    ) external override onlyOracle {
-        TokenData[] storage tokensData = poolTokens[pool];
-        tokensData[i].latestRoundPrice = latestRoundPrice;
-        tokensData[i].predictedPrice = predictedPrice;
+        TokenData[] memory _tokensData
+    ) external onlyOracle {
+  
+        TokenData[] storage poolRebalanceData = poolTokens[pool];
+
+        if (poolRebalanceData.length > 0) {
+            delete poolTokens[pool];
+        }
+
+        for (uint256 i = 0; i < _tokensData.length; i++) {
+            poolRebalanceData.push(_tokensData[i]);
+        }
     }
 
-    function getFee(address pool) external view override returns (uint24) {
+    function getFee(address pool) external view override returns (uint256) {
         return dynamicFee[pool];
     }
 

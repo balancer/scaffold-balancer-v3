@@ -22,7 +22,7 @@ interface IOracle {
      * @param pool The address of the pool
      * @return The current fee
      */
-    function getFee(address pool) external view returns (uint24);
+    function getFee(address pool) external view returns (uint256);
 
     /**
      * @dev Get the current position for the given pool
@@ -36,26 +36,16 @@ interface IOracle {
      * @param pool The address of the pool
      * @param fee The fee to set
      */
-    function setFee(address pool, uint24 fee) external;
+    function setFee(address pool, uint256 fee) external;
 
     /**
      * @dev Set the position for the given pool
      * @param pool The address of the pool
-     * @param i The index of the token to set for the pool
-     * @param latestRoundPrice The Latest Round price from Price Aggregator
-     * @param predictedPrice The predict price based on forward events
+     * @param _tokensData The TokenData[] array to set
      */
-    function setPoolTokenData(
+    function setPoolTokensData(
         address pool,
-        uint i,
-        uint256 latestRoundPrice,
-        uint256 predictedPrice
+        TokenData[] memory _tokensData
     ) external;
 
-
-    /**
-     * @dev Update the oracle for the given pool
-     * @param pool The address of the pool
-     */
-    function updateOracle(address pool) external;
 }

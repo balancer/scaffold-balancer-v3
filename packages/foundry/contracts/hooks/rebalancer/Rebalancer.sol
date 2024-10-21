@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity ^0.8.24;
 
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -27,6 +30,7 @@ import {
     AddLiquidityKind,
     RemoveLiquidityKind,
     AddLiquidityParams,
+    RemoveLiquidityParams,
     PoolRoleAccounts,
     AfterSwapParams,
     SwapKind,
@@ -36,8 +40,10 @@ import {
 import { MinimalRouterWithSwap } from "./MinimalRouterWithSwap.sol";
 import { IOracle, TokenData } from "./interfaces/IOracle.sol";
 
-contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
+contract ReBalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
     using FixedPoint for uint256;
+    using SafeCast for *;
+    using Address for address payable;
 
     ///@dev price feeds give the data in 1e8 precision
     uint256 constant PRICE_PRECISION = 1e8;
@@ -57,9 +63,9 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
 
     ///@dev I could not find a way to get all the LPs of the pool
     ///@dev I used many variable to cut down the for loops
-    mapping(address => address[]) liqudityProviders;
-    mapping(address => mapping(address => uint256[])) amountTokens;
-    mapping(address => mapping(address => bool)) isStillLp;
+    mapping(address => address[]) public liquidityProviders;
+    mapping(address => mapping(address => uint256[])) public amountTokens;
+    mapping(address => mapping(address => bool)) public isStillLp;
 
     ///@dev This is private as only owner of the hook contract can change the address
     address private weightedPoolFactory;
@@ -132,6 +138,15 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
         _ensureSelfRouter(router);
         _;
     }
+    ///@dev prevent race conditions when rebalancing
+    bool private isRebalancing;
+
+    modifier nonReentrantRebalance() {
+        require(!isRebalancing, "Rebalance in progress");
+        isRebalancing = true;
+        _;
+        isRebalancing = false;
+    }
 
     /***************************************************************************
                                   Router Functions
@@ -153,7 +168,7 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
             wethIsEth,
             userData
         );
-        address[] storage lps = liqudityProviders[pool];
+        address[] storage lps = liquidityProviders[pool];
         lps.push(msg.sender);
         uint256[] storage amounts = amountTokens[pool][msg.sender];
         for (uint256 i = 0; i < amounts.length; i++) {
@@ -208,9 +223,10 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
         TokenConfig[] memory,
         LiquidityManagement calldata
     ) public override onlyVault returns (bool) {
-        if (IBasePoolFactory(weightedPoolFactory).isPoolFromFactory(pool)) {
-            revert OnlyWeightedPoolsAllowed();
-        }
+        ///@dev removing for testing
+        // if (!IBasePoolFactory(weightedPoolFactory).isPoolFromFactory(pool)) {
+        //     revert OnlyWeightedPoolsAllowed();
+        // }
 
         emit RebalancerHookRegistered(address(this), pool);
 
@@ -220,7 +236,6 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
     /// @inheritdoc IHooks
     function getHookFlags() public pure override returns (HookFlags memory) {
         HookFlags memory hookFlags;
-        hookFlags.enableHookAdjustedAmounts = true;
         hookFlags.shouldCallBeforeAddLiquidity = true;
         hookFlags.shouldCallAfterRemoveLiquidity = true;
         hookFlags.shouldCallComputeDynamicSwapFee = true;
@@ -280,9 +295,9 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
         address pool,
         uint256 staticSwapFeePercentage
     ) public view override onlyVault returns (bool, uint256) {
-        uint256 dynamicFee = IOracle(oracle).getFee(pool);
+        // uint256 dynamicFee = IOracle(oracle).getFee(pool);
 
-        return (true, dynamicFee);
+        return (true, staticSwapFeePercentage);
     }
 
     /***************************************************************************
@@ -303,7 +318,15 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
             revert OnlyCreatorCanChangeRebalanceData(pool);
         }
 
-        rebalanceData[pool] = _rebalanceData;
+        RebalanceData[] storage poolRebalanceData = rebalanceData[pool];
+
+        if (poolRebalanceData.length > 0) {
+            delete rebalanceData[pool];
+        }
+
+        for (uint256 i = 0; i < _rebalanceData.length; i++) {
+            poolRebalanceData.push(_rebalanceData[i]);
+        }
     }
 
     function setOracle(address newOracle) external onlyOwner {
@@ -313,33 +336,39 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
     /***************************************************************************
                                   internal Functions
     ***************************************************************************/
+    event Debug();
 
+    event tokens(uint256[] tokens);
     function rebalance(address pool, uint256[] memory priceActionRatio) internal {
         RebalanceData[] memory poolRebalanceData = rebalanceData[pool];
         WeightedPoolDynamicData memory poolData = IWeightedPool(pool).getWeightedPoolDynamicData();
         uint256[] memory currentBalances = poolData.balancesLiveScaled18;
         uint256[] memory normalizedWeights = IWeightedPool(pool).getNormalizedWeights();
+        emit Debug();
         (uint256[] memory tokenDeltas, bool[] memory remove) = _calculateAmounts(
             poolRebalanceData,
             currentBalances,
             priceActionRatio,
             normalizedWeights
         );
+        emit tokens(tokenDeltas);
         _changeLiqudity(pool, tokenDeltas, remove, currentBalances, true);
     }
 
-    function isRebalanceRequired(address pool) internal view returns (bool, uint256[] memory) {
+    function isRebalanceRequired(address pool) internal returns (bool, uint256[] memory) {
         TokenData[] memory tokenData = IOracle(oracle).getPoolTokensData(pool);
-        RebalanceData[] memory poolRebalanceData = rebalanceData[pool];
+        RebalanceData[] storage poolRebalanceData = rebalanceData[pool];
         bool didPriceChange = false;
         uint256[] memory priceActionRatioArr = new uint256[](tokenData.length);
         for (uint i = 0; i < tokenData.length; i++) {
             if (tokenData[i].predictedPrice != 0) {
-                uint256 priceActionRatio = tokenData[i].predictedPrice.divUp(tokenData[i].latestRoundPrice);
-                uint256 priceActionRatioScaled = priceActionRatio.mulUp(PRICE_PRECISION);
+                uint256 priceActionRatio = (tokenData[i].predictedPrice.mulUp(FixedPoint.ONE)).divUp(
+                    tokenData[i].latestRoundPrice
+                );
                 if (priceActionRatio > poolRebalanceData[i].minRatio) {
                     didPriceChange = true;
-                    priceActionRatioArr[i] = priceActionRatioScaled;
+                    poolRebalanceData[i].rebalanceRequired = true;
+                    priceActionRatioArr[i] = priceActionRatio;
                 } else {
                     priceActionRatioArr[i] = FixedPoint.ONE;
                 }
@@ -347,6 +376,7 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
         }
         return (didPriceChange, priceActionRatioArr);
     }
+
 
     /**
      * @param pool The address of pool
@@ -361,8 +391,8 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
         bool wethIsEth
     ) internal {
         uint256 length = tokenDeltas.length;
-        uint256[] memory addTokens;
-        uint256[] memory removeTokens;
+        uint256[] memory addTokens = new uint256[](length);
+        uint256[] memory removeTokens = new uint256[](length);
         address[] memory activeLiquidityProviders = _getActiveLiquidityProviders(pool);
 
         ///@dev This is not for production but I take an assumption that every Lp has enough funds to handle
@@ -389,14 +419,11 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
             _distributeLiquidity(pool, activeLiquidityProviders[0], addTokens, false, wethIsEth);
             _distributeLiquidity(pool, activeLiquidityProviders[0], removeTokens, true, wethIsEth);
         } else {
-            (uint256[][] memory lpOneTokens, uint256[][] memory lpTwoTokens) = _getTwoLpsTokens(
-                addTokens,
-                removeTokens
-            );
-            _distributeLiquidity(pool, activeLiquidityProviders[0], lpOneTokens[0], false, wethIsEth);
-            _distributeLiquidity(pool, activeLiquidityProviders[0], lpOneTokens[1], false, wethIsEth);
-            _distributeLiquidity(pool, activeLiquidityProviders[1], lpTwoTokens[0], false, wethIsEth);
-            _distributeLiquidity(pool, activeLiquidityProviders[1], lpOneTokens[1], false, wethIsEth);
+            (LPTokens memory lpOneTokens, LPTokens memory lpTwoTokens) = _getTwoLpsTokens(addTokens, removeTokens);
+            _distributeLiquidity(pool, activeLiquidityProviders[0], lpOneTokens.addTokens, false, wethIsEth);
+            _distributeLiquidity(pool, activeLiquidityProviders[0], lpOneTokens.removeTokens, false, wethIsEth);
+            _distributeLiquidity(pool, activeLiquidityProviders[1], lpTwoTokens.addTokens, false, wethIsEth);
+            _distributeLiquidity(pool, activeLiquidityProviders[1], lpOneTokens.removeTokens, false, wethIsEth);
         }
     }
 
@@ -418,27 +445,82 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
         bool wethIsEth
     ) internal {
         if (!remove) {
-            _addLiquidityProportional(
-                pool,
-                liquidityProvider,
-                liquidityProvider,
-                tokenAmounts,
-                MIN_BPT_AMOUNT_OUT,
-                wethIsEth,
-                ""
+            (uint256[] memory amountsIn, , ) = _vault.addLiquidity(
+                AddLiquidityParams({
+                    pool: pool,
+                    to: liquidityProvider,
+                    maxAmountsIn: tokenAmounts,
+                    minBptAmountOut: MIN_BPT_AMOUNT_OUT,
+                    kind: AddLiquidityKind.PROPORTIONAL,
+                    userData: ""
+                })
             );
+
+            // maxAmountsIn length is checked against tokens length at the vault.
+            IERC20[] memory tokens = _vault.getPoolTokens(pool);
+
+            for (uint256 i = 0; i < tokens.length; ++i) {
+                IERC20 token = tokens[i];
+                uint256 amountIn = amountsIn[i];
+
+                // There can be only one WETH token in the pool.
+                if (wethIsEth && address(token) == address(_weth)) {
+                    if (address(this).balance < amountIn) {
+                        revert InsufficientEth();
+                    }
+
+                    _weth.deposit{ value: amountIn }();
+                    _weth.transfer(address(_vault), amountIn);
+                    _vault.settle(_weth, amountIn);
+                } else {
+                    // Any value over MAX_UINT128 would revert above in `addLiquidity`, so this SafeCast shouldn't be
+                    // necessary. Done out of an abundance of caution.
+                    _permit2.transferFrom(liquidityProvider, address(_vault), amountIn.toUint160(), address(token));
+                    _vault.settle(token, amountIn);
+                }
+            }
+
+            // Send remaining ETH to the user.
+            _returnEth(liquidityProvider);
         } else {
-            _removeLiquidityProportional(
-                pool,
-                liquidityProvider,
-                liquidityProvider,
-                MAX_BPT_AMOUNT_IN,
-                tokenAmounts,
-                wethIsEth,
-                ""
-            );
+        (,uint256[] memory amountsOut, ) = _vault.removeLiquidity(
+            RemoveLiquidityParams({
+                pool: pool,
+                from: liquidityProvider,
+                maxBptAmountIn: MAX_BPT_AMOUNT_IN,
+                minAmountsOut: tokenAmounts,
+                kind: RemoveLiquidityKind.PROPORTIONAL,
+                userData: ""
+            })
+        );
+
+        // minAmountsOut length is checked against tokens length at the vault.
+        IERC20[] memory tokens = _vault.getPoolTokens(pool);
+
+        uint256 ethAmountOut = 0;
+        for (uint256 i = 0; i < tokens.length; ++i) {
+            uint256 amountOut = amountsOut[i];
+            IERC20 token = tokens[i];
+
+            // There can be only one WETH token in the pool.
+            if (wethIsEth && address(token) == address(_weth)) {
+                // Send WETH here and unwrap to native ETH.
+                _vault.sendTo(_weth, address(this), amountOut);
+                _weth.withdraw(amountOut);
+                ethAmountOut = amountOut;
+            } else {
+                // Transfer the token to the receiver (amountOut).
+                _vault.sendTo(token, liquidityProvider, amountOut);
+            }
+        }
+
+        if (ethAmountOut > 0) {
+            // Send ETH to receiver.
+            payable(liquidityProvider).sendValue(ethAmountOut);
+        }
         }
     }
+
 
     /**
      * This function  calculates the newTokenBalances based on the currentTokenBalances and priceRations
@@ -455,20 +537,23 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
         uint256[] memory currentLiveTokenBalancesScaled18,
         uint256[] memory priceActionRatio,
         uint256[] memory normalizedWeights
-    ) internal pure returns (uint256[] memory tokenDeltas, bool[] memory remove) {
+    ) internal returns (uint256[] memory, bool[] memory) {
         uint256 length = poolRebalanceData.length;
+        uint256[] memory tokenDeltas = new uint256[](length);
+        bool[] memory remove = new bool[](length);
 
         for (uint256 i = 0; i < length; i++) {
             if (poolRebalanceData[i].rebalanceRequired) {
                 uint256 innerProduct = FixedPoint.ONE;
                 for (uint256 j = 0; j < length; j++) {
-                    uint256 exponent = normalizedWeights[j].divUp(length.mulUp(FixedPoint.ONE)); // This definetly less than 1
+                    uint256 exponent = normalizedWeights[j].divUp(length * FixedPoint.ONE);
                     uint256 power = priceActionRatio[j].powUp(exponent);
                     innerProduct = innerProduct.mulUp(power); // This is in 1e18
                 }
                 // This is now not in scale
                 // As 5e18/e16 => 5e2
                 uint256 balanceFactor = currentLiveTokenBalancesScaled18[i].divUp(priceActionRatio[i]);
+
                 // This is again in scale
                 uint256 newBalance = balanceFactor.mulUp(innerProduct);
                 remove[i] = newBalance < currentLiveTokenBalancesScaled18[i] ? true : false;
@@ -478,6 +563,7 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
                 remove[i] = false;
             }
         }
+        return (tokenDeltas, remove);
     }
 
     function _ensureSelfRouter(address router) private view {
@@ -487,7 +573,7 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
     }
 
     ///@dev always get the positive diff
-    function _getDiff(uint256 a, uint256 b) internal view returns (uint256) {
+    function _getDiff(uint256 a, uint256 b) internal pure returns (uint256) {
         return a > b ? a - b : b - a;
     }
 
@@ -497,33 +583,51 @@ contract RebalancerHook is Ownable, MinimalRouterWithSwap, BaseHooks {
      * @return The list of active liquidity providers for the pool
      */
     function _getActiveLiquidityProviders(address pool) internal view returns (address[] memory) {
-        address[] memory poolLiquidityProviders = liqudityProviders[pool];
-        uint256 length = 0;
-        address[] memory activeLp;
+        address[] memory poolLiquidityProviders = liquidityProviders[pool];
+        uint256 activeCount = 0;
+
+        // First, count the number of active liquidity providers
         for (uint256 i = 0; i < poolLiquidityProviders.length; i++) {
             if (isStillLp[pool][poolLiquidityProviders[i]]) {
-                activeLp[length] = poolLiquidityProviders[i];
-                length++;
+                activeCount++;
             }
         }
+
+        // Initialize the activeLp array with the correct length
+        address[] memory activeLp = new address[](activeCount);
+        uint256 index = 0;
+
+        // Populate the activeLp array
+        for (uint256 i = 0; i < poolLiquidityProviders.length; i++) {
+            if (isStillLp[pool][poolLiquidityProviders[i]]) {
+                activeLp[index] = poolLiquidityProviders[i];
+                index++;
+            }
+        }
+
         return activeLp;
+    }
+
+    struct LPTokens {
+        uint256[] addTokens;
+        uint256[] removeTokens;
     }
 
     function _getTwoLpsTokens(
         uint256[] memory addTokens,
         uint256[] memory removeTokens
-    ) internal pure returns (uint256[][] memory, uint256[][] memory) {
-        uint256[][][] memory tokenMatrix;
+    ) internal pure returns (LPTokens memory lp1, LPTokens memory lp2) {
         uint256 length = addTokens.length;
-        for (uint256 lpIndex; lpIndex < 2; lpIndex++) {
-            for (uint256 tokenIndex = 0; tokenIndex < length; tokenIndex++) {
-                tokenMatrix[lpIndex][0][tokenIndex] = addTokens[tokenIndex].divUp(2);
-            }
-            for (uint256 tokenIndex = 0; tokenIndex < length; tokenIndex++) {
-                tokenMatrix[lpIndex][1][tokenIndex] = removeTokens[tokenIndex].divUp(2);
-            }
-        }
+        lp1.addTokens = new uint256[](length);
+        lp1.removeTokens = new uint256[](length);
+        lp2.addTokens = new uint256[](length);
+        lp2.removeTokens = new uint256[](length);
 
-        return (tokenMatrix[0], tokenMatrix[1]);
+        for (uint256 i = 0; i < length; i++) {
+            lp1.addTokens[i] = addTokens[i] / 2;
+            lp1.removeTokens[i] = removeTokens[i] / 2;
+            lp2.addTokens[i] = addTokens[i] - lp1.addTokens[i];
+            lp2.removeTokens[i] = removeTokens[i] - lp1.removeTokens[i];
+        }
     }
 }
