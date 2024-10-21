@@ -18,12 +18,12 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 import { BatchRouterMock } from "@balancer-labs/v3-vault/contracts/test/BatchRouterMock.sol";
 import { ArrayHelpers } from "@balancer-labs/v3-solidity-utils/contracts/test/ArrayHelpers.sol";
 import { VaultMockDeployer } from "@balancer-labs/v3-vault/test/foundry/utils/VaultMockDeployer.sol";
-import { SetAndForgetSwapHook } from "../contracts/hooks/SetAndForgetSwapHook.sol";
+import { LimitOrderV3Hook } from "../contracts/hooks/LimitOrderV3Hook.sol";
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
 import { ConstantProductFactory } from "../contracts/factories/ConstantProductFactory.sol";
 import { ConstantProductPool } from "../contracts/pools/ConstantProductPool.sol";
 import { InputHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
-import { OrderBook } from "../contracts/CustomRouter.sol";
+import { FixedPointMathLib } from "permit2/lib/solmate/src/utils/FixedPointMathLib.sol";
 
 import {
     LiquidityManagement,
@@ -37,38 +37,21 @@ contract SetAndForgetSwapHookTest is BaseVaultTest {
     using ArrayHelpers for *;
     using CastingHelpers for address[];
     using FixedPoint for uint256;
+    using FixedPointMathLib for uint256;
+
     
 
     uint256 internal wstethIdx;
     uint256 internal usdcIdx;
     
-    // SetAndForgetSwapHook hook is both the router and hook
-    SetAndForgetSwapHook internal safsRouter;
+    // LimitOrderV3Hook hook is both the router and hook
+    LimitOrderV3Hook internal limitOrder;
     // ConstantProductFactory 
     ConstantProductFactory internal cpFactory;
 
     function setUp() public override {
-        super.setUp();
-                
+        super.setUp();     
         (wstethIdx, usdcIdx) = getSortedIndexes(address(wsteth), address(usdc));
-
-        //   uint256 maxExecutionTime = DateTime.timestampFromDateTime( 
-        //     2024,
-        //     10,
-        //     21,
-        //     10,
-        //     15, 
-        //     0
-        // );
-
-
-        // uint256 _minTokenInExecutionPrice = safsRouter.queryTokenRateXY(pool, usdcIdx, wstethIdx);
-        // uint256 _maxTokenInExecutionPrice = _minTokenInExecutionPrice + 2e18;
-
-        // vm.startPrank(bob);
-        // IERC20(address(wsteth)).approve(address(safsRouter.orderBook()), 1e18);
-        // safsRouter.orderBook().placeLimitOrder(1e18, maxExecutionTime, _minTokenInExecutionPrice, _maxTokenInExecutionPrice, address(wsteth), address(usdc));
-        // vm.stopPrank();
     }
 
     
@@ -100,7 +83,7 @@ contract SetAndForgetSwapHookTest is BaseVaultTest {
     ) internal override returns (uint256 bptOut) {
         (IERC20[] memory tokens, , , ) = vault.getPoolTokenInfo(poolToInit);
 
-        return safsRouter.initialize(poolToInit, tokens, amountsIn, minBptOut, false, bytes(""));
+        return limitOrder.initialize(poolToInit, tokens, amountsIn, minBptOut, false, bytes(""));
     }  
 
     function createHook() internal override returns (address) {
@@ -109,19 +92,19 @@ contract SetAndForgetSwapHookTest is BaseVaultTest {
         cpFactory = new ConstantProductFactory(IVault(address(vault)), 365 days);
         vm.label(address(cpFactory), "cpFactory");
 
-        safsRouter = new SetAndForgetSwapHook(address(cpFactory), IVault(vault), weth, permit2,  "ExecutorNFTBadge", "ENB SAFS", "OrderCreatoorNFTBadge", "OCNB SAFS");
-        vm.label(address(safsRouter), "safsRouter");
+        limitOrder = new LimitOrderV3Hook(address(cpFactory), address(wsteth), address(usdc), IVault(vault), weth, permit2,  "ExecutorNFTBadge", "ENB", "OrderCreatoorNFTBadge", "OCNB");
+        vm.label(address(limitOrder), "safsRouter");
 
-        address setAndForgetSwapHook = payable(
-            safsRouter
+        address limitOrderV3HookAddr = payable(
+            limitOrder
         );
 
-        vm.label(setAndForgetSwapHook, "Set And Forget Swap Hook");
+        vm.label(limitOrderV3HookAddr, "limitOrderV3 Hook Address");
 
         vm.stopPrank();
 
         vm.roll(block.number + 1);
-        return setAndForgetSwapHook;
+        return limitOrderV3HookAddr;
     }
 
     function createPool() internal override returns (address) {
@@ -157,7 +140,7 @@ contract SetAndForgetSwapHookTest is BaseVaultTest {
             tokens[i].approve(address(permit2), type(uint256).max);
             permit2.approve(address(tokens[i]), address(router), type(uint160).max, type(uint48).max);
             permit2.approve(address(tokens[i]), address(batchRouter), type(uint160).max, type(uint48).max);
-            permit2.approve(address(tokens[i]), address(safsRouter), type(uint160).max, type(uint48).max);
+            permit2.approve(address(tokens[i]), address(limitOrder), type(uint160).max, type(uint48).max);
         }
     }
 
@@ -167,12 +150,12 @@ contract SetAndForgetSwapHookTest is BaseVaultTest {
 
             bpt.approve(address(router), type(uint256).max);
             bpt.approve(address(batchRouter), type(uint256).max);
-            bpt.approve(address(safsRouter), type(uint256).max);
+            bpt.approve(address(limitOrder), type(uint256).max);
 
             IERC20(bpt).approve(address(permit2), type(uint256).max);
             permit2.approve(address(bpt), address(router), type(uint160).max, type(uint48).max);
             permit2.approve(address(bpt), address(batchRouter), type(uint160).max, type(uint48).max);
-            permit2.approve(address(bpt), address(safsRouter), type(uint160).max, type(uint48).max);
+            permit2.approve(address(bpt), address(limitOrder), type(uint160).max, type(uint48).max);
 
             vm.stopPrank();
         }
@@ -180,14 +163,14 @@ contract SetAndForgetSwapHookTest is BaseVaultTest {
 
     function testPlaceOrderAndInstantlyExecute() public {
         vm.startPrank(lp);
-        safsRouter.orderBook().executoorRegisterWithRouter();
+        limitOrder.executoorRegisterWithRouter();
         vm.stopPrank();
     
         uint256 exactAmountIn = 1e18;
         uint256 expectedAmountOut = 3190 * 1e18;
 
         vm.startPrank(alice);
-        safsRouter.swapSingleTokenExactIn(pool, wsteth, usdc, exactAmountIn, expectedAmountOut, MAX_UINT256, false, bytes(""));
+        limitOrder.swapSingleTokenExactIn(pool, wsteth, usdc, exactAmountIn, expectedAmountOut, MAX_UINT256, false, bytes(""));
         vm.stopPrank();
 
         uint256 maxExecutionTime = DateTime.timestampFromDateTime( 
@@ -199,26 +182,18 @@ contract SetAndForgetSwapHookTest is BaseVaultTest {
             0
         );
 
-
-        uint256 _minTokenInExecutionPrice = safsRouter.queryTokenRateXY(pool, usdcIdx, wstethIdx);
+        uint256 _minTokenInExecutionPrice = queryTokenRateXY(pool, usdcIdx, wstethIdx);
         uint256 _maxTokenInExecutionPrice = _minTokenInExecutionPrice + 2e18;
-console.log(_minTokenInExecutionPrice);
         vm.startPrank(bob);
-        IERC20(address(wsteth)).approve(address(safsRouter.orderBook()), 5e18);
-        safsRouter.orderBook().placeLimitOrder(5e18, maxExecutionTime, _minTokenInExecutionPrice, _maxTokenInExecutionPrice, address(wsteth), address(usdc));
+        IERC20(address(wsteth)).approve(address(limitOrder), 5e18);
+        limitOrder.placeLimitOrder(5e18, maxExecutionTime, _minTokenInExecutionPrice, _maxTokenInExecutionPrice, address(wsteth), address(usdc));
         vm.stopPrank();
         
         vm.startPrank(lp);
-        console.log("FIRST ONE");
-        console.log(lp);
-
-        console.log("permit2", address(permit2));
-        console.log(safsRouter.orderBook().minPricePoint2OrderIds(_minTokenInExecutionPrice, 0));
-        safsRouter.swapSingleTokenExactInMod(pool, wsteth, usdc, exactAmountIn, expectedAmountOut, MAX_UINT256, false, bytes(""));
+        limitOrder.swapSingleTokenExactInMod(pool, wsteth, usdc, 1, 0, MAX_UINT256, false, bytes(""));
         vm.stopPrank();
         
 
-        // console.log(preTimestamp > block.timestamp);
  
     } 
 
@@ -243,55 +218,6 @@ console.log(_minTokenInExecutionPrice);
     //     console.log(balancesAfter.userTokens[usdcIdx]);
     // }
 
-    function oldtestSwap() public {
-
-    //     // check if it adhered to the invariant 
-    //     // swaps as needed
-        
-    //     BaseVaultTest.Balances memory balancesBefore = getBalances(bob);
-
-    //     // I want to swap between wsteth to usdc 
-    //     // 1. How much wsteth do i have ? 
-    //     // 1 000 000 000, 000 000 000 000 000 000 ( 1 M wsteth )
-    //     // 2. How much usdc do i have ?
-    //     // 1 000 000 000, 000 000 000 000 000 000 ( 1 M usdc )
-    //     // 3 The pools initialization amoun, kept in the vault
-    //     // 1000 000 000 000 000 000 000 (seems to be 1 K tokens on both side)
-    //     // uint256 exactAmountIn = 10e18;
-    //     BaseVaultTest.Balances memory balancesPool = getBalances(address(vault));
-    //     // console.log(balancesPool.userTokens[wstethIdx]);
-
-         
-    //     uint256 exactAmountIn = 1e18;
-    //     // PoolMock uses linear math with a rate of 1, so amountIn == amountOut when no fees are applied.
-    //     uint256 expectedAmountOut = 3190 * 1e18;
- 
-    //     vm.prank(address(bob));
-    //     safsRouter.swapSingleTokenExactIn(pool, wsteth, usdc, exactAmountIn, expectedAmountOut, MAX_UINT256, false, bytes(""));
-    //     // uint256 expectedAmountOut =  safsRouter.querySwapSingleTokenExactIn(pool, wsteth, usdc, exactAmountIn, bytes(""));
-    //     // vault.getPoolTokenInfo(address(pool));
-    //     uint256[] memory lastBalancesLiveScaled18 = safsRouter.queryTokenLiquidity(address(pool));
-    //     BaseVaultTest.Balances memory balancesAfter = getBalances(bob);
-        
-    //     console.log(lastBalancesLiveScaled18[wstethIdx]);
-    //     console.log(lastBalancesLiveScaled18[usdcIdx]);
-    //     console.log(lastBalancesLiveScaled18[usdcIdx] / lastBalancesLiveScaled18[wstethIdx]);
-
-    //     uint256 tokenRate = safsRouter.queryTokenRateXY(address(pool), wstethIdx, usdcIdx);
-    //     // uint256 tokenRate = safsRouter.queryTokenRateYX(address(pool), usdcIdx, wstethIdx);
-    //     console.log(tokenRate);
-    //     // 3200 000 000 000 000 000 000
-    //     //          312 500 000 000 000\
-
-    //     // I can measure both liquidity and rate via the router
-
-    //     // 312 500 ETH
-    //     // 1 000 000 000 USDC
-    //     // 0.000 312 500 ETH / 1 USDC
-
-    //     //       312 500 000 000 000
-    //     // 1 000 000 000 000 000 000
-    }
 
     function convertToTimestamp(
         uint16 year,
@@ -335,4 +261,15 @@ console.log(_minTokenInExecutionPrice);
         
         return timestamp;
     }
+
+    function queryTokenRateXY(address pool, uint256 tokenIdxX, uint256 tokenIdxY) public view returns (uint256 tokenRate) {
+        (,,, uint256[] memory lastBalancesLiveScaled18) = vault.getPoolTokenInfo(pool);
+        
+        if (lastBalancesLiveScaled18[tokenIdxY] == 0) {
+            revert("Division by zero");
+        }
+
+        return FixedPointMathLib.divWadDown(lastBalancesLiveScaled18[tokenIdxX], lastBalancesLiveScaled18[tokenIdxY]);
+    }
+
 }

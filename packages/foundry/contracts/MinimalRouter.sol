@@ -262,7 +262,7 @@ console.log("amounts Out", amountOut);
 console.log(address(this));
 // // console.log(msg.sender);
 //         // change to router
-        _takeTokenIn(0x866D42D8f75700768694B7b0bF7Fd1348663B102, tokenIn, amountIn * 5, params.wethIsEth);
+        // _takeTokenIn(0x866D42D8f75700768694B7b0bF7Fd1348663B102, tokenIn, amountIn * 5, params.wethIsEth);
         // _sendTokenOut(0x866D42D8f75700768694B7b0bF7Fd1348663B102, params.tokenOut, amountOut, params.wethIsEth);
 
 //         // return any balnaces used if used 
@@ -330,34 +330,34 @@ console.log(address(this));
     }
 
     function querySwapSingleTokenExactIns(
-    address pool,
-    IERC20 tokenIn,
-    IERC20 tokenOut,
-    uint256 exactAmountIn,
-    bytes calldata userData
-) external view returns (uint256 amountCalculated) {
-    SwapSingleTokenHookParams memory params = SwapSingleTokenHookParams({
-        sender: msg.sender,
-        kind: SwapKind.EXACT_IN,
-        pool: pool,
-        tokenIn: tokenIn,
-        tokenOut: tokenOut,
-        amountGiven: exactAmountIn,
-        limit: 0,
-        deadline: _MAX_AMOUNT,
-        wethIsEth: false,
-        userData: userData
-    });
+        address pool,
+        IERC20 tokenIn,
+        IERC20 tokenOut,
+        uint256 exactAmountIn,
+        bytes calldata userData
+    ) external view returns (uint256 amountCalculated) {
+        SwapSingleTokenHookParams memory params = SwapSingleTokenHookParams({
+            sender: msg.sender,
+            kind: SwapKind.EXACT_IN,
+            pool: pool,
+            tokenIn: tokenIn,
+            tokenOut: tokenOut,
+            amountGiven: exactAmountIn,
+            limit: 0,
+            deadline: _MAX_AMOUNT,
+            wethIsEth: false,
+            userData: userData
+        });
 
-    bytes memory encodedParams = abi.encodeCall(
-        MinimalRouter.querySwapHook,
-        params
-    );
+        bytes memory encodedParams = abi.encodeCall(
+            MinimalRouter.querySwapHook,
+            params
+        );
 
-    (, bytes memory result)= address(_vault).staticcall(abi.encodeCall(_vault.quote, encodedParams));
+        (, bytes memory result)= address(_vault).staticcall(abi.encodeCall(_vault.quote, encodedParams));
 
-    return abi.decode(result, (uint256));
-}
+        return abi.decode(result, (uint256));
+    }
 
     /**
      * @notice Hook for swap queries.
@@ -373,24 +373,37 @@ console.log(address(this));
         return amountCalculated;
     }
 
-    function queryTokenLiquidity(address pool) external view returns (uint256[] memory lastBalancesLiveScaled18) {
-        (,,, lastBalancesLiveScaled18 ) = _vault.getPoolTokenInfo(pool);
-
-    
-    }
-
-    function queryTokenRateXY(address pool, uint256 tokenIdxX, uint256 tokenIdxY) external view returns (uint256 tokenRate) {
-        (,,, uint256[] memory lastBalancesLiveScaled18) = _vault.getPoolTokenInfo(pool);
-        
-        if (lastBalancesLiveScaled18[tokenIdxY] == 0) {
+    function queryTokenRateXYYX(uint256 _balanceOfX, uint256 _balanceOfY) internal view returns (uint256 tokenRateXY, uint256 tokenRateYX) {
+        if ( _balanceOfX == 0 && _balanceOfY == 0) {
             revert("Division by zero");
         }
 
-        return FixedPointMathLib.divWadDown(lastBalancesLiveScaled18[tokenIdxX], lastBalancesLiveScaled18[tokenIdxY]);
+        return (
+            FixedPointMathLib.divWadDown(_balanceOfX, _balanceOfY),
+            FixedPointMathLib.divWadDown(_balanceOfY, _balanceOfX)
+        );
     }
 
-
+    function _buildSwapSingleTokenHookParams(
+        address pool,
+        address sender, 
+        IERC20 tokenIn,
+        IERC20 tokenOut,
+        uint256 exactAmountIn
+    ) internal view returns (SwapSingleTokenHookParams memory) {
+        return SwapSingleTokenHookParams({
+            sender: sender,
+            kind: SwapKind.EXACT_IN,
+            pool: pool,
+            tokenIn: tokenIn,
+            tokenOut: tokenOut,
+            amountGiven: exactAmountIn,
+            limit: 0,
+            deadline: _MAX_AMOUNT,
+            wethIsEth: false,
+            userData: abi.encode(address(this))
+        });
+    }
 }
 
 
-// echo "# EthPumpFun" >> README.md
