@@ -1,4 +1,4 @@
-# :bank: NFT ESCROW LP
+# :bank: NFT ESCROW HOOK
 NftCheckHook is a Balancer v3 hook to allow a liquidity pool to be backed by an NFT.  This is accomplished by staking it into this escrow hook which mints an ERC20 to represent it fractionally.  The hook also enables the depositor to settle the pool at the current market rate - in essence this is buying paying for all outstanding NFT-based ERC20 tokens (aka linked or asset tokens) by depositing the required amount of the counterpart (stable) token into the escrow hook contract which then releases the NFT.  Then the holders of the linked tokens can redeem their linked tokens for stable tokens using the hook.
 
 Think of it is as a pool that requires the current linked token value to be honored in the equivalent counterpart (stable) token and held in escrow to be redeemed by linked token holders.
@@ -10,6 +10,8 @@ Hook official name: RWA NFT LPv3 <br>
 Hook unofficial name: NftCheckHook <br>  
 
 spyros-zikos wallet address: 0x24708B03D32265D3E050aC65D1Ea1c0033b4a019
+Tony Nacumoto wallet address: 0x1DEA6076bC003a957B1E4774A93a8D9aB0CBC1C1
+
 
 ***
 ## 📜 Table of Contents
@@ -82,7 +84,13 @@ Many thanks from elamore and Tony Nacu to `daniel | Beethoven X`, `matthu.eth`, 
 
 ***
 ## :rocket: Future
-We'd like to continue developing this in order to fit into an entire ecosystem where a user can utilize the value of their asset, as determined via the pool, for use in a loan product.  This would enable the LTV to be responsive to market price and could enable other novel hook use cases.  Also adding cross-chain multi-assest compatibility so that there is only one liquidity pool for an asset, but is accessible via any chain and any asset ie "zap in" would be usefull going forward.
+We'd like to continue developing this in order to fit into an entire ecosystem where a user can utilize the value of their asset, as determined via the pool, for use in a loan product.  This would enable the LTV to be responsive to market price and could enable other novel hook use cases. This doesn't only apply to RWA NFTs but any NFT that wants to provide liquidity.
+
+At the onset of the hackathon we started on another governance reward hook in addition to our nft escrow, and developing a pattern for how to compose hooks would be ideal so that we can overlay a "governance reward" hook along with the "nft escrow" hook without having to have all the logic in the same hook.
+
+Along those same lines we will be planning to use this hook on all 3 pool types -- constant sum, product & weighted -- and as such will most likely need to refactor parts in order to accomodate.
+
+Also adding cross-chain multi-assest compatibility so that there is only one liquidity pool for an asset, but is accessible via any chain and any asset ie "zap in" would be usefull going forward.
 
 ***
 # Getting Started with Scaffold Balancer v3
