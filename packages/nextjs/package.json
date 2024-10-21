@@ -23,6 +23,7 @@
     "@uniswap/v2-sdk": "^3.0.1",
     "blo": "^1.0.1",
     "daisyui": "4.5.0",
+    "ethers": "^6.13.4",
     "graphql": "^16.8.1",
     "lodash.debounce": "^4.0.8",
     "next": "^14.0.4",

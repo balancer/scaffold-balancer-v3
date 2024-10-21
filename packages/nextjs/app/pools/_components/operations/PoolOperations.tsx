@@ -104,9 +104,16 @@ const PoolOperationsAlerts = ({
     args: [100000000000000000000n],
   });
 
+  const { writeAsync: mintStable } = useScaffoldContractWrite({
+    contractName: "MockStable",
+    functionName: "mint",
+    args: [100000000000000000000n],
+  });
+
   const handleMintTokens = async () => {
     await mintToken1();
     await mintToken2();
+    await mintStable();
     refetchTokenBalances();
   };
 
@@ -115,6 +122,7 @@ const PoolOperationsAlerts = ({
   }
 
   if (balance !== 0 && userHasNoTokens) {
+    return null;
     return (
       <Alert type="info">
         To mint 100 of each mock token:{" "}
@@ -124,6 +132,15 @@ const PoolOperationsAlerts = ({
       </Alert>
     );
   }
+
+  // return (
+  //   <Alert type="info">
+  //     To mint 100 MST:{" "}
+  //     <span className="link" onClick={() => mintStable()}>
+  //       click here
+  //     </span>
+  //   </Alert>
+  // );
 
   if (isUnbalancedLiquidityDisabled) {
     return <Alert type="info">This pool only allows proportional liquidity operations</Alert>;

@@ -14,3 +14,5 @@ node_modules
 .idea
 .vercel
 .env
+
+packages/nextjs/contracts/deployedContracts.ts
