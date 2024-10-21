@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.24;
-
+       
 import {
     LiquidityManagement,
     PoolRoleAccounts,
@@ -15,7 +15,7 @@ import { ConstantProductPool } from "../pools/ConstantProductPool.sol";
  * @title Constant Product Factory
  * @notice This custom pool factory is based on the example from the Balancer v3 docs
  * https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/deploy-custom-amm-using-factory.html
- */
+ */     
 contract ConstantProductFactory is BasePoolFactory {
     /**
      * @dev The pool's creationCode is used to deploy pools via CREATE3

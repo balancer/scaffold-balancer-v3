@@ -16,3 +16,9 @@
 [submodule "packages/foundry/lib/balancer-v3-monorepo"]
 	path = packages/foundry/lib/balancer-v3-monorepo
 	url = https://github.com/balancer/balancer-v3-monorepo
+[submodule "lib/solidity-datetime"]
+	path = lib/solidity-datetime
+	url = https://github.com/RollaProject/solidity-datetime
+[submodule "packages/foundry/lib/solidity-datetime"]
+	path = packages/foundry/lib/solidity-datetime
+	url = https://github.com/RollaProject/solidity-datetime
