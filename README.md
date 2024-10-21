@@ -3,13 +3,9 @@ NftCheckHook is a Balancer v3 hook to allow a liquidity pool to be backed by an 
 
 Think of it is as a pool that requires the current linked token value to be honored in the equivalent counterpart (stable) token and held in escrow to be redeemed by linked token holders.
 
-The NftCheckHook is applicable on any NFT. Our example is using an nft which supposedly represents a real world asset.
+The NftCheckHook was designed with RWA NFTs in mind, yet is applicable on any NFT.
 
-Team name: NFT ESCROW LP <br>
-Hook official name: RWA NFT LPv3 <br>
-Hook unofficial name: NftCheckHook <br>  
-
-spyros-zikos wallet address: 0x24708B03D32265D3E050aC65D1Ea1c0033b4a019
+spyros-zikos wallet address: 0x24708B03D32265D3E050aC65D1Ea1c0033b4a019 <br>
 Tony Nacumoto wallet address: 0x1DEA6076bC003a957B1E4774A93a8D9aB0CBC1C1
 
 
@@ -80,7 +76,7 @@ There are a few functions that we needed to add to the hook in order to make thi
 
 ***
 ## :pray: Acknowledgments
-Many thanks from elamore and Tony Nacu to `daniel | Beethoven X`, `matthu.eth`, `Tritium` and `burns` for answering the (often stupid) questions that we had. Without their help this project would not be possible.
+Many thanks from elamore and Tony Nacu to `daniel | Beethoven X`, `matthu.eth`, `Tritium` and `burns` for answering the big and small questions that we had. Without their help this project would not be possible.
 
 ***
 ## :rocket: Future
