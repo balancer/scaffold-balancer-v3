@@ -6,8 +6,6 @@ import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/Fixe
 import "./IVolatilityOracle.sol";
 import "./IVolatilityDiscount.sol";
 
-import "forge-std/console.sol";
-
 contract VolatilityDiscount is IVolatilityDiscount {
     using FixedPoint for uint256;
 
@@ -18,11 +16,8 @@ contract VolatilityDiscount is IVolatilityDiscount {
     function getVolatilityFeePercent(address oracleAddress) external view returns (uint256) {
         IVolatilityOracle volatilityOracle = IVolatilityOracle(oracleAddress);
         uint256 volatility = volatilityOracle.getVolatility(_VOLATILITY_WINDOW);
-        console.log("(getVolatilityFee) volatility", volatility);
         uint256 volatilityFeePercent = getVolatilityFeePercentOnCap(volatility);
-        console.log("(getVolatilityFee) volatilityFeePercent", volatilityFeePercent);
         uint256 volatilityFee = (_VOLATILITY_FEE_CAP * (volatilityFeePercent)) / FixedPoint.ONE;
-        console.log("(getVolatilityFee) volatilityFee", volatilityFee);
         return volatilityFee;
     }
 

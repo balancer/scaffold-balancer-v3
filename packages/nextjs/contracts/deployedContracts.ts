@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MockToken1: {
-      address: "0xfD4CF923519d89ee75040cE47e486f6ccEc7CCff",
+      address: "0x578330CfDA77A73bD79D3285759039045Aa7e6e6",
       abi: [
         {
           type: "constructor",
@@ -365,7 +365,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0x9F0Af544f0aD99f714547E317E3c8e221E01eB51",
+      address: "0x36952e04bB1604fE0d5148e9885e7e2556639f19",
       abi: [
         {
           type: "constructor",
@@ -723,7 +723,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0x30EE1286362f52F415ac401973c4656891E7243d",
+      address: "0xc561B15c374B604E5ea6Df6945EbE30AF3d9831d",
       abi: [
         {
           type: "constructor",
@@ -1081,7 +1081,7 @@ const deployedContracts = {
       },
     },
     ConstantSumFactory: {
-      address: "0x4fd03C44F03FBaf5F928Ee54Fb61Eb2D49FB69aA",
+      address: "0x62847f21e852AC6E687348c85f76e0b607231726",
       abi: [
         {
           type: "constructor",
@@ -1465,7 +1465,7 @@ const deployedContracts = {
       },
     },
     VeBALFeeDiscountHookExample: {
-      address: "0x806652C0D0e01eCeB33c97aA2fE977ddA2498C90",
+      address: "0xb1b3DEbF732F7EE11aF06172235C64F591A560ff",
       abi: [
         {
           type: "constructor",
@@ -2175,7 +2175,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactory: {
-      address: "0x2Ab98Ca74DC10853F5702345a709e2ad0D1727C9",
+      address: "0x979f7441cCB6135B774d762B5Fc3cb292B5a60D0",
       abi: [
         {
           type: "constructor",
@@ -2559,7 +2559,7 @@ const deployedContracts = {
       },
     },
     LotteryHookExample: {
-      address: "0x8A8645B800601d8B93978a354A705EB9fd0AFF30",
+      address: "0x89d9136C49ec7dfC7fC2979819ae59eD4dC5896f",
       abi: [
         {
           type: "constructor",
@@ -3513,7 +3513,7 @@ const deployedContracts = {
       },
     },
     ConstantProductFactoryV2: {
-      address: "0xE6005881b7a9b74EEC6fa6db9993E31aC3215Bf2",
+      address: "0x14b2580D8c0126206A47fB6E0b9D04ca9b0a68Af",
       abi: [
         {
           type: "constructor",
@@ -3867,6 +3867,11 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "OnlyTwoTokenPoolsAllowed",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "PoolPauseWindowDurationOverflow",
           inputs: [],
         },
@@ -3897,13 +3902,8 @@ const deployedContracts = {
       },
     },
     VolatilityOracle: {
-      address: "0x489CBd6EBd61616a2b4164F3E4E22Ab732C7FE40",
+      address: "0x6164eC62C3c1F8e273E59C4C7BC96d835c64CA70",
       abi: [
-        {
-          type: "constructor",
-          inputs: [],
-          stateMutability: "nonpayable",
-        },
         {
           type: "function",
           name: "findAllSamples",
@@ -4018,14 +4018,14 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        getVolatility: "contracts/hooks/VolatilityBasedSwapFee/volatility-module/IVolatilityOracle.sol",
-        updateOracle: "contracts/hooks/VolatilityBasedSwapFee/volatility-module/IVolatilityOracle.sol",
-        findAllSamples: "contracts/hooks/VolatilityBasedSwapFee/balancer-v2-oracle/PoolPriceOracle.sol",
-        getSample: "contracts/hooks/VolatilityBasedSwapFee/balancer-v2-oracle/PoolPriceOracle.sol",
+        getVolatility: "contracts/hooks/VolatilityLoyaltyModule/volatility-module/IVolatilityOracle.sol",
+        updateOracle: "contracts/hooks/VolatilityLoyaltyModule/volatility-module/IVolatilityOracle.sol",
+        findAllSamples: "contracts/hooks/VolatilityLoyaltyModule/balancer-v2-oracle/PoolPriceOracle.sol",
+        getSample: "contracts/hooks/VolatilityLoyaltyModule/balancer-v2-oracle/PoolPriceOracle.sol",
       },
     },
     LoyaltyDiscount: {
-      address: "0xd0D8BD92CDeFc1de505FFe4f93197f460C2ACdd6",
+      address: "0x222a6E4E4796Fb50e67dF18B1cf62E62311965ad",
       abi: [
         {
           type: "function",
@@ -4120,12 +4120,12 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        getSwapFeeWithLoyaltyDiscount: "contracts/hooks/VolatilityBasedSwapFee/loyalty-module/ILoyaltyDiscount.sol",
-        updateLoyaltyDataForUser: "contracts/hooks/VolatilityBasedSwapFee/loyalty-module/ILoyaltyDiscount.sol",
+        getSwapFeeWithLoyaltyDiscount: "contracts/hooks/VolatilityLoyaltyModule/loyalty-module/ILoyaltyDiscount.sol",
+        updateLoyaltyDataForUser: "contracts/hooks/VolatilityLoyaltyModule/loyalty-module/ILoyaltyDiscount.sol",
       },
     },
     VolatilityDiscount: {
-      address: "0xD64A276D1bE46f3C7a474dc02CFdf9c0c89e49A5",
+      address: "0x8db3E66F8b65afFa37fA156E2B4084e604D77822",
       abi: [
         {
           type: "function",
@@ -4148,11 +4148,11 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        getVolatilityFeePercent: "contracts/hooks/VolatilityBasedSwapFee/volatility-module/IVolatilityDiscount.sol",
+        getVolatilityFeePercent: "contracts/hooks/VolatilityLoyaltyModule/volatility-module/IVolatilityDiscount.sol",
       },
     },
     VolatilityLoyaltyHook: {
-      address: "0x38Ad6BfD56Ad7bd423Cc93943F59B8BdbCDE87c4",
+      address: "0x9CEDB51a11B1316a4BDB165364d3d61d8ace6636",
       abi: [
         {
           type: "constructor",
@@ -4182,99 +4182,13 @@ const deployedContracts = {
               type: "address",
               internalType: "address",
             },
+            {
+              name: "allowedFactory",
+              type: "address",
+              internalType: "address",
+            },
           ],
           stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "_factoryAddress",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "_isLoyaltyDiscountEnabled",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "_isVolatilityFeeEnabled",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "_loyaltyModuleAddress",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "_oracleAddress",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "_tokenAddress",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "_volatilityModuleAddress",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
         },
         {
           type: "function",
@@ -4388,6 +4302,32 @@ const deployedContracts = {
               name: "",
               type: "uint256",
               internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "isLoyaltyDiscountEnabled",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "isVolatilityFeeEnabled",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
             },
           ],
           stateMutability: "view",
@@ -4884,7 +4824,7 @@ const deployedContracts = {
           name: "onRegister",
           inputs: [
             {
-              name: "",
+              name: "factory",
               type: "address",
               internalType: "address",
             },
@@ -4958,6 +4898,58 @@ const deployedContracts = {
           stateMutability: "nonpayable",
         },
         {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
           type: "event",
           name: "PriceDataUpdated",
           inputs: [
@@ -4984,6 +4976,28 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
           name: "SenderIsNotVault",
           inputs: [
             {
@@ -5006,10 +5020,13 @@ const deployedContracts = {
         onBeforeSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
         onComputeDynamicSwapFeePercentage: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
         onRegister: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        owner: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+        renounceOwnership: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+        transferOwnership: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
       },
     },
     WeightedPoolFactory: {
-      address: "0xb876CD94E3F5398B3c1f9409fAc477450eE8e608",
+      address: "0x0c62E2Ed6d98D88Bdb9E960423Ba3E88fb579fFE",
       abi: [
         {
           type: "constructor",
@@ -5414,7 +5431,7 @@ const deployedContracts = {
       },
     },
     ExitFeeHookExample: {
-      address: "0x1dd0c507B6F26F8EC59e556B0232c4f08920deBa",
+      address: "0xb2800B0609b64F4f16ab999CCD42B3ba39BaC112",
       abi: [
         {
           type: "constructor",

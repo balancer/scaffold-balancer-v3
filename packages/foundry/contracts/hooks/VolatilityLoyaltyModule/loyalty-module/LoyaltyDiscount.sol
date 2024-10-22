@@ -35,7 +35,6 @@ contract LoyaltyDiscount is ILoyaltyDiscount {
         uint256 variableFee = 0;
 
         uint256 loyaltyDiscount = getLoyaltyDiscount(uint256(loyaltyIndex));
-        console.log("(getSwapFeeWithLoyaltyDiscount) loyaltyIndex, loyaltyDiscount", loyaltyIndex, loyaltyDiscount);
 
         // idea is to first apply a flat fee of 1%, over and above that apply any loyalty discount but have a limit on it
         // fixedFee will be minimum 1%, anything extra goes into loyalty fee unless it reaches the cap of _LOYALTY_FEE_CAP, anything above goes into variable fee
@@ -55,15 +54,6 @@ contract LoyaltyDiscount is ILoyaltyDiscount {
 
         uint256 totalFee = fixedFee + loyaltyFee + variableFee;
 
-        console.log(
-            "(getSwapFeeWithLoyaltyDiscount) fixedFee + loyaltyFee + variableFee",
-            fixedFee,
-            loyaltyFee,
-            variableFee
-        );
-
-        console.log("(getSwapFeeWithLoyaltyDiscount) totalFee", totalFee);
-
         return totalFee;
     }
 
@@ -78,31 +68,12 @@ contract LoyaltyDiscount is ILoyaltyDiscount {
 
         uint256 currentTimestamp = block.timestamp;
 
-        console.log("(onAfterSwap) currentTimestamp", currentTimestamp);
-
-        uint256 oldFirstTransactionTimestamp = loyaltyData.firstTransactionTimestamp;
-
-        bool isLoyaltyWindowRefreshed = (currentTimestamp - oldFirstTransactionTimestamp) >= _LOYALTY_REFRESH_WINDOW;
-
-        console.log(
-            "(onAfterSwap) isLoyaltyWindowRefreshed, loyaltyData.tokens",
-            isLoyaltyWindowRefreshed,
-            uint256(loyaltyData.tokens)
-        );
+        bool isLoyaltyWindowRefreshed = (currentTimestamp - loyaltyData.firstTransactionTimestamp) >= _LOYALTY_REFRESH_WINDOW;
 
         // instead of old make it current
         uint256 oldTimestamp = loyaltyData.lastTimestamp;
         uint256 oldCumulativeLoyalty = isLoyaltyWindowRefreshed ? 0 : loyaltyData.cumulativeLoyalty;
         uint256 oldTokens = isLoyaltyWindowRefreshed ? 0 : loyaltyData.tokens;
-
-        console.log("(onAfterSwap) userLoyaltyData[user] oldFirstTransactionTimestamp", oldFirstTransactionTimestamp);
-
-        console.log(
-            "(onAfterSwap) oldCumulativeLoyalty, oldTokens, oldTimestamp",
-            uint256(oldCumulativeLoyalty),
-            uint256(oldTokens),
-            oldTimestamp
-        );
 
         // cumulative loyalty and tokens should always be positive
         uint256 newCumulativeLoyalty = oldCumulativeLoyalty + (oldTokens * (currentTimestamp - oldTimestamp)); // remove this comment before submission, y = mx + c, y-> new cumulative loyalty, m -> tokens held, x -> time passed, c -> cumulative loyalty so far
@@ -112,7 +83,7 @@ contract LoyaltyDiscount is ILoyaltyDiscount {
         uint256 newTimestamp = currentTimestamp;
         uint256 newFirstTransactionTimestamp = isLoyaltyWindowRefreshed
             ? currentTimestamp
-            : oldFirstTransactionTimestamp;
+            : loyaltyData.firstTransactionTimestamp;
 
         uint256 newTokens = (additionalTokens + int256(oldTokens)) > 0
             ? uint256(additionalTokens + int256(oldTokens))
@@ -123,18 +94,6 @@ contract LoyaltyDiscount is ILoyaltyDiscount {
             newCumulativeLoyalty,
             newTokens,
             newTimestamp
-        );
-
-        console.log(
-            "(onAfterSwap) userLoyaltyData[user] firstTransactionTimestamp",
-            userLoyaltyData[user].firstTransactionTimestamp
-        );
-
-        console.log(
-            "(onAfterSwap) userLoyaltyData[user] newCumulativeLoyalty, newTokens, newTimestamp",
-            uint256(userLoyaltyData[user].cumulativeLoyalty),
-            uint256(userLoyaltyData[user].tokens),
-            userLoyaltyData[user].lastTimestamp
         );
     }
 
