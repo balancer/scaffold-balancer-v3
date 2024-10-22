@@ -44,6 +44,10 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard, Ownable {
     bool public isLoyaltyDiscountEnabled;
     bool public isVolatilityFeeEnabled;
 
+    event PriceDataUpdated();
+
+    error InvalidTokenAddress();
+
     constructor(
         IVault vault,
         address tokenAddress,
@@ -58,8 +62,6 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard, Ownable {
         _volatilityModuleAddress = volatilityModuleAddress;
         _allowedFactory = allowedFactory;
     }
-
-    event PriceDataUpdated(uint256 tokenOutBalanceScaled18, uint256 tokenInBalanceScaled18, uint256 tokenPrice);
 
     function onRegister(
         address factory,
@@ -94,7 +96,9 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard, Ownable {
 
         volatilityOracle.updateOracle(balancesScaled18[1 - tokenIndex], balancesScaled18[tokenIndex]);
 
-        return (true, amountsOutRaw); // check if false works here
+        emit PriceDataUpdated();
+
+        return (true, amountsOutRaw);
     }
 
     function onAfterAddLiquidity(
@@ -112,20 +116,23 @@ contract VolatilityLoyaltyHook is BaseHooks, VaultGuard, Ownable {
 
         volatilityOracle.updateOracle(balancesScaled18[1 - tokenIndex], balancesScaled18[tokenIndex]);
 
-        return (true, amountsInRaw); // check if false works here
+        emit PriceDataUpdated();
+
+        return (true, amountsInRaw);
     }
 
     function onAfterSwap(AfterSwapParams calldata params) public override onlyVault returns (bool, uint256) {
         IVolatilityOracle volatilityOracle = IVolatilityOracle(_oracleAddress);
+
         if (address(params.tokenIn) == _tokenAddress) {
             volatilityOracle.updateOracle(params.tokenOutBalanceScaled18, params.tokenInBalanceScaled18);
-            // emit event
         } else if (address(params.tokenOut) == _tokenAddress) {
             volatilityOracle.updateOracle(params.tokenInBalanceScaled18, params.tokenOutBalanceScaled18);
-            // emit event
         } else {
-            // revert with error
+            revert InvalidTokenAddress();
         }
+
+        emit PriceDataUpdated();
 
         address user = IRouterCommon(params.router).getSender();
 
