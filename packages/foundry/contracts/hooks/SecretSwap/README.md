@@ -5,11 +5,19 @@ SecretSwap allows users to perform confidential token swaps using Balancer V3 ho
 - **Withdraw tokens** (operation `2`)
 - **Perform a standard swap** without any operation specified.
 
+### Secret Swap Demo 
+https://www.loom.com/share/f5449f193f3441999f08af62047f4fa2?sid=8b221c9b-51a3-484f-aed1-bee617843ed3
+
+### How FHE co-processor works
+https://github.com/zama-ai/fhevm-L1-demo/blob/main/EthCC24-tkms.pdf
+
+
 ### How It Works
 
 1. **Deposit:**
    - When a user performs a deposit (operation `1`), their tokens are securely transferred to the contract, and they receive **encrypted credits** representing their balance.
    - The contract uses FHE to keep the user's balance confidential, and credits are stored securely.
+   
    
 2. **Withdraw:**
    - When a user withdraws (operation `2`), their **encrypted credits** are decrypted using Zama's Co-Processor Model, and the corresponding token amounts are transferred back to the user.
