@@ -14,14 +14,15 @@ import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.sol";
-import { VeBALFeeDiscountHookExample } from "../contracts/hooks/VeBALFeeDiscountHookExample.sol";
+import { LPIncentivizedHook } from "../contracts/hooks/LPIncentivizedHook.sol";
+import { MockLPRewardToken } from "../contracts/mocks/MockLPRewardToken.sol";
 
 /**
  * @title Deploy Constant Sum Pool
  * @notice Deploys, registers, and initializes a constant sum pool that uses a swap fee discount hook
  */
 contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
-    function deployConstantSumPool(address token1, address token2, address veBAL) internal {
+    function deployConstantSumPool(address token1, address token2) internal {
         // Set the pool's deployment, registration, and initialization config
         CustomPoolConfig memory poolConfig = getSumPoolConfig(token1, token2);
         InitializationConfig memory initConfig = getSumPoolInitConfig(token1, token2);
@@ -34,11 +35,14 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
         ConstantSumFactory factory = new ConstantSumFactory(vault, 365 days); // pauseWindowDuration
         console.log("Constant Sum Factory deployed at: %s", address(factory));
 
+        address mockLPRewardToken = address(new MockLPRewardToken("LP Reward Token", "LPRWD"));
+        console.log("MockLPRewardToken deployed at address: %s", mockLPRewardToken);
+
         // Deploy a hook
-        address veBALFeeDiscountHook = address(
-            new VeBALFeeDiscountHookExample(vault, address(factory), address(router), veBAL)
+        address LPIncentivizedHook_ = address(
+            new LPIncentivizedHook(vault, address(factory), address(router), mockLPRewardToken ,LPIncentivizedHook.LPIncentiveFactor(true,false))
         );
-        console.log("VeBALFeeDiscountHookExample deployed at address: %s", veBALFeeDiscountHook);
+        console.log("LPIncentivizedHook deployed at address: %s", LPIncentivizedHook_);
 
         // Deploy a pool and register it with the vault
         address pool = factory.create(
@@ -49,7 +53,7 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
             poolConfig.swapFeePercentage,
             poolConfig.protocolFeeExempt,
             poolConfig.roleAccounts,
-            veBALFeeDiscountHook, // poolHooksContract
+            LPIncentivizedHook_, // poolHooksContract
             poolConfig.liquidityManagement
         );
         console.log("Constant Sum Pool deployed at: %s", pool);
