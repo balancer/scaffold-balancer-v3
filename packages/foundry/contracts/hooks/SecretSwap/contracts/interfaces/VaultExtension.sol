@@ -22,9 +22,7 @@ import { InputHelpers } from "./InputHelpers.sol";
 import { RevertCodec } from "./RevertCodec.sol";
 import { ScalingHelpers } from "./ScalingHelpers.sol";
 import { EVMCallModeHelpers } from "./EVMCallModeHelpers.sol";
-import {
-    TransientStorageHelpers
-} from "./TransientStorageHelpers.sol";
+import { TransientStorageHelpers } from "./TransientStorageHelpers.sol";
 import { StorageSlotExtension } from "./StorageSlotExtension.sol";
 import { FixedPoint } from "./FixedPoint.sol";
 import { PackedTokenBalance } from "./PackedTokenBalance.sol";
