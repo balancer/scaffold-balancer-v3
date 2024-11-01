@@ -2,8 +2,6 @@
 
 A Balancer V3 hook designed to increase user engagement by rewarding users with loyalty tokens (`LOYALTY`) and providing dynamic fee adjustments based on their `LOYALTY` token balance.
 
-📽 Walkthrough and demo video: https://www.youtube.com/watch?v=BkJ6-SBLb0o
-
 ## 🪧 Table of Contents
 
 - [📖 Overview](#-overview)
