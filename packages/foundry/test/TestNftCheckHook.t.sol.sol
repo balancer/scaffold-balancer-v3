@@ -23,10 +23,8 @@ import { PoolMock } from "@balancer-labs/v3-vault/contracts/test/PoolMock.sol";
 import { PoolFactoryMock } from "@balancer-labs/v3-vault/contracts/test/PoolFactoryMock.sol";
 import { RouterMock } from "@balancer-labs/v3-vault/contracts/test/RouterMock.sol";
 
-import { VeBALFeeDiscountHookExample } from "../contracts/hooks/VeBALFeeDiscountHookExample.sol";
 import { NftCheckHook } from "../contracts/hooks/NftCheckHook.sol";
 import { MockNft } from "../contracts/mocks/MockNft.sol";
-// import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.sol";
 import { MockLinked } from "../contracts/mocks/MockLinked.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { ERC20TestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
@@ -42,19 +40,14 @@ contract TestNftCheckHook is BaseVaultTest {
     uint256 internal linkedTokenIdx;
     uint256 internal usdcIdx;
 
-    // Maximum swap fee of 10%
-    uint64 public constant MAX_SWAP_FEE_PERCENTAGE = 10e16;
-
     address payable internal hookOwner;
     uint256 internal hookOwnerKey;
     address payable internal randomUser;
     uint256 internal randomUserKey;
-    address payable internal trustedRouter;
 
     MockNft mockNft;
     uint256 tokenId;
     address nftCheckHook;
-    // ConstantSumFactory factory = new ConstantSumFactory(vault, 365 days); // pauseWindowDuration
     bool nftIsDeposited;
     MockLinked linkedToken;
     bool linkedTokenIsMinted;
@@ -90,9 +83,12 @@ contract TestNftCheckHook is BaseVaultTest {
         (linkedTokenIdx, usdcIdx) = getSortedIndexes(address(linkedToken), address(usdc));
 
         pool = createPool();
-        // approveForPool(IERC20(pool));
         vaultConvertFactor = vault.getConvertFactor();
     }
+
+    ////////////////////////////////////////
+    // Tests ///////////////////////////////
+    ////////////////////////////////////////
 
     function testMintNft() public {
         assertEq(mockNft.balanceOf(hookOwner) > 0, true, "hookOwner does not have an NFT");
@@ -116,22 +112,7 @@ contract TestNftCheckHook is BaseVaultTest {
         mockNft.transferFrom(hookOwner, nftCheckHook, 0);
         initPool();
 
-        // random user swaps usdc for linked tokens
-        vm.startPrank(randomUser);
-        usdc.approve(address(permit2), type(uint256 ).max);
-        permit2.approve(address(usdc), address(router), type(uint160).max, type(uint48).max);
-
-        RouterMock(router).swapSingleTokenExactIn(
-            pool,
-            usdc,
-            IERC20(linkedTokenAddress),
-            USDC_SWAP_AMOUNT_IN,
-            0,
-            MAX_UINT256,
-            false,
-            bytes("")
-        );
-        vm.stopPrank();
+        _swap(randomUser, usdc, IERC20(linkedTokenAddress), USDC_SWAP_AMOUNT_IN, false);
 
         assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN, "RandomUser wrong usdc tokens balance");
         assertEq(linkedToken.balanceOf(randomUser), USDC_SWAP_AMOUNT_IN, "RandomUser wrong linked tokens balance");
@@ -154,25 +135,13 @@ contract TestNftCheckHook is BaseVaultTest {
         assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN + settlementAmount, 'randomUser wrong usdc balance');
         assertEq(linkedToken.balanceOf(randomUser), 0, 'randomuser wrong linked token balance');
 
-
-        // random user swaps usdc for linked tokens BUT REVERTS BECAUSE POOL SETTLED
-        vm.startPrank(randomUser);
-        usdc.approve(address(permit2), type(uint256 ).max);
-        permit2.approve(address(usdc), address(router), type(uint160).max, type(uint48).max);
-        
-        vm.expectRevert();
-        RouterMock(router).swapSingleTokenExactIn(
-            pool,
-            usdc,
-            IERC20(linkedTokenAddress),
-            USDC_SWAP_AMOUNT_IN,
-            0,
-            MAX_UINT256,
-            false,
-            bytes("")
-        );
-        vm.stopPrank();
+        // random user swap reverts because pool is settled
+        _swap(randomUser, usdc, IERC20(linkedTokenAddress), USDC_SWAP_AMOUNT_IN, true);
     }
+
+    ////////////////////////////////////////
+    // Helpers ///////////////////////////////
+    ////////////////////////////////////////
 
     function mintNft() internal {
         vm.prank(hookOwner);
@@ -182,9 +151,7 @@ contract TestNftCheckHook is BaseVaultTest {
     }
 
     function createHook() internal override returns (address) {
-        trustedRouter = payable(router);
-
-        // hookOwner will be the owner of the hook. Only hookOwner is able to set hook fee percentages.
+        // hookOwner will be the owner of the hook
         vm.prank(hookOwner);
         nftCheckHook = address(
             new NftCheckHook(vault, address(mockNft), tokenId, address(usdc), "RWA Token", "RWAT", OWNER_LINKED_TOKEN_INITIAL_BALANCE)
@@ -205,7 +172,6 @@ contract TestNftCheckHook is BaseVaultTest {
         PoolRoleAccounts memory roleAccounts;
         LiquidityManagement memory liquidityManagement;
         liquidityManagement.enableDonation = true;
-
 
         factoryMock.registerPool(
             address(newPool),
@@ -247,5 +213,29 @@ contract TestNftCheckHook is BaseVaultTest {
         }
 
         return router.initialize(poolToInit, tokens, amountsIn, minBptOut, false, bytes(""));
+    }
+
+    function _swap(address user, IERC20 tokenIn, IERC20 tokenOut, uint256 amountIn, bool reverts) internal {
+        vm.startPrank(user);
+        // permissions
+        usdc.approve(address(permit2), type(uint256 ).max);
+        linkedToken.approve(address(permit2), type(uint256 ).max);
+        permit2.approve(address(usdc), address(router), type(uint160).max, type(uint48).max);
+        permit2.approve(address(linkedToken), address(router), type(uint160).max, type(uint48).max);
+        // expect revert?
+        if (reverts) {
+            vm.expectRevert();
+        }
+        RouterMock(router).swapSingleTokenExactIn(
+            pool,
+            tokenIn,
+            tokenOut,
+            amountIn,
+            0,
+            MAX_UINT256,
+            false,
+            bytes("")
+        );
+        vm.stopPrank();
     }
 }

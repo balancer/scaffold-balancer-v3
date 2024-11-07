@@ -60,21 +60,15 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     bool private initialLiquidityRecorded;
     bool private poolIsSettled;
 
-    uint64 public exitFeePercentage;
-    uint64 public constant MAX_EXIT_FEE_PERCENTAGE = 10e16;
-
     error DoesNotOwnRequiredNFT(address hook, address nftContract, uint256 nftId);
     error LinkedTokenNotInPool(address linkedToken);
     error InsufficientLiquidityToRemove(address user, uint256 currentAmount, uint256 initialAmount);
     error InsufficientStableForSettlement(uint256 required, uint256 available);
-    error ExitFeeAboveLimit(uint256 feePercentage, uint256 limit);
     error PoolDoesNotSupportDonation();
     error PoolIsSettled();
     error CantAddLinkedTokenLiquidity();
 
     event NftCheckHookRegistered(address indexed hooksContract, address indexed pool);
-    event ExitFeeCharged(address indexed pool, IERC20 indexed token, uint256 feeAmount);
-    event ExitFeePercentageChanged(address indexed hookContract, uint256 exitFeePercentage);
     event NftContractUpdated(address indexed oldContract, address indexed newContract);
     event NftIdUpdated(uint256 oldId, uint256 newId);
     event InitialLiquidityRecorded(address indexed user, uint256 token1Amount, uint256 token2Amount);
@@ -107,6 +101,16 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         return true;
     }
 
+    /// @inheritdoc IHooks
+    function getHookFlags() public pure override returns (HookFlags memory) {
+        HookFlags memory hookFlags;
+        hookFlags.shouldCallBeforeInitialize = true;
+        hookFlags.shouldCallBeforeRemoveLiquidity = true;
+        hookFlags.shouldCallBeforeSwap = true;
+        hookFlags.shouldCallBeforeAddLiquidity = true;
+        return hookFlags;
+    }
+
     function onBeforeInitialize(uint256[] memory exactAmountsIn, bytes memory /*userData*/) public override returns (bool) {
         // Check if the hook owns the required NFT
         if (IERC721(nftContract).ownerOf(nftId) != address(this)) {
@@ -135,29 +139,18 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     }
 
     /// @inheritdoc IHooks
-    function getHookFlags() public pure override returns (HookFlags memory) {
-        HookFlags memory hookFlags;
-        hookFlags.shouldCallAfterRemoveLiquidity = true;
-        hookFlags.shouldCallBeforeInitialize = true;
-        hookFlags.shouldCallBeforeSwap = true;
-        hookFlags.shouldCallBeforeAddLiquidity = true;
-        return hookFlags;
-    }
-
-    /// @inheritdoc IHooks
-    function onAfterRemoveLiquidity(
+    function onBeforeRemoveLiquidity(
         address,
         address pool,
-        RemoveLiquidityKind kind,
+        RemoveLiquidityKind,
         uint256,
         uint256[] memory,
-        uint256[] memory amountsOutRaw,
         uint256[] memory,
         bytes memory
-    ) public override onlyVault returns (bool, uint256[] memory hookAdjustedAmountsOutRaw) {
+    ) public view override returns (bool success) {
         
         // Ensure the first depositor has the same amount of both tokens after removal (no rug pulling allowed)
-        if (msg.sender == owner()) {
+        if (msg.sender == owner()) {  // msg.sender is the vault !!!!!
             IERC20[] memory poolTokens = _vault.getPoolTokens(pool);
 
             uint256 currentToken1Amount = poolTokens[0].balanceOf(owner());
@@ -171,47 +164,10 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
             }
         }
 
-        // Our current architecture only supports fees on tokens. Since we must always respect exact `amountsOut`, and
-        // non-proportional remove liquidity operations would require taking fees in BPT, we only support proportional
-        // removeLiquidity.
-        if (kind != RemoveLiquidityKind.PROPORTIONAL) {
-            // Returning false will make the transaction revert, so the second argument does not matter.
-            return (false, amountsOutRaw);
-        }
-
-        IERC20[] memory tokens = _vault.getPoolTokens(pool);
-        uint256[] memory accruedFees = new uint256[](tokens.length);
-        hookAdjustedAmountsOutRaw = amountsOutRaw;
-
-        if (exitFeePercentage > 0) {
-            // Charge fees proportional to the `amountOut` of each token.
-            for (uint256 i = 0; i < amountsOutRaw.length; i++) {
-                uint256 exitFee = amountsOutRaw[i].mulDown(exitFeePercentage);
-                accruedFees[i] = exitFee;
-                hookAdjustedAmountsOutRaw[i] -= exitFee;
-
-                emit ExitFeeCharged(pool, tokens[i], exitFee);
-                // Fees don't need to be transferred to the hook, because donation will redeposit them in the Vault.
-                // In effect, we will transfer a reduced amount of tokensOut to the caller, and leave the remainder
-                // in the pool balance.
-            }
-
-            // Donates accrued fees back to LPs
-            _vault.addLiquidity(
-                AddLiquidityParams({
-                    pool: pool,
-                    to: msg.sender, // It would mint BPTs to router, but it's a donation so no BPT is minted
-                    maxAmountsIn: accruedFees, // Donate all accrued fees back to the pool (i.e. to the LPs)
-                    minBptAmountOut: 0, // Donation does not return BPTs, any number above 0 will revert
-                    kind: AddLiquidityKind.DONATION,
-                    userData: bytes("") // User data is not used by donation, so we can set it to an empty string
-                })
-            );
-        }
-
-        return (true, hookAdjustedAmountsOutRaw);
+        return true;
     }
 
+    /// @inheritdoc IHooks
     // random user cannot add linked token liquidity because problem at settlement
     function onBeforeAddLiquidity(
         address,
@@ -228,27 +184,15 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         success = true;
     }
 
+    /// @inheritdoc IHooks
     // random users cannot swap after pool is settled, but owner should be able to (TODO)
     function onBeforeSwap(PoolSwapParams calldata, address) public view override returns (bool success) {
         if (poolIsSettled) revert PoolIsSettled();
         success = true;
     }
 
-    // Permissioned functions
-
-    /**
-     * @notice Sets the hook remove liquidity fee percentage, charged on every remove liquidity operation.
-     * @dev This function must be permissioned.
-     */
-    function setExitFeePercentage(uint64 newExitFeePercentage) external onlyOwner {
-        if (newExitFeePercentage > MAX_EXIT_FEE_PERCENTAGE) {
-            revert ExitFeeAboveLimit(newExitFeePercentage, MAX_EXIT_FEE_PERCENTAGE);
-        }
-        exitFeePercentage = newExitFeePercentage;
-
-        emit ExitFeePercentageChanged(address(this), newExitFeePercentage);
-    }
-
+    //////// Permissioned functions - onlyOwner ////////
+    
     // New function to update nftContract
     function setNftContract(address _newNftContract) external onlyOwner {
         address oldContract = nftContract;
@@ -263,6 +207,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         emit NftIdUpdated(oldId, _newNftId);
     }
 
+    //////// Permissioned functions - onlyVault ////////
+
     function recordInitialLiquidity(uint256 token1Amount, uint256 token2Amount) public onlyVault {
         require(!initialLiquidityRecorded, "Initial liquidity already recorded");
         initialLiquidityRecorded = true;
@@ -270,6 +216,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         initialToken2Amount = token2Amount;
         emit InitialLiquidityRecorded(owner(), token1Amount, token2Amount);
     }
+
+    //////// Getter functions ////////
 
     function getLinkedToken() external view returns(address) {
         return linkedToken;
@@ -290,6 +238,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     function getNftContract() external view returns(address) {
         return nftContract;
     }
+
+    //////// Escrow functions ////////
 
     function getSettlementAmount() public returns(uint256 stableAmountRequired) {
         // Calculate total outstanding shares in the pool
