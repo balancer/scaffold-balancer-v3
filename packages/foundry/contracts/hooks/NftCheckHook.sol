@@ -107,7 +107,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         return true;
     }
 
-    function onBeforeInitialize(uint256[] memory /*exactAmountsIn*/, bytes memory /*userData*/) public override returns (bool) {
+    function onBeforeInitialize(uint256[] memory exactAmountsIn, bytes memory /*userData*/) public override returns (bool) {
         // Check if the hook owns the required NFT
         if (IERC721(nftContract).ownerOf(nftId) != address(this)) {
             revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
@@ -125,8 +125,12 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
             revert LinkedTokenNotInPool(linkedToken);
         }
         // Record the initial liquidity amounts
-        recordInitialLiquidity(tokenConfigs[0].token.balanceOf(poolAddress), tokenConfigs[1].token.balanceOf(poolAddress));
-
+        // recordInitialLiquidity(
+        //     tokenConfigs[0].token.balanceOf(address(_vault)),
+        //     tokenConfigs[1].token.balanceOf(address(_vault))
+        // );
+        recordInitialLiquidity(exactAmountsIn[0], exactAmountsIn[1]);
+        
         return true;
     }
 
@@ -156,14 +160,14 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         if (msg.sender == owner()) {
             IERC20[] memory poolTokens = _vault.getPoolTokens(pool);
 
-            uint256 currentToken1Amount = poolTokens[0].balanceOf(msg.sender);
-            uint256 currentToken2Amount = poolTokens[1].balanceOf(msg.sender);
+            uint256 currentToken1Amount = poolTokens[0].balanceOf(owner());
+            uint256 currentToken2Amount = poolTokens[1].balanceOf(owner());
 
             if (currentToken1Amount < initialToken1Amount) {
-                revert InsufficientLiquidityToRemove(msg.sender, currentToken1Amount, initialToken1Amount);
+                revert InsufficientLiquidityToRemove(owner(), currentToken1Amount, initialToken1Amount);
             }
             if (currentToken2Amount < initialToken2Amount) {
-                revert InsufficientLiquidityToRemove(msg.sender, currentToken2Amount, initialToken2Amount);
+                revert InsufficientLiquidityToRemove(owner(), currentToken2Amount, initialToken2Amount);
             }
         }
 
