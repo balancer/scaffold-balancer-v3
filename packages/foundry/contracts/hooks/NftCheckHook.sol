@@ -58,6 +58,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     address private stableToken;
     TokenConfig[] private tokenConfigs;
     bool private initialLiquidityRecorded;
+    uint256 private initialBPTLocked;
     bool private poolIsSettled;
 
     error DoesNotOwnRequiredNFT(address hook, address nftContract, uint256 nftId);
@@ -65,6 +66,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     error InsufficientLiquidityToRemove(address user, uint256 currentAmount, uint256 initialAmount);
     error InsufficientStableForSettlement(uint256 required, uint256 available);
     error PoolDoesNotSupportDonation();
+    error InitialBPTNotLocked();
     error PoolIsSettled();
     error CantAddLinkedTokenLiquidity();
 
@@ -74,6 +76,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     event InitialLiquidityRecorded(address indexed user, uint256 token1Amount, uint256 token2Amount);
     event LiquiditySettled(uint256 totalEscrowedAmount, address indexed originalDepositor);
     event Redeemed(address indexed user, uint256 poolTokenAmount, uint256 stableTokenAmount);
+    event InitialBPTLocked(address indexed owner, uint256 bptAmount);
 
     constructor(IVault vault, address _nftContract, uint256 _nftId, address _stableToken, string memory erc20name, string memory erc20symbol, uint256 erc20supply) VaultGuard(vault) Ownable(msg.sender) {
         nftContract = _nftContract;
@@ -105,6 +108,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     function getHookFlags() public pure override returns (HookFlags memory) {
         HookFlags memory hookFlags;
         hookFlags.shouldCallBeforeInitialize = true;
+        hookFlags.shouldCallAfterInitialize = true;
         hookFlags.shouldCallBeforeRemoveLiquidity = true;
         hookFlags.shouldCallBeforeSwap = true;
         hookFlags.shouldCallBeforeAddLiquidity = true;
@@ -139,31 +143,28 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     }
 
     /// @inheritdoc IHooks
+    function onAfterInitialize(
+        uint256[] memory,
+        uint256 bptAmountOut,
+        bytes memory
+    ) public override returns(bool) {
+        IERC20(poolAddress).transferFrom(owner(), address(this), bptAmountOut);
+        initialBPTLocked = bptAmountOut;
+        emit InitialBPTLocked(owner(), bptAmountOut);
+        return true;
+    }
+
+    /// @inheritdoc IHooks
     function onBeforeRemoveLiquidity(
         address,
-        address pool,
+        address,
         RemoveLiquidityKind,
         uint256,
         uint256[] memory,
         uint256[] memory,
         bytes memory
     ) public view override returns (bool success) {
-        
-        // Ensure the first depositor has the same amount of both tokens after removal (no rug pulling allowed)
-        if (msg.sender == owner()) {  // msg.sender is the vault !!!!!
-            IERC20[] memory poolTokens = _vault.getPoolTokens(pool);
-
-            uint256 currentToken1Amount = poolTokens[0].balanceOf(owner());
-            uint256 currentToken2Amount = poolTokens[1].balanceOf(owner());
-
-            if (currentToken1Amount < initialToken1Amount) {
-                revert InsufficientLiquidityToRemove(owner(), currentToken1Amount, initialToken1Amount);
-            }
-            if (currentToken2Amount < initialToken2Amount) {
-                revert InsufficientLiquidityToRemove(owner(), currentToken2Amount, initialToken2Amount);
-            }
-        }
-
+        if (initialBPTLocked == 0) revert InitialBPTNotLocked();
         return true;
     }
 
@@ -178,21 +179,22 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         uint256[] memory,
         bytes memory
     ) public view override returns (bool success) {
-       uint256 linkedTokenIndex = linkedToken > stableToken ? 1 : 0;
-       if (maxAmountsInScaled18[linkedTokenIndex] > 0)
-           revert CantAddLinkedTokenLiquidity();
+        uint256 linkedTokenIndex = linkedToken > stableToken ? 1 : 0;
+        if (maxAmountsInScaled18[linkedTokenIndex] > 0)
+            revert CantAddLinkedTokenLiquidity();
         success = true;
     }
 
     /// @inheritdoc IHooks
     // random users cannot swap after pool is settled, but owner should be able to (TODO)
     function onBeforeSwap(PoolSwapParams calldata, address) public view override returns (bool success) {
+        if (initialBPTLocked == 0) revert InitialBPTNotLocked();
         if (poolIsSettled) revert PoolIsSettled();
         success = true;
     }
 
     //////// Permissioned functions - onlyOwner ////////
-    
+
     // New function to update nftContract
     function setNftContract(address _newNftContract) external onlyOwner {
         address oldContract = nftContract;
@@ -271,10 +273,12 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         if (poolIsSettled) revert PoolIsSettled();
         uint256 stableAmountRequired = getSettlementAmount();
 
-        // Transfer the necessary stable tokens from the user
+        // Transfer the necessary stable tokens from the owner
         MockStable(stableToken).transferFrom(msg.sender, address(this), stableAmountRequired);
-        // Return the nft to the user
+        // Return the nft to the owner
         MockNft(nftContract).transferFrom(address(this), msg.sender, nftId);
+        // Return the bpt to the owner
+        IERC20(poolAddress).transfer(owner(), initialBPTLocked);
 
         poolIsSettled = true;
         emit LiquiditySettled(stableAmountRequired, owner());

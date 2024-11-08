@@ -107,11 +107,22 @@ contract TestNftCheckHook is BaseVaultTest {
     }
 
     function testInitializePoolWithNftTransfer() public {
+        // the hook holds the NFT
         assertEq(address(mockNft), NftCheckHook(nftCheckHook).getNftContract());
-        vm.prank(hookOwner);
-        mockNft.transferFrom(hookOwner, nftCheckHook, 0);
-        initPool();
+        // Owner has no BPT
+        assertEq(PoolMock(pool).balanceOf(hookOwner), 0);
 
+        // Transfer NFT, approve bpt transfer to hook and initialize pool
+        vm.startPrank(hookOwner);
+        mockNft.transferFrom(hookOwner, nftCheckHook, 0);
+        PoolMock(pool).approve(nftCheckHook, type(uint256).max);
+        initPool();
+        vm.stopPrank();
+
+        // Owner has no BPT
+        assertEq(PoolMock(pool).balanceOf(hookOwner), 0);
+
+        // random user swaps usdc for linked token
         _swap(randomUser, usdc, IERC20(linkedTokenAddress), USDC_SWAP_AMOUNT_IN, false);
 
         assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN, "RandomUser wrong usdc tokens balance");
@@ -129,7 +140,7 @@ contract TestNftCheckHook is BaseVaultTest {
         NftCheckHook(nftCheckHook).redeem();
         vm.stopPrank();
 
-        uint256 settlementAmount =  (USDC_SWAP_AMOUNT_IN * 1.1 ether) / 1 ether;
+        uint256 settlementAmount = (USDC_SWAP_AMOUNT_IN * 1.1 ether) / 1 ether;
         assertEq(usdc.balanceOf(hookOwner), OWNER_USDC_INITIAL_BALANCE - POOL_INITIAL_AMOUNT - settlementAmount, 'hookOwner wrong usdc balance');
         assertEq(linkedToken.balanceOf(hookOwner), OWNER_LINKED_TOKEN_INITIAL_BALANCE - POOL_INITIAL_AMOUNT + USDC_SWAP_AMOUNT_IN, 'hookOwner wrong linked token balance');
         assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN + settlementAmount, 'randomUser wrong usdc balance');
@@ -140,7 +151,7 @@ contract TestNftCheckHook is BaseVaultTest {
     }
 
     ////////////////////////////////////////
-    // Helpers ///////////////////////////////
+    // Helpers /////////////////////////////
     ////////////////////////////////////////
 
     function mintNft() internal {
