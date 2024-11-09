@@ -59,6 +59,8 @@ contract TestNftCheckHook is BaseVaultTest {
     uint256 constant POOL_INITIAL_AMOUNT = 50e18;
     // random user swap amount in
     uint256 constant USDC_SWAP_AMOUNT_IN = 40e18;
+    uint256 constant INITIAL_SETTLEMENT_FEE = 10e16;
+
 
     modifier transferNFT_approveBPT_initializePool() {
         // Transfer NFT, approve bpt transfer to hook and initialize pool
@@ -130,100 +132,56 @@ contract TestNftCheckHook is BaseVaultTest {
         assertEq(randomUserUsdcBalance, RANDOM_USER_USDC_INITIAL_BALANCE, "RandomUser wrong usdc tokens balance");
     }
 
-    function testPoolFeeZeroPercent() public transferNFT_approveBPT_initializePool {
-        // random user swaps usdc for linked token
-        _swap(randomUser, usdc, IERC20(linkedTokenAddress), USDC_SWAP_AMOUNT_IN, false);
-        assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN, "RandomUser wrong usdc tokens balance");
-        assertEq(linkedToken.balanceOf(randomUser), USDC_SWAP_AMOUNT_IN, "RandomUser wrong linked tokens balance");
+    function testSwapFeeZeroSettlementFeeZero() public transferNFT_approveBPT_initializePool {
+        uint256 settleFee = 0;
+        uint256 swapFeePercentage = 0; // 0%
 
-        // hook owner settles pool
-        vm.startPrank(hookOwner);
-        usdc.approve(nftCheckHook, type(uint256).max);
-        NftCheckHook(nftCheckHook).settle();
-        vm.stopPrank();
-
-        // random user redeems
-        vm.startPrank(randomUser);
-        linkedToken.approve(nftCheckHook, type(uint256).max);
-        NftCheckHook(nftCheckHook).redeem();
-        vm.stopPrank();
-        uint256 settlementAmount = (USDC_SWAP_AMOUNT_IN * 1.1 ether) / 1 ether;
-        assertEq(usdc.balanceOf(hookOwner), OWNER_USDC_INITIAL_BALANCE - POOL_INITIAL_AMOUNT - settlementAmount, 'hookOwner wrong usdc balance');
-        assertEq(linkedToken.balanceOf(hookOwner), OWNER_LINKED_TOKEN_INITIAL_BALANCE - POOL_INITIAL_AMOUNT + USDC_SWAP_AMOUNT_IN, 'hookOwner wrong linked token balance');
-        assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN + settlementAmount, 'randomUser wrong usdc balance');
-        assertEq(linkedToken.balanceOf(randomUser), 0, 'randomuser wrong linked token balance');
-
-        // random user swap reverts because pool is settled
-        _swap(randomUser, usdc, IERC20(linkedTokenAddress), USDC_SWAP_AMOUNT_IN, true);
+        _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
     }
 
-    function testPoolFeeTenPercent() public transferNFT_approveBPT_initializePool {
+    function testSwapFeeTenSettlementFeeZero() public transferNFT_approveBPT_initializePool {
+        uint256 settleFee = 0;
         uint256 swapFeePercentage = 10e16; // 10%
-
         vm.prank(hookOwner);
         vault.setStaticSwapFeePercentage(pool, swapFeePercentage);
 
-        // random user swaps usdc for linked token
-        _swap(randomUser, usdc, IERC20(linkedTokenAddress), USDC_SWAP_AMOUNT_IN, false);
-        uint256 expectedPoolFee = USDC_SWAP_AMOUNT_IN*swapFeePercentage / 1e18;
-        uint256 expectedLinkedTokenOut = USDC_SWAP_AMOUNT_IN - expectedPoolFee;
-        assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN, "RandomUser wrong usdc tokens balance");
-        assertEq(linkedToken.balanceOf(randomUser), expectedLinkedTokenOut, "RandomUser has some linked tokens");
-
-        // hook owner settles pool
-        vm.startPrank(hookOwner);
-        usdc.approve(nftCheckHook, type(uint256).max);
-        NftCheckHook(nftCheckHook).settle();
-        vm.stopPrank();
-
-        // random user redeems
-        vm.startPrank(randomUser);
-        linkedToken.approve(nftCheckHook, type(uint256).max);
-        NftCheckHook(nftCheckHook).redeem();
-        vm.stopPrank();
-        uint256 settlementAmount = (expectedLinkedTokenOut * 1.1 ether) / 1 ether;
-        assertEq(usdc.balanceOf(hookOwner), OWNER_USDC_INITIAL_BALANCE - POOL_INITIAL_AMOUNT - settlementAmount, 'hookOwner wrong usdc balance');
-        assertEq(linkedToken.balanceOf(hookOwner), OWNER_LINKED_TOKEN_INITIAL_BALANCE - POOL_INITIAL_AMOUNT + expectedLinkedTokenOut, 'hookOwner wrong linked token balance');
-        assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN + settlementAmount, 'randomUser wrong usdc balance');
-        assertEq(linkedToken.balanceOf(randomUser), 0, 'randomuser wrong linked token balance');
-
-        // random user swap reverts because pool is settled
-        _swap(randomUser, usdc, IERC20(linkedTokenAddress), USDC_SWAP_AMOUNT_IN, true);
+       _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
     }
 
-    function testPoolFeeTwentyFivePercent() public transferNFT_approveBPT_initializePool {
+    function testSwapFeeTwentyFiveSettlementFeeZero() public transferNFT_approveBPT_initializePool {
+        uint256 settleFee = 0;
         uint256 swapFeePercentage = 25e16; // 25%
-
         vm.prank(hookOwner);
         vault.setStaticSwapFeePercentage(pool, swapFeePercentage);
 
-        // random user swaps usdc for linked token
-        _swap(randomUser, usdc, IERC20(linkedTokenAddress), USDC_SWAP_AMOUNT_IN, false);
-        uint256 expectedPoolFee = USDC_SWAP_AMOUNT_IN*swapFeePercentage / 1e18;
-        uint256 expectedLinkedTokenOut = USDC_SWAP_AMOUNT_IN - expectedPoolFee;
-        assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN, "RandomUser wrong usdc tokens balance");
-        assertEq(linkedToken.balanceOf(randomUser), expectedLinkedTokenOut, "RandomUser has some linked tokens");
-
-        // hook owner settles pool
-        vm.startPrank(hookOwner);
-        usdc.approve(nftCheckHook, type(uint256).max);
-        NftCheckHook(nftCheckHook).settle();
-        vm.stopPrank();
-
-        // random user redeems
-        vm.startPrank(randomUser);
-        linkedToken.approve(nftCheckHook, type(uint256).max);
-        NftCheckHook(nftCheckHook).redeem();
-        vm.stopPrank();
-        uint256 settlementAmount = (expectedLinkedTokenOut * 1.1 ether) / 1 ether;
-        assertEq(usdc.balanceOf(hookOwner), OWNER_USDC_INITIAL_BALANCE - POOL_INITIAL_AMOUNT - settlementAmount, 'hookOwner wrong usdc balance');
-        assertEq(linkedToken.balanceOf(hookOwner), OWNER_LINKED_TOKEN_INITIAL_BALANCE - POOL_INITIAL_AMOUNT + expectedLinkedTokenOut, 'hookOwner wrong linked token balance');
-        assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN + settlementAmount, 'randomUser wrong usdc balance');
-        assertEq(linkedToken.balanceOf(randomUser), 0, 'randomuser wrong linked token balance');
-
-        // random user swap reverts because pool is settled
-        _swap(randomUser, usdc, IERC20(linkedTokenAddress), USDC_SWAP_AMOUNT_IN, true);
+        _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
     }
+
+    function testSwapFeeZeroSettlementFeeTen() public transferNFT_approveBPT_initializePool {
+        uint256 settleFee = 10e16;
+        uint256 swapFeePercentage = 0; // 0%
+
+        _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
+    }
+
+    function testSwapFeeTenSettlementFeeTen() public transferNFT_approveBPT_initializePool {
+        uint256 settleFee = 10e16;
+        uint256 swapFeePercentage = 10e16; // 10%
+        vm.prank(hookOwner);
+        vault.setStaticSwapFeePercentage(pool, swapFeePercentage);
+
+       _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
+    }
+
+    function testSwapFeeTwentyFiveSettlementFeeTen() public transferNFT_approveBPT_initializePool {
+        uint256 settleFee = 10e16;
+        uint256 swapFeePercentage = 25e16; // 25%
+        vm.prank(hookOwner);
+        vault.setStaticSwapFeePercentage(pool, swapFeePercentage);
+
+        _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
+    }
+
 
     ////////////////////////////////////////
     // Helpers /////////////////////////////
@@ -240,7 +198,16 @@ contract TestNftCheckHook is BaseVaultTest {
         // hookOwner will be the owner of the hook
         vm.prank(hookOwner);
         nftCheckHook = address(
-            new NftCheckHook(vault, address(mockNft), tokenId, address(usdc), "RWA Token", "RWAT", OWNER_LINKED_TOKEN_INITIAL_BALANCE)
+            new NftCheckHook(
+                vault,
+                address(mockNft),
+                tokenId,
+                address(usdc),
+                "RWA Token",
+                "RWAT",
+                OWNER_LINKED_TOKEN_INITIAL_BALANCE,
+                INITIAL_SETTLEMENT_FEE
+            )
         );
         vm.label(nftCheckHook, "Nft Check Hook");
         return nftCheckHook;
@@ -301,6 +268,8 @@ contract TestNftCheckHook is BaseVaultTest {
         return router.initialize(poolToInit, tokens, amountsIn, minBptOut, false, bytes(""));
     }
 
+    // user and owner actions
+
     function _swap(address user, IERC20 tokenIn, IERC20 tokenOut, uint256 amountIn, bool reverts) internal {
         vm.startPrank(user);
         // permissions
@@ -323,5 +292,48 @@ contract TestNftCheckHook is BaseVaultTest {
             bytes("")
         );
         vm.stopPrank();
+    }
+
+    function _firstUserSwaps(uint256 _swapFeePercentage) internal returns (uint256 expectedLinkedTokenOut) {
+        _swap(randomUser, usdc, IERC20(linkedTokenAddress), USDC_SWAP_AMOUNT_IN, false);
+        uint256 expectedPoolFee = USDC_SWAP_AMOUNT_IN * _swapFeePercentage / 1e18;
+        expectedLinkedTokenOut = USDC_SWAP_AMOUNT_IN - expectedPoolFee;
+        assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN, "RandomUser wrong usdc tokens balance");
+        assertEq(linkedToken.balanceOf(randomUser), expectedLinkedTokenOut, "RandomUser has some linked tokens");
+    }
+
+    function _ownerSettlesPool() internal {
+        // hook owner settles pool
+        vm.startPrank(hookOwner);
+        usdc.approve(nftCheckHook, type(uint256).max);
+        NftCheckHook(nftCheckHook).settle();
+        vm.stopPrank();
+    }
+
+    function _userRedeemsAfterFirstSwapAndOwnerSettlement(uint256 expectedLinkedTokenOut) internal {
+        // random user redeems
+        vm.startPrank(randomUser);
+        linkedToken.approve(nftCheckHook, type(uint256).max);
+        NftCheckHook(nftCheckHook).redeem();
+        vm.stopPrank();
+        uint256 settlementAmount = (expectedLinkedTokenOut * (1 ether + INITIAL_SETTLEMENT_FEE)) / 1 ether;
+        assertEq(usdc.balanceOf(hookOwner), OWNER_USDC_INITIAL_BALANCE - POOL_INITIAL_AMOUNT - settlementAmount, 'hookOwner wrong usdc balance');
+        assertEq(linkedToken.balanceOf(hookOwner), OWNER_LINKED_TOKEN_INITIAL_BALANCE - POOL_INITIAL_AMOUNT + expectedLinkedTokenOut, 'hookOwner wrong linked token balance');
+        assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN + settlementAmount, 'randomUser wrong usdc balance');
+        assertEq(linkedToken.balanceOf(randomUser), 0, 'randomuser wrong linked token balance');
+    }
+
+    function _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(uint256 _swapFeePercentage) internal {
+        // random user swaps usdc for linked token
+        uint256 expectedLinkedTokenOut = _firstUserSwaps(_swapFeePercentage);
+
+        // Owner settles pool
+        _ownerSettlesPool();
+
+        // random user redeems
+        _userRedeemsAfterFirstSwapAndOwnerSettlement(expectedLinkedTokenOut);
+
+        // random user swap reverts because pool is settled
+        _swap(randomUser, usdc, IERC20(linkedTokenAddress), USDC_SWAP_AMOUNT_IN, true);
     }
 }

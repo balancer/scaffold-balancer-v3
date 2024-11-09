@@ -48,7 +48,7 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
 
         // Deploy a hook
         address nftCheckHook = address(
-            new NftCheckHook(vault, address(mockNft), tokenId, token, "RWA Token", "RWAT", 1000e18)
+            new NftCheckHook(vault, address(mockNft), tokenId, token, "RWA Token", "RWAT", 1000e18, 10e16)
         );
         console.log("NftCheckHook deployed at address: %s", nftCheckHook);
 

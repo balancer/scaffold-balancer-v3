@@ -53,6 +53,7 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     uint256 public initialToken1Amount;
     uint256 public initialToken2Amount;
     uint256 public redeemRatio;
+    uint256 public immutable settleFee;
     address public poolAddress;
     address private linkedToken;
     address private stableToken;
@@ -78,10 +79,20 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     event Redeemed(address indexed user, uint256 poolTokenAmount, uint256 stableTokenAmount);
     event InitialBPTLocked(address indexed owner, uint256 bptAmount);
 
-    constructor(IVault vault, address _nftContract, uint256 _nftId, address _stableToken, string memory erc20name, string memory erc20symbol, uint256 erc20supply) VaultGuard(vault) Ownable(msg.sender) {
+    constructor(
+        IVault vault,
+        address _nftContract,
+        uint256 _nftId,
+        address _stableToken,
+        string memory erc20name,
+        string memory erc20symbol,
+        uint256 erc20supply,
+        uint256 _settleFee
+    ) VaultGuard(vault) Ownable(msg.sender) {
         nftContract = _nftContract;
         nftId = _nftId;
         stableToken = _stableToken;
+        settleFee = _settleFee; // should be like [0-100]e16
 
         MockLinked mockLinked = new MockLinked(erc20name, erc20symbol, erc20supply);
         mockLinked.transfer(owner(), erc20supply);
@@ -132,13 +143,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         if (!linkedTokenFound) {
             revert LinkedTokenNotInPool(linkedToken);
         }
-        // Record the initial liquidity amounts
-        // recordInitialLiquidity(
-        //     tokenConfigs[0].token.balanceOf(address(_vault)),
-        //     tokenConfigs[1].token.balanceOf(address(_vault))
-        // );
+
         recordInitialLiquidity(exactAmountsIn[0], exactAmountsIn[1]);
-        
         return true;
     }
 
@@ -258,7 +264,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         uint256 stableTokenBalance = stableTokenErc20.balanceOf(poolAddress);
         uint256 stablePoolRatio = (stableTokenBalance != 0 ? linkedTokenBalance / stableTokenBalance : 1) * 1 ether;
         // Ensure the stable pool ratio is not below what the initial ratio
-        redeemRatio = stablePoolRatio > 1.1 ether ? stablePoolRatio : 1.1 ether;
+        uint256 redeemWithFee = 1 ether + settleFee;
+        redeemRatio = stablePoolRatio > redeemWithFee ? stablePoolRatio : redeemWithFee;
 
         // how much stable tokens are required to settle the outstanding shares
         stableAmountRequired = outstandingShares * redeemRatio / 1 ether;
