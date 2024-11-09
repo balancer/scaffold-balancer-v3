@@ -133,55 +133,46 @@ contract TestNftCheckHook is BaseVaultTest {
     }
 
     function testSwapFeeZeroSettlementFeeZero() public transferNFT_approveBPT_initializePool {
-        uint256 settleFee = 0;
         uint256 swapFeePercentage = 0; // 0%
-
         _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
     }
 
     function testSwapFeeTenSettlementFeeZero() public transferNFT_approveBPT_initializePool {
-        uint256 settleFee = 0;
         uint256 swapFeePercentage = 10e16; // 10%
         vm.prank(hookOwner);
         vault.setStaticSwapFeePercentage(pool, swapFeePercentage);
-
        _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
     }
 
     function testSwapFeeTwentyFiveSettlementFeeZero() public transferNFT_approveBPT_initializePool {
-        uint256 settleFee = 0;
         uint256 swapFeePercentage = 25e16; // 25%
         vm.prank(hookOwner);
         vault.setStaticSwapFeePercentage(pool, swapFeePercentage);
-
         _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
     }
 
-    function testSwapFeeZeroSettlementFeeTen() public transferNFT_approveBPT_initializePool {
-        uint256 settleFee = 10e16;
+    function testRugPulling() public transferNFT_approveBPT_initializePool {
         uint256 swapFeePercentage = 0; // 0%
 
+        // random user swaps usdc for linked token
+        uint256 expectedLinkedTokenOut = _firstUserSwaps(swapFeePercentage);
+
+        // Owner removes liquidity but has no bpt
+        uint256 bptAmount = IERC20(pool).balanceOf(hookOwner);
+        assertEq(bptAmount, 0, "Wrong bpt amount");
+        // true means it reverts
+        _ownerRemovesLiquidityProportional(POOL_INITIAL_AMOUNT/10, true);
+    }
+
+    function testOwnerCanRemoveLiquidityAfterSettlement() public transferNFT_approveBPT_initializePool {
+        uint256 swapFeePercentage = 0;
         _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
+
+        uint256 bptAmount = IERC20(pool).balanceOf(hookOwner);
+        // for some reason the bpt amount is slightly different than 2*POOL_INITIAL_AMOUNT, TODO
+        assertEq(bptAmount, 99999999999999000000, "Wrong bpt amount");
+        _ownerRemovesLiquidityProportional(bptAmount, false);
     }
-
-    function testSwapFeeTenSettlementFeeTen() public transferNFT_approveBPT_initializePool {
-        uint256 settleFee = 10e16;
-        uint256 swapFeePercentage = 10e16; // 10%
-        vm.prank(hookOwner);
-        vault.setStaticSwapFeePercentage(pool, swapFeePercentage);
-
-       _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
-    }
-
-    function testSwapFeeTwentyFiveSettlementFeeTen() public transferNFT_approveBPT_initializePool {
-        uint256 settleFee = 10e16;
-        uint256 swapFeePercentage = 25e16; // 25%
-        vm.prank(hookOwner);
-        vault.setStaticSwapFeePercentage(pool, swapFeePercentage);
-
-        _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
-    }
-
 
     ////////////////////////////////////////
     // Helpers /////////////////////////////
@@ -335,5 +326,14 @@ contract TestNftCheckHook is BaseVaultTest {
 
         // random user swap reverts because pool is settled
         _swap(randomUser, usdc, IERC20(linkedTokenAddress), USDC_SWAP_AMOUNT_IN, true);
+    }
+
+    function _ownerRemovesLiquidityProportional(uint256 amountOut, bool reverts) internal {
+        vm.startPrank(hookOwner);
+        IERC20(pool).approve(address(router), type(uint256).max);
+        
+        if (reverts) vm.expectRevert();
+        router.removeLiquidityProportional(pool, amountOut, [uint256(0),uint256(0)].toMemoryArray(), false, bytes(""));
+        vm.stopPrank();
     }
 }
