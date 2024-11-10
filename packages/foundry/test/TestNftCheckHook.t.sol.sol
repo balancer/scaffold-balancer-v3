@@ -59,7 +59,7 @@ contract TestNftCheckHook is BaseVaultTest {
     uint256 constant POOL_INITIAL_AMOUNT = 50e18;
     // random user swap amount in
     uint256 constant USDC_SWAP_AMOUNT_IN = 40e18;
-    uint256 constant INITIAL_SETTLEMENT_FEE = 10e16;
+    uint256 constant SETTLEMENT_FEE = 10e16;
 
 
     modifier transferNFT_approveBPT_initializePool() {
@@ -166,12 +166,35 @@ contract TestNftCheckHook is BaseVaultTest {
 
     function testOwnerCanRemoveLiquidityAfterSettlement() public transferNFT_approveBPT_initializePool {
         uint256 swapFeePercentage = 0;
+        console.log("BPT amount of hook: ", IERC20(pool).balanceOf(nftCheckHook));
         _userSwapsOwnerSettlesUserRedeemsUserSwapsWithRevert(swapFeePercentage);
 
         uint256 bptAmount = IERC20(pool).balanceOf(hookOwner);
         // for some reason the bpt amount is slightly different than 2*POOL_INITIAL_AMOUNT, TODO
         assertEq(bptAmount, 99999999999999000000, "Wrong bpt amount");
         _ownerRemovesLiquidityProportional(bptAmount, false);
+    }
+
+    // amount of linked tokens in the pool = 2 * amount of usdc in the pool 
+    function testRedeemRationWhenStablePoolRatioIsBig() public transferNFT_approveBPT_initializePool {
+        uint256 swapFeePercentage = 0; // 0%
+
+        // random user swaps 40e18 usdc for 40e18 linked token
+        uint256 expectedLinkedTokenOut = _firstUserSwaps(swapFeePercentage);
+        // pool 10e18/90e18 linked/usdc
+
+        // Owner adds 170e18 linked tokens
+        uint256 linkedAmountIn = 170e18;
+        uint256[] memory amountsToAdd = linkedTokenIdx == 0 ? 
+            [linkedAmountIn, uint256(0)].toMemoryArray() : [uint256(0), linkedAmountIn].toMemoryArray();
+        _ownerAddsLiquidity(amountsToAdd);
+        // pool 180e18/90e18 linked/usdc so linked/usdc rato is 2
+
+        uint256 stableAmountRequired = NftCheckHook(nftCheckHook).getSettlementAmount();
+
+        // user has 40 linked tokens so stableAmountRequired = 40e18 * 2 = 80e18
+        uint256 expectedStableAmountRequired = 80e18;
+        assertEq(stableAmountRequired, expectedStableAmountRequired, "Wrong stableAmountRequired");
     }
 
     ////////////////////////////////////////
@@ -197,7 +220,7 @@ contract TestNftCheckHook is BaseVaultTest {
                 "RWA Token",
                 "RWAT",
                 OWNER_LINKED_TOKEN_INITIAL_BALANCE,
-                INITIAL_SETTLEMENT_FEE
+                SETTLEMENT_FEE
             )
         );
         vm.label(nftCheckHook, "Nft Check Hook");
@@ -307,7 +330,7 @@ contract TestNftCheckHook is BaseVaultTest {
         linkedToken.approve(nftCheckHook, type(uint256).max);
         NftCheckHook(nftCheckHook).redeem();
         vm.stopPrank();
-        uint256 settlementAmount = (expectedLinkedTokenOut * (1 ether + INITIAL_SETTLEMENT_FEE)) / 1 ether;
+        uint256 settlementAmount = (expectedLinkedTokenOut * (1 ether + SETTLEMENT_FEE)) / 1 ether;
         assertEq(usdc.balanceOf(hookOwner), OWNER_USDC_INITIAL_BALANCE - POOL_INITIAL_AMOUNT - settlementAmount, 'hookOwner wrong usdc balance');
         assertEq(linkedToken.balanceOf(hookOwner), OWNER_LINKED_TOKEN_INITIAL_BALANCE - POOL_INITIAL_AMOUNT + expectedLinkedTokenOut, 'hookOwner wrong linked token balance');
         assertEq(usdc.balanceOf(randomUser), RANDOM_USER_USDC_INITIAL_BALANCE - USDC_SWAP_AMOUNT_IN + settlementAmount, 'randomUser wrong usdc balance');
@@ -335,5 +358,16 @@ contract TestNftCheckHook is BaseVaultTest {
         if (reverts) vm.expectRevert();
         router.removeLiquidityProportional(pool, amountOut, [uint256(0),uint256(0)].toMemoryArray(), false, bytes(""));
         vm.stopPrank();
+    }
+
+    function _ownerAddsLiquidity(uint256[] memory exactAmountsIn) internal {
+        vm.prank(hookOwner);
+        router.addLiquidityUnbalanced(
+            pool,
+            exactAmountsIn,
+            0,
+            false,
+            bytes("")
+        );
     }
 }

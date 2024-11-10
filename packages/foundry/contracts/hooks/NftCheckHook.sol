@@ -25,6 +25,9 @@ import { MockNft } from "../mocks/MockNft.sol";
 import { MockStable } from "../mocks/MockStable.sol";
 import { MockLinked } from "../mocks/MockLinked.sol";
 
+// import { PoolDataLib } from "@balancer-labs/v3-vault/contracts/lib/PoolDataLib.sol";
+import { PoolData } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+
 
 // Interface for ERC721 NFT contract
 interface IERC721 {
@@ -69,7 +72,6 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     error PoolDoesNotSupportDonation();
     error InitialBPTNotLocked();
     error PoolIsSettled();
-    error CantAddLinkedTokenLiquidity();
 
     event NftCheckHookRegistered(address indexed hooksContract, address indexed pool);
     event NftContractUpdated(address indexed oldContract, address indexed newContract);
@@ -180,14 +182,11 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         address,
         address,
         AddLiquidityKind,
-        uint256[] memory maxAmountsInScaled18,
+        uint256[] memory,
         uint256,
         uint256[] memory,
         bytes memory
     ) public view override returns (bool success) {
-        uint256 linkedTokenIndex = linkedToken > stableToken ? 1 : 0;
-        if (maxAmountsInScaled18[linkedTokenIndex] > 0)
-            revert CantAddLinkedTokenLiquidity();
         success = true;
     }
 
@@ -260,8 +259,10 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         uint256 outstandingShares = totalSupply - poolBalance[linkedTokenIndex] - ownerBalance;  // 50e18
 
         // Calculate the equivalent stable token amount using the current pool/stable ratio
-        uint256 linkedTokenBalance = linkedTokenErc20.balanceOf(poolAddress);
-        uint256 stableTokenBalance = stableTokenErc20.balanceOf(poolAddress);
+        PoolData memory pooldata = _vault.getPoolData(poolAddress);
+        uint256 linkedTokenBalance = pooldata.balancesRaw[linkedTokenIndex];
+        uint256 stableTokenIndex = linkedToken > stableToken ? 0 : 1;
+        uint256 stableTokenBalance = pooldata.balancesRaw[stableTokenIndex];
         uint256 stablePoolRatio = (stableTokenBalance != 0 ? linkedTokenBalance / stableTokenBalance : 1) * 1 ether;
         // Ensure the stable pool ratio is not below what the initial ratio
         uint256 redeemWithFee = 1 ether + settleFee;
