@@ -75,6 +75,9 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
         // Approve the router to spend tokens for pool initialization
         approveRouterWithPermit2(initConfig.tokens);
 
+        // Approve the hook to transfer bpt tokens
+        IERC20(pool).approve(nftCheckHook, type(uint256).max);
+
         address testUserAddress = address(uint160(getTestUserAddress()));
         MockStable(token).mint(100e18);
         MockStable(token).transfer(testUserAddress, 100e18);
