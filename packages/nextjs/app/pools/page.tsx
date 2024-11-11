@@ -119,7 +119,7 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
     args: [nftCheckHook, MaxUint256],
   });
 
-  // button: Settle
+  // button: Settle Pool
   const { writeAsync: settlePool } = useScaffoldContractWrite({
     contractName: "NftCheckHook",
     functionName: "settle",
