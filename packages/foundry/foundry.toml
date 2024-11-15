@@ -9,6 +9,8 @@ auto_detect_solc = false
 evm_version = 'cancun'
 ignored_error_codes = [2394] # Transient storage
 fs_permissions = [{ access = "read-write", path = "./"}] # SE-2 default to allow script to write contract info from /foundry to /nextjs
+remappings = ["@openzeppelin/=node_modules/@openzeppelin/"]
+viaIR = true
 
 
 [rpc_endpoints]
