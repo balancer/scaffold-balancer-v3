@@ -25,6 +25,9 @@ import { MockNft } from "../mocks/MockNft.sol";
 import { MockStable } from "../mocks/MockStable.sol";
 import { MockLinked } from "../mocks/MockLinked.sol";
 
+// import { PoolDataLib } from "@balancer-labs/v3-vault/contracts/lib/PoolDataLib.sol";
+import { PoolData } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
+
 
 // Interface for ERC721 NFT contract
 interface IERC721 {
@@ -53,38 +56,45 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
     uint256 public initialToken1Amount;
     uint256 public initialToken2Amount;
     uint256 public redeemRatio;
+    uint256 public immutable settleFee;
     address public poolAddress;
     address private linkedToken;
     address private stableToken;
     TokenConfig[] private tokenConfigs;
     bool private initialLiquidityRecorded;
+    uint256 private initialBPTLocked;
     bool private poolIsSettled;
-
-    uint64 public exitFeePercentage;
-    uint64 public constant MAX_EXIT_FEE_PERCENTAGE = 10e16;
 
     error DoesNotOwnRequiredNFT(address hook, address nftContract, uint256 nftId);
     error LinkedTokenNotInPool(address linkedToken);
     error InsufficientLiquidityToRemove(address user, uint256 currentAmount, uint256 initialAmount);
     error InsufficientStableForSettlement(uint256 required, uint256 available);
-    error ExitFeeAboveLimit(uint256 feePercentage, uint256 limit);
     error PoolDoesNotSupportDonation();
+    error InitialBPTNotLocked();
     error PoolIsSettled();
-    error CantAddLinkedTokenLiquidity();
 
     event NftCheckHookRegistered(address indexed hooksContract, address indexed pool);
-    event ExitFeeCharged(address indexed pool, IERC20 indexed token, uint256 feeAmount);
-    event ExitFeePercentageChanged(address indexed hookContract, uint256 exitFeePercentage);
     event NftContractUpdated(address indexed oldContract, address indexed newContract);
     event NftIdUpdated(uint256 oldId, uint256 newId);
     event InitialLiquidityRecorded(address indexed user, uint256 token1Amount, uint256 token2Amount);
     event LiquiditySettled(uint256 totalEscrowedAmount, address indexed originalDepositor);
     event Redeemed(address indexed user, uint256 poolTokenAmount, uint256 stableTokenAmount);
+    event InitialBPTLocked(address indexed owner, uint256 bptAmount);
 
-    constructor(IVault vault, address _nftContract, uint256 _nftId, address _stableToken, string memory erc20name, string memory erc20symbol, uint256 erc20supply) VaultGuard(vault) Ownable(msg.sender) {
+    constructor(
+        IVault vault,
+        address _nftContract,
+        uint256 _nftId,
+        address _stableToken,
+        string memory erc20name,
+        string memory erc20symbol,
+        uint256 erc20supply,
+        uint256 _settleFee
+    ) VaultGuard(vault) Ownable(msg.sender) {
         nftContract = _nftContract;
         nftId = _nftId;
         stableToken = _stableToken;
+        settleFee = _settleFee; // should be like [0-100]e16
 
         MockLinked mockLinked = new MockLinked(erc20name, erc20symbol, erc20supply);
         mockLinked.transfer(owner(), erc20supply);
@@ -107,7 +117,18 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         return true;
     }
 
-    function onBeforeInitialize(uint256[] memory /*exactAmountsIn*/, bytes memory /*userData*/) public override returns (bool) {
+    /// @inheritdoc IHooks
+    function getHookFlags() public pure override returns (HookFlags memory) {
+        HookFlags memory hookFlags;
+        hookFlags.shouldCallBeforeInitialize = true;
+        hookFlags.shouldCallAfterInitialize = true;
+        hookFlags.shouldCallBeforeRemoveLiquidity = true;
+        hookFlags.shouldCallBeforeSwap = true;
+        hookFlags.shouldCallBeforeAddLiquidity = true;
+        return hookFlags;
+    }
+
+    function onBeforeInitialize(uint256[] memory exactAmountsIn, bytes memory /*userData*/) public override returns (bool) {
         // Check if the hook owns the required NFT
         if (IERC721(nftContract).ownerOf(nftId) != address(this)) {
             revert DoesNotOwnRequiredNFT(address(this), nftContract, nftId);
@@ -124,126 +145,60 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         if (!linkedTokenFound) {
             revert LinkedTokenNotInPool(linkedToken);
         }
-        // Record the initial liquidity amounts
-        recordInitialLiquidity(tokenConfigs[0].token.balanceOf(poolAddress), tokenConfigs[1].token.balanceOf(poolAddress));
 
+        recordInitialLiquidity(exactAmountsIn[0], exactAmountsIn[1]);
         return true;
     }
 
     /// @inheritdoc IHooks
-    function getHookFlags() public pure override returns (HookFlags memory) {
-        HookFlags memory hookFlags;
-        hookFlags.shouldCallAfterRemoveLiquidity = true;
-        hookFlags.shouldCallBeforeInitialize = true;
-        hookFlags.shouldCallBeforeSwap = true;
-        hookFlags.shouldCallBeforeAddLiquidity = true;
-        return hookFlags;
+    function onAfterInitialize(
+        uint256[] memory,
+        uint256 bptAmountOut,
+        bytes memory
+    ) public override returns(bool) {
+        IERC20(poolAddress).transferFrom(owner(), address(this), bptAmountOut);
+        initialBPTLocked = bptAmountOut;
+        emit InitialBPTLocked(owner(), bptAmountOut);
+        return true;
     }
 
     /// @inheritdoc IHooks
-    function onAfterRemoveLiquidity(
+    function onBeforeRemoveLiquidity(
         address,
-        address pool,
-        RemoveLiquidityKind kind,
+        address,
+        RemoveLiquidityKind,
         uint256,
         uint256[] memory,
-        uint256[] memory amountsOutRaw,
         uint256[] memory,
         bytes memory
-    ) public override onlyVault returns (bool, uint256[] memory hookAdjustedAmountsOutRaw) {
-        
-        // Ensure the first depositor has the same amount of both tokens after removal (no rug pulling allowed)
-        if (msg.sender == owner()) {
-            IERC20[] memory poolTokens = _vault.getPoolTokens(pool);
-
-            uint256 currentToken1Amount = poolTokens[0].balanceOf(msg.sender);
-            uint256 currentToken2Amount = poolTokens[1].balanceOf(msg.sender);
-
-            if (currentToken1Amount < initialToken1Amount) {
-                revert InsufficientLiquidityToRemove(msg.sender, currentToken1Amount, initialToken1Amount);
-            }
-            if (currentToken2Amount < initialToken2Amount) {
-                revert InsufficientLiquidityToRemove(msg.sender, currentToken2Amount, initialToken2Amount);
-            }
-        }
-
-        // Our current architecture only supports fees on tokens. Since we must always respect exact `amountsOut`, and
-        // non-proportional remove liquidity operations would require taking fees in BPT, we only support proportional
-        // removeLiquidity.
-        if (kind != RemoveLiquidityKind.PROPORTIONAL) {
-            // Returning false will make the transaction revert, so the second argument does not matter.
-            return (false, amountsOutRaw);
-        }
-
-        IERC20[] memory tokens = _vault.getPoolTokens(pool);
-        uint256[] memory accruedFees = new uint256[](tokens.length);
-        hookAdjustedAmountsOutRaw = amountsOutRaw;
-
-        if (exitFeePercentage > 0) {
-            // Charge fees proportional to the `amountOut` of each token.
-            for (uint256 i = 0; i < amountsOutRaw.length; i++) {
-                uint256 exitFee = amountsOutRaw[i].mulDown(exitFeePercentage);
-                accruedFees[i] = exitFee;
-                hookAdjustedAmountsOutRaw[i] -= exitFee;
-
-                emit ExitFeeCharged(pool, tokens[i], exitFee);
-                // Fees don't need to be transferred to the hook, because donation will redeposit them in the Vault.
-                // In effect, we will transfer a reduced amount of tokensOut to the caller, and leave the remainder
-                // in the pool balance.
-            }
-
-            // Donates accrued fees back to LPs
-            _vault.addLiquidity(
-                AddLiquidityParams({
-                    pool: pool,
-                    to: msg.sender, // It would mint BPTs to router, but it's a donation so no BPT is minted
-                    maxAmountsIn: accruedFees, // Donate all accrued fees back to the pool (i.e. to the LPs)
-                    minBptAmountOut: 0, // Donation does not return BPTs, any number above 0 will revert
-                    kind: AddLiquidityKind.DONATION,
-                    userData: bytes("") // User data is not used by donation, so we can set it to an empty string
-                })
-            );
-        }
-
-        return (true, hookAdjustedAmountsOutRaw);
+    ) public view override returns (bool success) {
+        if (initialBPTLocked == 0) revert InitialBPTNotLocked();
+        return true;
     }
 
+    /// @inheritdoc IHooks
     // random user cannot add linked token liquidity because problem at settlement
     function onBeforeAddLiquidity(
         address,
         address,
         AddLiquidityKind,
-        uint256[] memory maxAmountsInScaled18,
+        uint256[] memory,
         uint256,
         uint256[] memory,
         bytes memory
     ) public view override returns (bool success) {
-       uint256 linkedTokenIndex = linkedToken > stableToken ? 1 : 0;
-       if (maxAmountsInScaled18[linkedTokenIndex] > 0)
-           revert CantAddLinkedTokenLiquidity();
         success = true;
     }
 
+    /// @inheritdoc IHooks
     // random users cannot swap after pool is settled, but owner should be able to (TODO)
     function onBeforeSwap(PoolSwapParams calldata, address) public view override returns (bool success) {
+        if (initialBPTLocked == 0) revert InitialBPTNotLocked();
         if (poolIsSettled) revert PoolIsSettled();
         success = true;
     }
 
-    // Permissioned functions
-
-    /**
-     * @notice Sets the hook remove liquidity fee percentage, charged on every remove liquidity operation.
-     * @dev This function must be permissioned.
-     */
-    function setExitFeePercentage(uint64 newExitFeePercentage) external onlyOwner {
-        if (newExitFeePercentage > MAX_EXIT_FEE_PERCENTAGE) {
-            revert ExitFeeAboveLimit(newExitFeePercentage, MAX_EXIT_FEE_PERCENTAGE);
-        }
-        exitFeePercentage = newExitFeePercentage;
-
-        emit ExitFeePercentageChanged(address(this), newExitFeePercentage);
-    }
+    //////// Permissioned functions - onlyOwner ////////
 
     // New function to update nftContract
     function setNftContract(address _newNftContract) external onlyOwner {
@@ -259,6 +214,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         emit NftIdUpdated(oldId, _newNftId);
     }
 
+    //////// Permissioned functions - onlyVault ////////
+
     function recordInitialLiquidity(uint256 token1Amount, uint256 token2Amount) public onlyVault {
         require(!initialLiquidityRecorded, "Initial liquidity already recorded");
         initialLiquidityRecorded = true;
@@ -266,6 +223,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         initialToken2Amount = token2Amount;
         emit InitialLiquidityRecorded(owner(), token1Amount, token2Amount);
     }
+
+    //////// Getter functions ////////
 
     function getLinkedToken() external view returns(address) {
         return linkedToken;
@@ -287,6 +246,8 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         return nftContract;
     }
 
+    //////// Escrow functions ////////
+
     function getSettlementAmount() public returns(uint256 stableAmountRequired) {
         // Calculate total outstanding shares in the pool
         MockLinked linkedTokenErc20 = MockLinked(linkedToken);
@@ -298,11 +259,14 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         uint256 outstandingShares = totalSupply - poolBalance[linkedTokenIndex] - ownerBalance;  // 50e18
 
         // Calculate the equivalent stable token amount using the current pool/stable ratio
-        uint256 linkedTokenBalance = linkedTokenErc20.balanceOf(poolAddress);
-        uint256 stableTokenBalance = stableTokenErc20.balanceOf(poolAddress);
+        PoolData memory pooldata = _vault.getPoolData(poolAddress);
+        uint256 linkedTokenBalance = pooldata.balancesRaw[linkedTokenIndex];
+        uint256 stableTokenIndex = linkedToken > stableToken ? 0 : 1;
+        uint256 stableTokenBalance = pooldata.balancesRaw[stableTokenIndex];
         uint256 stablePoolRatio = (stableTokenBalance != 0 ? linkedTokenBalance / stableTokenBalance : 1) * 1 ether;
         // Ensure the stable pool ratio is not below what the initial ratio
-        redeemRatio = stablePoolRatio > 1.1 ether ? stablePoolRatio : 1.1 ether;
+        uint256 redeemWithFee = 1 ether + settleFee;
+        redeemRatio = stablePoolRatio > redeemWithFee ? stablePoolRatio : redeemWithFee;
 
         // how much stable tokens are required to settle the outstanding shares
         stableAmountRequired = outstandingShares * redeemRatio / 1 ether;
@@ -317,10 +281,12 @@ contract NftCheckHook is BaseHooks, VaultGuard, Ownable {
         if (poolIsSettled) revert PoolIsSettled();
         uint256 stableAmountRequired = getSettlementAmount();
 
-        // Transfer the necessary stable tokens from the user
+        // Transfer the necessary stable tokens from the owner
         MockStable(stableToken).transferFrom(msg.sender, address(this), stableAmountRequired);
-        // Return the nft to the user
+        // Return the nft to the owner
         MockNft(nftContract).transferFrom(address(this), msg.sender, nftId);
+        // Return the bpt to the owner
+        IERC20(poolAddress).transfer(owner(), initialBPTLocked);
 
         poolIsSettled = true;
         emit LiquiditySettled(stableAmountRequired, owner());

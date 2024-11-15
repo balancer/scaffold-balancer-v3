@@ -48,7 +48,7 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
 
         // Deploy a hook
         address nftCheckHook = address(
-            new NftCheckHook(vault, address(mockNft), tokenId, token, "RWA Token", "RWAT", 1000e18)
+            new NftCheckHook(vault, address(mockNft), tokenId, token, "RWA Token", "RWAT", 1000e18, 10e16)
         );
         console.log("NftCheckHook deployed at address: %s", nftCheckHook);
 
@@ -74,6 +74,9 @@ contract DeployConstantSumPoolWithCheckHook is PoolHelpers, ScaffoldHelpers {
 
         // Approve the router to spend tokens for pool initialization
         approveRouterWithPermit2(initConfig.tokens);
+
+        // Approve the hook to transfer bpt tokens
+        IERC20(pool).approve(nftCheckHook, type(uint256).max);
 
         address testUserAddress = address(uint160(getTestUserAddress()));
         MockStable(token).mint(100e18);
