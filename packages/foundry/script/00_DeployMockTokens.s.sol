@@ -20,10 +20,10 @@ contract DeployMockTokens is ScaffoldHelpers {
         vm.startBroadcast(deployerPrivateKey);
 
         // Used to register & initialize pool contracts
-        mockToken1 = address(new MockToken1("Mock Token 1", "MT1", 1000e18));
-        mockToken2 = address(new MockToken2("Mock Token 2", "MT2", 1000e18));
-        console.log("MockToken1 deployed at: %s", mockToken1);
-        console.log("MockToken2 deployed at: %s", mockToken2);
+        mockToken1 = address(new MockToken1("StableCoin", "Stable", 1000e18));
+        mockToken2 = address(new MockToken2("NewToken", "NewToken", 1000e18));
+        console.log("StableCoin deployed at: %s", mockToken1);
+        console.log("NewToken deployed at: %s", mockToken2);
 
         // Used for the VeBALFeeDiscountHook
         mockVeBAL = address(new MockVeBAL("Vote-escrow BAL", "veBAL", 1000e18));

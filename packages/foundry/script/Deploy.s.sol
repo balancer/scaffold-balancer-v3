@@ -6,6 +6,7 @@ import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { DeployMockTokens } from "./00_DeployMockTokens.s.sol";
 import { DeployConstantSumPool } from "./01_DeployConstantSumPool.s.sol";
 import { DeployConstantProductPool } from "./02_DeployConstantProductPool.s.sol";
+import { DeployConstantProductPoolV2 } from "./04_DeployConstantProductPoolV2.s.sol";
 import { DeployWeightedPool8020 } from "./03_DeployWeightedPool8020.s.sol";
 
 /**
@@ -18,6 +19,7 @@ contract DeployScript is
     DeployMockTokens,
     DeployConstantSumPool,
     DeployConstantProductPool,
+    DeployConstantProductPoolV2,
     DeployWeightedPool8020
 {
     function run() external scaffoldExport {
@@ -29,6 +31,7 @@ contract DeployScript is
 
         // Deploy, register, and initialize a constant product pool with a lottery hook
         deployConstantProductPool(mockToken1, mockToken2);
+        deployConstantProductPoolV2(mockToken1, mockToken2);
 
         // Deploy, register, and initialize a weighted pool with an exit fee hook
         deployWeightedPool8020(mockToken1, mockToken2);
