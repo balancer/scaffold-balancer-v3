@@ -18,8 +18,8 @@ import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.so
  * @notice Helpful types, interface instances, and functions for deploying pools on Balancer v3
  */
 contract PoolHelpers {
-    // Balancer v3 Sepolia addresses (8th testnet release)
-    IVault internal vault = IVault(0x0EF1c156a7986F394d90eD1bEeA6483Cc435F542);
+    // TODO: Figure out how to support multiple networks? Or maybe easy cus all addresses same accross networks?
+    IVault internal vault = IVault(0xbA1333333333a1BA1108E8412f11850A5C319bA9);
     IRouter internal router = IRouter(0xB12FcB422aAe6720f882E22C340964a7723f2387);
     IBatchRouter internal batchRouter = IBatchRouter(0x0418001D0d68C71d0E391fE46dC7aFCe045f34A0);
     IPermit2 internal permit2 = IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
