@@ -7,9 +7,9 @@ ffi = true
 solc_version = '0.8.24'
 auto_detect_solc = false
 evm_version = 'cancun'
+via_ir = true
 ignored_error_codes = [2394] # Transient storage
 fs_permissions = [{ access = "read-write", path = "./"}] # SE-2 default to allow script to write contract info from /foundry to /nextjs
-
 
 [rpc_endpoints]
 default_network = "http://127.0.0.1:8545"

@@ -15,7 +15,7 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 import { PoolHelpers, CustomPoolConfig, InitializationConfig } from "./PoolHelpers.sol";
 import { ScaffoldHelpers, console } from "./ScaffoldHelpers.sol";
 import { ConstantProductFactory } from "../contracts/factories/ConstantProductFactory.sol";
-import { LotteryHookExample } from "../contracts/hooks/LotteryHookExample.sol";
+import { SwapReferralHook } from "../contracts/hooks/SwapReferralHook.sol";
 
 /**
  * @title Deploy Constant Product Pool
@@ -36,8 +36,8 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
         console.log("Constant Product Factory deployed at: %s", address(factory));
 
         // Deploy a hook
-        address lotteryHook = address(new LotteryHookExample(vault, address(router)));
-        console.log("LotteryHookExample deployed at address: %s", lotteryHook);
+        address swapReferralhook = address(new SwapReferralHook(vault, address(factory), address(router)));
+        console.log("SwapReferralHook deployed at address: %s", swapReferralhook);
 
         // Deploy a pool and register it with the vault
         address pool = factory.create(
@@ -48,7 +48,7 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
             poolConfig.swapFeePercentage,
             poolConfig.protocolFeeExempt,
             poolConfig.roleAccounts,
-            lotteryHook, // poolHooksContract
+            swapReferralhook, // poolHooksContract
             poolConfig.liquidityManagement
         );
         console.log("Constant Product Pool deployed at: %s", pool);
@@ -106,7 +106,7 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
             poolCreator: address(0) // Account empowered to set the pool creator fee percentage
         });
         LiquidityManagement memory liquidityManagement = LiquidityManagement({
-            disableUnbalancedLiquidity: true, // Must be true to register pool with the Lottery Hook
+            disableUnbalancedLiquidity: true, // Must be true to register pool with the swapReferralhook
             enableAddLiquidityCustom: false,
             enableRemoveLiquidityCustom: false,
             enableDonation: false

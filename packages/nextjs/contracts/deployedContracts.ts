@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MockToken1: {
-      address: "0xfdc90fb27105f322b384af5c3a39183047dec080",
+      address: "0xf31bF6E9a80DfdD31318100F1C36154b105D0Ae2",
       abi: [
         {
           type: "constructor",
@@ -365,7 +365,7 @@ const deployedContracts = {
       },
     },
     MockToken2: {
-      address: "0xd2ed70a2ddc08f9e302b5298ef2e656959e79dd5",
+      address: "0xC37e30f2f643E3d314536edFe489f09E94d7F575",
       abi: [
         {
           type: "constructor",
@@ -723,7 +723,7 @@ const deployedContracts = {
       },
     },
     MockVeBAL: {
-      address: "0x8e18528aa76be18c51653a3f61fe79cea130620f",
+      address: "0xd362926520308e3DaACf6767b408f9D9e8745b25",
       abi: [
         {
           type: "constructor",
@@ -1081,7 +1081,7 @@ const deployedContracts = {
       },
     },
     ConstantSumFactory: {
-      address: "0x1f16730c011b43dc6a62259b30e5721265883dde",
+      address: "0x42c3aE95999a5c26C016D81768B03F670b649F29",
       abi: [
         {
           type: "constructor",
@@ -1464,8 +1464,474 @@ const deployedContracts = {
         isPoolFromFactory: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
       },
     },
-    VeBALFeeDiscountHookExample: {
-      address: "0x0d5e217f22a9f92f1dd2d5d5ede64ffc913a626d",
+    MockLPRewardToken: {
+      address: "0x99eB6c5521560a471BdBe043Fc08E63b3960ff6a",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "symbol",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "HOOK_ADDRESS",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "allowance",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "spender",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "approve",
+          inputs: [
+            {
+              name: "spender",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "value",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "balanceOf",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "decimals",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint8",
+              internalType: "uint8",
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "mint",
+          inputs: [
+            {
+              name: "sender",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "name",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "symbol",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "totalSupply",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "transfer",
+          inputs: [
+            {
+              name: "recipient",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferFrom",
+          inputs: [
+            {
+              name: "sender",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "recipient",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "updateHookAddress",
+          inputs: [
+            {
+              name: "_hook",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "Approval",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "spender",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "value",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "Transfer",
+          inputs: [
+            {
+              name: "from",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "to",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "value",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "ERC20InsufficientAllowance",
+          inputs: [
+            {
+              name: "spender",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "allowance",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "needed",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "ERC20InsufficientBalance",
+          inputs: [
+            {
+              name: "sender",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "balance",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "needed",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "ERC20InvalidApprover",
+          inputs: [
+            {
+              name: "approver",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "ERC20InvalidReceiver",
+          inputs: [
+            {
+              name: "receiver",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "ERC20InvalidSender",
+          inputs: [
+            {
+              name: "sender",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "ERC20InvalidSpender",
+          inputs: [
+            {
+              name: "spender",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "TransferNotAllowed",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {
+        allowance: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        approve: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        balanceOf: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        decimals: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        name: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        symbol: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        totalSupply: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        transfer: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        transferFrom: "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        owner: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+        renounceOwnership: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+        transferOwnership: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+      },
+    },
+    LPIncentivizedHook: {
+      address: "0x590f9B6664f01a4FfFFCA084e2c775F820524530",
       abi: [
         {
           type: "constructor",
@@ -1481,17 +1947,108 @@ const deployedContracts = {
               internalType: "address",
             },
             {
-              name: "veBAL",
-              type: "address",
-              internalType: "address",
-            },
-            {
               name: "trustedRouter",
               type: "address",
               internalType: "address",
             },
+            {
+              name: "lpRewardToken",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_lpIncentiveFactor",
+              type: "tuple",
+              internalType: "struct LPIncentivizedHook.LPIncentiveFactor",
+              components: [
+                {
+                  name: "amountBaseLiquidity",
+                  type: "bool",
+                  internalType: "bool",
+                },
+                {
+                  name: "timeBaseLiquidity",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
           ],
           stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "activeAmountBaseLiquidityParameters",
+          inputs: [],
+          outputs: [
+            {
+              name: "mediumLiquidityAmountTrigger",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "higherLiquidityAmountTrigger",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "mediumLiquidityAmountRewardFee",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "higherLiquidityAmountRewardFee",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "activeIncentiveFactor",
+          inputs: [],
+          outputs: [
+            {
+              name: "amountBaseLiquidity",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "timeBaseLiquidity",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "activeTimeBaseLiquidityParameters",
+          inputs: [],
+          outputs: [
+            {
+              name: "mediumLiquidityTimeTrigger",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "higherLiquidityTimeTrigger",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "mediumLiquidityTimeRewardFee",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "higherLiquidityTimeRewardFee",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
         },
         {
           type: "function",
@@ -1560,7 +2117,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "onAfterAddLiquidity",
+          name: "lpInfos",
           inputs: [
             {
               name: "",
@@ -1569,6 +2126,40 @@ const deployedContracts = {
             },
             {
               name: "",
+              type: "address",
+              internalType: "contract IERC20",
+            },
+          ],
+          outputs: [
+            {
+              name: "totalLiquidity",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "liquidityStartTime",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "rewards",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "onAfterAddLiquidity",
+          inputs: [
+            {
+              name: "router",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "pool",
               type: "address",
               internalType: "address",
             },
@@ -1605,12 +2196,12 @@ const deployedContracts = {
           ],
           outputs: [
             {
-              name: "",
+              name: "success",
               type: "bool",
               internalType: "bool",
             },
             {
-              name: "",
+              name: "hookAdjustedAmountsInRaw",
               type: "uint256[]",
               internalType: "uint256[]",
             },
@@ -1651,12 +2242,12 @@ const deployedContracts = {
           name: "onAfterRemoveLiquidity",
           inputs: [
             {
-              name: "",
+              name: "router",
               type: "address",
               internalType: "address",
             },
             {
-              name: "",
+              name: "pool",
               type: "address",
               internalType: "address",
             },
@@ -1693,12 +2284,12 @@ const deployedContracts = {
           ],
           outputs: [
             {
-              name: "",
+              name: "success",
               type: "bool",
               internalType: "bool",
             },
             {
-              name: "",
+              name: "hookAdjustedAmountsOutRaw",
               type: "uint256[]",
               internalType: "uint256[]",
             },
@@ -1979,7 +2570,7 @@ const deployedContracts = {
           name: "onComputeDynamicSwapFeePercentage",
           inputs: [
             {
-              name: "params",
+              name: "",
               type: "tuple",
               internalType: "struct PoolSwapParams",
               components: [
@@ -2026,7 +2617,7 @@ const deployedContracts = {
               internalType: "address",
             },
             {
-              name: "staticSwapFeePercentage",
+              name: "",
               type: "uint256",
               internalType: "uint256",
             },
@@ -2124,8 +2715,111 @@ const deployedContracts = {
           stateMutability: "nonpayable",
         },
         {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "setAmountBaseLiquidityParameters",
+          inputs: [
+            {
+              name: "_amountBaseLiquidityParameters",
+              type: "tuple",
+              internalType: "struct LPIncentivizedHook.AmountBaseLiquidityParameters",
+              components: [
+                {
+                  name: "mediumLiquidityAmountTrigger",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "higherLiquidityAmountTrigger",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "mediumLiquidityAmountRewardFee",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "higherLiquidityAmountRewardFee",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "setTimeBaseLiquidityParameters",
+          inputs: [
+            {
+              name: "_timeBaseLiquidityParameters",
+              type: "tuple",
+              internalType: "struct LPIncentivizedHook.TimeBaseLiquidityParameters",
+              components: [
+                {
+                  name: "mediumLiquidityTimeTrigger",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "higherLiquidityTimeTrigger",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "mediumLiquidityTimeRewardFee",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "higherLiquidityTimeRewardFee",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
           type: "event",
-          name: "VeBALFeeDiscountHookExampleRegistered",
+          name: "LPIncentivizedHookRegistered",
           inputs: [
             {
               name: "hooksContract",
@@ -2147,6 +2841,66 @@ const deployedContracts = {
             },
           ],
           anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "RewardDistributed",
+          inputs: [
+            {
+              name: "LPAddress",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "reward",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
         },
         {
           type: "error",
@@ -2172,10 +2926,13 @@ const deployedContracts = {
         onBeforeSwap: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
         onComputeDynamicSwapFeePercentage: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
         onRegister: "lib/balancer-v3-monorepo/pkg/vault/contracts/BaseHooks.sol",
+        owner: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+        renounceOwnership: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+        transferOwnership: "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
       },
     },
     ConstantProductFactory: {
-      address: "0x35b2e11b8c2b27fd74bd28da018eee10a67c95a8",
+      address: "0x04DDfd77ac74bC2fa592b1cEa7594de0274838eF",
       abi: [
         {
           type: "constructor",
@@ -2558,19 +3315,24 @@ const deployedContracts = {
         isPoolFromFactory: "lib/balancer-v3-monorepo/pkg/pool-utils/contracts/BasePoolFactory.sol",
       },
     },
-    LotteryHookExample: {
-      address: "0xf92fb772445695d6d5a5a4dbbfd2d886b1500a52",
+    SwapReferralHook: {
+      address: "0x81bEfEE265F8499b26AAB3532B5C4EC6e911aF4e",
       abi: [
         {
           type: "constructor",
           inputs: [
             {
-              name: "vault",
+              name: "_vault",
               type: "address",
               internalType: "contract IVault",
             },
             {
-              name: "router",
+              name: "allowedFactory",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "trustedRouter",
               type: "address",
               internalType: "address",
             },
@@ -2579,26 +3341,38 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "LUCKY_NUMBER",
-          inputs: [],
+          name: "AddressToCode",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
           outputs: [
             {
               name: "",
-              type: "uint8",
-              internalType: "uint8",
+              type: "string",
+              internalType: "string",
             },
           ],
           stateMutability: "view",
         },
         {
           type: "function",
-          name: "MAX_NUMBER",
-          inputs: [],
+          name: "codeToAddress",
+          inputs: [
+            {
+              name: "",
+              type: "string",
+              internalType: "string",
+            },
+          ],
           outputs: [
             {
               name: "",
-              type: "uint8",
-              internalType: "uint8",
+              type: "address",
+              internalType: "address",
             },
           ],
           stateMutability: "view",
@@ -2609,7 +3383,7 @@ const deployedContracts = {
           inputs: [],
           outputs: [
             {
-              name: "",
+              name: "hookFlags",
               type: "tuple",
               internalType: "struct HookFlags",
               components: [
@@ -2667,32 +3441,6 @@ const deployedContracts = {
             },
           ],
           stateMutability: "pure",
-        },
-        {
-          type: "function",
-          name: "getRandomNumber",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint8",
-              internalType: "uint8",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "hookSwapFeePercentage",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint64",
-              internalType: "uint64",
-            },
-          ],
-          stateMutability: "view",
         },
         {
           type: "function",
@@ -3054,7 +3802,7 @@ const deployedContracts = {
           name: "onBeforeSwap",
           inputs: [
             {
-              name: "",
+              name: "params",
               type: "tuple",
               internalType: "struct PoolSwapParams",
               components: [
@@ -3096,14 +3844,14 @@ const deployedContracts = {
               ],
             },
             {
-              name: "",
+              name: "pool",
               type: "address",
               internalType: "address",
             },
           ],
           outputs: [
             {
-              name: "",
+              name: "success",
               type: "bool",
               internalType: "bool",
             },
@@ -3115,7 +3863,7 @@ const deployedContracts = {
           name: "onComputeDynamicSwapFeePercentage",
           inputs: [
             {
-              name: "",
+              name: "params",
               type: "tuple",
               internalType: "struct PoolSwapParams",
               components: [
@@ -3162,7 +3910,7 @@ const deployedContracts = {
               internalType: "address",
             },
             {
-              name: "",
+              name: "staticSwapFeePercentage",
               type: "uint256",
               internalType: "uint256",
             },
@@ -3186,7 +3934,7 @@ const deployedContracts = {
           name: "onRegister",
           inputs: [
             {
-              name: "",
+              name: "factory",
               type: "address",
               internalType: "address",
             },
@@ -3274,21 +4022,59 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "renounceOwnership",
-          inputs: [],
-          outputs: [],
-          stateMutability: "nonpayable",
+          name: "referralCodeExists",
+          inputs: [
+            {
+              name: "",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
         },
         {
           type: "function",
-          name: "setHookSwapFeePercentage",
-          inputs: [
+          name: "referrerDiscountPerUser",
+          inputs: [],
+          outputs: [
             {
-              name: "swapFeePercentage",
-              type: "uint64",
-              internalType: "uint64",
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "referrers",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "accumulatedDiscount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
           outputs: [],
           stateMutability: "nonpayable",
         },
@@ -3306,98 +4092,67 @@ const deployedContracts = {
           stateMutability: "nonpayable",
         },
         {
-          type: "event",
-          name: "HookSwapFeePercentageChanged",
+          type: "function",
+          name: "updateReferrerDiscountPerUser",
           inputs: [
             {
-              name: "hooksContract",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "hookFeePercentage",
+              name: "newDiscount",
               type: "uint256",
-              indexed: false,
               internalType: "uint256",
             },
           ],
-          anonymous: false,
+          outputs: [],
+          stateMutability: "nonpayable",
         },
         {
-          type: "event",
-          name: "LotteryFeeCollected",
+          type: "function",
+          name: "updateUserDiscountPercentage",
           inputs: [
             {
-              name: "hooksContract",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "token",
-              type: "address",
-              indexed: true,
-              internalType: "contract IERC20",
-            },
-            {
-              name: "feeAmount",
+              name: "newDiscount",
               type: "uint256",
-              indexed: false,
               internalType: "uint256",
             },
           ],
-          anonymous: false,
+          outputs: [],
+          stateMutability: "nonpayable",
         },
         {
-          type: "event",
-          name: "LotteryHookExampleRegistered",
-          inputs: [
+          type: "function",
+          name: "userDiscountPercentage",
+          inputs: [],
+          outputs: [
             {
-              name: "hooksContract",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "pool",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "LotteryWinningsPaid",
-          inputs: [
-            {
-              name: "hooksContract",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "winner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "token",
-              type: "address",
-              indexed: true,
-              internalType: "contract IERC20",
-            },
-            {
-              name: "amountWon",
+              name: "",
               type: "uint256",
-              indexed: false,
               internalType: "uint256",
             },
           ],
-          anonymous: false,
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "users",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "hasSwapped",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "referralCodeUsed",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          stateMutability: "view",
         },
         {
           type: "event",
@@ -3419,36 +4174,98 @@ const deployedContracts = {
           anonymous: false,
         },
         {
-          type: "error",
-          name: "AddressEmptyCode",
+          type: "event",
+          name: "ReferralCodeGenerated",
           inputs: [
             {
-              name: "target",
+              name: "user",
               type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "referralCode",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "ReferrerDiscountGranted",
+          inputs: [
+            {
+              name: "referrer",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "discount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "SwapFeeUpdated",
+          inputs: [
+            {
+              name: "user",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "swapFee",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "userDiscount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "referrerDiscount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "SwapReferralHookRegistered",
+          inputs: [
+            {
+              name: "hooksContract",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "factory",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "pool",
+              type: "address",
+              indexed: true,
               internalType: "address",
             },
           ],
-        },
-        {
-          type: "error",
-          name: "AddressInsufficientBalance",
-          inputs: [
-            {
-              name: "account",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "FailedInnerCall",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "IndexOutOfBounds",
-          inputs: [],
+          anonymous: false,
         },
         {
           type: "error",
@@ -3467,17 +4284,6 @@ const deployedContracts = {
           inputs: [
             {
               name: "account",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "SafeERC20FailedOperation",
-          inputs: [
-            {
-              name: "token",
               type: "address",
               internalType: "address",
             },
@@ -3513,7 +4319,7 @@ const deployedContracts = {
       },
     },
     WeightedPoolFactory: {
-      address: "0x6def85e32294b59ad5084a12304d1284737b4389",
+      address: "0xc033821DAcAf7989B331Ae9cF0B8dD0F721703c5",
       abi: [
         {
           type: "constructor",
@@ -3918,7 +4724,7 @@ const deployedContracts = {
       },
     },
     ExitFeeHookExample: {
-      address: "0x8a5450ce448a84ac5e6aea0ca03fb16d590d6227",
+      address: "0xB30B3c7BC047Ec501740415017925D9F9ADdc373",
       abi: [
         {
           type: "constructor",
