@@ -2,7 +2,7 @@
 
 A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
 
-[![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/f862091d-2fe9-4b4b-8d70-cb2fdc667384)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
+[![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/d95a44ef-83eb-4120-b681-02f7c3d924ee)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
 
 ### 🔁 Development Life Cycle
 
@@ -180,7 +180,7 @@ An after remove liquidity hook adjusts the amounts before the vault transfers to
 
 ## 🌊 Create a Custom Pool
 
-[![custom-amm-video](https://github.com/user-attachments/assets/e6069a51-f1b5-4f98-a2a9-3a2098696f96)](https://www.youtube.com/watch?v=kXynS3jAu0M)
+[![custom-amm-video](https://github.com/user-attachments/assets/bc563e01-0d2f-40d9-84ca-60a873d827f4)](https://www.youtube.com/watch?v=kXynS3jAu0M)
 
 ### 1. Review the Docs 📖
 
@@ -216,7 +216,7 @@ After designing a pool contract, the next step is to prepare a factory contract 
 
 ## 🪝 Create a Pool Hook
 
-[![hook-video](https://github.com/user-attachments/assets/96e12c29-53c2-4a52-9437-e477f6d992d1)](https://www.youtube.com/watch?v=kaz6duliRPA)
+[![hook-video](https://github.com/user-attachments/assets/8703a73a-7cc0-4e56-98ad-dffa52b7c48c)](https://www.youtube.com/watch?v=kaz6duliRPA)
 
 ### 1. Review the Docs 📖
 
