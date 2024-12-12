@@ -46,19 +46,26 @@ cd scaffold-balancer-v3
 yarn install
 ```
 
-3. Set a `SEPOLIA_RPC_URL` in the `packages/foundry/.env` file
+3. Set the follwing RPC URLs in the `packages/foundry/.env` file
 
 ```
-SEPOLIA_RPC_URL=...
+SEPOLIA_RPC_URL=
+MAINNET_RPC_URL=
+GNOSIS_RPC_URL=
 ```
 
-4. Start a local anvil fork of the Sepolia testnet
+4. Start a local anvil fork of Ethereum mainnet
+   > To fork gnosis:
+   >
+   > 1. Change `targetFork` in `scaffold.config.ts` to `chains.gnosis`
+   > 2. Make sure the right addresses are un-commented in `PoolHelpers.sol`
+   > 3. Run `yarn fork --network gnosis`
 
 ```bash
-yarn fork
+yarn fork --network mainnet
 ```
 
-5. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts
+1. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts
    > By default, the anvil account #0 will be the deployer and recieve the mock tokens and BPT from pool initialization
 
 ```bash

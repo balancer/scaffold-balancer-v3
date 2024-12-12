@@ -28,7 +28,7 @@ contract ScaffoldHelpers is Script {
             deployerPrivateKey = 0;
         }
 
-        if (block.chainid == 31337 && deployerPrivateKey == 0) {
+        if (deployerPrivateKey == 0) {
             root = vm.projectRoot();
             path = string.concat(root, "/localhost.json");
             string memory json = vm.readFile(path);

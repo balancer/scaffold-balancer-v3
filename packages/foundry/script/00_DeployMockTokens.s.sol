@@ -20,8 +20,8 @@ contract DeployMockTokens is ScaffoldHelpers {
         vm.startBroadcast(deployerPrivateKey);
 
         // Used to register & initialize pool contracts
-        mockToken1 = address(new MockToken1("Mock Token 1", "MT1", 1000e18));
-        mockToken2 = address(new MockToken2("Mock Token 2", "MT2", 1000e18));
+        mockToken1 = address(new MockToken1("Pepe the Frog", "PEPE", 1000e18));
+        mockToken2 = address(new MockToken2("Department of Government Efficiency", "DOGE", 1000e18));
         console.log("MockToken1 deployed at: %s", mockToken1);
         console.log("MockToken2 deployed at: %s", mockToken2);
 

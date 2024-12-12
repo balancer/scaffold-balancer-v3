@@ -15,7 +15,7 @@ const scaffoldConfig = {
   targetNetworks: [chains.foundry],
 
   // If using chains.foundry as your targetNetwork, you must specify a network to fork
-  targetFork: chains.sepolia,
+  targetFork: chains.mainnet,
 
   // The interval at which your front-end polls the RPC servers for new data
   // it has no effect if you only target the local network (default is 4000)
