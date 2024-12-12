@@ -5,8 +5,8 @@ pragma solidity ^0.8.24;
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { IBasePoolFactory } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
-import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
 import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
+import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import {
     LiquidityManagement,
@@ -78,7 +78,7 @@ contract VeBALFeeDiscountHookExample is BaseHooks, VaultGuard {
         address,
         uint256 staticSwapFeePercentage
     ) public view override onlyVault returns (bool, uint256) {
-        // If the router is not trusted, do not apply the veBAL discount. `getSender` may be manipulated by a
+        // If the Router is not trusted, do not apply the veBAL discount. `getSender` may be manipulated by a
         // malicious router.
         if (params.router != _trustedRouter) {
             return (true, staticSwapFeePercentage);

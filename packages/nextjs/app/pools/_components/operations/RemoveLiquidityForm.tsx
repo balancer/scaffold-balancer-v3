@@ -79,10 +79,11 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
     });
   };
 
+  // TODO: update for deploy12 changing name and shape of event (was "PoolBalanceChanged" on deploy8)
   useContractEvent({
     address: VAULT_V3[chainId],
     abi: vaultV3Abi,
-    eventName: "PoolBalanceChanged",
+    eventName: "LiquidityRemoved",
     listener(log: any[]) {
       const data: TokenAmountDetails[] = log[0].args.deltas.map((delta: bigint, idx: number) => ({
         symbol: pool.poolTokens[idx].symbol,

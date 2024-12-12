@@ -50,9 +50,15 @@ contract ExitFeeHookExampleTest is BaseVaultTest {
     }
 
     // Overrides pool creation to set liquidityManagement (disables unbalanced liquidity and enables donation)
-    function _createPool(address[] memory tokens, string memory label) internal virtual override returns (address) {
-        PoolMock newPool = new PoolMock(IVault(address(vault)), "ERC20 Pool", "ERC20POOL");
-        vm.label(address(newPool), label);
+    function _createPool(
+        address[] memory tokens,
+        string memory label
+    ) internal virtual override returns (address newPool, bytes memory poolArgs) {
+        string memory name = "ERC20 Pool";
+        string memory symbol = "ERC20POOL";
+
+        newPool = address(deployPoolMock(IVault(address(vault)), name, symbol));
+        vm.label(newPool, label);
 
         PoolRoleAccounts memory roleAccounts;
         roleAccounts.poolCreator = lp;
@@ -62,17 +68,18 @@ contract ExitFeeHookExampleTest is BaseVaultTest {
         liquidityManagement.enableDonation = true;
 
         vm.expectEmit();
-        emit ExitFeeHookExample.ExitFeeHookExampleRegistered(poolHooksContract, address(newPool));
+        emit ExitFeeHookExample.ExitFeeHookExampleRegistered(poolHooksContract, newPool);
 
         factoryMock.registerPool(
-            address(newPool),
+            newPool,
             vault.buildTokenConfig(tokens.asIERC20()),
             roleAccounts,
             poolHooksContract,
             liquidityManagement
         );
 
-        return address(newPool);
+        // poolArgs is used to check pool deployment address with create2.
+        poolArgs = abi.encode(vault, name, symbol);
     }
 
     function testRegistryWithWrongDonationFlag() public {
@@ -181,7 +188,7 @@ contract ExitFeeHookExampleTest is BaseVaultTest {
 
     // Registry tests require a new pool, because an existent pool may be already registered
     function _createPoolToRegister() private returns (address newPool) {
-        newPool = address(new PoolMock(IVault(address(vault)), "ERC20 Pool", "ERC20POOL"));
+        newPool = address(deployPoolMock(IVault(address(vault)), "ERC20 Pool", "ERC20POOL"));
         vm.label(newPool, "Exit Fee Pool");
     }
 

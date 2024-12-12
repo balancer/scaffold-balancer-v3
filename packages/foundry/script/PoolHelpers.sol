@@ -12,17 +12,29 @@ import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import { IRouter } from "@balancer-labs/v3-interfaces/contracts/vault/IRouter.sol";
+import { console } from "forge-std/Script.sol";
 
 /**
  * @title Pool Helpers
- * @notice Helpful types, interface instances, and functions for deploying pools on Balancer v3
+ * @notice Helpful addresses,functions, and types for deploying pools on Balancer v3
+ * @dev the block.chainid will always be 31337 when deploying to local anvil fork
  */
 contract PoolHelpers {
-    // Balancer v3 Sepolia addresses (8th testnet release)
-    IVault internal vault = IVault(0x0EF1c156a7986F394d90eD1bEeA6483Cc435F542);
-    IRouter internal router = IRouter(0xB12FcB422aAe6720f882E22C340964a7723f2387);
-    IBatchRouter internal batchRouter = IBatchRouter(0x0418001D0d68C71d0E391fE46dC7aFCe045f34A0);
-    IPermit2 internal permit2 = IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
+    // Same on all chains
+    IPermit2 internal permit2 = IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3); // same on all chains
+    IVault internal vault = IVault(0xbA1333333333a1BA1108E8412f11850A5C319bA9);
+
+    // Mainnet
+    IRouter internal router = IRouter(0x5C6fb490BDFD3246EB0bB062c168DeCAF4bD9FDd);
+    IBatchRouter internal batchRouter = IBatchRouter(0x136f1EFcC3f8f88516B9E94110D56FDBfB1778d1);
+
+    // Gnosis
+    //  IRouter internal router =  IRouter(0x84813aA3e079A665C0B80F944427eE83cBA63617);
+    // IBatchRouter internal batchRouter = IBatchRouter(0xe2fa4e1d17725e72dcdAfe943Ecf45dF4B9E285b);
+
+    // Sepolia
+    // IRouter internal router = IRouter(0x0BF61f706105EA44694f2e92986bD01C39930280);
+    // IBatchRouter internal batchRouter IBatchRouter(0xC85b652685567C1B074e8c0D4389f83a2E458b1C);
 
     /**
      * Sorts the tokenConfig array into alphanumeric order

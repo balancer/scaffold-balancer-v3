@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.24;
 
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
 import { IRouterCommon } from "@balancer-labs/v3-interfaces/contracts/vault/IRouterCommon.sol";
+import { IHooks } from "@balancer-labs/v3-interfaces/contracts/vault/IHooks.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import {
     AfterSwapParams,
@@ -35,7 +35,6 @@ contract LotteryHookExample is BaseHooks, VaultGuard, Ownable {
 
     // Trusted router is needed since we rely on `getSender` to know which user should receive the prize.
     address private immutable _trustedRouter;
-    address private immutable _allowedFactory;
 
     // When calling `onAfterSwap`, a random number is generated. If the number is equal to LUCKY_NUMBER, the user will
     // win the accrued fees. It must be a number between 1 and MAX_NUMBER, or else nobody will win.
@@ -128,7 +127,7 @@ contract LotteryHookExample is BaseHooks, VaultGuard, Ownable {
     ) public override onlyVault returns (bool success, uint256 hookAdjustedAmountCalculatedRaw) {
         uint8 drawnNumber;
         if (params.router == _trustedRouter) {
-            // If the router is trusted, draw a number as a lottery entry. (If router is not trusted, the user can
+            // If the Router is trusted, draw a number as a lottery entry. (If router is not trusted, the user can
             // perform swaps and contribute to the pot, but is not eligible to win.)
             drawnNumber = _getRandomNumber();
         }
@@ -146,7 +145,7 @@ contract LotteryHookExample is BaseHooks, VaultGuard, Ownable {
                 // The preceding swap operation has already credited the original `amountCalculated`. Since we're
                 // returning `amountCalculated - feeToPay` here, it will only register debt for that reduced amount
                 // on settlement. This call to `sendTo` pulls `feeToPay` tokens of `tokenOut` from the Vault to this
-                // contract, and registers the additional debt, so that the total debts match the credits and
+                // contract, and registers the additional debt, so that the total debits match the credits and
                 // settlement succeeds.
                 uint256 feeToPay = _chargeFeeOrPayWinner(params.router, drawnNumber, params.tokenOut, hookFee);
                 if (feeToPay > 0) {
@@ -159,7 +158,7 @@ contract LotteryHookExample is BaseHooks, VaultGuard, Ownable {
                 // The preceding swap operation has already registered debt for the original `amountCalculated`.
                 // Since we're returning `amountCalculated + feeToPay` here, it will supply credit for that increased
                 // amount on settlement. This call to `sendTo` pulls `feeToPay` tokens of `tokenIn` from the Vault to
-                // this contract, and registers the additional debt, so that the total debts match the credits and
+                // this contract, and registers the additional debt, so that the total debits match the credits and
                 // settlement succeeds.
 
                 uint256 feeToPay = _chargeFeeOrPayWinner(params.router, drawnNumber, params.tokenIn, hookFee);
@@ -234,7 +233,7 @@ contract LotteryHookExample is BaseHooks, VaultGuard, Ownable {
             _tokensWithAccruedFees.set(token, 1);
 
             if (hookFee > 0) {
-                // Collect fees from the Vault; the user will pay them when the router settles the swap.
+                // Collect fees from the Vault; the user will pay them when the Router settles the swap.
                 _vault.sendTo(token, address(this), hookFee);
 
                 emit LotteryFeeCollected(address(this), token, hookFee);
