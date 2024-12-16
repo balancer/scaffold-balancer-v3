@@ -12,7 +12,7 @@ fs_permissions = [{ access = "read-write", path = "./"}] # SE-2 default to allow
 
 
 [rpc_endpoints]
-default_network = "http://127.0.0.1:8545"
+default_network = "${MAINNET_RPC_URL}"
 localhost = "http://127.0.0.1:8545"
 sepolia = "${SEPOLIA_RPC_URL}"
 mainnet = "${MAINNET_RPC_URL}"
