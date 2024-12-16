@@ -17,11 +17,12 @@ import { console } from "forge-std/Script.sol";
 /**
  * @title Pool Helpers
  * @notice Helpful addresses,functions, and types for deploying pools on Balancer v3
- * @dev the block.chainid will always be 31337 when deploying to local anvil fork
+ * @dev Since the block.chainid will always be 31337 when deploying to local anvil fork,
+ * if you wish to fork another network, uncomment the relevant addresses below
  */
 contract PoolHelpers {
-    // Same on all chains
-    IPermit2 internal permit2 = IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3); // same on all chains
+    // Same address on all chains
+    IPermit2 internal permit2 = IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
     IVault internal vault = IVault(0xbA1333333333a1BA1108E8412f11850A5C319bA9);
 
     // Mainnet

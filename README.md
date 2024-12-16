@@ -55,14 +55,14 @@ GNOSIS_RPC_URL=
 ```
 
 4. Start a local anvil fork of Ethereum mainnet
-   > To fork gnosis:
+   > By default, this project is setup to fork Ethereum mainnet. However, you can fork another network by following these steps:
    >
    > 1. Change `targetFork` in `scaffold.config.ts` to `chains.gnosis`
    > 2. Make sure the right addresses are un-commented in `PoolHelpers.sol`
    > 3. Run `yarn fork --network gnosis`
 
 ```bash
-yarn fork --network mainnet
+yarn fork
 ```
 
 1. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts
