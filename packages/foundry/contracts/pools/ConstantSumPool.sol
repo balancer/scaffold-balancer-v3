@@ -14,7 +14,7 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
 contract ConstantSumPool is IBasePool, BalancerPoolToken {
     uint256 private constant _MIN_INVARIANT_RATIO = 70e16; // 70%
     uint256 private constant _MAX_INVARIANT_RATIO = 300e16; // 300%
-    uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 0.001e18; // 0.001%
+    uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 1e12; // 0.0001%
     uint256 private constant _MAX_SWAP_FEE_PERCENTAGE = 0.10e18; // 10%
 
     constructor(IVault vault, string memory name, string memory symbol) BalancerPoolToken(vault, name, symbol) {}

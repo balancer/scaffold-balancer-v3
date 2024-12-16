@@ -2,14 +2,13 @@
 
 A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
 
-
-[![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/f862091d-2fe9-4b4b-8d70-cb2fdc667384)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
+[![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/d95a44ef-83eb-4120-b681-02f7c3d924ee)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
 
 ### 🔁 Development Life Cycle
+
 1. Learn the core concepts for building on top of Balancer v3
 2. Configure and deploy factories, pools, and hooks contracts to a local anvil fork of Sepolia
 3. Interact with pools via a frontend that runs at [localhost:3000](http://localhost:3000/)
-
 
 ### 🪧 Table Of Contents
 
@@ -34,6 +33,7 @@ A starter kit for building on top of Balancer v3. Accelerate the process of crea
 ### 2. Quickstart 🏃
 
 1. Ensure you have the latest version of foundry installed
+
 ```
 foundryup
 ```
@@ -46,22 +46,27 @@ cd scaffold-balancer-v3
 yarn install
 ```
 
-3. Set the necessary environment variables in a `packages/foundry/.env` file [^1]
-   [^1]: The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must possess enough Sepolia ETH to deploy the contracts. The `SEPOLIA_RPC_URL` facilitates running a local fork and sending transactions to sepolia testnet
+3. Set the follwing RPC URLs in the `packages/foundry/.env` file
 
 ```
-DEPLOYER_PRIVATE_KEY=0x...
-SEPOLIA_RPC_URL=...
+SEPOLIA_RPC_URL=
+MAINNET_RPC_URL=
+GNOSIS_RPC_URL=
 ```
 
-4. Start a local anvil fork of the Sepolia testnet
+4. Start a local anvil fork of Ethereum mainnet
+   > To fork gnosis:
+   >
+   > 1. Change `targetFork` in `scaffold.config.ts` to `chains.gnosis`
+   > 2. Make sure the right addresses are un-commented in `PoolHelpers.sol`
+   > 3. Run `yarn fork --network gnosis`
 
 ```bash
-yarn fork
+yarn fork --network mainnet
 ```
 
-5. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts [^2]
-   [^2]: The `DEPLOYER_PRIVATE_KEY` wallet receives the mock tokens and resulting BPT from pool initialization
+1. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts
+   > By default, the anvil account #0 will be the deployer and recieve the mock tokens and BPT from pool initialization
 
 ```bash
 yarn deploy
@@ -158,32 +163,31 @@ const scaffoldConfig = {
 
 ![v3-components](https://github.com/user-attachments/assets/ccda9323-790f-4276-b092-c867fd80bf9e)
 
-
 ## 🕵️ Explore the Examples
+
 Each of the following examples have turn key deploy scripts that can be found in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory
 
 ### 1. Constant Sum Pool with Dynamic Swap Fee Hook
+
 The swap fee percentage is altered by the hook contract before the pool calculates the amount for the swap
 
 ![dynamic-fee-hook](https://github.com/user-attachments/assets/5ba69ea3-6894-4eeb-befa-ed87cfeb6b13)
 
 ### 2. Constant Product Pool with Lottery Hook
+
 An after swap hook makes a request to an oracle contract for a random number
 
 ![after-swap-hook](https://github.com/user-attachments/assets/594ce1ac-2edc-4d16-9631-14feb2d085f8)
 
 ### 3. Weighted Pool with Exit Fee Hook
-An after remove liquidity hook adjusts the amounts before the vault transfers tokens to the user 
+
+An after remove liquidity hook adjusts the amounts before the vault transfers tokens to the user
 
 ![after-remove-liquidity-hook](https://github.com/user-attachments/assets/2e8f4a5c-f168-4021-b316-28a79472c8d1)
 
-
 ## 🌊 Create a Custom Pool
 
-Your journey begins with planning the custom computation logic for the pool, which defines how an AMM exchanges one asset for another.
-
-[![Constant Product Pool](https://github.com/user-attachments/assets/6a4fe0f7-4585-4429-b873-890b47b82d86)](https://www.youtube.com/watch?v=kXynS3jAu0M)
-
+[![custom-amm-video](https://github.com/user-attachments/assets/bc563e01-0d2f-40d9-84ca-60a873d827f4)](https://www.youtube.com/watch?v=kXynS3jAu0M)
 
 ### 1. Review the Docs 📖
 
@@ -219,9 +223,7 @@ After designing a pool contract, the next step is to prepare a factory contract 
 
 ## 🪝 Create a Pool Hook
 
-Next, consider further extending the functionality of the custom pool contract with a hooks contract
-
-[![Swap Fee Discount Hook](https://github.com/user-attachments/assets/57b532ee-4c93-423c-946a-ed6c2bbad337)](https://www.youtube.com/watch?v=kaz6duliRPA)
+[![hook-video](https://github.com/user-attachments/assets/8703a73a-7cc0-4e56-98ad-dffa52b7c48c)](https://www.youtube.com/watch?v=kaz6duliRPA)
 
 ### 1. Review the Docs 📖
 
@@ -230,8 +232,10 @@ Next, consider further extending the functionality of the custom pool contract w
 ### 2. Recall the Key Requirements 🔑
 
 - A hooks contract must inherit from [BasePoolHooks.sol](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/BaseHooks.sol)
-- Must implement `getHookFlags` to define which hooks are supported
+- A hooks contract should also inherit from [VaultGuard.sol](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/VaultGuard.sol)
 - Must implement `onRegister` to determine if a pool is allowed to use the hook contract
+- Must implement `getHookFlags` to define which hooks are supported
+- The `onlyVault` modifier should be applied to all hooks functions (i.e. `onRegister`, `onBeforeSwap`, `onAfterSwap` ect.)
 
 ### 3. Write a Hook Contract 📝
 
@@ -243,20 +247,36 @@ The deploy scripts are located in the [foundry/script/](https://github.com/balan
 
 ![pool-deploy-scripts](https://github.com/user-attachments/assets/bb906080-8f42-46c0-af90-ba01ba1754fc)
 
-
 ### 1. Modifying the Deploy Scripts 🛠️
 
-For all the scaffold integrations to work properly, each deploy script must be imported into `Deploy.s.sol` and inherited by the `DeployScript` contract in `Deploy.s.sol` 
+For all the scaffold integrations to work properly, each deploy script must be imported into `Deploy.s.sol` and inherited by the `DeployScript` contract in `Deploy.s.sol`
 
 ### 2. Broadcast the Transactions 📡
 
-To run all the deploy scripts
+#### Deploy to local fork
+
+1. Run the following command
 
 ```bash
 yarn deploy
 ```
 
-🛈 To deploy to the live sepolia testnet, add the `--network sepolia` flag
+#### Deploy to a live network
+
+1. Add a `DEPLOYER_PRIVATE_KEY` to the `packages/foundry/.env` file
+
+```
+DEPLOYER_PRIVATE_KEY=0x...
+SEPOLIA_RPC_URL=...
+```
+
+> The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must hold enough Sepolia ETH to deploy the contracts. This account will receive the BPT from pool initialization
+
+2. Run the following command
+
+```
+yarn deploy --network sepolia
+```
 
 ## 🧪 Test the Contracts
 
@@ -281,8 +301,8 @@ yarn test --match-contract ConstantSumPoolTest
 
 ### 3. Testing Hooks 🎣
 
-The `VeBALFeeDiscountHookTest` mirrors the [VeBALFeeDiscountHookExampleTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-hooks/test/foundry/VeBALFeeDiscountHookExample.t.sol)
+The `VeBALFeeDiscountHookExampleTest` mirrors the [VeBALFeeDiscountHookExampleTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-hooks/test/foundry/VeBALFeeDiscountHookExample.t.sol)
 
 ```
-yarn test --match-contract VeBALFeeDiscountHookTest
+yarn test --match-contract VeBALFeeDiscountHookExampleTest
 ```

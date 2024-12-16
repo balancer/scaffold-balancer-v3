@@ -3,23 +3,24 @@ import { usePathname, useRouter } from "next/navigation";
 import { blo } from "blo";
 import { type Address, isAddress } from "viem";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useFactoryHistory } from "~~/hooks/balancer";
+
+// import { useFactoryHistory } from "~~/hooks/balancer";
 
 type PoolSelectorProps = {
   setSelectedPoolAddress: Dispatch<SetStateAction<string | null>>;
   selectedPoolAddress: Address | null;
 };
 
-export const PoolSelector = ({ setSelectedPoolAddress, selectedPoolAddress }: PoolSelectorProps) => {
+export const PoolSelector = ({ setSelectedPoolAddress }: PoolSelectorProps) => {
   const [inputValue, setInputValue] = useState<string>("");
 
-  const { sumPools, productPools, weightedPools } = useFactoryHistory();
+  // const { sumPools, productPools, weightedPools } = useFactoryHistory();
 
-  const poolTypes = [
-    { label: "Constant Sum", addresses: sumPools },
-    { label: "Constant Product", addresses: productPools },
-    { label: "Weighted", addresses: weightedPools },
-  ];
+  // const poolTypes = [
+  //   { label: "Constant Sum", addresses: sumPools },
+  //   { label: "Constant Product", addresses: productPools },
+  //   { label: "Weighted", addresses: weightedPools },
+  // ];
 
   return (
     <section className="mb-7">
@@ -28,7 +29,7 @@ export const PoolSelector = ({ setSelectedPoolAddress, selectedPoolAddress }: Po
         setInputValue={setInputValue}
         setSelectedPoolAddress={setSelectedPoolAddress}
       />
-      <div className="flex flex-wrap justify-center gap-3 mt-4">
+      {/* <div className="flex flex-wrap justify-center gap-3 mt-4">
         {poolTypes.map(
           ({ label, addresses }) =>
             addresses.length > 0 &&
@@ -43,7 +44,7 @@ export const PoolSelector = ({ setSelectedPoolAddress, selectedPoolAddress }: Po
               />
             )),
         )}
-      </div>
+      </div> */}
     </section>
   );
 };
@@ -104,45 +105,45 @@ const SearchBar = ({ setSelectedPoolAddress, inputValue, setInputValue }: Search
   );
 };
 
-type PoolSelectButtonProps = PoolSelectorProps & {
-  address: Address;
-  label: string;
-  setInputValue: Dispatch<SetStateAction<string>>;
-};
+// type PoolSelectButtonProps = PoolSelectorProps & {
+//   address: Address;
+//   label: string;
+//   setInputValue: Dispatch<SetStateAction<string>>;
+// };
 
-const PoolSelectButton = ({
-  selectedPoolAddress,
-  setSelectedPoolAddress,
-  address,
-  label,
-  setInputValue,
-}: PoolSelectButtonProps) => {
-  const router = useRouter();
-  const pathname = usePathname();
+// const PoolSelectButton = ({
+//   selectedPoolAddress,
+//   setSelectedPoolAddress,
+//   address,
+//   label,
+//   setInputValue,
+// }: PoolSelectButtonProps) => {
+//   const router = useRouter();
+//   const pathname = usePathname();
 
-  return (
-    <button
-      key={address}
-      className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal text-lg ${
-        selectedPoolAddress === address
-          ? " text-neutral-700 bg-gradient-to-b from-custom-beige-start to-custom-beige-end to-100%"
-          : ""
-      }`}
-      onClick={() => {
-        setSelectedPoolAddress(address);
-        setInputValue(address);
-        router.push(`${pathname}?address=${address}`);
-      }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        alt=""
-        className={`!rounded-full absolute top-0.5 left-1 `}
-        src={blo(address as `0x${string}`)}
-        width="25"
-        height="25"
-      />
-      {label}
-    </button>
-  );
-};
+//   return (
+//     <button
+//       key={address}
+//       className={`btn btn-sm btn-secondary flex relative pl-[35px] border-none font-normal text-lg ${
+//         selectedPoolAddress === address
+//           ? " text-neutral-700 bg-gradient-to-b from-custom-beige-start to-custom-beige-end to-100%"
+//           : ""
+//       }`}
+//       onClick={() => {
+//         setSelectedPoolAddress(address);
+//         setInputValue(address);
+//         router.push(`${pathname}?address=${address}`);
+//       }}
+//     >
+//       {/* eslint-disable-next-line @next/next/no-img-element */}
+//       <img
+//         alt=""
+//         className={`!rounded-full absolute top-0.5 left-1 `}
+//         src={blo(address as `0x${string}`)}
+//         width="25"
+//         height="25"
+//       />
+//       {label}
+//     </button>
+//   );
+// };

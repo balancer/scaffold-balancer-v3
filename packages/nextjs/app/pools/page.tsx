@@ -18,10 +18,8 @@ const Pools: NextPage = () => {
   return (
     <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
       <div className="">
-        <h1 className="text-3xl md:text-5xl font-semibold mb-7 text-center">Custom Pools</h1>
-        <div className="text-xl mb-7">
-          Select one of the pools deployed to your local fork or search by pool contract address
-        </div>
+        <h1 className="text-3xl md:text-5xl font-semibold mb-7 text-center">v3 Pools</h1>
+        <div className="text-xl mb-7">Select one of the example pools or search by pool contract address</div>
       </div>
 
       <Suspense fallback={<PoolPageSkeleton />}>
