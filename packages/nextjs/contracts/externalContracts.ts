@@ -8,7 +8,7 @@ import {
   permit2Abi,
   vaultExtensionAbi_V3,
 } from "@balancer/sdk";
-import { sepolia } from "viem/chains";
+import { gnosis, mainnet, sepolia } from "viem/chains";
 import scaffoldConfig from "~~/scaffold.config";
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
@@ -62,6 +62,42 @@ const externalContracts = {
     },
     Permit2: {
       address: PERMIT2[sepolia.id],
+      abi: permit2Abi,
+    },
+  },
+  1: {
+    Vault: {
+      address: VAULT_V3[mainnet.id],
+      abi: vaultExtensionAbi_V3,
+    },
+    Router: {
+      address: BALANCER_ROUTER[mainnet.id],
+      abi: balancerRouterAbi,
+    },
+    BatchRouter: {
+      address: BALANCER_BATCH_ROUTER[mainnet.id],
+      abi: balancerBatchRouterAbi,
+    },
+    Permit2: {
+      address: PERMIT2[mainnet.id],
+      abi: permit2Abi,
+    },
+  },
+  100: {
+    Vault: {
+      address: VAULT_V3[gnosis.id],
+      abi: vaultExtensionAbi_V3,
+    },
+    Router: {
+      address: BALANCER_ROUTER[gnosis.id],
+      abi: balancerRouterAbi,
+    },
+    BatchRouter: {
+      address: BALANCER_BATCH_ROUTER[gnosis.id],
+      abi: balancerBatchRouterAbi,
+    },
+    Permit2: {
+      address: PERMIT2[gnosis.id],
       abi: permit2Abi,
     },
   },

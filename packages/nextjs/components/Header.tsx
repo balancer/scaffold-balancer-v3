@@ -31,16 +31,6 @@ export const menuLinks: HeaderMenuLink[] = [
     href: "/hooks",
     icon: <ArrowUturnUpIcon className="h-5 w-5" />,
   },
-  // {
-  //   label: "Router",
-  //   href: "/router",
-  //   icon: <ArrowsRightLeftIcon className="h-5 w-5" />,
-  // },
-  // {
-  //   label: "Subgraph",
-  //   href: "/subgraph",
-  //   icon: <CircleStackIcon className="h-5 w-5" />,
-  // },
   {
     label: "Debug Contracts",
     href: "/debug",
@@ -62,7 +52,7 @@ export const HeaderMenuLinks = () => {
               passHref
               className={`${
                 isActive ? "" : ""
-              } text-xl hover:bg-secondary hover:shadow-md focus:!bg-secondary active:!text-neutral py-1.5 px-3 rounded-full gap-2 grid grid-flow-col`}
+              } hover:bg-secondary hover:shadow-md focus:!bg-secondary active:!text-neutral py-1.5 px-3 text-xl rounded-full gap-2 grid grid-flow-col`}
             >
               {icon}
               <span>{label}</span>
@@ -121,11 +111,13 @@ export const Header = () => {
           <HeaderMenuLinks />
         </ul>
       </div>
-      <div className="navbar-end flex-grow mr-4">
+      <div className="navbar-end flex-grow flex gap-4">
         <SwitchTheme className={`pointer-events-auto`} />
 
         <RainbowKitCustomConnectButton />
-        <FaucetButton />
+        <div className="hidden sm:flex">
+          <FaucetButton />
+        </div>
       </div>
     </div>
   );
