@@ -12,7 +12,7 @@ export type ScaffoldConfig = {
 
 const scaffoldConfig = {
   // The networks the frontend can connect to
-  targetNetworks: [chains.foundry],
+  targetNetworks: [chains.foundry, chains.sepolia, chains.mainnet, chains.gnosis],
 
   // If using chains.foundry as your targetNetwork, you must specify a network to fork
   targetFork: chains.mainnet,

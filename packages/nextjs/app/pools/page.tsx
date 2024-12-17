@@ -8,6 +8,7 @@ import { type NextPage } from "next";
 import { type Address } from "viem";
 import { Alert } from "~~/components/common";
 import { type Pool, type RefetchPool, useReadPool } from "~~/hooks/balancer/";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 
 /**
  * 1. Search by pool address or select from dropdown
@@ -19,9 +20,7 @@ const Pools: NextPage = () => {
     <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
       <div className="">
         <h1 className="text-3xl md:text-5xl font-semibold mb-7 text-center">Custom Pools</h1>
-        <div className="text-xl mb-7">
-          Select one of the pools deployed to your local fork or search by pool contract address
-        </div>
+        <div className="text-xl mb-7">Select one of the example custom pools or search by pool contract address</div>
       </div>
 
       <Suspense fallback={<PoolPageSkeleton />}>
@@ -37,6 +36,7 @@ const PoolPageContent = () => {
   const [selectedPoolAddress, setSelectedPoolAddress] = useState<Address | null>(null);
 
   const { data: pool, refetch: refetchPool, isLoading, isError, isSuccess } = useReadPool(selectedPoolAddress);
+  const { targetNetwork } = useTargetNetwork();
 
   const searchParams = useSearchParams();
   const poolAddress = searchParams.get("address");
@@ -53,7 +53,9 @@ const PoolPageContent = () => {
       {isLoading ? (
         <PoolPageSkeleton />
       ) : isError ? (
-        <Alert type="error">Error attempting to fetch pool data for {selectedPoolAddress}</Alert>
+        <Alert type="error">
+          Error attempting to fetch pool data for {selectedPoolAddress} on the {targetNetwork.name} network
+        </Alert>
       ) : (
         isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
       )}
