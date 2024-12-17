@@ -75,7 +75,7 @@ const Home: NextPage = () => {
                   passHref
                 >
                   {/* <div className="text-8xl my-7">{item.emoji}</div> */}
-                  <h3 className="text-3xl font-bold mb-5">{item.title}</h3>
+                  <h3 className="text-2xl font-bold mb-5">{item.title}</h3>
                   <div className="text-xl mb-0">{item.description}</div>
                 </Link>
               ))}
@@ -93,7 +93,7 @@ const Home: NextPage = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <h3 className="text-3xl font-bold mb-5">{item.title}</h3>
+                  <h3 className="text-2xl font-bold mb-5">{item.title}</h3>
                   <p className="text-xl mb-0">{item.description}</p>
                 </Link>
               ))}
