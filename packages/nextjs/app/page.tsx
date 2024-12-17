@@ -18,7 +18,7 @@ const EXAMPLES = [
 
 const DOCUMENTATION = [
   {
-    title: "Build a An Amm",
+    title: "Build an AMM",
     href: "https://docs-v3.balancer.fi/build/build-an-amm/create-custom-amm-with-novel-invariant.html",
     description: "Create your own AMM with a novel invariant",
   },
