@@ -40,8 +40,8 @@ contract ConstantProductPool is BalancerPoolToken, IBasePool {
             amountCalculatedScaled18 = (poolBalancetokenOut * amountTokenIn) / (poolBalancetokenIn + amountTokenIn);
         } else {
             uint256 amountTokenOut = params.amountGivenScaled18; // dy
-            // dx = (X * dy) / (Y + dx)
-            amountCalculatedScaled18 = (poolBalancetokenIn * amountTokenOut) / (poolBalancetokenOut + amountTokenOut);
+            // dx = (X * dy) / (Y - dy)
+            amountCalculatedScaled18 = (poolBalancetokenIn * amountTokenOut) / (poolBalancetokenOut - amountTokenOut);
         }
     }
 
