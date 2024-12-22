@@ -7,6 +7,7 @@ import { PoolSwapParams, Rounding } from "@balancer-labs/v3-interfaces/contracts
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
 import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
+import { SwapKind } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 
 /**
  * @title Constant Product Pool
@@ -25,15 +26,23 @@ contract ConstantProductPool is BalancerPoolToken, IBasePool {
 
     /**
      * @notice Execute a swap in the pool.
-     * @param params Swap parameters (see above for struct definition)
+     * @dev For AMM math walkthrough, see https://www.youtube.com/watch?v=QNPyFs8Wybk
+     * @param params Swap parameters
      * @return amountCalculatedScaled18 Calculated amount for the swap
      */
     function onSwap(PoolSwapParams calldata params) external pure returns (uint256 amountCalculatedScaled18) {
-        uint256 poolBalancetokenOut = params.balancesScaled18[params.indexOut];
-        uint256 poolBalancetokenIn = params.balancesScaled18[params.indexIn];
-        uint256 amountTokenIn = params.amountGivenScaled18;
+        uint256 poolBalancetokenIn = params.balancesScaled18[params.indexIn]; // X
+        uint256 poolBalancetokenOut = params.balancesScaled18[params.indexOut]; // Y
 
-        amountCalculatedScaled18 = (poolBalancetokenOut * amountTokenIn) / (poolBalancetokenIn + amountTokenIn);
+        if (params.kind == SwapKind.EXACT_IN) {
+            uint256 amountTokenIn = params.amountGivenScaled18; // dx
+            // dy = (Y * dx) / (X + dx)
+            amountCalculatedScaled18 = (poolBalancetokenOut * amountTokenIn) / (poolBalancetokenIn + amountTokenIn);
+        } else {
+            uint256 amountTokenOut = params.amountGivenScaled18; // dy
+            // dx = (X * dy) / (Y + dx)
+            amountCalculatedScaled18 = (poolBalancetokenIn * amountTokenOut) / (poolBalancetokenOut + amountTokenOut);
+        }
     }
 
     /**

@@ -40,7 +40,7 @@ export const useQuerySwap = (swapInput: SwapInput, setSwapConfig: Dispatch<SetSt
   };
 
   return useQuery({
-    queryKey: ["querySwap"],
+    queryKey: ["querySwap", swapInput.swapKind],
     queryFn: querySwap,
     enabled: false,
   });
