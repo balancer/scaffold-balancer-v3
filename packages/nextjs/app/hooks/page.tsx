@@ -40,9 +40,9 @@ const Hooks: NextPage = async () => {
       <div className="w-full flex flex-col gap-3">
         <div className="w-full grid grid-cols-5 font-bold text-lg">
           <div className="col-auto lg:col-start-1 lg:col-end-3">Name</div>
-          <div className="hidden lg:flex">Repo URL</div>
-          <div className="hidden lg:flex">Category</div>
           <div className="hidden lg:flex">Created By</div>
+          <div className="hidden lg:flex">Category</div>
+          <div className="hidden lg:flex">Repo URL</div>
         </div>
         {hooks ? <HooksDetails hooks={hooks} /> : <div className="text-xl text-error">Error fetching hooks data!</div>}
       </div>

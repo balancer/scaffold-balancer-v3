@@ -49,7 +49,11 @@ export const HooksDetails = ({ hooks }: { hooks: HookInfo[] }) => {
         >
           <div className="col-span-full lg:col-start-1 lg:col-end-3 text-xl font-bold ">{hook.title}</div>
 
-          <div className="hidden lg:flex text-center">
+          <div className="hidden lg:flex">{hook.created_by}</div>
+
+          <div className="hidden lg:flex">{hook.category}</div>
+
+          <div className="hidden lg:flex">
             <Link
               className="hover:underline hover:text-accent flex gap-2 items-center text-nowrap overflow-hidden whitespace-nowrap"
               target="_blank"
@@ -59,9 +63,6 @@ export const HooksDetails = ({ hooks }: { hooks: HookInfo[] }) => {
               github <ArrowTopRightOnSquareIcon className="w-4 h-4" />
             </Link>
           </div>
-
-          <div className="hidden lg:flex">{hook.category}</div>
-          <div className="hidden lg:flex">{hook.created_by}</div>
         </div>
       ))}
 

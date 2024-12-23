@@ -34,7 +34,7 @@ export const Footer = () => {
             <span>·</span>
             <div className="text-center">
               <a
-                href="https://docs-v3.balancer.fi/"
+                href="https://docs.balancer.fi/build/"
                 target="_blank"
                 rel="noreferrer"
                 className="link no-underline hover:underline"
