@@ -5,6 +5,7 @@ import { BalancerPoolToken } from "@balancer-labs/v3-vault/contracts/BalancerPoo
 import { IBasePool } from "@balancer-labs/v3-interfaces/contracts/vault/IBasePool.sol";
 import { PoolSwapParams, Rounding } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { FixedPoint } from "@balancer-labs/v3-solidity-utils/contracts/math/FixedPoint.sol";
 
 /**
  * @title Constant Sum Pool
@@ -12,6 +13,8 @@ import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol"
  * https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html
  */
 contract ConstantSumPool is IBasePool, BalancerPoolToken {
+    using FixedPoint for uint256;
+
     uint256 private constant _MIN_INVARIANT_RATIO = 70e16; // 70%
     uint256 private constant _MAX_INVARIANT_RATIO = 300e16; // 300%
     uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 1e12; // 0.0001%
@@ -39,9 +42,10 @@ contract ConstantSumPool is IBasePool, BalancerPoolToken {
     }
 
     /**
-     * @dev Computes the new balance of a token after an operation, given the invariant growth ratio and all other balances
+     * @dev Computes the new balance of a token after an operation, given the invariant growth ratio and all other
+     * balances.
      * @param balancesLiveScaled18 Current live balances (adjusted for decimals, rates, etc.)
-     * @param tokenInIndex The index of the token we're computing the balance for, in token registration order
+     * @param tokenInIndex The index of the token we're computing the balance for (tokens are sorted alphanumerically)
      * @param invariantRatio The ratio of the new invariant (after an operation) to the old
      * @return newBalance The new balance of the selected token, after the operation
      */
@@ -52,28 +56,26 @@ contract ConstantSumPool is IBasePool, BalancerPoolToken {
     ) external pure returns (uint256 newBalance) {
         uint256 invariant = computeInvariant(balancesLiveScaled18, Rounding.ROUND_DOWN);
 
-        newBalance = (balancesLiveScaled18[tokenInIndex] + invariant * (invariantRatio)) - invariant;
+        newBalance = (balancesLiveScaled18[tokenInIndex] + invariant.mulDown(invariantRatio)) - invariant;
     }
 
-    // Invariant shrink limit: non-proportional remove cannot cause the invariant to decrease by less than this ratio.
-    /// @return minimumInvariantRatio The minimum invariant ratio for a pool during unbalanced remove liquidity
-    function getMinimumInvariantRatio() external pure returns (uint256) {
-        return _MIN_INVARIANT_RATIO;
-    }
-
-    // Invariant growth limit: non-proportional add cannot cause the invariant to increase by more than this ratio.
-    /// @return maximumInvariantRatio The maximum invariant ratio for a pool during unbalanced add liquidity
-    function getMaximumInvariantRatio() external pure returns (uint256) {
-        return _MAX_INVARIANT_RATIO;
-    }
-
-    /// @return minimumSwapFeePercentage The minimum swap fee percentage for a pool
+    //The minimum swap fee percentage for a pool
     function getMinimumSwapFeePercentage() external pure returns (uint256) {
         return _MIN_SWAP_FEE_PERCENTAGE;
     }
 
-    /// @return maximumSwapFeePercentage The maximum swap fee percentage for a pool
+    // The maximum swap fee percentage for a pool
     function getMaximumSwapFeePercentage() external pure returns (uint256) {
         return _MAX_SWAP_FEE_PERCENTAGE;
+    }
+
+    // Invariant shrink limit: non-proportional remove cannot cause the invariant to decrease by less than this ratio
+    function getMinimumInvariantRatio() external pure returns (uint256) {
+        return _MIN_INVARIANT_RATIO;
+    }
+
+    // Invariant growth limit: non-proportional add cannot cause the invariant to increase by more than this ratio
+    function getMaximumInvariantRatio() external pure returns (uint256) {
+        return _MAX_INVARIANT_RATIO;
     }
 }
