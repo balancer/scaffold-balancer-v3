@@ -2,15 +2,21 @@
 
 A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
 
-[![intro-to-scaffold-balancer](https://github.com/user-attachments/assets/d95a44ef-83eb-4120-b681-02f7c3d924ee)](https://www.youtube.com/watch?v=m6q5M34ZdXw)
+## ✨ Features
 
-### 🔁 Development Life Cycle
+- Deploy custom pool and hooks to a local anvil fork
+- Interact with the examples by executing pool operations using the frontend
+- Growing directory of hooks examples
 
-1. Learn the core concepts for building on top of Balancer v3
-2. Configure and deploy factories, pools, and hooks contracts to a local anvil fork of Sepolia
-3. Interact with pools via a frontend that runs at [localhost:3000](http://localhost:3000/)
+## 📽️ Video Tutorials
 
-### 🪧 Table Of Contents
+- [Intro to Balancer v3](https://www.youtube.com/watch?v=vjB2cogaO-c)
+- [Intro to Scaffold Balancer v3](https://www.youtube.com/watch?v=m6q5M34ZdXw)
+- [Create Custom AMMs on Balancer v3](https://www.youtube.com/watch?v=kXynS3jAu0M)
+- [Create a Pool Hook](https://www.youtube.com/watch?v=kaz6duliRPA)
+- [Create a Custom Router](https://www.youtube.com/watch?v=pO1ChmSFTaY)
+
+## 🪧 Table Of Contents
 
 - [🧑‍💻 Environment Setup](#-environment-setup)
 - [👩‍🏫 Learn Core Concepts](#-learn-core-concepts)
@@ -23,14 +29,14 @@ A starter kit for building on top of Balancer v3. Accelerate the process of crea
 
 ## 🧑‍💻 Environment Setup
 
-### 1. Requirements 📜
+### Requirements
 
 - [Node (>= v18.17)](https://nodejs.org/en/download/)
 - Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
 - [Git](https://git-scm.com/downloads)
 - [Foundry](https://book.getfoundry.sh/getting-started/installation) (>= v0.2.0)
 
-### 2. Quickstart 🏃
+### Quickstart
 
 1. Ensure you have the latest version of foundry installed
 
@@ -65,7 +71,7 @@ GNOSIS_RPC_URL=
 yarn fork
 ```
 
-1. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts
+5. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts
    > By default, the anvil account #0 will be the deployer and recieve the mock tokens and BPT from pool initialization
 
 ```bash
@@ -90,7 +96,7 @@ yarn start
 yarn test
 ```
 
-### 3. Scaffold ETH 2 Tips 🏗️
+### Scaffold ETH 2 Tips
 
 SE-2 offers a variety of configuration options for connecting an account, choosing networks, and deploying contracts
 
@@ -157,7 +163,8 @@ const scaffoldConfig = {
 - [Contract Architecture](https://docs-v3.balancer.fi/concepts/core-concepts/architecture.html)
 - [Balancer Pool Tokens](https://docs-v3.balancer.fi/concepts/core-concepts/balancer-pool-tokens.html)
 - [Balancer Pool Types](https://docs-v3.balancer.fi/concepts/explore-available-balancer-pools/)
-- [Building Custom AMMs](https://docs-v3.balancer.fi/build-a-custom-amm/)
+- [Building Custom AMMs](https://docs.balancer.fi/build/build-an-amm/create-custom-amm-with-novel-invariant.html)
+- [Extend an Existing Pool Type Using Hooks](https://docs.balancer.fi/build/build-a-hook/extend-existing-pool-type.html)
 - [Exploring Hooks and Custom Routers](https://pitchandrolls.com/2024/08/30/unlocking-the-power-of-balancer-v3-exploring-hooks-and-custom-routers/)
 - [Hook Development Tips](https://medium.com/@johngrant/unlocking-the-power-of-balancer-v3-hook-development-made-simple-831391a68296)
 
@@ -167,19 +174,19 @@ const scaffoldConfig = {
 
 Each of the following examples have turn key deploy scripts that can be found in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory
 
-### 1. Constant Sum Pool with Dynamic Swap Fee Hook
+### Constant Sum Pool with Dynamic Swap Fee Hook
 
 The swap fee percentage is altered by the hook contract before the pool calculates the amount for the swap
 
 ![dynamic-fee-hook](https://github.com/user-attachments/assets/5ba69ea3-6894-4eeb-befa-ed87cfeb6b13)
 
-### 2. Constant Product Pool with Lottery Hook
+### Constant Product Pool with Lottery Hook
 
-An after swap hook makes a request to an oracle contract for a random number
+An after swap hook that uses a random number to determine if user should pay into the lottery or receive the prize
 
 ![after-swap-hook](https://github.com/user-attachments/assets/594ce1ac-2edc-4d16-9631-14feb2d085f8)
 
-### 3. Weighted Pool with Exit Fee Hook
+### Weighted Pool with Exit Fee Hook
 
 An after remove liquidity hook adjusts the amounts before the vault transfers tokens to the user
 
@@ -187,49 +194,42 @@ An after remove liquidity hook adjusts the amounts before the vault transfers to
 
 ## 🌊 Create a Custom Pool
 
-[![custom-amm-video](https://github.com/user-attachments/assets/bc563e01-0d2f-40d9-84ca-60a873d827f4)](https://www.youtube.com/watch?v=kXynS3jAu0M)
+Custom AMMs built on Balancer inherit the security of the Balancer vault, and benefit from a streamlined development process.
 
-### 1. Review the Docs 📖
+### Learn the Basics
 
-- [Create a custom AMM with a novel invariant](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/create-custom-amm-with-novel-invariant.html)
+- [Read the docs](https://docs.balancer.fi/build/build-an-amm/create-custom-amm-with-novel-invariant.html)
+- [Watch a video](https://www.youtube.com/watch?v=kXynS3jAu0M)
 
-### 2. Recall the Key Requirements 🔑
+### Recall the Key Requirements
 
 - Must inherit from `IBasePool` and `BalancerPoolToken`
 - Must implement `onSwap`, `computeInvariant`, and `computeBalance`
 - Must implement `getMaximumSwapFeePercentage` and `getMinimumSwapFeePercentage`
 
-### 3. Write a Custom Pool Contract 📝
-
-- To get started, edit the`ConstantSumPool.sol` contract directly or make a copy
-
 ## 🏭 Create a Pool Factory
 
-After designing a pool contract, the next step is to prepare a factory contract because Balancer's off-chain infrastructure uses the factory address as a means to identify the type of pool, which is important for integration into the UI, SDK, and external aggregators
+While not mandatory, we do recommend using a factory contract for the deployment and registration of custom pools
 
-### 1. Review the Docs 📖
+### Learn the Basics
 
-- [Deploy a Custom AMM Using a Factory](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/deploy-custom-amm-using-factory.html)
+- [Read the docs](https://docs.balancer.fi/build/build-an-amm/deploy-custom-amm-using-factory.html)
+- [Watch a video](https://www.youtube.com/watch?v=kXynS3jAu0M)
 
-### 2. Recall the Key Requirements 🔑
+### Recall the Key Requirements
 
 - A pool factory contract must inherit from [BasePoolFactory](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/factories/BasePoolFactory.sol)
 - Use the internal `_create` function to deploy a new pool
 - Use the internal `_registerPoolWithVault` fuction to register a pool immediately after creation
 
-### 3. Write a Factory Contract 📝
-
-- To get started, edit the`ConstantSumFactory.sol` contract directly or make a copy
-
 ## 🪝 Create a Pool Hook
 
-[![hook-video](https://github.com/user-attachments/assets/8703a73a-7cc0-4e56-98ad-dffa52b7c48c)](https://www.youtube.com/watch?v=kaz6duliRPA)
+### Learn the Basics
 
-### 1. Review the Docs 📖
+- [Read the docs](https://docs.balancer.fi/build/build-a-hook/extend-existing-pool-type.html)
+- [Watch a video](https://www.youtube.com/watch?v=kaz6duliRPA)
 
-- [Extend an Existing Pool Type Using Hooks](https://docs-v3.balancer.fi/build-a-custom-amm/build-an-amm/extend-existing-pool-type-using-hooks.html)
-
-### 2. Recall the Key Requirements 🔑
+### Recall the Key Requirements
 
 - A hooks contract must inherit from [BasePoolHooks.sol](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/BaseHooks.sol)
 - A hooks contract should also inherit from [VaultGuard.sol](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/VaultGuard.sol)
@@ -237,52 +237,29 @@ After designing a pool contract, the next step is to prepare a factory contract 
 - Must implement `getHookFlags` to define which hooks are supported
 - The `onlyVault` modifier should be applied to all hooks functions (i.e. `onRegister`, `onBeforeSwap`, `onAfterSwap` ect.)
 
-### 3. Write a Hook Contract 📝
-
-- To get started, edit the `VeBALFeeDiscountHook.sol` contract directly or make a copy
-
 ## 🚢 Deploy the Contracts
 
 The deploy scripts are located in the [foundry/script/](https://github.com/balancer/scaffold-balancer-v3/tree/main/packages/foundry/script) directory. To better understand the lifecycle of deploying a pool that uses a hooks contract, see the diagram below
 
 ![pool-deploy-scripts](https://github.com/user-attachments/assets/bb906080-8f42-46c0-af90-ba01ba1754fc)
 
-### 1. Modifying the Deploy Scripts 🛠️
+### Modifying the Deploy Scripts
 
 For all the scaffold integrations to work properly, each deploy script must be imported into `Deploy.s.sol` and inherited by the `DeployScript` contract in `Deploy.s.sol`
 
-### 2. Broadcast the Transactions 📡
+### Broadcasting the Transactions
 
-#### Deploy to local fork
-
-1. Run the following command
+Run the following command to deploy the contracts to a local anvil fork
 
 ```bash
 yarn deploy
-```
-
-#### Deploy to a live network
-
-1. Add a `DEPLOYER_PRIVATE_KEY` to the `packages/foundry/.env` file
-
-```
-DEPLOYER_PRIVATE_KEY=0x...
-SEPOLIA_RPC_URL=...
-```
-
-> The `DEPLOYER_PRIVATE_KEY` must start with `0x` and must hold enough Sepolia ETH to deploy the contracts. This account will receive the BPT from pool initialization
-
-2. Run the following command
-
-```
-yarn deploy --network sepolia
 ```
 
 ## 🧪 Test the Contracts
 
 The [balancer-v3-monorepo](https://github.com/balancer/balancer-v3-monorepo) provides testing utility contracts like [BasePoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/test/foundry/utils/BasePoolTest.sol) and [BaseVaultTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/test/foundry/utils/BaseVaultTest.sol). Therefore, the best way to begin writing tests for custom factories, pools, and hooks contracts is to leverage the examples established by the source code.
 
-### 1. Testing Factories 👨‍🔬
+### Testing Factories
 
 The `ConstantSumFactoryTest` roughly mirrors the [WeightedPool8020FactoryTest
 ](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool8020Factory.t.sol)
@@ -291,7 +268,7 @@ The `ConstantSumFactoryTest` roughly mirrors the [WeightedPool8020FactoryTest
 yarn test --match-contract ConstantSumFactoryTest
 ```
 
-### 2. Testing Pools 🏊
+### Testing Pools
 
 The `ConstantSumPoolTest` roughly mirrors the [WeightedPoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool.t.sol)
 
@@ -299,7 +276,7 @@ The `ConstantSumPoolTest` roughly mirrors the [WeightedPoolTest](https://github.
 yarn test --match-contract ConstantSumPoolTest
 ```
 
-### 3. Testing Hooks 🎣
+### Testing Hooks
 
 The `VeBALFeeDiscountHookExampleTest` mirrors the [VeBALFeeDiscountHookExampleTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-hooks/test/foundry/VeBALFeeDiscountHookExample.t.sol)
 
