@@ -2,6 +2,9 @@
 
 A starter kit for building on top of Balancer v3. Accelerate the process of creating custom pools and hooks contracts. Concentrate on mastering the core concepts within a swift and responsive environment augmented by a local fork and a frontend pool operations playground.
 
+![image](https://github.com/user-attachments/assets/2f7538cf-d252-43be-9a9a-c8b84a37349c)
+
+
 ## ✨ Features
 
 - Deploy custom pool and hooks to a local anvil fork
