@@ -10,7 +10,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useTargetFork } from "~~/hooks/balancer";
 import { Pool } from "~~/hooks/balancer/types";
 
-export const useQueryAddLiquidity = (pool: Pool, amountsIn: InputAmount[], referenceAmount?: InputAmount) => {
+export const useQueryAddLiquidity = (
+  pool: Pool,
+  amountsIn: InputAmount[],
+  referenceAmount?: InputAmount,
+  userData?: `0x${string}`,
+) => {
   const { rpcUrl, chainId } = useTargetFork();
 
   const queryAddLiquidity = async () => {
@@ -27,12 +32,14 @@ export const useQueryAddLiquidity = (pool: Pool, amountsIn: InputAmount[], refer
             referenceAmount,
             chainId,
             rpcUrl,
+            userData,
           }
         : {
             kind: AddLiquidityKind.Unbalanced,
             amountsIn,
             chainId,
             rpcUrl,
+            userData,
           };
 
     // Query addLiquidity to get the amount of BPT out
@@ -41,9 +48,6 @@ export const useQueryAddLiquidity = (pool: Pool, amountsIn: InputAmount[], refer
 
     return queryOutput;
   };
-
-  //   const serializedAmountsIn = amountsIn.map(amount => `${amount.address}-${amount.rawAmount}`);
-  //   const serializedBptOut = bptOut ? `${bptOut.address}-${bptOut.rawAmount}` : "";
 
   return useQuery({
     queryKey: ["queryAddLiquidity"],

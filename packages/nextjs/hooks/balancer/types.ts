@@ -75,6 +75,7 @@ export interface PoolActionsProps {
 }
 
 export type SwapConfig = {
+  userData: `0x${string}`;
   tokenIn: {
     poolTokensIndex: number;
     amount: string;

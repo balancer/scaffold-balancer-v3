@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ResultsDisplay, TokenField, TransactionButton } from ".";
+import { ResultsDisplay, TokenField, TransactionButton, UserDataInput } from ".";
 import { BALANCER_ROUTER, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { parseUnits } from "viem";
@@ -8,7 +8,7 @@ import { Alert } from "~~/components/common/";
 import { useQueryRemoveLiquidity, useRemoveLiquidity, useTargetFork } from "~~/hooks/balancer/";
 import { PoolActionsProps, PoolOperationReceipt, TokenAmountDetails } from "~~/hooks/balancer/types";
 import { useAllowanceOnToken, useApproveOnToken } from "~~/hooks/token";
-import { formatToHuman } from "~~/utils/";
+import { formatToHex, formatToHuman } from "~~/utils/";
 
 /**
  * 1. Query removing some amount of liquidity from the pool
@@ -17,6 +17,7 @@ import { formatToHuman } from "~~/utils/";
  */
 export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, refetchTokenBalances }) => {
   const [removeLiquidityReceipt, setRemoveLiquidityReceipt] = useState<PoolOperationReceipt>(null);
+  const [userDataInputValue, setUserDataInputValue] = useState<string>("0x");
   const [bptInput, setBptInput] = useState({
     rawAmount: 0n,
     displayValue: "",
@@ -29,7 +30,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
     isFetching: isQueryFetching,
     error: queryError,
     refetch: refetchQuery,
-  } = useQueryRemoveLiquidity("queryRemoveAmount", pool, bptInput.rawAmount);
+  } = useQueryRemoveLiquidity("queryRemoveAmount", pool, bptInput.rawAmount, formatToHex(userDataInputValue));
   const { data: allowance, refetch: refetchAllowance } = useAllowanceOnToken(pool.address, BALANCER_ROUTER[chainId]);
   const {
     mutate: approveRouter,
@@ -43,14 +44,20 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
   } = useRemoveLiquidity();
 
   const handleAmountChange = (amount: string) => {
-    queryClient.removeQueries({ queryKey: ["queryRemoveLiquidity"] });
+    queryClient.removeQueries({ queryKey: ["queryRemoveAmount"] });
     setRemoveLiquidityReceipt(null);
     const rawAmount = parseUnits(amount, pool.decimals);
     setBptInput({ rawAmount, displayValue: amount });
   };
 
+  const handleUserDataChange = (userData: string) => {
+    queryClient.removeQueries({ queryKey: ["queryRemoveAmount"] });
+    setRemoveLiquidityReceipt(null);
+    setUserDataInputValue(userData);
+  };
+
   const handleQuery = () => {
-    queryClient.removeQueries({ queryKey: ["queryRemoveLiquidity"] });
+    queryClient.removeQueries({ queryKey: ["queryRemoveAmount"] });
     setRemoveLiquidityReceipt(null);
     refetchQuery();
   };
@@ -109,6 +116,7 @@ export const RemoveLiquidityForm: React.FC<PoolActionsProps> = ({ pool, refetchP
         userBalance={pool.userBalance}
         setMaxAmount={setMaxAmount}
       />
+      <UserDataInput onChange={handleUserDataChange} value={userDataInputValue} />
 
       {!queryResponse || removeLiquidityReceipt || isFormEmpty ? (
         <TransactionButton label="Query" onClick={handleQuery} isDisabled={isQueryFetching} isFormEmpty={isFormEmpty} />
