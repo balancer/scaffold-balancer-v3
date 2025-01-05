@@ -12,7 +12,7 @@ const EXAMPLES = [
     emoji: "🪝",
     title: "Pool Hooks",
     href: "/hooks",
-    description: "View our extensive library of hooks example contracts",
+    description: "View our growing library of developer submitted example contracts",
   },
 ];
 
@@ -111,7 +111,7 @@ const Home: NextPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-10">
                 {VIDEOS.map(item => (
                   <Link
-                    className="relative bg-base-200 hover:scale-105 transition-all duration-300 text-2xl text-center p-5 rounded-3xl shadow-lg"
+                    className="relative bg-base-200 hover:scale-105 transition-all duration-300 text-2xl text-center rounded-3xl shadow-lg"
                     key={item.href}
                     href={item.href}
                     passHref

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { ResultsDisplay, TokenField, TransactionButton } from ".";
-import { PERMIT2, SwapKind, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
+import { ResultsDisplay, TokenField, TransactionButton, UserDataInput } from ".";
+import { PERMIT2, SwapInput, SwapKind, VAULT_V3, vaultV3Abi } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import { parseUnits } from "viem";
 import { useContractEvent } from "wagmi";
@@ -8,8 +8,9 @@ import { Alert } from "~~/components/common";
 import { useQuerySwap, useSwap, useTargetFork } from "~~/hooks/balancer/";
 import { PoolActionsProps, PoolOperationReceipt, SwapConfig } from "~~/hooks/balancer/types";
 import { useAllowanceOnToken, useApproveOnToken } from "~~/hooks/token";
+import { formatToHex } from "~~/utils/helpers";
 
-const initialSwapConfig = {
+const initialSwapConfig: SwapConfig = {
   tokenIn: {
     poolTokensIndex: 0,
     amount: "",
@@ -21,6 +22,7 @@ const initialSwapConfig = {
     rawAmount: 0n,
   },
   swapKind: SwapKind.GivenOut,
+  userData: "0x",
 };
 
 /**
@@ -32,6 +34,7 @@ const initialSwapConfig = {
 export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenBalances, refetchTokenBalances }) => {
   const [swapConfig, setSwapConfig] = useState<SwapConfig>(initialSwapConfig);
   const [swapReceipt, setSwapReceipt] = useState<PoolOperationReceipt>(null);
+  const [userDataInputValue, setUserDataInputValue] = useState<string>("0x");
 
   const { chainId } = useTargetFork();
   const queryClient = useQueryClient();
@@ -39,7 +42,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
   const tokenIn = pool.poolTokens[swapConfig.tokenIn.poolTokensIndex];
   const tokenOut = pool.poolTokens[swapConfig.tokenOut.poolTokensIndex];
 
-  const swapInput = {
+  const swapInput: SwapInput = {
     chainId,
     swapKind: swapConfig.swapKind,
     paths: [
@@ -54,6 +57,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
         outputAmountRaw: swapConfig.tokenOut.rawAmount,
       },
     ],
+    userData: swapConfig.userData,
   };
 
   const {
@@ -99,6 +103,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
     setSwapReceipt(null);
     // Update the focused input amount with new value and reset the other input amount
     setSwapConfig(prevConfig => ({
+      ...prevConfig,
       tokenIn: {
         ...prevConfig.tokenIn,
         amount: swapConfigKey === "tokenIn" ? amount : "",
@@ -110,6 +115,17 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
         rawAmount: swapConfigKey === "tokenOut" ? parseUnits(amount, tokenOut.decimals) : 0n,
       },
       swapKind: swapConfigKey === "tokenIn" ? SwapKind.GivenIn : SwapKind.GivenOut,
+    }));
+  };
+
+  const handleUserDataChange = (userData: string) => {
+    queryClient.removeQueries({ queryKey: ["querySwap"] });
+    setSwapReceipt(null);
+    setUserDataInputValue(userData);
+
+    setSwapConfig(prevConfig => ({
+      ...prevConfig,
+      userData: formatToHex(userData),
     }));
   };
 
@@ -168,6 +184,7 @@ export const SwapForm: React.FC<PoolActionsProps> = ({ pool, refetchPool, tokenB
         selectableTokens={pool.poolTokens.filter(token => token.symbol !== tokenOut.symbol)}
         isHighlighted={queryResponse?.swapKind === SwapKind.GivenOut}
       />
+      <UserDataInput onChange={handleUserDataChange} value={userDataInputValue} />
 
       {!queryResponse || isFormEmpty || swapReceipt ? (
         <TransactionButton

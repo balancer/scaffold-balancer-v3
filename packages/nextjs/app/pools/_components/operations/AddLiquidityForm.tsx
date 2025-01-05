@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { ResultsDisplay, TokenField, TransactionButton } from ".";
+import { ResultsDisplay, TokenField, TransactionButton, UserDataInput } from ".";
 import { InputAmount, PERMIT2, calculateProportionalAmounts, erc20Abi } from "@balancer/sdk";
 import { useQueryClient } from "@tanstack/react-query";
 import debounce from "lodash.debounce";
@@ -10,6 +10,7 @@ import abis from "~~/contracts/abis";
 import { useAddLiquidity, useQueryAddLiquidity, useTargetFork } from "~~/hooks/balancer/";
 import { PoolActionsProps, PoolOperationReceipt, TokenAmountDetails } from "~~/hooks/balancer/types";
 import { useAllowancesOnTokens, useApproveOnToken } from "~~/hooks/token/";
+import { formatToHex } from "~~/utils/helpers";
 
 /**
  * 1. Query adding some amount of liquidity to the pool
@@ -32,6 +33,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
   const [addLiquidityReceipt, setAddLiquidityReceipt] = useState<PoolOperationReceipt>(null);
   const [referenceAmount, setReferenceAmount] = useState<InputAmount>(); // only for the proportional add liquidity case
   const [isCalculatingProportional, setIsCalculatingProportional] = useState(false);
+  const [userDataInputValue, setUserDataInputValue] = useState<string>("0x");
 
   const queryClient = useQueryClient();
   const {
@@ -39,7 +41,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
     isFetching: isQueryFetching,
     error: queryError,
     refetch: refetchQueryAddLiquidity,
-  } = useQueryAddLiquidity(pool, tokenInputs, referenceAmount);
+  } = useQueryAddLiquidity(pool, tokenInputs, referenceAmount, formatToHex(userDataInputValue));
   const { tokensToApprove, refetchTokenAllowances } = useAllowancesOnTokens(tokenInputs);
   const {
     mutate: addLiquidity,
@@ -57,7 +59,7 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
     [],
   );
 
-  const handleInputChange = (index: number, value: string) => {
+  const handleAmountChange = (index: number, value: string) => {
     queryClient.removeQueries({ queryKey: ["queryAddLiquidity"] });
     setAddLiquidityReceipt(null);
 
@@ -89,6 +91,13 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
     } else {
       setTokenInputs(updatedTokens);
     }
+  };
+
+  const handleUserDataChange = (userData: string) => {
+    queryClient.removeQueries({ queryKey: ["queryAddLiquidity"] });
+    setAddLiquidityReceipt(null);
+
+    setUserDataInputValue(userData);
   };
 
   const handleQueryAddLiquidity = () => {
@@ -137,10 +146,11 @@ export const AddLiquidityForm: React.FC<PoolActionsProps> = ({
             token={pool.poolTokens[index]}
             userBalance={tokenBalances[token.address]}
             value={humanInputAmount != "0" ? humanInputAmount : ""}
-            onAmountChange={value => handleInputChange(index, value)}
+            onAmountChange={value => handleAmountChange(index, value)}
           />
         );
       })}
+      <UserDataInput onChange={handleUserDataChange} value={userDataInputValue} />
 
       {!queryResponse || addLiquidityReceipt || isFormEmpty ? (
         <TransactionButton

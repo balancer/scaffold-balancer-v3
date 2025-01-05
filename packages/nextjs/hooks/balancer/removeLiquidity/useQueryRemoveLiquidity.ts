@@ -9,7 +9,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Pool, useTargetFork } from "~~/hooks/balancer";
 
-export const useQueryRemoveLiquidity = (queryKey: string, pool: Pool, rawAmount: bigint) => {
+export const useQueryRemoveLiquidity = (queryKey: string, pool: Pool, rawAmount: bigint, userData?: `0x${string}`) => {
   const { rpcUrl, chainId } = useTargetFork();
 
   const queryRemoveLiquidity = async () => {
@@ -30,6 +30,7 @@ export const useQueryRemoveLiquidity = (queryKey: string, pool: Pool, rawAmount:
       rpcUrl,
       bptIn,
       kind: RemoveLiquidityKind.Proportional,
+      userData: userData ?? "0x",
     };
 
     // Query removeLiquidity to get the token out amounts
