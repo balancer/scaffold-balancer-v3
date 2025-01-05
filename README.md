@@ -55,7 +55,7 @@ cd scaffold-balancer-v3
 yarn install
 ```
 
-3. Set the follwing RPC URLs in the `packages/foundry/.env` file
+3. Set the following RPC URLs in the `packages/foundry/.env` file
 
 ```
 SEPOLIA_RPC_URL=
@@ -124,7 +124,7 @@ To force the use of burner wallet, disable your browsers wallet extensions and r
 
 <details><summary><strong>🐛 Debug Contracts Page </strong></summary>
 
-The [Debug Contracts Page](http://localhost:3000/debug) can be useful for viewing and interacting with all of the externally avaiable read and write functions of a contract. The page will automatically hot reload with contracts that are deployed via the `01_DeployConstantSumFactory.s.sol` script. We use this handy setup to mint `mockERC20` tokens to any connected wallet
+The [Debug Contracts Page](http://localhost:3000/debug) can be useful for viewing and interacting with all of the externally available read and write functions of a contract. The page will automatically hot reload with contracts that are deployed via the `01_DeployConstantSumFactory.s.sol` script. We use this handy setup to mint `mockERC20` tokens to any connected wallet
 
 </details>
 
@@ -223,7 +223,7 @@ While not mandatory, we do recommend using a factory contract for the deployment
 
 - A pool factory contract must inherit from [BasePoolFactory](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/factories/BasePoolFactory.sol)
 - Use the internal `_create` function to deploy a new pool
-- Use the internal `_registerPoolWithVault` fuction to register a pool immediately after creation
+- Use the internal `_registerPoolWithVault` function to register a pool immediately after creation
 
 ## 🪝 Create a Pool Hook
 
