@@ -5,8 +5,8 @@ A starter kit for building on top of Balancer v3. Accelerate the process of crea
 ## ✨ Features
 
 - Deploy custom pool and hooks to a local anvil fork
-- Interact with the examples by executing pool operations using the frontend
-- Growing directory of hooks examples
+- Explore pool configuration and liquidity details using the frontend
+- Instantly execute swaps, joins, and exits using a burner wallet
 
 ## 📽️ Video Tutorials
 
@@ -52,7 +52,7 @@ cd scaffold-balancer-v3
 yarn install
 ```
 
-3. Set the follwing RPC URLs in the `packages/foundry/.env` file
+3. In a `packages/foundry/.env` file, set RPC URLs for the networks you wish to fork
 
 ```
 SEPOLIA_RPC_URL=
@@ -61,22 +61,24 @@ GNOSIS_RPC_URL=
 ```
 
 4. Start a local anvil fork of Ethereum mainnet
-   > By default, this project is setup to fork Ethereum mainnet. However, you can fork another network by following these steps:
-   >
-   > 1. Change `targetFork` in `scaffold.config.ts` to `chains.gnosis`
-   > 2. Make sure the right addresses are un-commented in `PoolHelpers.sol`
-   > 3. Run `yarn fork --network gnosis`
 
 ```bash
 yarn fork
 ```
 
+> By default, this project is setup to fork Ethereum mainnet. However, you can fork another network by following these steps:
+>
+> 1. Change `targetFork` in `scaffold.config.ts` to `chains.gnosis`
+> 2. Make sure the right addresses are un-commented in `PoolHelpers.sol`
+> 3. Run `yarn fork --network gnosis`
+
 5. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts
-   > By default, the anvil account #0 will be the deployer and recieve the mock tokens and BPT from pool initialization
 
 ```bash
 yarn deploy
 ```
+
+> By default, the anvil account #0 will be the deployer and recieve the mock tokens and BPT from pool initialization
 
 6. Start the nextjs frontend
 
@@ -88,7 +90,8 @@ yarn start
 
 - Navigate to http://localhost:3000 to see the home page
 - Visit the [Pools Page](http://localhost:3000/pools) to search by address or select using the pool buttons
-- Vist the [Debug Page](http://localhost:3000/debug) to see the mock tokens, factory, and hooks contracts
+- Visit the [Hooks Page](http://localhost:3000/hooks) to see a growing library of pool hook examples
+- Vist the [Debug Page](http://localhost:3000/debug) to see external read and write functions for each contract
 
 8. Run the Foundry tests
 
@@ -209,7 +212,7 @@ Custom AMMs built on Balancer inherit the security of the Balancer vault, and be
 
 ## 🏭 Create a Pool Factory
 
-While not mandatory, we do recommend using a factory contract for the deployment and registration of custom pools
+While not mandatory, we do recommend using a factory contract for the deployment and registration of custom pools.
 
 ### Learn the Basics
 
@@ -223,6 +226,8 @@ While not mandatory, we do recommend using a factory contract for the deployment
 - Use the internal `_registerPoolWithVault` fuction to register a pool immediately after creation
 
 ## 🪝 Create a Pool Hook
+
+Hooks introduce a new framework for extending the functionality of existing pool types at key points throughout pool operation lifecycles.
 
 ### Learn the Basics
 
@@ -243,16 +248,22 @@ The deploy scripts are located in the [foundry/script/](https://github.com/balan
 
 ![pool-deploy-scripts](https://github.com/user-attachments/assets/bb906080-8f42-46c0-af90-ba01ba1754fc)
 
-### Modifying the Deploy Scripts
+### Understand Scaffold
 
 For all the scaffold integrations to work properly, each deploy script must be imported into `Deploy.s.sol` and inherited by the `DeployScript` contract in `Deploy.s.sol`
 
-### Broadcasting the Transactions
+### Broadcast Transactions
 
 Run the following command to deploy the contracts to a local anvil fork
 
 ```bash
 yarn deploy
+```
+
+Add a `--network` flag to deploy the contracts to a live network
+
+```bash
+yarn deploy --network sepolia
 ```
 
 ## 🧪 Test the Contracts
