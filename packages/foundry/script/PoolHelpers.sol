@@ -17,25 +17,40 @@ import { console } from "forge-std/Script.sol";
 /**
  * @title Pool Helpers
  * @notice Helpful addresses,functions, and types for deploying pools on Balancer v3
- * @dev Since the block.chainid will always be 31337 when deploying to local anvil fork,
- * if you wish to fork another network, uncomment the relevant addresses below
  */
 contract PoolHelpers {
     // Same address on all chains
     IPermit2 internal permit2 = IPermit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
     IVault internal vault = IVault(0xbA1333333333a1BA1108E8412f11850A5C319bA9);
+    IRouter internal router;
+    IBatchRouter internal batchRouter;
 
-    // Mainnet
-    IRouter internal router = IRouter(0x5C6fb490BDFD3246EB0bB062c168DeCAF4bD9FDd);
-    IBatchRouter internal batchRouter = IBatchRouter(0x136f1EFcC3f8f88516B9E94110D56FDBfB1778d1);
-
-    // Gnosis
-    //  IRouter internal router =  IRouter(0x84813aA3e079A665C0B80F944427eE83cBA63617);
-    // IBatchRouter internal batchRouter = IBatchRouter(0xe2fa4e1d17725e72dcdAfe943Ecf45dF4B9E285b);
-
-    // Sepolia
-    // IRouter internal router = IRouter(0x0BF61f706105EA44694f2e92986bD01C39930280);
-    // IBatchRouter internal batchRouter IBatchRouter(0xC85b652685567C1B074e8c0D4389f83a2E458b1C);
+    /**
+     * This controls which addresses are used for v3 contracts
+     * @notice Local anvil network uses mainnet addresses
+     * @dev To fork another network, change the addreseses for Local Anvil Network
+     */
+    constructor() {
+        if (block.chainid == 31337) {
+            // Local Anvil Network
+            router = IRouter(0x5C6fb490BDFD3246EB0bB062c168DeCAF4bD9FDd);
+            batchRouter = IBatchRouter(0x136f1EFcC3f8f88516B9E94110D56FDBfB1778d1);
+        } else if (block.chainid == 1) {
+            // Mainnet
+            router = IRouter(0x5C6fb490BDFD3246EB0bB062c168DeCAF4bD9FDd);
+            batchRouter = IBatchRouter(0x136f1EFcC3f8f88516B9E94110D56FDBfB1778d1);
+        } else if (block.chainid == 100) {
+            // Gnosis
+            router = IRouter(0x84813aA3e079A665C0B80F944427eE83cBA63617);
+            batchRouter = IBatchRouter(0xe2fa4e1d17725e72dcdAfe943Ecf45dF4B9E285b);
+        } else if (block.chainid == 11155111) {
+            // Sepolia
+            router = IRouter(0x0BF61f706105EA44694f2e92986bD01C39930280);
+            batchRouter = IBatchRouter(0xC85b652685567C1B074e8c0D4389f83a2E458b1C);
+        } else {
+            revert("PoolHelpers: Unsupported network");
+        }
+    }
 
     /**
      * Sorts the tokenConfig array into alphanumeric order
