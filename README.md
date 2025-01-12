@@ -4,7 +4,6 @@ A starter kit for building on top of Balancer v3. Accelerate the process of crea
 
 ![image](https://github.com/user-attachments/assets/2f7538cf-d252-43be-9a9a-c8b84a37349c)
 
-
 ## ✨ Features
 
 - Deploy custom pool and hooks to a local anvil fork
@@ -55,12 +54,10 @@ cd scaffold-balancer-v3
 yarn install
 ```
 
-3. In a `packages/foundry/.env` file, set RPC URLs for the networks you wish to fork
+3. In a `packages/foundry/.env` file, provide an RPC URL for Ethereum Mainnet
 
 ```
-SEPOLIA_RPC_URL=
 MAINNET_RPC_URL=
-GNOSIS_RPC_URL=
 ```
 
 4. Start a local anvil fork of Ethereum mainnet
@@ -72,7 +69,7 @@ yarn fork
 > By default, this project is setup to fork Ethereum mainnet. However, you can fork another network by following these steps:
 >
 > 1. Change `targetFork` in `scaffold.config.ts` to `chains.gnosis`
-> 2. Make sure the right addresses are un-commented in `PoolHelpers.sol`
+> 2. Modify `PoolHelpers.sol` to use the correct contract addresses
 > 3. Run `yarn fork --network gnosis`
 
 5. Deploy the mock tokens, pool factories, pool hooks, and custom pools contracts
@@ -273,26 +270,26 @@ yarn deploy --network sepolia
 
 The [balancer-v3-monorepo](https://github.com/balancer/balancer-v3-monorepo) provides testing utility contracts like [BasePoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/test/foundry/utils/BasePoolTest.sol) and [BaseVaultTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/test/foundry/utils/BaseVaultTest.sol). Therefore, the best way to begin writing tests for custom factories, pools, and hooks contracts is to leverage the examples established by the source code.
 
-### Testing Factories
+### Factories
 
-The `ConstantSumFactoryTest` roughly mirrors the [WeightedPool8020FactoryTest
+The example `ConstantSumFactoryTest` mirrors the [WeightedPool8020FactoryTest
 ](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool8020Factory.t.sol)
 
 ```
 yarn test --match-contract ConstantSumFactoryTest
 ```
 
-### Testing Pools
+### Pools
 
-The `ConstantSumPoolTest` roughly mirrors the [WeightedPoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool.t.sol)
+The example `ConstantSumPoolTest` mirrors the [WeightedPoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool.t.sol)
 
 ```
 yarn test --match-contract ConstantSumPoolTest
 ```
 
-### Testing Hooks
+### Hooks
 
-The `VeBALFeeDiscountHookExampleTest` mirrors the [VeBALFeeDiscountHookExampleTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-hooks/test/foundry/VeBALFeeDiscountHookExample.t.sol)
+The example `VeBALFeeDiscountHookExampleTest` mirrors the [VeBALFeeDiscountHookExampleTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-hooks/test/foundry/VeBALFeeDiscountHookExample.t.sol)
 
 ```
 yarn test --match-contract VeBALFeeDiscountHookExampleTest

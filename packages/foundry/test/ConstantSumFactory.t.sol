@@ -3,103 +3,154 @@ pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
 
+import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
+import { IVaultErrors } from "@balancer-labs/v3-interfaces/contracts/vault/IVaultErrors.sol";
 import {
     LiquidityManagement,
     PoolRoleAccounts,
     TokenConfig
 } from "@balancer-labs/v3-interfaces/contracts/vault/VaultTypes.sol";
-import { IVault } from "@balancer-labs/v3-interfaces/contracts/vault/IVault.sol";
-import { VaultMock } from "@balancer-labs/v3-vault/contracts/test/VaultMock.sol";
-import { ERC20TestToken } from "@balancer-labs/v3-solidity-utils/contracts/test/ERC20TestToken.sol";
+
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import { CastingHelpers } from "@balancer-labs/v3-solidity-utils/contracts/helpers/CastingHelpers.sol";
+import { ArrayHelpers } from "@balancer-labs/v3-solidity-utils/contracts/test/ArrayHelpers.sol";
+import { BalancerPoolToken } from "@balancer-labs/v3-vault/contracts/BalancerPoolToken.sol";
 import { BaseVaultTest } from "@balancer-labs/v3-vault/test/foundry/utils/BaseVaultTest.sol";
 
 import { ConstantSumPool } from "../contracts/pools/ConstantSumPool.sol";
 import { ConstantSumFactory } from "../contracts/factories/ConstantSumFactory.sol";
 
 contract ConstantSumFactoryTest is BaseVaultTest {
-    // uint256 internal DEFAULT_SWAP_FEE = 1e16; // 1%
-    // ConstantSumFactory factory;
-    // ERC20TestToken tokenA;
-    // ERC20TestToken tokenB;
-    // function setUp() public override {
-    //     super.setUp();
-    //     factory = new ConstantSumFactory(IVault(address(vault)), 365 days);
-    //     tokenA = new ERC20TestToken("Token A", "TKNA", 18);
-    //     tokenB = new ERC20TestToken("Token B", "TKNB", 6);
-    // }
-    // function _createPool(
-    //     string memory name,
-    //     string memory symbol,
-    //     IERC20 token1,
-    //     IERC20 token2,
-    //     bytes32 salt
-    // ) private returns (address) {
-    //     TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
-    //     tokenConfigs[0].token = token1;
-    //     tokenConfigs[1].token = token2;
-    //     bool protocolFeeExempt = false;
-    //     PoolRoleAccounts memory roleAccounts;
-    //     address poolHooksContract = address(0);
-    //     LiquidityManagement memory liquidityManagement;
-    //     return
-    //         factory.create(
-    //             name,
-    //             symbol,
-    //             salt,
-    //             tokenConfigs,
-    //             DEFAULT_SWAP_FEE, // swapFeePercentage
-    //             protocolFeeExempt,
-    //             roleAccounts,
-    //             poolHooksContract,
-    //             liquidityManagement
-    //         );
-    // }
-    // function testFactoryPausedState() public view {
-    //     uint256 pauseWindowDuration = factory.getPauseWindowDuration();
-    //     assertEq(pauseWindowDuration, 365 days);
-    // }
-    // function testPoolCreation__Fuzz(bytes32 salt) public {
-    //     vm.assume(salt > 0);
-    //     ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenA, tokenB, salt);
-    //     assertEq(pool.name(), "Constant Sum Pool #1", "Wrong pool name");
-    //     assertEq(pool.symbol(), "CSP1", "Wrong pool symbol");
-    //     assertEq(pool.decimals(), 18, "Wrong pool decimals");
-    // }
-    // function testPoolSalt__Fuzz(bytes32 salt) public {
-    //     vm.assume(salt > 0);
-    //     ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenA, tokenB, bytes32(0));
-    //     ConstantSumPool secondPool = _createPool("Constant Sum Pool #2", "CSP2", tokenA, tokenB, salt);
-    //     address expectedPoolAddress = factory.getDeploymentAddress(salt);
-    //     assertFalse(address(pool) == address(secondPool), "Two deployed pool addresses are equal");
-    //     assertEq(address(secondPool), expectedPoolAddress, "Unexpected pool address");
-    // }
-    // function testPoolSender__Fuzz(bytes32 salt) public {
-    //     vm.assume(salt > 0);
-    //     address expectedPoolAddress = factory.getDeploymentAddress(salt);
-    //     TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
-    //     tokenConfigs[0].token = tokenA;
-    //     tokenConfigs[1].token = tokenB;
-    //     // Different sender should change the address of the pool, given the same salt value
-    //     vm.prank(alice);
-    //     ConstantSumPool pool = _createPool("Constant Sum Pool #1", "CSP1", tokenA, tokenB, salt);
-    //     assertFalse(address(pool) == expectedPoolAddress, "Unexpected pool address");
-    //     vm.prank(alice);
-    //     address aliceExpectedPoolAddress = factory.getDeploymentAddress(salt);
-    //     assertTrue(address(pool) == aliceExpectedPoolAddress, "Unexpected pool address");
-    // }
-    // function testPoolCrossChainProtection__Fuzz(bytes32 salt, uint16 chainId) public {
-    //     vm.assume(chainId > 1);
-    //     TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
-    //     tokenConfigs[0].token = tokenA;
-    //     tokenConfigs[1].token = tokenB;
-    //     vm.prank(alice);
-    //     ConstantSumPool poolMainnet = _createPool("Constant Sum Pool #1", "CSP1", tokenA, tokenB, salt);
-    //     vm.chainId(chainId);
-    //     vm.prank(alice);
-    //     ConstantSumPool poolL2 = _createPool("Constant Sum Pool #2", "CSP2", tokenA, tokenB, salt);
-    //     // Same sender and salt, should still be different because of the chainId.
-    //     assertFalse(address(poolL2) == address(poolMainnet), "L2 and mainnet pool addresses are equal");
-    // }
+    using CastingHelpers for address[];
+    using ArrayHelpers for *;
+
+    uint256 internal daiIdx;
+    uint256 internal usdcIdx;
+
+    uint256 public constant DEFAULT_SWAP_FEE = 1e16; // 1%
+    uint64 public constant MAX_SWAP_FEE_PERCENTAGE = 10e16; // 10%
+
+    ConstantSumFactory internal constantSumFactory;
+
+    function setUp() public override {
+        super.setUp();
+
+        constantSumFactory = new ConstantSumFactory(IVault(address(vault)), 365 days);
+        vm.label(address(constantSumFactory), "constant sum factory");
+    }
+
+    function testFactoryPausedState() public view {
+        uint256 pauseWindowDuration = constantSumFactory.getPauseWindowDuration();
+        assertEq(pauseWindowDuration, 365 days);
+    }
+
+    function testCreatePoolWithoutDonation() public {
+        address constantSumPool = _deployAndInitializeConstantSumPool(false);
+
+        // Try to donate but fails because pool does not support donations
+        vm.prank(bob);
+        vm.expectRevert(IVaultErrors.DoesNotSupportDonation.selector);
+        router.donate(constantSumPool, [poolInitAmount, poolInitAmount].toMemoryArray(), false, bytes(""));
+    }
+
+    function testCreatePoolWithDonation() public {
+        uint256 amountToDonate = poolInitAmount;
+
+        address constantSumPool = _deployAndInitializeConstantSumPool(true);
+
+        HookTestLocals memory vars = _createHookTestLocals(constantSumPool);
+
+        // Donates to pool successfully
+        vm.prank(bob);
+        router.donate(constantSumPool, [amountToDonate, amountToDonate].toMemoryArray(), false, bytes(""));
+
+        _fillAfterHookTestLocals(vars, constantSumPool);
+
+        // Bob balances
+        assertEq(vars.bob.daiBefore - vars.bob.daiAfter, amountToDonate, "Bob DAI balance is wrong");
+        assertEq(vars.bob.usdcBefore - vars.bob.usdcAfter, amountToDonate, "Bob USDC balance is wrong");
+        assertEq(vars.bob.bptAfter, vars.bob.bptBefore, "Bob BPT balance is wrong");
+
+        // Pool balances
+        assertEq(vars.poolAfter[daiIdx] - vars.poolBefore[daiIdx], amountToDonate, "Pool DAI balance is wrong");
+        assertEq(vars.poolAfter[usdcIdx] - vars.poolBefore[usdcIdx], amountToDonate, "Pool USDC balance is wrong");
+        assertEq(vars.bptSupplyAfter, vars.bptSupplyBefore, "Pool BPT supply is wrong");
+
+        // Vault Balances
+        assertEq(vars.vault.daiAfter - vars.vault.daiBefore, amountToDonate, "Vault DAI balance is wrong");
+        assertEq(vars.vault.usdcAfter - vars.vault.usdcBefore, amountToDonate, "Vault USDC balance is wrong");
+    }
+
+    function _deployAndInitializeConstantSumPool(bool supportsDonation) private returns (address) {
+        PoolRoleAccounts memory roleAccounts;
+        LiquidityManagement memory liquidityManagement;
+        IERC20[] memory tokens = [address(dai), address(usdc)].toMemoryArray().asIERC20();
+
+        if (supportsDonation) liquidityManagement.enableDonation = true;
+
+        address constantSumPool = constantSumFactory.create(
+            supportsDonation ? "Pool With Donation" : "Pool Without Donation",
+            supportsDonation ? "PwD" : "PwoD",
+            bytes32(0), // salt
+            vault.buildTokenConfig(tokens),
+            DEFAULT_SWAP_FEE, // swapFeePercentage
+            false, // protocolFeeExempt
+            roleAccounts,
+            address(0), // poolHooksContract
+            liquidityManagement
+        );
+
+        // Initialize pool.
+        vm.prank(lp);
+        router.initialize(
+            constantSumPool,
+            tokens,
+            [poolInitAmount, poolInitAmount].toMemoryArray(),
+            0,
+            false,
+            bytes("")
+        );
+
+        return constantSumPool;
+    }
+
+    struct WalletState {
+        uint256 daiBefore;
+        uint256 daiAfter;
+        uint256 usdcBefore;
+        uint256 usdcAfter;
+        uint256 bptBefore;
+        uint256 bptAfter;
+    }
+
+    struct HookTestLocals {
+        WalletState bob;
+        WalletState hook;
+        WalletState vault;
+        uint256[] poolBefore;
+        uint256[] poolAfter;
+        uint256 bptSupplyBefore;
+        uint256 bptSupplyAfter;
+    }
+
+    function _createHookTestLocals(address pool) private view returns (HookTestLocals memory vars) {
+        vars.bob.daiBefore = dai.balanceOf(bob);
+        vars.bob.usdcBefore = usdc.balanceOf(bob);
+        vars.bob.bptBefore = IERC20(pool).balanceOf(bob);
+        vars.vault.daiBefore = dai.balanceOf(address(vault));
+        vars.vault.usdcBefore = usdc.balanceOf(address(vault));
+        vars.poolBefore = vault.getRawBalances(pool);
+        vars.bptSupplyBefore = BalancerPoolToken(pool).totalSupply();
+    }
+
+    function _fillAfterHookTestLocals(HookTestLocals memory vars, address pool) private view {
+        vars.bob.daiAfter = dai.balanceOf(bob);
+        vars.bob.usdcAfter = usdc.balanceOf(bob);
+        vars.bob.bptAfter = IERC20(pool).balanceOf(bob);
+        vars.vault.daiAfter = dai.balanceOf(address(vault));
+        vars.vault.usdcAfter = usdc.balanceOf(address(vault));
+        vars.poolAfter = vault.getRawBalances(pool);
+        vars.bptSupplyAfter = BalancerPoolToken(pool).totalSupply();
+    }
 }
