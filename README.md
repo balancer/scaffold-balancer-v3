@@ -270,26 +270,26 @@ yarn deploy --network sepolia
 
 The [balancer-v3-monorepo](https://github.com/balancer/balancer-v3-monorepo) provides testing utility contracts like [BasePoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/test/foundry/utils/BasePoolTest.sol) and [BaseVaultTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/test/foundry/utils/BaseVaultTest.sol). Therefore, the best way to begin writing tests for custom factories, pools, and hooks contracts is to leverage the examples established by the source code.
 
-### Testing Factories
+### Factories
 
-The `ConstantSumFactoryTest` roughly mirrors the [WeightedPool8020FactoryTest
+The example `ConstantSumFactoryTest` mirrors the [WeightedPool8020FactoryTest
 ](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool8020Factory.t.sol)
 
 ```
 yarn test --match-contract ConstantSumFactoryTest
 ```
 
-### Testing Pools
+### Pools
 
-The `ConstantSumPoolTest` roughly mirrors the [WeightedPoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool.t.sol)
+The example `ConstantSumPoolTest` mirrors the [WeightedPoolTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-weighted/test/foundry/WeightedPool.t.sol)
 
 ```
 yarn test --match-contract ConstantSumPoolTest
 ```
 
-### Testing Hooks
+### Hooks
 
-The `VeBALFeeDiscountHookExampleTest` mirrors the [VeBALFeeDiscountHookExampleTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-hooks/test/foundry/VeBALFeeDiscountHookExample.t.sol)
+The example `VeBALFeeDiscountHookExampleTest` mirrors the [VeBALFeeDiscountHookExampleTest](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/pool-hooks/test/foundry/VeBALFeeDiscountHookExample.t.sol)
 
 ```
 yarn test --match-contract VeBALFeeDiscountHookExampleTest
