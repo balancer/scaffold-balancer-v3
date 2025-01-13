@@ -15,7 +15,7 @@ export const useReadPool = (pool: Address | null) => {
   const poolAbi = abis.balancer.Pool;
 
   return useQuery<Pool>(
-    ["PoolContract", { pool, vault, connectedAddress }],
+    ["PoolContract", { pool, vault, connectedAddress, chainId }],
     async () => {
       if (!pool) throw new Error("Pool address is required");
 

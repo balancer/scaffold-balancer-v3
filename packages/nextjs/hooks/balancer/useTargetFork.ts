@@ -4,7 +4,14 @@ import scaffoldConfig from "~~/scaffold.config";
 export const useTargetFork = () => {
   const { targetNetwork } = useTargetNetwork();
 
-  const rpcUrl = targetNetwork.rpcUrls.default.http[0];
+  let rpcUrl;
+  // gnosis does not support alchemy?
+  if (targetNetwork.id === 100) {
+    rpcUrl = targetNetwork.rpcUrls.default.http[0];
+  } else {
+    // default rpc url is not supported for sepolia or mainnet
+    rpcUrl = targetNetwork.rpcUrls.alchemy.http[0] + "/" + scaffoldConfig.alchemyApiKey;
+  }
 
   let chainId = targetNetwork.id;
   // If using local network, use the chainId from scaffoldConfig's targetFork

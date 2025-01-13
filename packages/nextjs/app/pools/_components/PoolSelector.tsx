@@ -43,7 +43,6 @@ export const PoolSelector = ({ setSelectedPoolAddress, selectedPoolAddress }: Po
                   key={address}
                   label={label}
                   address={address}
-                  setInputValue={setInputValue}
                   selectedPoolAddress={selectedPoolAddress}
                   setSelectedPoolAddress={setSelectedPoolAddress}
                 />
@@ -115,16 +114,9 @@ const SearchBar = ({ setSelectedPoolAddress, inputValue, setInputValue }: Search
 type PoolSelectButtonProps = PoolSelectorProps & {
   address: Address;
   label: string;
-  setInputValue: Dispatch<SetStateAction<string>>;
 };
 
-const PoolSelectButton = ({
-  selectedPoolAddress,
-  setSelectedPoolAddress,
-  address,
-  label,
-  setInputValue,
-}: PoolSelectButtonProps) => {
+const PoolSelectButton = ({ selectedPoolAddress, setSelectedPoolAddress, address, label }: PoolSelectButtonProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const { targetNetwork } = useTargetNetwork();
@@ -138,7 +130,6 @@ const PoolSelectButton = ({
       }`}
       onClick={() => {
         setSelectedPoolAddress(address);
-        setInputValue(address);
         router.push(`${pathname}?address=${address}&network=${targetNetwork.id}`);
       }}
     >

@@ -68,14 +68,18 @@ const PoolPageContent = () => {
   const network = searchParams.get("network");
 
   useEffect(() => {
-    if (poolAddress && network === targetNetwork.id.toString()) {
+    if (poolAddress) {
       setSelectedPoolAddress(poolAddress);
-    } else {
-      // Clear pool selection if network doesn't match or no pool address
-      setSelectedPoolAddress(null);
-      router.replace(`/pools?network=${targetNetwork.id}`);
     }
-  }, [poolAddress, targetNetwork, router, network]);
+  }, [poolAddress, targetNetwork, router]);
+
+  // Clear pool address if network changes
+  useEffect(() => {
+    if (network !== targetNetwork.id.toString()) {
+      setSelectedPoolAddress(null);
+      router.push(`/pools?network=${targetNetwork.id}`);
+    }
+  }, [network, targetNetwork, router]);
 
   return (
     <>
