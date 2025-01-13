@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PoolOperations, PoolPageSkeleton, PoolSelector } from "./_components/";
 import { HooksConfig, PoolAttributes, PoolComposition, PoolConfig, UserLiquidity } from "./_components/info";
 import { type NextPage } from "next";
@@ -39,17 +39,24 @@ const PoolPageContent = () => {
   const { targetNetwork } = useTargetNetwork();
 
   const searchParams = useSearchParams();
+  const router = useRouter();
   const poolAddress = searchParams.get("address");
+  const network = searchParams.get("network");
 
   useEffect(() => {
-    if (poolAddress) {
+    if (poolAddress && network === targetNetwork.id.toString()) {
       setSelectedPoolAddress(poolAddress);
+    } else {
+      // Clear pool selection if network doesn't match or no pool address
+      setSelectedPoolAddress(null);
+      router.replace(`/pools?network=${targetNetwork.id}`);
     }
-  }, [poolAddress]);
+  }, [poolAddress, targetNetwork, router, network]);
 
   return (
     <>
       <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
+
       {isLoading ? (
         <PoolPageSkeleton />
       ) : isError ? (

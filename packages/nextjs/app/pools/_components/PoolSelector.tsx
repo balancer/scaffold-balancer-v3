@@ -1,9 +1,12 @@
 import { Dispatch, SetStateAction, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { blo } from "blo";
 import { type Address, isAddress } from "viem";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { Alert } from "~~/components/common";
 import { useFactoryHistory } from "~~/hooks/balancer";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 
 type PoolSelectorProps = {
   setSelectedPoolAddress: Dispatch<SetStateAction<string | null>>;
@@ -14,7 +17,7 @@ export const PoolSelector = ({ setSelectedPoolAddress, selectedPoolAddress }: Po
   const [inputValue, setInputValue] = useState<string>("");
 
   const { sumPools, productPools, weightedPools } = useFactoryHistory();
-
+  const { targetNetwork } = useTargetNetwork();
   const poolTypes = [
     { label: "Constant Sum", addresses: sumPools },
     { label: "Constant Product", addresses: productPools },
@@ -22,28 +25,48 @@ export const PoolSelector = ({ setSelectedPoolAddress, selectedPoolAddress }: Po
   ];
 
   return (
-    <section className="mb-7">
+    <section className="mb-7 flex flex-col items-center">
       <SearchBar
         inputValue={inputValue}
         setInputValue={setInputValue}
         setSelectedPoolAddress={setSelectedPoolAddress}
       />
-      <div className="flex flex-wrap justify-center gap-3 mt-4">
-        {poolTypes.map(
-          ({ label, addresses }) =>
-            addresses.length > 0 &&
-            addresses.map(address => (
-              <PoolSelectButton
-                key={address}
-                label={label}
-                address={address}
-                setInputValue={setInputValue}
-                selectedPoolAddress={selectedPoolAddress}
-                setSelectedPoolAddress={setSelectedPoolAddress}
-              />
-            )),
-        )}
-      </div>
+      {/* Only show example pools on sepolia */}
+      {targetNetwork.id === 11155111 ? (
+        <div className="flex flex-wrap justify-center gap-3 mt-4">
+          {poolTypes.map(
+            ({ label, addresses }) =>
+              addresses.length > 0 &&
+              addresses.map(address => (
+                <PoolSelectButton
+                  key={address}
+                  label={label}
+                  address={address}
+                  setInputValue={setInputValue}
+                  selectedPoolAddress={selectedPoolAddress}
+                  setSelectedPoolAddress={setSelectedPoolAddress}
+                />
+              )),
+          )}
+        </div>
+      ) : (
+        <div className="mt-7 flex justify-center w-[555px]">
+          <Alert type="info">
+            You are connected to the {targetNetwork.name} network. To find a v3 pool address, head to the{" "}
+            <Link
+              className="link"
+              href={`https://balancer.fi/pools?protocolVersion=3&networks=${
+                targetNetwork.name.toUpperCase() === "ETHEREUM" ? "MAINNET" : targetNetwork.name.toUpperCase()
+              }`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              balancer.fi/pools.
+            </Link>{" "}
+            Alternatively, switch to Sepolia to interact with some example custom pools.
+          </Alert>
+        </div>
+      )}
     </section>
   );
 };
@@ -58,6 +81,7 @@ const SearchBar = ({ setSelectedPoolAddress, inputValue, setInputValue }: Search
   const router = useRouter();
   const pathname = usePathname();
   const isValidAddress = isAddress(inputValue);
+  const { targetNetwork } = useTargetNetwork();
 
   return (
     <div className="flex justify-center flex-wrap gap-5 w-full items-center text-xl">
@@ -66,7 +90,7 @@ const SearchBar = ({ setSelectedPoolAddress, inputValue, setInputValue }: Search
         onSubmit={event => {
           event.preventDefault();
           setSelectedPoolAddress(inputValue);
-          router.push(`${pathname}?address=${inputValue}`);
+          router.push(`${pathname}?address=${inputValue}&network=${targetNetwork.id}`);
           setInputValue("");
         }}
       >
@@ -119,7 +143,7 @@ const PoolSelectButton = ({
 }: PoolSelectButtonProps) => {
   const router = useRouter();
   const pathname = usePathname();
-
+  const { targetNetwork } = useTargetNetwork();
   return (
     <button
       key={address}
@@ -131,7 +155,7 @@ const PoolSelectButton = ({
       onClick={() => {
         setSelectedPoolAddress(address);
         setInputValue(address);
-        router.push(`${pathname}?address=${address}`);
+        router.push(`${pathname}?address=${address}&network=${targetNetwork.id}`);
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
