@@ -1,10 +1,8 @@
 import { Dispatch, SetStateAction, useState } from "react";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { blo } from "blo";
 import { type Address, isAddress } from "viem";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { Alert } from "~~/components/common";
 import { useFactoryHistory } from "~~/hooks/balancer";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 
@@ -24,6 +22,10 @@ export const PoolSelector = ({ setSelectedPoolAddress, selectedPoolAddress }: Po
     { label: "Weighted", addresses: weightedPools },
   ];
 
+  // Only show example pools on local fork and sepolia
+  const SUPPORTED_NETWORK_IDS = [11155111, 31337] as const;
+  type SupportedNetworkId = (typeof SUPPORTED_NETWORK_IDS)[number];
+
   return (
     <section className="mb-7 flex flex-col items-center">
       <SearchBar
@@ -31,8 +33,7 @@ export const PoolSelector = ({ setSelectedPoolAddress, selectedPoolAddress }: Po
         setInputValue={setInputValue}
         setSelectedPoolAddress={setSelectedPoolAddress}
       />
-      {/* Only show example pools on sepolia */}
-      {targetNetwork.id === 11155111 ? (
+      {SUPPORTED_NETWORK_IDS.includes(targetNetwork.id as SupportedNetworkId) && (
         <div className="flex flex-wrap justify-center gap-3 mt-4">
           {poolTypes.map(
             ({ label, addresses }) =>
@@ -48,23 +49,6 @@ export const PoolSelector = ({ setSelectedPoolAddress, selectedPoolAddress }: Po
                 />
               )),
           )}
-        </div>
-      ) : (
-        <div className="mt-7 flex justify-center w-[555px]">
-          <Alert type="info">
-            You are connected to the {targetNetwork.name} network. To find a v3 pool address, head to the{" "}
-            <Link
-              className="link"
-              href={`https://balancer.fi/pools?protocolVersion=3&networks=${
-                targetNetwork.name.toUpperCase() === "ETHEREUM" ? "MAINNET" : targetNetwork.name.toUpperCase()
-              }`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              balancer.fi/pools.
-            </Link>{" "}
-            Alternatively, switch to Sepolia to interact with some example custom pools.
-          </Alert>
         </div>
       )}
     </section>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PoolOperations, PoolPageSkeleton, PoolSelector } from "./_components/";
 import { HooksConfig, PoolAttributes, PoolComposition, PoolConfig, UserLiquidity } from "./_components/info";
@@ -16,11 +17,34 @@ import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
  * 3. Perform actions within the selected pool by swapping and adding/removing liquidity
  */
 const Pools: NextPage = () => {
+  const { targetNetwork } = useTargetNetwork();
+
+  const instructions =
+    targetNetwork.id === 31337 ? (
+      "Select one of the example custom pools or search by pool contract address"
+    ) : (
+      <div>
+        Search by pool contract address. Find one for {targetNetwork.name} at{" "}
+        <Link
+          href={`https://${
+            targetNetwork.name.toUpperCase() === "SEPOLIA" ? "test." : ""
+          }balancer.fi/pools?protocolVersion=3&networks=${
+            targetNetwork.name.toUpperCase() === "ETHEREUM" ? "MAINNET" : targetNetwork.name.toUpperCase()
+          }`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-primary"
+        >
+          balancer.fi/pools
+        </Link>
+      </div>
+    );
+
   return (
     <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
       <div className="">
         <h1 className="text-3xl md:text-5xl font-semibold mb-7 text-center">Custom Pools</h1>
-        <div className="text-xl mb-7">Select one of the example custom pools or search by pool contract address</div>
+        <div className="text-xl mb-7">{instructions}</div>
       </div>
 
       <Suspense fallback={<PoolPageSkeleton />}>
