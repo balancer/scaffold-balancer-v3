@@ -77,9 +77,9 @@ const PoolPageContent = () => {
   useEffect(() => {
     if (network !== targetNetwork.id.toString()) {
       setSelectedPoolAddress(null);
-      router.push(`/pools?network=${targetNetwork.id}`);
+      router.push(`/pools?network=${targetNetwork.id}&address=${poolAddress}`);
     }
-  }, [network, targetNetwork, router]);
+  }, [network, targetNetwork, router, poolAddress]);
 
   return (
     <>
