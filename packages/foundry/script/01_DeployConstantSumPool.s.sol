@@ -21,6 +21,23 @@ import { VeBALFeeDiscountHookExample } from "../contracts/hooks/VeBALFeeDiscount
  * @notice Deploys, registers, and initializes a constant sum pool that uses a swap fee discount hook
  */
 contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
+    ConstantSumFactory public constantSumFactory;
+    address public veBALFeeDiscountHook;
+
+    function deployConstantSumFactory(address veBAL) internal {
+        if (address(constantSumFactory) == address(0)) {
+            // Deploy factory only if it hasn't been deployed yet
+            constantSumFactory = new ConstantSumFactory(vault, 365 days);
+            console.log("Constant Sum Factory deployed at: %s", address(constantSumFactory));
+
+            // Deploy hook only once
+            veBALFeeDiscountHook = address(
+                new VeBALFeeDiscountHookExample(vault, address(constantSumFactory), address(router), veBAL)
+            );
+            console.log("VeBALFeeDiscountHookExample deployed at address: %s", veBALFeeDiscountHook);
+        }
+    }
+
     function deployConstantSumPool(address token1, address token2, address veBAL) internal {
         // Set the pool's deployment, registration, and initialization config
         CustomPoolConfig memory poolConfig = getSumPoolConfig(token1, token2);
@@ -30,18 +47,11 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
         uint256 deployerPrivateKey = getDeployerPrivateKey();
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy a factory
-        ConstantSumFactory factory = new ConstantSumFactory(vault, 365 days); // pauseWindowDuration
-        console.log("Constant Sum Factory deployed at: %s", address(factory));
-
-        // Deploy a hook
-        address veBALFeeDiscountHook = address(
-            new VeBALFeeDiscountHookExample(vault, address(factory), address(router), veBAL)
-        );
-        console.log("VeBALFeeDiscountHookExample deployed at address: %s", veBALFeeDiscountHook);
+        // Deploy factory and hook if not already deployed
+        deployConstantSumFactory(veBAL);
 
         // Deploy a pool and register it with the vault
-        address pool = factory.create(
+        address pool = constantSumFactory.create(
             poolConfig.name,
             poolConfig.symbol,
             poolConfig.salt,
@@ -49,7 +59,7 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
             poolConfig.swapFeePercentage,
             poolConfig.protocolFeeExempt,
             poolConfig.roleAccounts,
-            veBALFeeDiscountHook, // poolHooksContract
+            veBALFeeDiscountHook,
             poolConfig.liquidityManagement
         );
         console.log("Constant Sum Pool deployed at: %s", pool);
@@ -79,7 +89,15 @@ contract DeployConstantSumPool is PoolHelpers, ScaffoldHelpers {
     function getSumPoolConfig(address token1, address token2) internal view returns (CustomPoolConfig memory config) {
         string memory name = "Constant Sum Pool"; // name for the pool
         string memory symbol = "CSP"; // symbol for the BPT
-        bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
+        // Create a unique salt based on block number, token addresses, and timestamp
+        bytes32 salt = keccak256(
+            abi.encodePacked(
+                block.number,
+                block.timestamp,
+                token1,
+                token2
+            )
+        );
         uint256 swapFeePercentage = 0.01e18; // 1%
         bool protocolFeeExempt = true;
         address poolHooksContract = address(0); // zero address if no hooks contract is needed

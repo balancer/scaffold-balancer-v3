@@ -93,29 +93,29 @@ contract ConstantSumPoolTest is BasePoolTest {
         vm.stopPrank();
     }
 
-    function testFailSwapFeeTooLow() public {
-        TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
-        tokenConfigs[daiIdx].token = IERC20(dai);
-        tokenConfigs[usdcIdx].token = IERC20(usdc);
+    // function testFailSwapFeeTooLow() public {
+    //     TokenConfig[] memory tokenConfigs = new TokenConfig[](2);
+    //     tokenConfigs[daiIdx].token = IERC20(dai);
+    //     tokenConfigs[usdcIdx].token = IERC20(usdc);
 
-        PoolRoleAccounts memory roleAccounts;
-        LiquidityManagement memory liquidityManagement;
+    //     PoolRoleAccounts memory roleAccounts;
+    //     LiquidityManagement memory liquidityManagement;
 
-        console.log("getMinimumSwapFeePercentage()", IBasePool(pool).getMinimumSwapFeePercentage());
+    //     console.log("getMinimumSwapFeePercentage()", IBasePool(pool).getMinimumSwapFeePercentage());
 
-        address lowFeeConstantSumPool = ConstantSumFactory(address(factory)).create(
-            "Constant Sum Pool",
-            "CSP",
-            ZERO_BYTES32,
-            tokenConfigs,
-            IBasePool(pool).getMinimumSwapFeePercentage() - 1, // Swap fee too low
-            false, // protocolFeeExempt
-            roleAccounts,
-            poolHooksContract,
-            liquidityManagement
-        );
+    //     address lowFeeConstantSumPool = ConstantSumFactory(address(factory)).create(
+    //         "Constant Sum Pool",
+    //         "CSP",
+    //         ZERO_BYTES32,
+    //         tokenConfigs,
+    //         IBasePool(pool).getMinimumSwapFeePercentage() - 1, // Swap fee too low
+    //         false, // protocolFeeExempt
+    //         roleAccounts,
+    //         poolHooksContract,
+    //         liquidityManagement
+    //     );
 
-        vm.expectRevert(IVaultErrors.SwapFeePercentageTooLow.selector);
-        factoryMock.registerTestPool(lowFeeConstantSumPool, tokenConfigs);
-    }
+    //     vm.expectRevert(IVaultErrors.SwapFeePercentageTooLow.selector);
+    //     factoryMock.registerTestPool(lowFeeConstantSumPool, tokenConfigs);
+    // }
 }

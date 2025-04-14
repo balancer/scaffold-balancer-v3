@@ -22,6 +22,21 @@ import { LotteryHookExample } from "../contracts/hooks/LotteryHookExample.sol";
  * @notice Deploys, registers, and initializes a constant product pool that uses a Lottery Hook
  */
 contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
+    ConstantProductFactory public constantProductFactory;
+    address public lotteryHook;
+
+    function deployConstantProductFactory() internal {
+        if (address(constantProductFactory) == address(0)) {
+            // Deploy factory only if it hasn't been deployed yet
+            constantProductFactory = new ConstantProductFactory(vault, 365 days);
+            console.log("Constant Product Factory deployed at: %s", address(constantProductFactory));
+
+            // Deploy hook only once
+            lotteryHook = address(new LotteryHookExample(vault, address(router)));
+            console.log("LotteryHookExample deployed at address: %s", lotteryHook);
+        }
+    }
+
     function deployConstantProductPool(address token1, address token2) internal {
         // Set the deployment configurations
         CustomPoolConfig memory poolConfig = getProductPoolConfig(token1, token2);
@@ -31,16 +46,11 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
         uint256 deployerPrivateKey = getDeployerPrivateKey();
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy a factory
-        ConstantProductFactory factory = new ConstantProductFactory(vault, 365 days); //pauseWindowDuration
-        console.log("Constant Product Factory deployed at: %s", address(factory));
-
-        // Deploy a hook
-        address lotteryHook = address(new LotteryHookExample(vault, address(router)));
-        console.log("LotteryHookExample deployed at address: %s", lotteryHook);
+        // Deploy factory and hook if not already deployed
+        deployConstantProductFactory();
 
         // Deploy a pool and register it with the vault
-        address pool = factory.create(
+        address pool = constantProductFactory.create(
             poolConfig.name,
             poolConfig.symbol,
             poolConfig.salt,
@@ -48,7 +58,7 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
             poolConfig.swapFeePercentage,
             poolConfig.protocolFeeExempt,
             poolConfig.roleAccounts,
-            lotteryHook, // poolHooksContract
+            lotteryHook,
             poolConfig.liquidityManagement
         );
         console.log("Constant Product Pool deployed at: %s", pool);
@@ -81,7 +91,15 @@ contract DeployConstantProductPool is PoolHelpers, ScaffoldHelpers {
     ) internal view returns (CustomPoolConfig memory config) {
         string memory name = "Constant Product Pool"; // name for the pool
         string memory symbol = "CPP"; // symbol for the BPT
-        bytes32 salt = keccak256(abi.encode(block.number)); // salt for the pool deployment via factory
+        // Create a unique salt based on block number, token addresses, and timestamp
+        bytes32 salt = keccak256(
+            abi.encodePacked(
+                block.number,
+                block.timestamp,
+                token1,
+                token2
+            )
+        );
         uint256 swapFeePercentage = 0.02e18; // 2%
         bool protocolFeeExempt = false;
         address poolHooksContract = address(0); // zero address if no hooks contract is needed

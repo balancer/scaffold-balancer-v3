@@ -313,6 +313,30 @@ export const abis = {
       },
       { type: "error", name: "StringTooLong", inputs: [{ name: "str", type: "string", internalType: "string" }] },
     ],
+    BaseFactory: [
+      {
+        type: "function",
+        name: "getPoolsInRange",
+        inputs: [
+          { name: "start", type: "uint256", internalType: "uint256" },
+          { name: "count", type: "uint256", internalType: "uint256" },
+        ],
+        outputs: [{ name: "pools", type: "address[]", internalType: "address[]" }],
+        stateMutability: "view",
+      },
+      {
+        type: "event",
+        name: "PoolCreated",
+        inputs: [{ name: "pool", type: "address", indexed: true }],
+      },
+      {
+        type: "function",
+        name: "isPoolFromFactory",
+        inputs: [{ name: "pool", type: "address", internalType: "address" }],
+        outputs: [{ name: "success", type: "bool", internalType: "bool" }],
+        stateMutability: "view",
+      },
+    ],
   },
 };
 
