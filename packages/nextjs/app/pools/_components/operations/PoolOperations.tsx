@@ -104,9 +104,16 @@ const PoolOperationsAlerts = ({
     args: [100000000000000000000n],
   });
 
+  const { writeAsync: mintToken3 } = useScaffoldContractWrite({
+    contractName: "MockToken3",
+    functionName: "mint",
+    args: [100000000000000000000n],
+  });
+
   const handleMintTokens = async () => {
     await mintToken1();
     await mintToken2();
+    await mintToken3();
     refetchTokenBalances();
   };
 

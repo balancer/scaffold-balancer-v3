@@ -22,6 +22,21 @@ import { ExitFeeHookExample } from "../contracts/hooks/ExitFeeHookExample.sol";
  * @notice Deploys, registers, and initializes a 80/20 weighted pool that uses an Exit Fee Hook
  */
 contract DeployWeightedPool8020 is PoolHelpers, ScaffoldHelpers {
+    WeightedPoolFactory public weightedPool8020Factory;
+    address public exitFeeHook;
+
+    function deployWeightedPool8020Factory() internal {
+        if (address(weightedPool8020Factory) == address(0)) {
+            // Deploy factory only if it hasn't been deployed yet
+            weightedPool8020Factory = new WeightedPoolFactory(vault, 365 days, "Factory v1", "Pool v1");
+            console.log("Weighted Pool 80/20 Factory deployed at: %s", address(weightedPool8020Factory));
+
+            // Deploy hook only once
+            exitFeeHook = address(new ExitFeeHookExample(vault));
+            console.log("ExitFeeHookExample deployed at address: %s", exitFeeHook);
+        }
+    }
+
     function deployWeightedPool8020(address token1, address token2) internal {
         // Set the pool initialization config
         InitializationConfig memory initConfig = getWeightedPoolInitConfig(token1, token2);
@@ -30,17 +45,22 @@ contract DeployWeightedPool8020 is PoolHelpers, ScaffoldHelpers {
         uint256 deployerPrivateKey = getDeployerPrivateKey();
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy a  factory
-        WeightedPoolFactory factory = new WeightedPoolFactory(vault, 365 days, "Factory v1", "Pool v1");
-        console.log("Weighted Pool Factory deployed at: %s", address(factory));
+        // Deploy factory and hook if not already deployed
+        deployWeightedPool8020Factory();
 
-        // Deploy a hook
-        address exitFeeHook = address(new ExitFeeHookExample(vault));
-        console.log("ExitFeeHookExample deployed at address: %s", exitFeeHook);
+        // Create a unique salt based on multiple factors
+        bytes32 salt = keccak256(
+            abi.encodePacked(
+                block.number,
+                block.timestamp,
+                token1,
+                token2,
+                "WEIGHTED8020" // Additional identifier for this specific pool type
+            )
+        );
 
         // Deploy a pool and register it with the vault
-        /// @notice passing args directly to avoid stack too deep error
-        address pool = factory.create(
+        address pool = weightedPool8020Factory.create(
             "80/20 Weighted Pool", // string name
             "80-20-WP", // string symbol
             getTokenConfigs(token1, token2), // TokenConfig[] tokenConfigs
@@ -50,7 +70,7 @@ contract DeployWeightedPool8020 is PoolHelpers, ScaffoldHelpers {
             exitFeeHook, // address poolHooksContract
             true, //bool enableDonation
             true, // bool disableUnbalancedLiquidity (must be true for the ExitFee Hook)
-            keccak256(abi.encode(block.number)) // bytes32 salt
+            salt // bytes32 salt
         );
         console.log("Weighted Pool deployed at: %s", pool);
 

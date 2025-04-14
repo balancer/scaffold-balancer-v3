@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { Pool } from "./types";
 import { VAULT_V3, vaultExtensionAbi_V3 } from "@balancer/sdk";
 import { type Address } from "viem";
@@ -5,7 +6,9 @@ import { erc20ABI, usePublicClient, useQuery, useWalletClient } from "wagmi";
 import abis from "~~/contracts/abis";
 import { useTargetFork } from "~~/hooks/balancer";
 
-export const useReadPool = (pool: Address | null) => {
+export const useReadPool = (address: Address | null) => {
+  const [cache, setCache] = useState<Record<string, Pool>>({});
+
   const client = usePublicClient();
   const { data: walletClient } = useWalletClient();
   const { chainId } = useTargetFork();
@@ -14,10 +17,10 @@ export const useReadPool = (pool: Address | null) => {
   const connectedAddress = walletClient?.account?.address;
   const poolAbi = abis.balancer.Pool;
 
-  return useQuery<Pool>(
-    ["PoolContract", { pool, vault, connectedAddress }],
+  const { data, isLoading, isError, isSuccess, refetch } = useQuery<Pool>(
+    ["PoolContract", { address, vault, connectedAddress }],
     async () => {
-      if (!pool) throw new Error("Pool address is required");
+      if (!address) throw new Error("Pool address is required");
 
       const [
         name,
@@ -38,53 +41,53 @@ export const useReadPool = (pool: Address | null) => {
         // fetch data about BPT from pool contract
         client.readContract({
           abi: poolAbi,
-          address: pool,
+          address: address,
           functionName: "name",
         }) as Promise<string>,
         client.readContract({
           abi: poolAbi,
-          address: pool,
+          address: address,
           functionName: "symbol",
         }) as Promise<string>,
         client.readContract({
           abi: poolAbi,
-          address: pool,
+          address: address,
           functionName: "totalSupply",
         }) as Promise<bigint>,
         client.readContract({
           abi: poolAbi,
-          address: pool,
+          address: address,
           functionName: "decimals",
         }) as Promise<number>,
         client.readContract({
           abi: poolAbi,
-          address: pool,
+          address: address,
           functionName: "getVault",
         }) as Promise<string>,
         client.readContract({
           abi: poolAbi,
-          address: pool,
+          address: address,
           functionName: "getMinimumInvariantRatio",
         }) as Promise<bigint>,
         client.readContract({
           abi: poolAbi,
-          address: pool,
+          address: address,
           functionName: "getMaximumInvariantRatio",
         }) as Promise<bigint>,
         client.readContract({
           abi: poolAbi,
-          address: pool,
+          address: address,
           functionName: "getMinimumSwapFeePercentage",
         }) as Promise<bigint>,
         client.readContract({
           abi: poolAbi,
-          address: pool,
+          address: address,
           functionName: "getMaximumSwapFeePercentage",
         }) as Promise<bigint>,
         client
           .readContract({
             abi: poolAbi,
-            address: pool,
+            address: address,
             functionName: "balanceOf",
             args: [connectedAddress],
           })
@@ -94,14 +97,14 @@ export const useReadPool = (pool: Address | null) => {
           abi: vaultExtensionAbi_V3,
           address: vault,
           functionName: "isPoolRegistered",
-          args: [pool],
+          args: [address],
         }),
         client
           .readContract({
             abi: vaultExtensionAbi_V3,
             address: vault,
             functionName: "getPoolTokenInfo",
-            args: [pool],
+            args: [address],
           })
           .catch(() => []),
         client
@@ -109,7 +112,7 @@ export const useReadPool = (pool: Address | null) => {
             abi: vaultExtensionAbi_V3,
             address: vault,
             functionName: "getPoolConfig",
-            args: [pool],
+            args: [address],
           })
           .catch(() => undefined), // return undefined if pool has not been registered
         client
@@ -117,7 +120,7 @@ export const useReadPool = (pool: Address | null) => {
             abi: vaultExtensionAbi_V3,
             address: vault,
             functionName: "getHooksConfig",
-            args: [pool],
+            args: [address],
           })
           .catch(() => undefined), // return undefined if pool has not been registered
       ]);
@@ -158,7 +161,7 @@ export const useReadPool = (pool: Address | null) => {
       );
 
       return {
-        address: pool,
+        address: address,
         symbol,
         name,
         isRegistered,
@@ -175,8 +178,22 @@ export const useReadPool = (pool: Address | null) => {
         hooksConfig,
       };
     },
-    { enabled: !!pool },
+    { enabled: !!address },
   );
+
+  useEffect(() => {
+    if (isSuccess && data && address) {
+      setCache(prev => ({ ...prev, [address]: data }));
+    }
+  }, [isSuccess, data, address]);
+
+  return {
+    data: address ? cache[address] || data : null,
+    isLoading,
+    isError,
+    isSuccess,
+    refetch,
+  };
 };
 
 export type RefetchPool = ReturnType<typeof useReadPool>["refetch"];
